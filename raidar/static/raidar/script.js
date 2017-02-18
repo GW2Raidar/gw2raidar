@@ -71,9 +71,10 @@
         'input.username': '',
         'input.password': '',
         'input.password2': '',
-        username: response.username,
       });
       csrftoken = response.csrftoken;
+      delete response.csrftoken;
+      authRactive.set(response);
     }
   }
 
