@@ -1,4 +1,3 @@
-__author__ = 'Owner'
 
 class Metric:
     def __init__(self, name, version, value, data):
