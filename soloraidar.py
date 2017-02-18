@@ -10,10 +10,9 @@ def main():
     print("Parsing {0}".format(filename))
     with open(sys.argv[1], mode='rb') as file:
         e = parser.Encounter(file)
-        for agent in e.agents:
-            print("Fighting \"{0}\"".format(agent.name))
-
         metrics = analyser.ComputeAllMetrics(e)
+        for agent in filter(lambda a: a.prof != parser.AgentType.NO_ID, e.agents):
+            print(agent)
         for metric in metrics:
             print(metric)
         #for skill in e.skills:

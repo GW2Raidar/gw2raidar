@@ -7,6 +7,8 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
+from evtcparser import *
+from analyser import *
 
 
 
@@ -94,5 +96,10 @@ def upload(request):
     for filename, file in request.FILES.items():
         # TODO
         # file.name, file.content_type, file.size, file.read()
-        pass
+        e = parser.Encounter(file)
+        metrics = analyser.ComputeAllMetrics(e)
+        for agent in filter(lambda a: a.prof != parser.AgentType.NO_ID, e.agents):
+            print(agent)
+        for metric in metrics:
+            print(metric)
     return JsonResponse({})
