@@ -21,10 +21,11 @@
 
   // Data Binding
   let authData = {
-    username: null,
+    username: window.username,
     login: true,
     passwordOK: false,
   };
+
 
   let authRactive = new Ractive({
     el: '#container',
@@ -46,6 +47,18 @@
       },
     }
   });
+
+
+  // test for shenanigans
+  $.ajax({
+    url: 'user',
+  }).done(response => {
+    authRactive.set('username', response.username);
+  }).fail(response => {
+    // TODO fail case
+  })
+
+
 
   function didLogin(response) {
     if (response.error) {

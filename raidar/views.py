@@ -1,3 +1,4 @@
+from json import dumps as json_dumps
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -5,6 +6,7 @@ from django.middleware.csrf import get_token
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
+from django.contrib.auth.decorators import login_required
 
 
 
@@ -26,7 +28,22 @@ def _login_successful(request, user):
 
 @require_GET
 def index(request):
-    return render(request, template_name='raidar/index.html')
+    username = None
+    if request.user:
+        username = request.user.username
+    return render(request, template_name='raidar/index.html', context={
+            'usernamejson': json_dumps(username)
+        })
+
+
+@require_GET
+def user(request):
+    username = None
+    if request.user:
+        username = request.user.username
+    return JsonResponse({
+            'username': request.user.username
+        })
 
 
 @require_POST
@@ -63,14 +80,15 @@ def register(request):
         return _error('Could not register user')
 
 
+@login_required
 @require_POST
 def logout(request):
     auth_logout(request)
     csrftoken = get_token(request)
-    print(csrftoken)
-    return HttpResponse()
+    return JsonResponse({})
 
 
+@login_required
 @require_POST
 def upload(request):
     for filename, file in request.FILES.items():
