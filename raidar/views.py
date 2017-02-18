@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.middleware.csrf import get_token
 from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
+from django.views.decorators.http import require_GET, require_POST
 
 
 
@@ -23,10 +24,12 @@ def _login_successful(request, user):
 
 
 
-
+@require_GET
 def index(request):
     return render(request, template_name='raidar/index.html')
 
+
+@require_POST
 def login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
@@ -43,6 +46,7 @@ def login(request):
         return _error('Could not log in')
 
 
+@require_POST
 def register(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
@@ -59,8 +63,18 @@ def register(request):
         return _error('Could not register user')
 
 
+@require_POST
 def logout(request):
     auth_logout(request)
     csrftoken = get_token(request)
     print(csrftoken)
     return HttpResponse()
+
+
+@require_POST
+def upload(request):
+    for filename, file in request.FILES.items():
+        # TODO
+        # file.name, file.content_type, file.size, file.read()
+        pass
+    return JsonResponse({})

@@ -2,7 +2,7 @@
 
 // XAcquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
-  var csrftoken = $('[name="csrfmiddlewaretoken"]').val();
+  let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
     // these HTTP methods do not require CSRF protection
@@ -20,27 +20,27 @@
 
 
   // Data Binding
-  var authData = {
+  let authData = {
     username: null,
     login: true,
     passwordOK: false,
   };
 
-  var authRactive = new Ractive({
+  let authRactive = new Ractive({
     el: '#container',
     template: '#auth_template',
     data: authData,
     computed: {
       authBad: function authOK() {
-        var username = this.get('input.username'),
+        let username = this.get('input.username'),
             password = this.get('input.password'),
             email = this.get('input.email');
 
-        var authOK = username != '' && password != '';
+        let authOK = username != '' && password != '';
         if (!this.get('login')) {
-          var password2 = this.get('input.password2');
-          var emailOK = email != ''; // TODO maybe basic pattern check
-          var authOK = authOK && password == password2 && emailOK;
+          let password2 = this.get('input.password2');
+          let emailOK = email != ''; // TODO maybe basic pattern check
+          let authOK = authOK && password == password2 && emailOK;
         }
         return !authOK;
       },
@@ -63,7 +63,7 @@
 
   authRactive.on({
     login: function login() {
-      var username = this.get('input.username'),
+      let username = this.get('input.username'),
           password = this.get('input.password');
 
       $.post({
@@ -77,7 +77,7 @@
       });
     },
     register: function register() {
-      var username = this.get('input.username'),
+      let username = this.get('input.username'),
           password = this.get('input.password'),
           email = this.get('input.email');
 
@@ -109,4 +109,61 @@
       });
     },
   });
+
+  
+
+  let uploadProgressHandler = (file, evt) => {
+    let progress = Math.round(100 * evt.loaded / evt.total);
+    console.log(progress, file.name);
+    // TODO single upload progress
+  }
+  let uploadProgressDone = (file, evt) => {
+    console.log("DONE", file.name);
+    // TODO single upload done
+  }
+
+  let makeXHR = file => {
+    let req = $.ajaxSettings.xhr();
+    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, file), false);
+    return req;
+  }
+
+  $(document)
+    .on('dragstart dragover dragenter', evt => {
+      if (authRactive.get('username')) {
+        evt.originalEvent.dataTransfer.effectAllowed = "copyMove";
+        evt.originalEvent.dataTransfer.dropEffect = "copy";
+      } else {
+        evt.originalEvent.dataTransfer.effectAllowed = "none";
+        evt.originalEvent.dataTransfer.dropEffect = "none";
+      }
+      evt.stopPropagation()
+      evt.preventDefault();
+    })
+    .on('drop', evt => {
+      if (!authRactive.get('username')) return;
+
+      let files = evt.originalEvent.dataTransfer.files;
+      let jQuery_xhr_factory = $.ajaxSettings.xhr;
+      let promises = Array.from(files).map(file => {
+        let form = new FormData();
+        form.append(file.name, file);
+        return $.ajax({
+          url: 'upload',
+          data: form,
+          type: 'POST',
+          contentType: false,
+          processData: false,
+          xhr: makeXHR.bind(null, file),
+        })
+        .done(uploadProgressDone.bind(null, file))
+        .fail(() => {
+          // TODO upload fail case
+        });
+      });
+      $.when(promises).then(results => {
+        // TODO all done
+      });
+      evt.preventDefault();
+    });
 })();
