@@ -13,6 +13,7 @@
     <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
+      window.username = {{ usernamejson|safe }};
     </script>
 
     {% verbatim %}
