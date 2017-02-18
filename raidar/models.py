@@ -8,7 +8,7 @@ import re
 
 class Area(models.Model):
     id = models.IntegerField(primary_key=True)
-    name = models.CharField(max_length=64)
+    name = models.CharField(max_length=64, unique=True)
 
     def __str__(self):
         return self.name
@@ -21,7 +21,7 @@ class Account(models.Model):
             re.IGNORECASE)
 
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=64, validators=[RegexValidator(ACCOUNT_NAME_RE)])
+    name = models.CharField(max_length=64, unique=True, validators=[RegexValidator(ACCOUNT_NAME_RE)])
     api_key = models.CharField('API key', max_length=72, blank=True, validators=[RegexValidator(API_KEY_RE)])
 
     def __str__(self):
@@ -52,18 +52,26 @@ class Character(models.Model):
         )
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    name = models.CharField(max_length=64)
-    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES)
+    name = models.CharField(max_length=64, db_index=True)
+    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
+    verified_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.name
 
+    class Meta:
+        # name is not necessarily unique, just unique at a time
+        unique_together = ('name', 'verified_at')
+
 
 class Encounter(models.Model):
-    # XXX https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
-    characters = models.ManyToManyField(Character)
-    started_at = models.DateTimeField()
+    started_at = models.DateTimeField(db_index=True)
     area = models.ForeignKey(Area, on_delete=models.PROTECT)
+    # XXX https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
+    characters = models.ManyToManyField(Character, related_name="encounters")
 
     def __str__(self):
         return '%s (%s)' % (self.area.name, self.started_at)
+
+    class Meta:
+        index_together = ('area', 'started_at')
