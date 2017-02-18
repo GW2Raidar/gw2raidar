@@ -21,7 +21,7 @@
         <aside id="logout">
           [[username]]
           <button id="logout_submit" on-click="logout">Logout</button>
-          [[#if is_superuser]]
+          [[#if is_staff]]
             <a href="{% url 'admin:index' %}">Admin</a>
           [[/if]]
         </aside>

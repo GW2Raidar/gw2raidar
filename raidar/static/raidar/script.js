@@ -22,7 +22,7 @@
   // Data Binding
   let authData = {
     username: window.userprops.username,
-    is_superuser: window.userprops.is_superuser,
+    is_staff: window.userprops.is_staff,
     login: true,
     passwordOK: false,
   };

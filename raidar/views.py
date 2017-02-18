@@ -22,7 +22,7 @@ def _userprops(request):
     if request.user:
         return {
                 'username': request.user.username,
-                'is_superuser': request.user.is_superuser
+                'is_staff': request.user.is_staff
             }
     else:
         return {}
