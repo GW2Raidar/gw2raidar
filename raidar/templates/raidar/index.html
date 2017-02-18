@@ -13,38 +13,38 @@
     <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
-      window.username = {{ usernamejson|safe }};
+      window.userprops = {{ userprops|safe }};
     </script>
 
-    {% verbatim %}
     <script id="auth_template" type="text/ractive">
-
-      {{#if username}}
+      [[#if username]]
         <aside id="logout">
-          {{username}}
+          [[username]]
           <button id="logout_submit" on-click="logout">Logout</button>
+          [[#if is_superuser]]
+            <a href="{% url 'admin:index' %}">Admin</a>
+          [[/if]]
         </aside>
-      {{elseif login}}
+      [[elseif login]]
         <aside id="login">
-          <input id="login_username" value="{{input.username}}" placeholder="Username">
-          <input id="login_password" value="{{input.password}}" placeholder="Password" type="password">
-          <button id="login_submit" on-click="login" disabled="{{authBad}}">Login</button>
+          <input id="login_username" value="[[input.username]]" placeholder="Username">
+          <input id="login_password" value="[[input.password]]" placeholder="Password" type="password">
+          <button id="login_submit" on-click="login" disabled="[[authBad]]">Login</button>
           <br>
           Not registered? <button id="login_register" on-click="swap">Register here</button>
         </aside>
-      {{else}}
+      [[else]]
         <aside id="register">
-          <input id="register_username" value="{{input.username}}" placeholder="Username">
-          <input id="register_email" value="{{input.email}}" placeholder="Email">
-          <input id="register_password" value="{{input.password}}" placeholder="Password" type="password">
-          <input id="register_password2" value="{{input.password2}}" placeholder="Again" type="password">
-          <button id="register_submit" on-click="register" disabled="{{authBad}}">Register</button>
+          <input id="register_username" value="[[input.username]]" placeholder="Username">
+          <input id="register_email" value="[[input.email]]" placeholder="Email">
+          <input id="register_password" value="[[input.password]]" placeholder="Password" type="password">
+          <input id="register_password2" value="[[input.password2]]" placeholder="Again" type="password">
+          <button id="register_submit" on-click="register" disabled="[[authBad]]">Register</button>
           <br>
           Already registered? <button id="register_login" on-click="swap">Login here</button>
         </aside>
-      {{/if}}
+      [[/if]]
     </script>
-    {% endverbatim %}
   </head>
   <body>
     {% csrf_token %}

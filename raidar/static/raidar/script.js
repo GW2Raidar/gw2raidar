@@ -21,7 +21,8 @@
 
   // Data Binding
   let authData = {
-    username: window.username,
+    username: window.userprops.username,
+    is_superuser: window.userprops.is_superuser,
     login: true,
     passwordOK: false,
   };
@@ -45,7 +46,9 @@
         }
         return !authOK;
       },
-    }
+    },
+    delimiters: ['[[', ']]'],
+    tripleDelimiters: ['[[[', ']]]']
   });
 
 
@@ -53,7 +56,7 @@
   $.ajax({
     url: 'user',
   }).done(response => {
-    authRactive.set('username', response.username);
+    authRactive.set(response);
   }).fail(response => {
     // TODO fail case
   })
