@@ -19,7 +19,7 @@
     <script id="template" type="text/ractive">
       <header>
         <div class="auth">
-          <div class="[[auth.error && 'error']]">[[auth.error]]</div>
+          <div class="[[error.message && 'error']]" style="opacity: [[error.opacity]];">[[error.message]]</div>
           [[#if username]]
             [[#if is_staff]]
               <a href="{% url 'admin:index' %}">Admin</a>

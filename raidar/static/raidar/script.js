@@ -16,6 +16,7 @@
       settings.url = baseURL + settings.url
     }
   });
+  $(document).ajaxError(evt => error("Error connecting to server"))
 
 
 
@@ -51,7 +52,26 @@
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]']
   });
-  window.r = r; // XXX DEBUG
+
+
+  let errorAnimation;
+  function error(str) {
+    if (errorAnimation) errorAnimation.stop();
+
+    r.set('error', {
+      message: str,
+      opacity: 1,
+    });
+
+    errorAnimation = r.animate('error.opacity', 0, {
+      duration: 5000,
+      easing: 'easeIn',
+    })
+    errorAnimation.then(() => {
+      errorAnimation = null;
+      r.set('error', {})
+    })
+  }
 
 
   // test for shenanigans
@@ -59,21 +79,18 @@
     url: 'user',
   }).done(response => {
     r.set(response);
-  }).fail(response => {
-    // TODO fail case
-  })
+  });
 
 
 
   function didLogin(response) {
     if (response.error) {
-      r.set('auth.error', response.error);
+      error(response.error);
     } else {
       r.set({
         'auth.input.username': '',
         'auth.input.password': '',
         'auth.input.password2': '',
-        'auth.error': null,
       });
       csrftoken = response.csrftoken;
       delete response.csrftoken;
@@ -92,9 +109,7 @@
           username: username,
           password: password,
         },
-      }).done(didLogin).fail(response => {
-        // TODO fail case
-      });
+      }).done(didLogin);
     },
     auth_register: function register() {
       let username = this.get('auth.input.username'),
@@ -108,9 +123,7 @@
           password: password,
           email: email,
         },
-      }).done(didLogin).fail(response => {
-        // TODO fail case
-      });
+      }).done(didLogin);
     },
     auth_logout: function logout() {
       $.post({
@@ -120,16 +133,13 @@
           username: null,
           'auth.login': true,
         });
-      }).fail(response => {
-        // TODO fail case
-      })
+      });
     },
     auth_swap: function swap() {
       this.set({
         'auth.login': !this.get('auth.login'),
         'auth.input.password': '',
         'auth.input.password2': '',
-        'auth.error': null,
       });
     },
   });
@@ -180,10 +190,7 @@
           processData: false,
           xhr: makeXHR.bind(null, file),
         })
-        .done(uploadProgressDone.bind(null, file))
-        .fail(() => {
-          // TODO upload fail case
-        });
+        .done(uploadProgressDone.bind(null, file));
       });
       $.when(promises).then(results => {
         // TODO all done
