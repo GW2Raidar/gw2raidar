@@ -1,6 +1,6 @@
 import struct
 import re
-from enum import Enum, auto
+from enum import Enum
 
 ENCODING = "utf8"
 
@@ -65,20 +65,20 @@ class Result(Enum):
     KILLING_BLOW=8
 
 class Boon(Enum):
-    MIGHT = auto()
-    QUICKNESS= auto()
-    FURY= auto()
-    PROTECTION = auto()
-    ALACRITY = auto()
-    SPOTTER = auto()
-    SPIRIT_OF_FROST = auto()
-    SUN_SPIRIT = auto()
-    GLYPH_OF_EMPOWERMENT = auto()
-    GRACE_OF_THE_LAND = auto()
-    EMPOWER_ALLIES = auto()
-    BANNER_OF_STRENGTH = auto()
-    BANNER_OF_DISCIPLINE = auto()
-    SOOTHING_MIST = auto()
+    MIGHT = 1
+    QUICKNESS = 2
+    FURY = 3
+    PROTECTION = 4
+    ALACRITY = 5
+    SPOTTER = 6
+    SPIRIT_OF_FROST = 7
+    SUN_SPIRIT = 8
+    GLYPH_OF_EMPOWERMENT = 9
+    GRACE_OF_THE_LAND = 10
+    EMPOWER_ALLIES = 11
+    BANNER_OF_STRENGTH = 12
+    BANNER_OF_DISCIPLINE = 13
+    SOOTHING_MIST = 14
 
 
 class FileFormatException(BaseException):
