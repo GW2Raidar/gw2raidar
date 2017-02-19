@@ -132,6 +132,6 @@ class Analyser:
 
         return TeamDPSMetric(player_dps)
 
-    def compute_all_metrics(self, encounter):
+    def compute_all_metrics(self):
         dps_metrics = self.compute_dps_metrics()
         return BasicMetric({"DPS": dps_metrics})

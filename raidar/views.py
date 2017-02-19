@@ -7,8 +7,8 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
-from evtcparser import *
-from analyser import *
+from evtcparser.parser import Encounter
+from analyser.analyser import Analyser
 
 
 
@@ -93,15 +93,16 @@ def logout(request):
 @login_required
 @require_POST
 def upload(request):
+    result = {}
     for filename, file in request.FILES.items():
-        # TODO
-        # file.name, file.content_type, file.size, file.read()
-        e = parser.Encounter(file)
 
         # metrics is a tree with 2 types of nodes:
         # iterables containing key/value tuples
         # or basic values
         # should be easy to convert to json
-        metrics = analyser.ComputeAllMetrics(e)
+        encounter = Encounter(file)
+        analyser = Analyser(encounter)
+        metrics = analyser.compute_all_metrics()
+        # TODO
 
     return JsonResponse({})
