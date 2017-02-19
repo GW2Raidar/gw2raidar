@@ -21,35 +21,44 @@
         <div class="auth">
           <div class="[[auth.error && 'error']]">[[auth.error]]</div>
           [[#if username]]
-            <aside id="logout">
-              [[#if is_staff]]
-                <a href="{% url 'admin:index' %}">Admin</a>
-              [[/if]]
-              <a href="#" on-click="to_profile">[[username]]</a>
-              <button id="logout_submit" on-click="auth_logout">Logout</button>
-            </aside>
+            [[#if is_staff]]
+              <a href="{% url 'admin:index' %}">Admin</a>
+            [[/if]]
+            <a href="#" on-click="to_profile">[[username]]</a>
+            <button id="logout_submit" on-click="auth_logout">Logout</button>
           [[elseif auth.login]]
-            <aside id="login">
-              <input id="login_username" value="[[auth.input.username]]" placeholder="Username">
-              <input id="login_password" value="[[auth.input.password]]" placeholder="Password" type="password">
-              <button id="login_submit" on-click="auth_login" disabled="[[authBad]]">Login</button><br>
-              Not registered? <button id="login_register" on-click="auth_swap">Register here</button>
-            </aside>
+            <input id="login_username" value="[[auth.input.username]]" placeholder="Username">
+            <input id="login_password" value="[[auth.input.password]]" placeholder="Password" type="password">
+            <button id="login_submit" on-click="auth_login" disabled="[[authBad]]">Login</button><br>
+            Not registered? <button id="login_register" on-click="auth_swap">Register here</button>
           [[else]]
-            <aside id="register">
-              <input id="register_username" value="[[auth.input.username]]" placeholder="Username">
-              <input id="register_email" value="[[auth.input.email]]" placeholder="Email">
-              <input id="register_password" value="[[auth.input.password]]" placeholder="Password" type="password">
-              <input id="register_password2" value="[[auth.input.password2]]" placeholder="Again" type="password">
-              <button id="register_submit" on-click="auth_register" disabled="[[authBad]]">Register</button><br>
-              Already registered? <button id="register_login" on-click="auth_swap">Login here</button>
-            </aside>
+            <input id="register_username" value="[[auth.input.username]]" placeholder="Username">
+            <input id="register_email" value="[[auth.input.email]]" placeholder="Email">
+            <input id="register_password" value="[[auth.input.password]]" placeholder="Password" type="password">
+            <input id="register_password2" value="[[auth.input.password2]]" placeholder="Again" type="password">
+            <button id="register_submit" on-click="auth_register" disabled="[[authBad]]">Register</button><br>
+            Already registered? <button id="register_login" on-click="auth_swap">Login here</button>
           [[/if]]
         </div>
+
         <div class="logo">
           GW2 Raidar
         </div>
       </header>
+
+      [[#if username]]
+        <p>
+          Drag and drop evtc files to this window to upload.
+        </p>
+      [[else]]
+        <p>
+          Please log in to start using GW2 Raidar.
+        </p>
+        <h1>
+          About GW2 Raidar
+        </h1>
+        {% lorem 3 p %}
+      [[/if]]
     </script>
   </head>
   <body>

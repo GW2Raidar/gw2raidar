@@ -23,10 +23,6 @@ header .auth a {
   padding: 2px 5px;
   color: lightblue;
 }
-aside {
-  border: solid black 1px;
-  display: inline-block;
-}
 .error {
   color: red;
 }
