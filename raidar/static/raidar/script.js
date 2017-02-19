@@ -19,30 +19,31 @@
 
 
 
-  // Data Binding
-  let authData = {
+  let initData = {
     username: window.userprops.username,
     is_staff: window.userprops.is_staff,
-    login: true,
-    passwordOK: false,
+    auth: {
+      login: true,
+    }
   };
 
 
-  let authRactive = new Ractive({
+  // Ractive
+  let r = new Ractive({
     el: '#container',
-    template: '#auth_template',
-    data: authData,
+    template: '#template',
+    data: initData,
     computed: {
-      authBad: function authOK() {
-        let username = this.get('input.username'),
-            password = this.get('input.password'),
-            email = this.get('input.email');
+      'authBad': function authBad() {
+        let username = this.get('auth.input.username'),
+            password = this.get('auth.input.password'),
+            email = this.get('auth.input.email');
 
         let authOK = username != '' && password != '';
-        if (!this.get('login')) {
-          let password2 = this.get('input.password2');
+        if (!this.get('auth.login')) {
+          let password2 = this.get('auth.input.password2');
           let emailOK = email != ''; // TODO maybe basic pattern check
-          let authOK = authOK && password == password2 && emailOK;
+          authOK = authOK && password == password2 && emailOK;
         }
         return !authOK;
       },
@@ -50,13 +51,14 @@
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]']
   });
+  window.r = r; // XXX DEBUG
 
 
   // test for shenanigans
   $.ajax({
     url: 'user',
   }).done(response => {
-    authRactive.set(response);
+    r.set(response);
   }).fail(response => {
     // TODO fail case
   })
@@ -65,23 +67,24 @@
 
   function didLogin(response) {
     if (response.error) {
-      // TODO
+      r.set('auth.error', response.error);
     } else {
-      authRactive.set({
-        'input.username': '',
-        'input.password': '',
-        'input.password2': '',
+      r.set({
+        'auth.input.username': '',
+        'auth.input.password': '',
+        'auth.input.password2': '',
+        'auth.error': null,
       });
       csrftoken = response.csrftoken;
       delete response.csrftoken;
-      authRactive.set(response);
+      r.set(response);
     }
   }
 
-  authRactive.on({
-    login: function login() {
-      let username = this.get('input.username'),
-          password = this.get('input.password');
+  r.on({
+    auth_login: function login() {
+      let username = this.get('auth.input.username'),
+          password = this.get('auth.input.password');
 
       $.post({
         url: 'login',
@@ -93,10 +96,10 @@
         // TODO fail case
       });
     },
-    register: function register() {
-      let username = this.get('input.username'),
-          password = this.get('input.password'),
-          email = this.get('input.email');
+    auth_register: function register() {
+      let username = this.get('auth.input.username'),
+          password = this.get('auth.input.password'),
+          email = this.get('auth.input.email');
 
       $.post({
         url: 'register',
@@ -109,20 +112,24 @@
         // TODO fail case
       });
     },
-    logout: function logout() {
+    auth_logout: function logout() {
       $.post({
         url: 'logout',
       }).done(response => {
-        this.set('username', null);
+        this.set({
+          username: null,
+          'auth.login': true,
+        });
       }).fail(response => {
         // TODO fail case
       })
     },
-    swap: function swap() {
+    auth_swap: function swap() {
       this.set({
-        login: !this.get('login'),
-        'input.password': '',
-        'input.password2': '',
+        'auth.login': !this.get('auth.login'),
+        'auth.input.password': '',
+        'auth.input.password2': '',
+        'auth.error': null,
       });
     },
   });
@@ -147,7 +154,7 @@
 
   $(document)
     .on('dragstart dragover dragenter', evt => {
-      if (authRactive.get('username')) {
+      if (r.get('username')) {
         evt.originalEvent.dataTransfer.effectAllowed = "copyMove";
         evt.originalEvent.dataTransfer.dropEffect = "copy";
       } else {
@@ -158,7 +165,7 @@
       evt.preventDefault();
     })
     .on('drop', evt => {
-      if (!authRactive.get('username')) return;
+      if (!r.get('username')) return;
 
       let files = evt.originalEvent.dataTransfer.files;
       let jQuery_xhr_factory = $.ajaxSettings.xhr;

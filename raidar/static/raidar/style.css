@@ -1,5 +1,32 @@
-/* test */
+header {
+  position: relative;
+  color: white;
+  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#001d4c+0,000000+100 */
+  background: #001d4c; /* Old browsers */
+  background: -moz-linear-gradient(-45deg,  #001d4c 0%, #000000 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(-45deg,  #001d4c 0%,#000000 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(135deg,  #001d4c 0%,#000000 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#001d4c', endColorstr='#000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+}
+header .logo {
+  font-size: 60px;
+  color: lightblue;
+  padding: 2px 5px;
+}
+header .auth {
+  position: absolute;
+  bottom: 2px;
+  right: 5px;
+  text-align: right;
+}
+header .auth a {
+  padding: 2px 5px;
+  color: lightblue;
+}
 aside {
   border: solid black 1px;
   display: inline-block;
+}
+.error {
+  color: red;
 }

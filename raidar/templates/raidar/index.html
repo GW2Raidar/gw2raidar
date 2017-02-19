@@ -16,48 +16,46 @@
       window.userprops = {{ userprops|safe }};
     </script>
 
-    <script id="auth_template" type="text/ractive">
-      [[#if username]]
-        <aside id="logout">
-          [[username]]
-          <button id="logout_submit" on-click="logout">Logout</button>
-          [[#if is_staff]]
-            <a href="{% url 'admin:index' %}">Admin</a>
+    <script id="template" type="text/ractive">
+      <header>
+        <div class="auth">
+          <div class="[[auth.error && 'error']]">[[auth.error]]</div>
+          [[#if username]]
+            <aside id="logout">
+              [[#if is_staff]]
+                <a href="{% url 'admin:index' %}">Admin</a>
+              [[/if]]
+              <a href="#" on-click="to_profile">[[username]]</a>
+              <button id="logout_submit" on-click="auth_logout">Logout</button>
+            </aside>
+          [[elseif auth.login]]
+            <aside id="login">
+              <input id="login_username" value="[[auth.input.username]]" placeholder="Username">
+              <input id="login_password" value="[[auth.input.password]]" placeholder="Password" type="password">
+              <button id="login_submit" on-click="auth_login" disabled="[[authBad]]">Login</button><br>
+              Not registered? <button id="login_register" on-click="auth_swap">Register here</button>
+            </aside>
+          [[else]]
+            <aside id="register">
+              <input id="register_username" value="[[auth.input.username]]" placeholder="Username">
+              <input id="register_email" value="[[auth.input.email]]" placeholder="Email">
+              <input id="register_password" value="[[auth.input.password]]" placeholder="Password" type="password">
+              <input id="register_password2" value="[[auth.input.password2]]" placeholder="Again" type="password">
+              <button id="register_submit" on-click="auth_register" disabled="[[authBad]]">Register</button><br>
+              Already registered? <button id="register_login" on-click="auth_swap">Login here</button>
+            </aside>
           [[/if]]
-        </aside>
-      [[elseif login]]
-        <aside id="login">
-          <input id="login_username" value="[[input.username]]" placeholder="Username">
-          <input id="login_password" value="[[input.password]]" placeholder="Password" type="password">
-          <button id="login_submit" on-click="login" disabled="[[authBad]]">Login</button>
-          <br>
-          Not registered? <button id="login_register" on-click="swap">Register here</button>
-        </aside>
-      [[else]]
-        <aside id="register">
-          <input id="register_username" value="[[input.username]]" placeholder="Username">
-          <input id="register_email" value="[[input.email]]" placeholder="Email">
-          <input id="register_password" value="[[input.password]]" placeholder="Password" type="password">
-          <input id="register_password2" value="[[input.password2]]" placeholder="Again" type="password">
-          <button id="register_submit" on-click="register" disabled="[[authBad]]">Register</button>
-          <br>
-          Already registered? <button id="register_login" on-click="swap">Login here</button>
-        </aside>
-      [[/if]]
+        </div>
+        <div class="logo">
+          GW2 Raidar
+        </div>
+      </header>
     </script>
   </head>
   <body>
     {% csrf_token %}
-
-    <header>
-      GW2 Raidar
-    </header>
-
     <div id="container">
     </div>
-
-    <footer>
-    </footer>
     <script src="{% static 'raidar/script.js' %}"></script>
   </body>
 </html>
