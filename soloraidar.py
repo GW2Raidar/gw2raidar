@@ -4,17 +4,43 @@ import sys
 from evtcparser import *
 from analyser import *
 
+def is_basic_value(node):
+    try:
+        dict(node)
+        return False
+    except:
+        return True
+
+def flatten(root):
+    nodes = dict((key, dict(node)) for key,node in root)
+    stack = list(nodes.keys())
+    for node_name in stack:
+        node = nodes[node_name]
+        for child_name, child in node.items():
+            try:
+                full_child_name = "{0}-{1}".format(node_name, child_name)
+                nodes[full_child_name] = dict(child)
+                stack.append(full_child_name)
+            except TypeError:
+                pass
+    return nodes
+
+def print_node(key, node):
+    basic_values = filter(lambda key:is_basic_value(key[1]), node.items())
+    print("{0}: {1}".format(key, ", ".join(
+        ["{0}:{1}".format(name, value) for name,value in basic_values])))
+
 def main():
     filename = sys.argv[1]
 
     print("Parsing {0}".format(filename))
     with open(sys.argv[1], mode='rb') as file:
         e = parser.Encounter(file)
-        metrics = analyser.ComputeAllMetrics(e)
-        for agent in filter(lambda a: a.prof != parser.AgentType.NO_ID, e.agents):
-            print(agent)
-        for metric in metrics:
-            print(metric)
+        a = analyser.Analyser(e)
+        metrics = a.compute_all_metrics(e)
+        flattened = flatten(metrics)
+        for key in flattened:
+            print_node(key, flattened[key])
         #for skill in e.skills:
         #    print("Skill \"{0}\"".format(skill.name))
         #for event in e.events:

@@ -97,9 +97,11 @@ def upload(request):
         # TODO
         # file.name, file.content_type, file.size, file.read()
         e = parser.Encounter(file)
+
+        # metrics is a tree with 2 types of nodes:
+        # iterables containing key/value tuples
+        # or basic values
+        # should be easy to convert to json
         metrics = analyser.ComputeAllMetrics(e)
-        for agent in filter(lambda a: a.prof != parser.AgentType.NO_ID, e.agents):
-            print(agent)
-        for metric in metrics:
-            print(metric)
+
     return JsonResponse({})

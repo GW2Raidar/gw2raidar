@@ -39,6 +39,10 @@ class AgentType(Enum):
     REVENANT = 9
     MURSAAT_OVERSEER = 17172
 
+    def is_player(self):
+        return AgentType.GUARDIAN.value <= self.value <= AgentType.REVENANT.value
+
+
 class CustomSkill(Enum):
     RESURRECT = 1066
     BANDAGE = 1175
@@ -82,10 +86,10 @@ class FileFormatException(BaseException):
 
 class Agent:
     def whitelistName(self, name):
-        newName = re.sub("[^\w \\.\\-]","?", name)
-        if newName != name:
+        new_name = re.sub("[^\w \\.\\-]","?", name)
+        if new_name != name:
             print("Unexpected name: {0}", name.__repr__())
-        return newName
+        return new_name
 
     def __init__(self, data):
         self.addr, prof, elite, self.toughness, self.healing, self.condition, name_account = struct.unpack("<Qlllll64s4x", data)
@@ -96,17 +100,30 @@ class Agent:
             self.account = self.whitelistName(self.account[1:])
         self.name = self.whitelistName(self.name)
 
+        self.inst_id = None
+
     def __str__(self):
         return "{0} ({1}) - {2} (elite: {3}) - id {4}".format(self.name, self.account, self.prof, self.elite, self.addr)
+
+    def set_inst_id(self, id):
+        if id == 0:
+            return
+        if self.inst_id is None:
+            self.inst_id = id
+        else:
+            if self.inst_id != id:
+                raise Exception("Multiples ids for agent {0}: {1},{2}", self.name, self.inst_id, id)
 
 class Skill:
     def __init__(self, data):
         self.id, name = struct.unpack("<l64s", data)
-        self.name = name.decode(ENCODING)
+        self.name = name.decode(ENCODING).rstrip('\0')
 
 class Event:
     def __init__(self, data):
-        self.time, self.src_agent, self.dst_agent, self.value, self.buff_dmg, self.overstack_value, self.skillid, self.src_instid, self.dst_instid, self.src_master_instid, self.iss_offset, self.iss_offset_target, self.iss_bd_offset, self.iss_bd_offset_target, self.iss_alt_offset, self.iss_alt_offset_target, self.skar, self.skar_alt, self.skar_use_alt, self.iff, self.buff, self.result, self.is_activation, self.is_buffremove, self.is_ninety, self.is_fifty, self.is_moving, self.is_statechange, self.is_flanking, self.result_local, self.ident_local = struct.unpack("<QQQllHHHHHBBBBBBBBBBBBBBBBBBBBBx", data)
+        self.time, self.src_agent, self.dst_agent, self.value, self.buff_dmg, self.overstack_value, self.skill_id, self.src_instid, self.dst_instid, self.src_master_instid, self.iss_offset, self.iss_offset_target, self.iss_bd_offset, self.iss_bd_offset_target, self.iss_alt_offset, self.iss_alt_offset_target, self.skar, self.skar_alt, self.skar_use_alt, self.iff, self.buff, result, self.is_activation, self.is_buffremove, self.is_ninety, self.is_fifty, self.is_moving, state_change, self.is_flanking, self.result_local, self.ident_local = struct.unpack("<QQQllHHHHHBBBBBBBBBBBBBBBBBBBBBx", data)
+        self.state_change = StateChange(state_change)
+        self.result = Result(result)
 
 class Encounter:
     def __init__(self, file):
@@ -125,6 +142,13 @@ class Encounter:
             data = file.read(64)
             if not data: break
             self.events.append(Event(data))
+
+        agent_addrs = dict((agent.addr, agent) for agent in self.agents)
+        for event in self.events:
+            if event.src_agent in agent_addrs:
+                agent_addrs[event.src_agent].set_inst_id(event.src_instid)
+            if event.dst_agent in agent_addrs:
+                agent_addrs[event.dst_agent].set_inst_id(event.dst_instid)
 
 
 
