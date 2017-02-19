@@ -21,7 +21,8 @@
 
   // Data Binding
   let authData = {
-    username: window.username,
+    username: window.userprops.username,
+    is_staff: window.userprops.is_staff,
     login: true,
     passwordOK: false,
   };
@@ -45,7 +46,9 @@
         }
         return !authOK;
       },
-    }
+    },
+    delimiters: ['[[', ']]'],
+    tripleDelimiters: ['[[[', ']]]']
   });
 
 
@@ -53,7 +56,7 @@
   $.ajax({
     url: 'user',
   }).done(response => {
-    authRactive.set('username', response.username);
+    authRactive.set(response);
   }).fail(response => {
     // TODO fail case
   })
@@ -68,9 +71,10 @@
         'input.username': '',
         'input.password': '',
         'input.password2': '',
-        username: response.username,
       });
       csrftoken = response.csrftoken;
+      delete response.csrftoken;
+      authRactive.set(response);
     }
   }
 

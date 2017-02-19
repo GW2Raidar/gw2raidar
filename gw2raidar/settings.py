@@ -123,4 +123,5 @@ STATIC_URL = '/static/'
 
 # Other
 
-LOGIN_URL = '/'
+LOGIN_URL = 'index'
+LOGOUT_REDIRECT_URL = 'index'

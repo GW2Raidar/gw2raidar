@@ -18,34 +18,34 @@ def _error(msg, **kwargs):
     return JsonResponse(kwargs)
 
 
+def _userprops(request):
+    if request.user:
+        return {
+                'username': request.user.username,
+                'is_staff': request.user.is_staff
+            }
+    else:
+        return {}
+
 def _login_successful(request, user):
     auth_login(request, user)
     csrftoken = get_token(request)
-    return JsonResponse({
-            'csrftoken': csrftoken,
-            'username': user.username,
-        })
+    userprops = _userprops(request)
+    userprops['csrftoken'] = csrftoken
+    return JsonResponse(userprops)
 
 
 
 @require_GET
 def index(request):
-    username = None
-    if request.user:
-        username = request.user.username
     return render(request, template_name='raidar/index.html', context={
-            'usernamejson': json_dumps(username)
+            'userprops': json_dumps(_userprops(request))
         })
 
 
 @require_GET
 def user(request):
-    username = None
-    if request.user:
-        username = request.user.username
-    return JsonResponse({
-            'username': request.user.username
-        })
+    return JsonResponse(_userprops(request))
 
 
 @require_POST
