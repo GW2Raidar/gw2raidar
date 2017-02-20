@@ -83,3 +83,6 @@ class Participation(models.Model):
 
     def __str__(self):
         return '%s in %s' % (self.character, self.encounter)
+
+    class Meta:
+        unique_together = ('encounter', 'character')
