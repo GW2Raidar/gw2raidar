@@ -37,7 +37,7 @@ def main():
     with open(sys.argv[1], mode='rb') as file:
         e = parser.Encounter(file)
         a = analyser.Analyser(e)
-        metrics = a.compute_all_metrics(e)
+        metrics = a.compute_all_metrics()
         flattened = flatten(metrics)
         for key in flattened:
             print_node(key, flattened[key])
