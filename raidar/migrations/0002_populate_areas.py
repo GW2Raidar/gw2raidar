@@ -21,14 +21,14 @@ def _forwards_func(apps, schema_editor):
         Area(name='Matthias', id=0x3EF3),
         Area(name='Keep Construct', id=0x3F6B),
         Area(name='Xera', id=0x3F76),
-        Area(name='Xera 2', id=0x3F9E), # XXX what is this? which is real?
+        Area(name='Xera (Post-Half)', id=0x3F9E), # XXX what is this? which is real?
         Area(name='Cairn', id=0x432A),
         Area(name='Mursaat Overseer', id=0x4314),
         Area(name='Samarog', id=0x4324),
         Area(name='Deimos', id=0x4302),
     ])
 
-    
+
 class Migration(migrations.Migration):
     dependencies = [
         ('raidar', '0001_initial'),

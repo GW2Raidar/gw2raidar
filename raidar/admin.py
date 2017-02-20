@@ -14,7 +14,18 @@ class EncounterAdmin(admin.ModelAdmin):
     class Media:
         css = { 'all' : ('raidar/hide_admin_original.css',) }
 
+class CharacterInline(admin.TabularInline):
+    model = Character
+    extra = 1
+
+class AccountAdmin(admin.ModelAdmin):
+    inlines = (CharacterInline,)
+
+    # hack, but... ugly otherwise
+    class Media:
+        css = { 'all' : ('raidar/hide_admin_original.css',) }
+
 admin.site.register(Area)
-admin.site.register(Account)
+admin.site.register(Account, AccountAdmin)
 admin.site.register(Character)
 admin.site.register(Encounter, EncounterAdmin)

@@ -13,6 +13,9 @@ class Area(models.Model):
     def __str__(self):
         return self.name
 
+    class Meta:
+        ordering = ('name',)
+
 
 class Account(models.Model):
     ACCOUNT_NAME_RE = re.compile(r'\S+\.\d{4}') # TODO make more restrictive?
@@ -20,12 +23,15 @@ class Account(models.Model):
             r'-'.join(r'[0-9A-F]{%d}' % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r'$',
             re.IGNORECASE)
 
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='accounts')
     name = models.CharField(max_length=64, unique=True, validators=[RegexValidator(ACCOUNT_NAME_RE)])
     api_key = models.CharField('API key', max_length=72, blank=True, validators=[RegexValidator(API_KEY_RE)])
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        ordering = ('name',)
 
 
 class Character(models.Model):
@@ -51,7 +57,7 @@ class Character(models.Model):
             (REVENANT, 'Revenant'),
         )
 
-    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
     name = models.CharField(max_length=64, db_index=True)
     profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     verified_at = models.DateTimeField(auto_now_add=True)
@@ -61,25 +67,26 @@ class Character(models.Model):
 
     class Meta:
         # name is not necessarily unique, just unique at a time
-        unique_together = ('name', 'verified_at')
+        unique_together = ('name', 'account', 'profession')
+        ordering = ('name',)
 
 
 class Encounter(models.Model):
     started_at = models.DateTimeField(db_index=True)
-    area = models.ForeignKey(Area, on_delete=models.PROTECT)
-    # XXX https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
-    characters = models.ManyToManyField(Character, related_name='encounters', through='Participation')
+    area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
+    characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
 
     def __str__(self):
         return '%s (%s)' % (self.area.name, self.started_at)
 
     class Meta:
         index_together = ('area', 'started_at')
+        ordering = ('started_at',)
 
 
 class Participation(models.Model):
-    encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name="participations")
-    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name="participations")
+    encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
+    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='participations')
 
     def __str__(self):
         return '%s in %s' % (self.character, self.encounter)

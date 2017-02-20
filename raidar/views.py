@@ -7,8 +7,12 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
-from evtcparser.parser import Encounter
+from evtcparser.parser import Encounter as EvtcEncounter
 from analyser.analyser import Analyser
+from datetime import datetime
+from django.utils import timezone
+from re import match
+from .models import *
 
 
 
@@ -95,14 +99,49 @@ def logout(request):
 def upload(request):
     result = {}
     for filename, file in request.FILES.items():
+        try:
+            started_at = datetime.strptime(filename, '%Y%m%d-%H%M%S.evtc')
+        except:
+            return _error('Filename not valid')
+        started_at = timezone.make_aware(started_at, timezone.utc)
 
         # metrics is a tree with 2 types of nodes:
         # iterables containing key/value tuples
         # or basic values
         # should be easy to convert to json
-        encounter = Encounter(file)
-        analyser = Analyser(encounter)
-        metrics = analyser.compute_all_metrics()
-        # TODO
+        evtc_encounter = EvtcEncounter(file)
 
-    return JsonResponse({})
+        players = [agent for agent in evtc_encounter.agents if agent.account]
+        if not players:
+            return _error('No players in encounter')
+
+        analyser = Analyser(evtc_encounter)
+        metrics = analyser.compute_all_metrics()
+        # TODO metrics
+
+
+        area = Area.objects.get(id=evtc_encounter.area_id)
+        if not area:
+            return _error('Unknown area')
+
+        # heuristics to see if the encounter is a re-upload:
+        # a character can only be in one raid at a time
+        # XXX: it is *theoretically* possible for this to be in a race
+        # condition, so that the encounter is duplicated and later raises an
+        # error. try/catch, if returns multiple then delete all but one?
+        encounter, _ = Encounter.objects.get_or_create(
+                area=area, started_at=started_at, characters__name=players[0].name)
+
+        for player in players:
+            account, _ = Account.objects.get_or_create(
+                    name=player.account)
+            character, _ = Character.objects.get_or_create(
+                    name=player.name, account=account, profession=player.prof.value)
+            participation, _ = Participation.objects.get_or_create(
+                    character=character, encounter=encounter)
+
+    return JsonResponse({
+            'id': encounter.id,
+            'area': encounter.area.name,
+            'started_at': int(started_at.strftime('%s')),
+        })
