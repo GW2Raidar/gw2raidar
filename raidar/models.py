@@ -68,10 +68,18 @@ class Encounter(models.Model):
     started_at = models.DateTimeField(db_index=True)
     area = models.ForeignKey(Area, on_delete=models.PROTECT)
     # XXX https://docs.djangoproject.com/en/1.10/topics/db/examples/many_to_many/
-    characters = models.ManyToManyField(Character, related_name="encounters")
+    characters = models.ManyToManyField(Character, related_name='encounters', through='Participation')
 
     def __str__(self):
         return '%s (%s)' % (self.area.name, self.started_at)
 
     class Meta:
         index_together = ('area', 'started_at')
+
+
+class Participation(models.Model):
+    encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name="participations")
+    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name="participations")
+
+    def __str__(self):
+        return '%s in %s' % (self.character, self.encounter)
