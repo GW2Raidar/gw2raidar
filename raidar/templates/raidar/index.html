@@ -47,10 +47,42 @@
       </header>
 
       [[#if username]]
-        <p>
-          Drag and drop evtc files to this window to upload.
-        </p>
+
+        [[#if page.name == "index"]]
+
+          [[#if encounters.length]]
+
+            <table>
+              [[#each encounters]]
+                <tr>
+                  <td>
+                    [[area]]
+                  </td>
+                  <td>
+                    [[formatDate(started_at)]]
+                  </td>
+                </tr>
+              [[/each]]
+            </table>
+
+          [[else]]
+            <p>
+              Drag and drop evtc files to this window to upload.
+            </p>
+          [[/if]]
+
+        [[elseif page.name == "profile"]]
+
+          TODO profile (set own API key etc), button to get back to index
+
+        [[elseif page.name == "encounter"]]
+
+          TODO encounter details
+
+        [[/if]]
+
       [[else]]
+
         <p>
           Please log in to start using GW2 Raidar.
         </p>
@@ -58,6 +90,7 @@
           About GW2 Raidar
         </h1>
         {% lorem 3 p %}
+
       [[/if]]
     </script>
   </head>

@@ -11,6 +11,7 @@ from evtcparser.parser import Encounter as EvtcEncounter
 from analyser.analyser import Analyser
 from datetime import datetime
 from django.utils import timezone
+from django.core import serializers
 from re import match
 from .models import *
 
@@ -31,6 +32,14 @@ def _userprops(request):
     else:
         return {}
 
+def _encounter_data(request):
+    encounters = Encounter.objects.filter(characters__account__user=request.user)
+    return [{
+            'id': encounter.id,
+            'area': encounter.area.name,
+            'started_at': int(encounter.started_at.strftime('%s')),
+        } for encounter in encounters]
+
 def _login_successful(request, user):
     auth_login(request, user)
     csrftoken = get_token(request)
@@ -48,8 +57,10 @@ def index(request):
 
 
 @require_GET
-def user(request):
-    return JsonResponse(_userprops(request))
+def initial(request):
+    response = _userprops(request)
+    response['encounters'] = _encounter_data(request)
+    return JsonResponse(response)
 
 
 @require_POST
@@ -98,6 +109,8 @@ def logout(request):
 @require_POST
 def upload(request):
     result = {}
+    # TODO this should really only be one file
+    # so make adjustments to find out its name and only provide one result
     for filename, file in request.FILES.items():
         try:
             started_at = datetime.strptime(filename, '%Y%m%d-%H%M%S.evtc')
@@ -129,7 +142,7 @@ def upload(request):
         # XXX: it is *theoretically* possible for this to be in a race
         # condition, so that the encounter is duplicated and later raises an
         # error. try/catch, if returns multiple then delete all but one?
-        encounter, _ = Encounter.objects.get_or_create(
+        encounter, encounter_created = Encounter.objects.get_or_create(
                 area=area, started_at=started_at, characters__name=players[0].name)
 
         for player in players:
@@ -139,9 +152,12 @@ def upload(request):
                     name=player.name, account=account, profession=player.prof.value)
             participation, _ = Participation.objects.get_or_create(
                     character=character, encounter=encounter)
+        result['file'] = {
+                'id': encounter.id,
+                'area': encounter.area.name,
+                'started_at': int(started_at.strftime('%s')),
+                'new': encounter_created,
+            }
 
-    return JsonResponse({
-            'id': encounter.id,
-            'area': encounter.area.name,
-            'started_at': int(started_at.strftime('%s')),
-        })
+    print(result)
+    return JsonResponse(result)

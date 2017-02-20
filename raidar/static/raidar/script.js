@@ -19,13 +19,20 @@
   $(document).ajaxError(evt => error("Error connecting to server"))
 
 
+  var helpers = Ractive.defaults.data;
+  helpers.formatDate = timestamp => {
+    let date = new Date(timestamp * 1000);
+    return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
+  }
 
   let initData = {
     username: window.userprops.username,
     is_staff: window.userprops.is_staff,
     auth: {
       login: true,
-    }
+    },
+    page: { name: 'index' },
+    encounters: [],
   };
 
 
@@ -52,6 +59,7 @@
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]']
   });
+  window.r = r; // XXX DEBUG
 
 
   let errorAnimation;
@@ -76,8 +84,9 @@
 
   // test for shenanigans
   $.ajax({
-    url: 'user',
+    url: 'initial',
   }).done(response => {
+    response.encounters.sort((a, b) => b.started_at - a.started_at);
     r.set(response);
   });
 
@@ -142,18 +151,27 @@
         'auth.input.password2': '',
       });
     },
+    to_profile: function toProfile() {
+      r.set('page', { name: 'profile' })
+    },
   });
 
-  
+
 
   let uploadProgressHandler = (file, evt) => {
     let progress = Math.round(100 * evt.loaded / evt.total);
-    console.log(progress, file.name);
     // TODO single upload progress
   }
-  let uploadProgressDone = (file, evt) => {
-    console.log("DONE", file.name);
-    // TODO single upload done
+  let uploadProgressDone = (file, data) => {
+    let encounters = r.get('encounters');
+    Object.keys(data).forEach(file => {
+      let encounter = data[file];
+      if (encounter.new) {
+        delete encounter.new;
+        encounters.push(encounter);
+      }
+    });
+    r.set('encounters', encounters.sort((a, b) => b.started_at - a.started_at))
   }
 
   let makeXHR = file => {
