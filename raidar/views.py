@@ -45,6 +45,7 @@ def _login_successful(request, user):
     csrftoken = get_token(request)
     userprops = _userprops(request)
     userprops['csrftoken'] = csrftoken
+    userprops['encounters'] = _encounter_data(request)
     return JsonResponse(userprops)
 
 
@@ -59,7 +60,8 @@ def index(request):
 @require_GET
 def initial(request):
     response = _userprops(request)
-    response['encounters'] = _encounter_data(request)
+    if request.user.is_authenticated():
+        response['encounters'] = _encounter_data(request)
     return JsonResponse(response)
 
 
@@ -108,9 +110,12 @@ def logout(request):
 @login_required
 @require_POST
 def upload(request):
+    user_account_names = [account.name for account in request.user.accounts.all()]
+
     result = {}
     # TODO this should really only be one file
     # so make adjustments to find out its name and only provide one result
+
     for filename, file in request.FILES.items():
         try:
             started_at = datetime.strptime(filename, '%Y%m%d-%H%M%S.evtc')
@@ -145,19 +150,22 @@ def upload(request):
         encounter, encounter_created = Encounter.objects.get_or_create(
                 area=area, started_at=started_at, characters__name=players[0].name)
 
+        show = False
         for player in players:
+            if player.account in user_account_names:
+                show = True
             account, _ = Account.objects.get_or_create(
                     name=player.account)
             character, _ = Character.objects.get_or_create(
                     name=player.name, account=account, profession=player.prof.value)
             participation, _ = Participation.objects.get_or_create(
                     character=character, encounter=encounter)
-        result['file'] = {
-                'id': encounter.id,
-                'area': encounter.area.name,
-                'started_at': int(started_at.strftime('%s')),
-                'new': encounter_created,
-            }
+        if show:
+            result[filename] = {
+                    'id': encounter.id,
+                    'area': encounter.area.name,
+                    'started_at': int(started_at.strftime('%s')),
+                    'new': encounter_created,
+                }
 
-    print(result)
     return JsonResponse(result)
