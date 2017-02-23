@@ -42,7 +42,7 @@ class AgentType(IntEnum):
     MURSAAT_OVERSEER = 17172
 
     def is_player(self):
-        return AgentType.GUARDIAN.value <= self.value <= AgentType.REVENANT.value
+        return AgentType.GUARDIAN <= self <= AgentType.REVENANT
 
 
 class CustomSkill(IntEnum):
@@ -86,40 +86,6 @@ class Boon(IntEnum):
 class FileFormatException(BaseException):
     pass
 
-class Agent:
-    def whitelistName(self, name):
-        new_name = re.sub("[^\w \\.\\-]","?", name)
-        if new_name != name:
-            print("Unexpected name: {0}", name.__repr__())
-        return new_name
-
-    def __init__(self, data):
-        self.addr, prof, elite, self.toughness, self.healing, self.condition, name_account = struct.unpack("<Qlllll64s4x", data)
-        self.prof = AgentType(prof) if prof in map(lambda a:a.value, list(AgentType)) else AgentType.UNKNOWN
-        self.elite = elite > 0
-        self.name, self.account = name_account.decode(ENCODING).split("\0")[0:2]
-        if self.account:
-            self.account = self.whitelistName(self.account[1:])
-        self.name = self.whitelistName(self.name)
-
-        self.inst_id = None
-
-    def __str__(self):
-        return "{0} ({1}) - {2} (elite: {3}) - id {4}".format(self.name, self.account, self.prof, self.elite, self.addr)
-
-    def set_inst_id(self, id):
-        if id == 0:
-            return
-        if self.inst_id is None:
-            self.inst_id = id
-        else:
-            if self.inst_id != id:
-                raise Exception("Multiples ids for agent {0}: {1},{2}", self.name, self.inst_id, id)
-
-class Skill:
-    def __init__(self, data):
-        self.id, name = struct.unpack("<l64s", data)
-        self.name = name.decode(ENCODING).rstrip('\0')
 
 AGENT_DTYPE = np.dtype([
         ('addr', np.uint64),
@@ -171,12 +137,13 @@ EVENT_DTYPE = np.dtype([
     ], True)
 
 class Encounter:
-    def __init__(self, file):
+    def _read_header(self, file):
         evtc, version, self.area_id = struct.unpack("<4s9sHx", file.read(16))
         if evtc != b"EVTC":
             raise FileFormatException("Not an EVTC file")
         self.version = version.decode(ENCODING).rstrip('\0')
 
+    def _read_agents(self, file):
         num_agents, = struct.unpack("<i", file.read(4))
         self.agents = pd.DataFrame(np.fromfile(file, dtype=AGENT_DTYPE, count=num_agents))
         split = self.agents.name.str.split(b'\x00', expand=True)
@@ -184,23 +151,26 @@ class Encounter:
         self.agents['account'] = split[1].str.decode(ENCODING)
         self.agents['party'] = split[2].fillna(0).astype(np.uint8)
 
+    def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
         self.skills = pd.DataFrame(np.fromfile(file, dtype=SKILL_DTYPE, count=num_skills))
         self.skills['name'] = self.skills['name'].str.decode(ENCODING)
 
+    def _read_events(self, file):
         self.events = pd.DataFrame(np.fromfile(file, dtype=EVENT_DTYPE))
 
         self.started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
         self.ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
+    def _add_inst_id_to_agents(self):
         src_agent_map = self.events[['src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
         dst_agent_map = self.events[['dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
         agent_map = pd.concat([src_agent_map, dst_agent_map]).drop_duplicates().set_index('addr')
         self.agents = self.agents.set_index('addr').join(agent_map)
 
-
-def main():
-    with open('/Users/amadan/Downloads/20170222/20170222-204228.evtc', 'rb') as file:
-        return Encounter(file)
-
-main()
+    def __init__(self, file):
+        self._read_header(file)
+        self._read_agents(file)
+        self._read_skills(file)
+        self._read_events(file)
+        self._add_inst_id_to_agents()
