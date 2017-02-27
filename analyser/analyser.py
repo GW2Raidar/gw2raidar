@@ -1,6 +1,11 @@
 from enum import IntEnum
 from evtcparser import *
 import pandas as pd
+import numpy as np
+
+# DEBUG
+from sys import exit
+
 
 class BasicMetric:
     def __init__(self, data):
@@ -86,13 +91,25 @@ EVENT_TYPES = {
 class Analyser:
     def __init__(self, encounter):
         self.encounter = encounter
-        self.time = encounter.ended_at - encounter.started_at
+        #self.time = encounter.ended_at - encounter.started_at
 
-        agents = encounter.agents
+        # ultimate source (e.g. if necro minion attacks, the necro himself)
         events = encounter.events
-
         events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
-        self.players = agents[agents.party != 0]
+
+        aware_as_src = events.groupby('ult_src_instid')['time']
+        aware_as_dst = events.groupby('dst_instid')['time'] # XXX necessary to also include minions for destination awareness detection?
+        first_aware_as_src = aware_as_src.first()
+        last_aware_as_src = aware_as_src.last()
+        first_aware_as_dst = aware_as_dst.first()
+        last_aware_as_dst = aware_as_dst.last()
+        first_aware = pd.DataFrame([first_aware_as_src, first_aware_as_dst]).min().astype(np.uint64)
+        last_aware = pd.DataFrame([last_aware_as_src, last_aware_as_dst]).max().astype(np.uint64)
+        self.agents = encounter.agents.assign(first_aware=first_aware, last_aware=last_aware)
+        self.encounter_start = first_aware.min()
+        self.encounter_end = last_aware.max()
+
+        self.players = self.agents[self.agents.party != 0]
         player_events = events.join(self.players, how='right', on='ult_src_instid')
 
         grouped_events = player_events.groupby([events.buff != 0, events.state_change == parser.StateChange.NORMAL, events.buff_dmg > 0])
