@@ -37,14 +37,7 @@ def main():
     with open(sys.argv[1], mode='rb') as file:
         e = parser.Encounter(file)
         a = analyser.Analyser(e)
-        metrics = a.compute_all_metrics()
-        flattened = flatten(metrics)
-        for key in flattened:
-            print_node(key, flattened[key])
-        #for skill in e.skills:
-        #    print("Skill \"{0}\"".format(skill.name))
-        #for event in e.events:
-            #print("Skill \"{0}\"".format(event.src_agent))
+        print(a.damage)
 
 if __name__ == "__main__":
     main()

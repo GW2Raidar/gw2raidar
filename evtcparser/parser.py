@@ -146,14 +146,14 @@ class Encounter:
     def _read_agents(self, file):
         num_agents, = struct.unpack("<i", file.read(4))
         self.agents = pd.DataFrame(np.fromfile(file, dtype=AGENT_DTYPE, count=num_agents))
-        split = self.agents.name.str.split(b'\x00', expand=True)
+        split = self.agents.name.str.split(b'\x00:?', expand=True)
         self.agents['name'] = split[0].str.decode(ENCODING)
         self.agents['account'] = split[1].str.decode(ENCODING)
         self.agents['party'] = split[2].fillna(0).astype(np.uint8)
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
-        self.skills = pd.DataFrame(np.fromfile(file, dtype=SKILL_DTYPE, count=num_skills))
+        self.skills = pd.DataFrame(np.fromfile(file, dtype=SKILL_DTYPE, count=num_skills)).set_index('id')
         self.skills['name'] = self.skills['name'].str.decode(ENCODING)
 
     def _read_events(self, file):
@@ -165,8 +165,9 @@ class Encounter:
     def _add_inst_id_to_agents(self):
         src_agent_map = self.events[['src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
         dst_agent_map = self.events[['dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
-        agent_map = pd.concat([src_agent_map, dst_agent_map]).drop_duplicates().set_index('addr')
-        self.agents = self.agents.set_index('addr').join(agent_map)
+        agent_map = pd.concat([src_agent_map, dst_agent_map])
+        agent_map = agent_map[agent_map.inst_id != 0].drop_duplicates().set_index('addr')
+        self.agents = self.agents.set_index('addr').join(agent_map).set_index('inst_id').sort_index()
 
     def __init__(self, file):
         self._read_header(file)

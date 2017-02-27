@@ -1,6 +1,6 @@
-
-from enum import Enum
+from enum import IntEnum
 from evtcparser import *
+import pandas as pd
 
 class BasicMetric:
     def __init__(self, data):
@@ -65,73 +65,43 @@ class PlayerDPSMetric(StructuredMetric):
         if self._hits > 0:
             self.crit_rate = self._crits / self._hits
 
-class LogType(Enum):
+class LogType(IntEnum):
     UNKNOWN = 0
     POWER = 1
     CONDI = 2
     BUFF = 3
     HEAL = 4
 
-
-    @staticmethod
-    def of(event):
-        if event.buff:
-            if event.buff_dmg > 0:
-                return LogType.CONDI
-            else:
-                return LogType.BUFF
-        elif event.state_change == parser.StateChange.NORMAL:
-            return LogType.POWER
-
-        return LogType.UNKNOWN
-
+EVENT_TYPES = {
+        (True,  True,  True): 'condi',
+        (True,  True, False): 'buff',
+        (True,  False,  True): '?', #'weird_condi',
+        (True,  False, False): '??', #'weird_buff',
+        (False, True,  True): '???', #'normal_uncondi',
+        (False, True, False): 'skill', #'normal_unbuff',
+        (False, False,  True): 'log_start', #'weird_uncondi',
+        (False, False, False): 'state_change', #'weird_unbuff',
+    }
 
 class Analyser:
     def __init__(self, encounter):
         self.encounter = encounter
-        start_time = self.encounter.events[0].time
-        end_time = self.encounter.events[-1].time
-        self.time = (end_time - start_time)/1000
+        self.time = encounter.ended_at - encounter.started_at
 
-        self.events = dict((t,[]) for t in list(LogType))
-        self.agents = dict((agent.inst_id,agent) for agent in self.encounter.agents)
-        self.players = filter(lambda a: a.prof.is_player(), self.encounter.agents)
+        agents = encounter.agents
+        events = encounter.events
+
+        events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
+        self.players = agents[agents.party != 0]
+        player_events = events.join(self.players, how='right', on='ult_src_instid')
+
+        grouped_events = player_events.groupby([events.buff != 0, events.state_change == parser.StateChange.NORMAL, events.buff_dmg > 0])
+        condi_damage_by_player = grouped_events.get_group((True, True, True)).groupby('ult_src_instid')['buff_dmg'].sum()
+        direct_damage_by_player = grouped_events.get_group((False, True, False)).groupby('ult_src_instid')['value'].sum()
+        self.damage = self.players.assign(
+                condi = condi_damage_by_player,
+                direct = direct_damage_by_player,
+            )
+
         self.key_target_ids = {encounter.area_id}
-        self.skill_names = dict((skill.id,skill.name) for skill in self.encounter.skills)
 
-        for event in self.encounter.events:
-            self.events[LogType.of(event)].append(event)
-
-    def get_player_source(self, event):
-        agent = self.agents.get(event.src_instid)
-        if agent and agent.prof.is_player():
-            return agent
-        agent = self.agents.get(event.src_master_instid)
-        if agent and agent.prof.is_player():
-            return agent
-        return None
-
-    def compute_dps_metrics(self):
-        player_dps = dict((agent.name, PlayerDPSMetric()) for agent in self.players)
-        for event in self.events[LogType.CONDI]:
-            player_source = self.get_player_source(event)
-            if player_source != None:
-                skill_name = self.skill_names[event.skill_id]
-                player_dps[player_source.name].add_damage(
-                    skill_name, event.dst_instid, event.buff_dmg, True, False)
-
-        for event in self.events[LogType.POWER]:
-            player_source = self.get_player_source(event)
-            if player_source != None:
-                skill_name = self.skill_names[event.skill_id]
-                player_dps[player_source.name].add_damage(
-                    skill_name, event.dst_instid, event.value, False, event.result == parser.Result.CRIT)
-
-        for name in player_dps:
-            player_dps[name].end(self.time)
-
-        return TeamDPSMetric(player_dps)
-
-    def compute_all_metrics(self):
-        dps_metrics = self.compute_dps_metrics()
-        return BasicMetric({"DPS": dps_metrics})
