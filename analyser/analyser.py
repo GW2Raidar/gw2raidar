@@ -84,6 +84,12 @@ EVENT_TYPES = {
     }
 
 class Analyser:
+    def _categorise_agents(self, agents):
+        agents['archetype'] = 1 # POWER
+        agents.loc[agents.condition >= 7, 'archetype'] = 2  # CONDI
+        agents.loc[agents.toughness >= 7, 'archetype'] = 3  # TANK
+        agents.loc[agents.healing >= 7, 'archetype'] = 4    # HEAL
+
     def __init__(self, encounter):
         self.encounter = encounter
         self.time = encounter.ended_at - encounter.started_at
@@ -91,16 +97,18 @@ class Analyser:
         agents = encounter.agents
         events = encounter.events
 
+        self._categorise_agents(agents)
+
         events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
         self.players = agents[agents.party != 0]
         player_events = events.join(self.players, how='right', on='ult_src_instid')
 
         grouped_events = player_events.groupby([events.buff != 0, events.state_change == parser.StateChange.NORMAL, events.buff_dmg > 0])
-        condi_damage_by_player = grouped_events.get_group((True, True, True)).groupby('ult_src_instid')['buff_dmg'].sum()
-        direct_damage_by_player = grouped_events.get_group((False, True, False)).groupby('ult_src_instid')['value'].sum()
+        condi_damage_by_player = grouped_events.get_group((True, True, True)).groupby('ult_src_instid')
+        direct_damage_by_player = grouped_events.get_group((False, True, False)).groupby('ult_src_instid')
         self.damage = self.players.assign(
-                condi = condi_damage_by_player,
-                direct = direct_damage_by_player,
+                condi = condi_damage_by_player['buff_dmg'].sum(),
+                direct = direct_damage_by_player['value'].sum(),
             )
 
         self.key_target_ids = {encounter.area_id}
