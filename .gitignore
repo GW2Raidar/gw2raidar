@@ -1,4 +1,15 @@
+# compiled Python files
 *.pyc
+
+# dev database
 db.sqlite3
+
+# test data
 TestLogs
+
+# IntelliJ IDEA
 .idea
+
+# iPython
+.ipynb_checkpoints
+*.ipynb
