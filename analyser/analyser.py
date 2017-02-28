@@ -192,10 +192,30 @@ class Analyser:
                 in_gap = reduce(lambda x, y: x | y, [events.time.between(gap.start, gap.time) for gap in gap_events.itertuples()])
                 return events[-in_gap]
 
+        # damage sums
+        direct_damage_to_boss_events = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
+        condi_damage_to_boss_events = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
+
+        direct_damage_to_boss_events_by_player = direct_damage_to_boss_events.groupby('ult_src_instid')
+        condi_damage_to_boss_events_by_player = condi_damage_to_boss_events.groupby('ult_src_instid')
+
         condi_damage_by_player = non_gap(condi_events).groupby('ult_src_instid')['buff_dmg'].sum()
         direct_damage_by_player = non_gap(hit_events).groupby('ult_src_instid')['value'].sum()
-        condi_damage_by_player_to_boss = non_gap(condi_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner')).groupby('ult_src_instid')['buff_dmg'].sum()
-        direct_damage_by_player_to_boss = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner')).groupby('ult_src_instid')['value'].sum()
+        condi_damage_by_player_to_boss = condi_damage_to_boss_events_by_player['buff_dmg'].sum()
+        direct_damage_by_player_to_boss = direct_damage_to_boss_events_by_player['value'].sum()
+
+        # hit percentage while under special condition
+        direct_damage_to_boss_count = direct_damage_to_boss_events_by_player['value'].count()
+
+        flanking_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_flanking != 0].groupby('ult_src_instid')['value'].count()
+        flanking = flanking_hits_by_player_to_boss_count / direct_damage_to_boss_count
+
+        ninety_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_ninety != 0].groupby('ult_src_instid')['value'].count()
+        ninety = ninety_hits_by_player_to_boss_count / direct_damage_to_boss_count
+
+        moving_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_moving != 0].groupby('ult_src_instid')['value'].count()
+        moving = moving_hits_by_player_to_boss_count / direct_damage_to_boss_count
+
 
         self.players = players.assign(
                 condi = condi_damage_by_player,
@@ -206,6 +226,9 @@ class Analyser:
                 direct_boss = direct_damage_by_player_to_boss,
                 condi_boss_dps = condi_damage_by_player_to_boss / time * 1000,
                 direct_boss_dps = direct_damage_by_player_to_boss / time * 1000,
+                flanking = flanking,
+                ninety = ninety,
+                moving = moving,
             )
 
         self.total = {
