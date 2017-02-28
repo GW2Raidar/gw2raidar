@@ -37,7 +37,9 @@ def main():
     with open(sys.argv[1], mode='rb') as file:
         e = parser.Encounter(file)
         a = analyser.Analyser(e)
-        print(a.damage)
+        print(a.players)
+        print(a.total)
+        print(a.name)
 
 if __name__ == "__main__":
     main()

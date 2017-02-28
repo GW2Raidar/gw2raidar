@@ -2,6 +2,7 @@ from enum import IntEnum
 from evtcparser import *
 import pandas as pd
 import numpy as np
+from functools import reduce
 
 # DEBUG
 from sys import exit
@@ -77,6 +78,14 @@ class LogType(IntEnum):
     BUFF = 3
     HEAL = 4
 
+
+class Boss:
+    def __init__(self, name, profs, invuln=None):
+        self.name = name
+        self.profs = profs
+        self.invuln = invuln
+
+
 EVENT_TYPES = {
         (True,  True,  True): 'condi',
         (True,  True, False): 'buff',
@@ -88,20 +97,21 @@ EVENT_TYPES = {
         (False, False, False): 'state_change', #'weird_unbuff',
     }
 
-BOSS_IDS = {
-        0x3C4E: [0x3C4E],                   # Vale Guardian
-        0x3C45: [0x3C45],                   # Gorseval
-        0x3C0F: [0x3C0F],                   # Sabetha
-        0x3EFB: [0x3EFB],                   # Slothasor
-        0x3ED8: [0x3ED8, 0x3F09, 0x3EFD],   # Berg, Zane, Narella
-        0x3EF3: [0x3EF3],                   # Matthias
-        0x3F6B: [0x3F6B],                   # Keep Construct
-        0x3F76: [0x3F76, 0x3F9E],           # Xera
-        0x432A: [0x432A],                   # Cairn
-        0x4314: [0x4314],                   # Mursaat Overseer
-        0x4324: [0x4324],                   # Samarog
-        0x4302: [0x4302],                   # Deimos
-    }
+BOSS_ARRAY = [
+        Boss('Vale Guardian', [0x3C4E], invuln=20000),
+        Boss('Gorseval', [0x3C45], invuln=30000),
+        Boss('Sabetha', [0x3C0F], invuln=25000),
+        Boss('Slothasor', [0x3EFB], invuln=7000),
+        Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD]),
+        Boss('Matthias', [0x3EF3]),
+        Boss('Keep Construct', [0x3F6B]),
+        Boss('Xera', [0x3F76, 0x3F9E], invuln=60000),
+        Boss('Cairn', [0x432A]),
+        Boss('Mursaat Overseer', [0x4314]),
+        Boss('Samarog', [0x4324], invuln=20000),
+        Boss('Deimos', [0x4302]),
+    ]
+BOSSES = { boss.profs[0]: boss for boss in BOSS_ARRAY }
 
 class Analyser:
     def __init__(self, encounter):
@@ -123,9 +133,10 @@ class Analyser:
         last_aware = pd.DataFrame([last_aware_as_src, last_aware_as_dst]).max().astype(np.uint64)
         agents = agents.assign(first_aware=first_aware, last_aware=last_aware)
 
-        bosses = agents[agents.prof.isin(BOSS_IDS[encounter.area_id])]
-        encounter_start = bosses.first_aware.min()
-        encounter_end = bosses.last_aware.max()
+        boss = BOSSES[encounter.area_id]
+        boss_agents = agents[agents.prof.isin(boss.profs)]
+        encounter_start = boss_agents.first_aware.min()
+        encounter_end = boss_agents.last_aware.max()
 
         # archetypes
         agents['archetype'] = 0
@@ -136,7 +147,7 @@ class Analyser:
 
         # get player events
         players = agents[agents.party != 0]
-        player_events = events.join(players[['name', 'account']], how='right', on='ult_src_instid')
+        player_events = events.join(players[['name', 'account']], how='right', on='ult_src_instid').sort_values(by='time')
         player_events = player_events[player_events.time.between(encounter_start, encounter_end)]
 
         not_state_change_events = player_events[player_events.state_change == parser.StateChange.NORMAL]
@@ -164,10 +175,44 @@ class Analyser:
         # on buff && !cbtitem.value, cbtitem.buff_dmg will be the approximate damage done by the buff.
         condi_events = status_events[status_events.value == 0]
 
-        condi_damage_by_player = condi_events.groupby('ult_src_instid')['buff_dmg'].sum()
-        direct_damage_by_player = hit_events.groupby('ult_src_instid')['value'].sum()
+        # get only events that happened while the boss was not invulnerable
+        gap_events = None
+        time = encounter_end - encounter_start
+        if boss.invuln:
+            hit_gap_duration = hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner')['time'].diff()
+            gap_events = hit_events[['time']].assign(hit_gap_duration=hit_gap_duration)
+            gap_events = gap_events[gap_events.hit_gap_duration > boss.invuln]
+            gap_events['start'] = (gap_events.time - gap_events.hit_gap_duration).astype(np.uint64)
+            time -= gap_events['hit_gap_duration'].sum()
 
-        self.damage = players.assign(
+        def non_gap(events):
+            if gap_events is None or gap_events.empty:
+                return events
+            else:
+                in_gap = reduce(lambda x, y: x | y, [events.time.between(gap.start, gap.time) for gap in gap_events.itertuples()])
+                return events[-in_gap]
+
+        condi_damage_by_player = non_gap(condi_events).groupby('ult_src_instid')['buff_dmg'].sum()
+        direct_damage_by_player = non_gap(hit_events).groupby('ult_src_instid')['value'].sum()
+        condi_damage_by_player_to_boss = non_gap(condi_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner')).groupby('ult_src_instid')['buff_dmg'].sum()
+        direct_damage_by_player_to_boss = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner')).groupby('ult_src_instid')['value'].sum()
+
+        self.players = players.assign(
                 condi = condi_damage_by_player,
                 direct = direct_damage_by_player,
+                condi_dps = condi_damage_by_player / time * 1000,
+                direct_dps = direct_damage_by_player / time * 1000,
+                condi_boss = condi_damage_by_player_to_boss,
+                direct_boss = direct_damage_by_player_to_boss,
+                condi_boss_dps = condi_damage_by_player_to_boss / time * 1000,
+                direct_boss_dps = direct_damage_by_player_to_boss / time * 1000,
             )
+
+        self.total = {
+                'direct': direct_damage_by_player.sum(),
+                'condi': condi_damage_by_player.sum(),
+                'direct_boss': direct_damage_by_player_to_boss.sum(),
+                'condi_boss': condi_damage_by_player_to_boss.sum(),
+            }
+
+        self.name = boss.name
