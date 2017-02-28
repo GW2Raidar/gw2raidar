@@ -85,8 +85,22 @@ class Encounter(models.Model):
 
 
 class Participation(models.Model):
+    POWER = 1
+    CONDI = 2
+    TANK = 3
+    HEAL = 4
+
+    ARCHETYPE_CHOICES = (
+            (POWER, "Power"),
+            (CONDI, "Condi"),
+            (TANK, "Tank"),
+            (HEAL, "Heal"),
+        )
+
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
     character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='participations')
+    archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    party = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):
         return '%s in %s' % (self.character, self.encounter)
