@@ -258,5 +258,5 @@ class Analyser:
         self.info = {
                 'name': boss.name,
                 'start': start_timestamp,
-                'end': encounter_end,
+                'end': start_timestamp + int((encounter_end - start_time) / 1000),
             }
