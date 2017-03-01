@@ -216,6 +216,23 @@ class Analyser:
         moving_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_moving != 0].groupby('ult_src_instid')['value'].count()
         moving = moving_hits_by_player_to_boss_count / direct_damage_to_boss_count
 
+        start_event = events[events.state_change == parser.StateChange.LOG_START]
+        start_timestamp = start_event['value'][0]
+        start_time = start_event['time'][0]
+
+        # boons (status application events from players targetting players)
+        # because boons linger, we can't use non_gap(apply_events)
+        # TODO ignore gaps for totals later
+        # because this is dipping into Python, we want only the necessary data
+        boon_events = (apply_events[apply_events.dst_instid.isin(players.index)]
+                [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
+        player_or_none = list(players.index) + [0]
+        boonremove_events = (statusremove_events[statusremove_events.dst_instid.isin(player_or_none)]
+                [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
+        boon_update_events = pd.concat([boon_events, boonremove_events]).sort_values('time')
+        for event in boon_update_events.itertuples():
+            pass # TODO
+
 
         self.players = players.assign(
                 condi = condi_damage_by_player,
@@ -238,4 +255,8 @@ class Analyser:
                 'condi_boss': condi_damage_by_player_to_boss.sum(),
             }
 
-        self.name = boss.name
+        self.info = {
+                'name': boss.name,
+                'start': start_timestamp,
+                'end': encounter_end,
+            }
