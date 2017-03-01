@@ -88,7 +88,7 @@ class FileFormatException(BaseException):
 
 
 AGENT_DTYPE = np.dtype([
-        ('addr', np.uint64),
+        ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
         ('prof', np.int32),
         ('elite', np.int32),
         ('toughness', np.int32),
@@ -104,8 +104,8 @@ SKILL_DTYPE = np.dtype([
 
 EVENT_DTYPE = np.dtype([
         ('time', np.uint64),
-        ('src_agent', np.uint64),
-        ('dst_agent', np.uint64),
+        ('src_agent', np.int64),
+        ('dst_agent', np.int64),
         ('value', np.int32),
         ('buff_dmg', np.int32),
         ('overstack_value', np.uint16),
@@ -159,15 +159,16 @@ class Encounter:
     def _read_events(self, file):
         self.events = pd.DataFrame(np.fromfile(file, dtype=EVENT_DTYPE))
 
-        self.started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
-        self.ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
+        self.log_started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
+        self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
     def _add_inst_id_to_agents(self):
         src_agent_map = self.events[['src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
         dst_agent_map = self.events[['dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
         agent_map = pd.concat([src_agent_map, dst_agent_map])
         agent_map = agent_map[agent_map.inst_id != 0].drop_duplicates().set_index('addr')
-        self.agents = self.agents.set_index('addr').join(agent_map).set_index('inst_id').sort_index()
+        # deal with duplicate inst_id for different addrs
+        self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
 
     def __init__(self, file):
         self._read_header(file)
