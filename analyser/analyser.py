@@ -194,7 +194,7 @@ class Analyser:
 
         # damage sums
         direct_damage_to_boss_events = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
-        condi_damage_to_boss_events = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
+        condi_damage_to_boss_events = non_gap(condi_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
 
         direct_damage_to_boss_events_by_player = direct_damage_to_boss_events.groupby('ult_src_instid')
         condi_damage_to_boss_events_by_player = condi_damage_to_boss_events.groupby('ult_src_instid')
