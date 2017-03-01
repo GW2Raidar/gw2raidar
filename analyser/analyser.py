@@ -123,6 +123,10 @@ class Analyser:
 
         events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
 
+        # awareness is defined as interval between first skill use
+        # and last skill use, on (dst) or by (src) an agent
+        # (e.g. casting a spell on VG makes it aware;
+        # being hit by VG's teleport also makes it aware)
         aware_as_src = events.groupby('ult_src_instid')['time']
         aware_as_dst = events.groupby('dst_instid')['time'] # XXX necessary to also include minions for destination awareness detection?
         first_aware_as_src = aware_as_src.first()
@@ -133,49 +137,66 @@ class Analyser:
         last_aware = pd.DataFrame([last_aware_as_src, last_aware_as_dst]).max().astype(np.uint64)
         agents = agents.assign(first_aware=first_aware, last_aware=last_aware)
 
+        # get all the bosses; the encounter starts when any boss
+        # is first aware, and ends when the last boss awareness ends
         boss = BOSSES[encounter.area_id]
         boss_agents = agents[agents.prof.isin(boss.profs)]
         encounter_start = boss_agents.first_aware.min()
         encounter_end = boss_agents.last_aware.max()
 
-        # archetypes
+        # player archetypes
         agents['archetype'] = 0
         agents.loc[agents.party != 0, 'archetype'] = 1     # POWER
         agents.loc[agents.condition >= 7, 'archetype'] = 2  # CONDI
         agents.loc[agents.toughness >= 7, 'archetype'] = 3  # TANK
         agents.loc[agents.healing >= 7, 'archetype'] = 4    # HEAL
 
-        # get player events
+        # get player events (players are the only agents in a party)
         players = agents[agents.party != 0]
+        # TODO for speed we can convert join into restriction
+        # (join gives more context for debugging)
+        # For most of the metrics, we only care about the events
+        # originating from players, that happen during the encounter;
+        # then slice those player events based on DeltaConnected's
+        # description into different sets.
         player_events = events.join(players[['name', 'account']], how='right', on='ult_src_instid').sort_values(by='time')
         player_events = player_events[player_events.time.between(encounter_start, encounter_end)]
 
+        # most of the events below need to not be state change events, even
+        # though DeltaConnected does not mention it
         not_state_change_events = player_events[player_events.state_change == parser.StateChange.NORMAL]
 
-        # on cbtitem.is_activation == cancel_fire or cancel_cancel, value will be the ms duration of the approximate channel.
+        # DeltaConnected:
+        # > on cbtitem.is_activation == cancel_fire or cancel_cancel, value will be the ms duration of the approximate channel.
         cancel_fire_events = not_state_change_events[not_state_change_events.is_activation == parser.Activation.CANCEL_FIRE]
         cancel_cancel_events = not_state_change_events[not_state_change_events.is_activation == parser.Activation.CANCEL_CANCEL]
         not_cancel_events = not_state_change_events[not_state_change_events.is_activation < parser.Activation.CANCEL_FIRE]
 
-        # on cbtitem.is_buffremove, value will be the duration removed (negative) equal to the sum of all stacks.
+        # DeltaConnected:
+        # > on cbtitem.is_buffremove, value will be the duration removed (negative) equal to the sum of all stacks.
         statusremove_events = not_cancel_events[not_cancel_events.is_buffremove != 0]
         not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
 
-        # if they are all 0, it will be a buff application (!cbtitem.is_buffremove && cbtitem.is_buff) or physical hit (!cbtitem.is_buff).
+        # DeltaConnected:
+        # > if they are all 0, it will be a buff application (!cbtitem.is_buffremove && cbtitem.is_buff) or physical hit (!cbtitem.is_buff).
         status_events = not_statusremove_events[not_statusremove_events.buff != 0]
 
-        # on physical, cbtitem.value will be the damage done (positive).
-        # on physical, cbtitem.result will be the result of the attack.
+        # DeltaConnected:
+        # > on physical, cbtitem.value will be the damage done (positive).
+        # > on physical, cbtitem.result will be the result of the attack.
         hit_events = not_statusremove_events[not_statusremove_events.buff == 0]
 
-        # on buff && !cbtitem.buff_dmg, cbtitem.value will be the millisecond duration.
-        # on buff && !cbtitem.buff_dmg, cbtitem.overstack_value will be the current smallest stack duration in ms if over the buff's stack cap.
+        # DeltaConnected:
+        # > on buff && !cbtitem.buff_dmg, cbtitem.value will be the millisecond duration.
+        # > on buff && !cbtitem.buff_dmg, cbtitem.overstack_value will be the current smallest stack duration in ms if over the buff's stack cap.
         apply_events = status_events[status_events.value != 0]
 
-        # on buff && !cbtitem.value, cbtitem.buff_dmg will be the approximate damage done by the buff.
+        # DeltaConnected:
+        # > on buff && !cbtitem.value, cbtitem.buff_dmg will be the approximate damage done by the buff.
         condi_events = status_events[status_events.value == 0]
 
-        # get only events that happened while the boss was not invulnerable
+        # find out large periods when no boss is being hit by players' skills
+        # (phase times)
         gap_events = None
         time = encounter_end - encounter_start
         if boss.invuln:
@@ -185,6 +206,7 @@ class Analyser:
             gap_events['start'] = (gap_events.time - gap_events.hit_gap_duration).astype(np.uint64)
             time -= gap_events['hit_gap_duration'].sum()
 
+        # get only events that happened while the boss was not invulnerable
         def non_gap(events):
             if gap_events is None or gap_events.empty:
                 return events
@@ -216,6 +238,8 @@ class Analyser:
         moving_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_moving != 0].groupby('ult_src_instid')['value'].count()
         moving = moving_hits_by_player_to_boss_count / direct_damage_to_boss_count
 
+        # identify the timestamp that represents the start of the log, and the
+        # tick ('time') that is equivalent to it
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
@@ -234,6 +258,9 @@ class Analyser:
             pass # TODO
 
 
+        # export analysis results
+        
+        # per player
         self.players = players.assign(
                 condi = condi_damage_by_player,
                 direct = direct_damage_by_player,
@@ -248,6 +275,7 @@ class Analyser:
                 moving = moving,
             )
 
+        # per party
         self.total = {
                 'direct': direct_damage_by_player.sum(),
                 'condi': condi_damage_by_player.sum(),
@@ -255,6 +283,7 @@ class Analyser:
                 'condi_boss': condi_damage_by_player_to_boss.sum(),
             }
 
+        # not player-related
         self.info = {
                 'name': boss.name,
                 'start': start_timestamp,
