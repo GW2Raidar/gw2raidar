@@ -1,8 +1,12 @@
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from hashlib import md5
 import re
 
+
+# unique to 30-60s precision
+START_RESOLUTION = 60
 
 
 
@@ -71,17 +75,44 @@ class Character(models.Model):
         ordering = ('name',)
 
 
+class EncounterManager(models.Manager):
+    # hash account names at construction
+    # (do they need to ever be updated? I don't think so)
+    def get_or_create(self, *args, **kwargs):
+        account_names = kwargs.pop('account_names', False)
+        if account_names:
+            kwargs['account_hash'] = Encounter.calculate_account_hash(account_names)
+        return super(EncounterManager, self).get_or_create(*args, **kwargs)
+
 class Encounter(models.Model):
-    started_at = models.DateTimeField(db_index=True)
+    started_at = models.IntegerField(db_index=True)
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
+    # hack to try to ensure uniqueness
+    account_hash = models.CharField(max_length=16, editable=False)
+    started_at_full = models.IntegerField(editable=False)
+    started_at_half = models.IntegerField(editable=False)
+    objects = EncounterManager()
 
     def __str__(self):
         return '%s (%s)' % (self.area.name, self.started_at)
 
+    def save(self, *args, **kwargs):
+        self.started_at_full = round(self.started_at / START_RESOLUTION) * START_RESOLUTION
+        self.started_at_half = round((self.started_at + START_RESOLUTION / 2) / START_RESOLUTION) * START_RESOLUTION
+        super(Encounter, self).save(*args, **kwargs)
+
+    @staticmethod
+    def calculate_account_hash(account_names):
+        conc = ':'.join(sorted(account_names))
+        hash_object = md5(conc.encode())
+        return hash_object.hexdigest()
+
     class Meta:
         index_together = ('area', 'started_at')
         ordering = ('started_at',)
+        unique_together = ('area', 'account_hash', 'started_at_full')
+        unique_together = ('area', 'account_hash', 'started_at_half')
 
 
 class Participation(models.Model):
