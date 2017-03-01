@@ -9,7 +9,6 @@ from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 from evtcparser.parser import Encounter as EvtcEncounter
 from analyser.analyser import Analyser
-from datetime import datetime
 from django.utils import timezone
 from django.core import serializers
 from re import match
@@ -117,54 +116,44 @@ def upload(request):
     # so make adjustments to find out its name and only provide one result
 
     for filename, file in request.FILES.items():
-        try:
-            started_at = datetime.strptime(filename, '%Y%m%d-%H%M%S.evtc')
-        except:
-            return _error('Filename not valid')
-        started_at = timezone.make_aware(started_at, timezone.utc)
-
-        # metrics is a tree with 2 types of nodes:
-        # iterables containing key/value tuples
-        # or basic values
-        # should be easy to convert to json
         evtc_encounter = EvtcEncounter(file)
-
-        players = [agent for agent in evtc_encounter.agents if agent.account]
-        if not players:
-            return _error('No players in encounter')
-
-        analyser = Analyser(evtc_encounter)
-        metrics = analyser.compute_all_metrics()
-        # TODO metrics
-
-
         area = Area.objects.get(id=evtc_encounter.area_id)
         if not area:
             return _error('Unknown area')
 
+        analyser = Analyser(evtc_encounter)
+        players = analyser.players
+        if players.empty:
+            return _error('No players in encounter')
+
+        started_at = analyser.info['start']
+
         # heuristics to see if the encounter is a re-upload:
         # a character can only be in one raid at a time
-        # XXX: it is *theoretically* possible for this to be in a race
-        # condition, so that the encounter is duplicated and later raises an
-        # error. try/catch, if returns multiple then delete all but one?
+        # account_names are being hashed, and the triplet
+        # (area, account_hash, started_at) is being checked for
+        # uniqueness (along with some fuzzing to started_at)
+        account_names = list(players['account'])
         encounter, encounter_created = Encounter.objects.get_or_create(
-                area=area, started_at=started_at, characters__name=players[0].name)
+                area=area, started_at=started_at,
+                account_names=account_names)
 
         show = False
-        for player in players:
+        for player in players.itertuples():
             if player.account in user_account_names:
                 show = True
             account, _ = Account.objects.get_or_create(
                     name=player.account)
             character, _ = Character.objects.get_or_create(
-                    name=player.name, account=account, profession=player.prof.value)
+                    name=player.name, account=account, profession=player.prof)
             participation, _ = Participation.objects.get_or_create(
-                    character=character, encounter=encounter)
+                    character=character, encounter=encounter,
+                    archetype=player.archetype, party=player.party)
         if show:
             result[filename] = {
                     'id': encounter.id,
                     'area': encounter.area.name,
-                    'started_at': int(started_at.strftime('%s')),
+                    'started_at': started_at,
                     'new': encounter_created,
                 }
 

@@ -39,7 +39,7 @@ def main():
         a = analyser.Analyser(e)
         print(a.players)
         print(a.total)
-        print(a.name)
+        print(a.info)
 
 if __name__ == "__main__":
     main()
