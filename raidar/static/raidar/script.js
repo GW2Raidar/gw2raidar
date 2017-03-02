@@ -123,6 +123,7 @@
         'auth.input.username': '',
         'auth.input.password': '',
         'auth.input.password2': '',
+        'auth.input.api_key': '',
         'page.name': 'encounters'
       });
       csrftoken = response.csrftoken;
@@ -149,6 +150,7 @@
     auth_register: function register() {
       let username = this.get('auth.input.username'),
           password = this.get('auth.input.password'),
+          apiKey = this.get('auth.input.api_key'),
           email = this.get('auth.input.email');
 
       $.post({
@@ -156,6 +158,7 @@
         data: {
           username: username,
           password: password,
+          api_key: apiKey,
           email: email,
         },
       }).done(didLogin);

@@ -10,9 +10,13 @@ from django.contrib.auth.decorators import login_required
 from evtcparser.parser import Encounter as EvtcEncounter
 from analyser.analyser import Analyser
 from django.utils import timezone
+from django.db import transaction
 from django.core import serializers
 from re import match
 from .models import *
+from gw2api.gw2api import GW2API, GW2APIException
+
+
 
 
 
@@ -57,6 +61,8 @@ def _login_successful(request, user):
 
 
 
+
+
 @require_GET
 def index(request):
     response = _userprops(request)
@@ -97,16 +103,32 @@ def register(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     email = request.POST.get('email')
+    api_key = request.POST.get('api_key')
+    gw2api = GW2API(api_key)
 
     try:
-        user = User.objects.create_user(username, email, password)
-    except IntegrityError:
-        return _error('Such a user already exists')
+        gw2_account = gw2api.query("/account")
+    except GW2APIException as e:
+        # TODO handle message
+        return _error(e)
 
-    if user:
-        return _login_successful(request, user)
-    else:
-        return _error('Could not register user')
+    try:
+        with transaction.atomic():
+            try:
+                user = User.objects.create_user(username, email, password)
+            except IntegrityError:
+                return _error('Such a user already exists')
+
+            if not user:
+                return _error('Could not register user')
+
+            account_name = gw2_account['name']
+            account = Account.objects.get_or_create(user=user, api_key=api_key, name=account_name)
+
+            return _login_successful(request, user)
+
+    except IntegrityError:
+        return _error('The user with that GW2 account is already registered')
 
 
 @login_required
