@@ -95,23 +95,10 @@
   window.r = r; // XXX DEBUG
 
 
-  let errorAnimation;
   function error(str) {
-    if (errorAnimation) errorAnimation.stop();
-
-    r.set('error', {
-      message: str,
-      opacity: 1,
+    UIkit.notification(str, {
+      status: 'danger',
     });
-
-    errorAnimation = r.animate('error.opacity', 0, {
-      duration: 5000,
-      easing: 'easeIn',
-    })
-    errorAnimation.then(() => {
-      errorAnimation = null;
-      r.set('error', {})
-    })
   }
 
   function updateRactiveFromResponse(response) {
