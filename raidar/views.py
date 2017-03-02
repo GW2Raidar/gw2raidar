@@ -31,13 +31,21 @@ def _userprops(request):
     else:
         return {}
 
+def _participation_data(participation):
+    return {
+            'id': participation.encounter.id,
+            'area': participation.encounter.area.name,
+            'started_at': participation.encounter.started_at,
+            'character': participation.character.name,
+            'account': participation.character.account.name,
+            'profession': participation.character.profession,
+            'archetype': participation.archetype,
+        }
+
+
 def _encounter_data(request):
-    encounters = Encounter.objects.filter(characters__account__user=request.user)
-    return [{
-            'id': encounter.id,
-            'area': encounter.area.name,
-            'started_at': int(encounter.started_at.strftime('%s')),
-        } for encounter in encounters]
+    participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
+    return [_participation_data(participation) for participation in participations]
 
 def _login_successful(request, user):
     auth_login(request, user)
@@ -51,8 +59,11 @@ def _login_successful(request, user):
 
 @require_GET
 def index(request):
+    response = _userprops(request)
+    response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
+    response['professions'] = {k: v for k, v in Character.PROFESSION_CHOICES}
     return render(request, template_name='raidar/index.html', context={
-            'userprops': json_dumps(_userprops(request))
+            'userprops': json_dumps(response),
         })
 
 
@@ -109,8 +120,6 @@ def logout(request):
 @login_required
 @require_POST
 def upload(request):
-    user_account_names = [account.name for account in request.user.accounts.all()]
-
     result = {}
     # TODO this should really only be one file
     # so make adjustments to find out its name and only provide one result
@@ -138,10 +147,7 @@ def upload(request):
                 area=area, started_at=started_at,
                 account_names=account_names)
 
-        show = False
         for player in players.itertuples():
-            if player.account in user_account_names:
-                show = True
             account, _ = Account.objects.get_or_create(
                     name=player.account)
             character, _ = Character.objects.get_or_create(
@@ -149,12 +155,10 @@ def upload(request):
             participation, _ = Participation.objects.get_or_create(
                     character=character, encounter=encounter,
                     archetype=player.archetype, party=player.party)
-        if show:
-            result[filename] = {
-                    'id': encounter.id,
-                    'area': encounter.area.name,
-                    'started_at': started_at,
-                    'new': encounter_created,
-                }
+
+        own_participation = encounter.participations.filter(character__account__user=request.user).first()
+        if own_participation:
+            result[filename] = _participation_data(own_participation)
+            result[filename]['new'] = encounter_created
 
     return JsonResponse(result)
