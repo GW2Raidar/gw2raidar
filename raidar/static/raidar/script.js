@@ -199,9 +199,10 @@
   }
   let uploadProgressDone = (file, data) => {
     let encounters = r.get('encounters');
-    let newKeys = Object.keys(data);
+    let fileNames = Object.keys(data);
+    let newKeys = fileNames.map(file => data[file].id)
     encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
-    newKeys.forEach(file => encounters.push(data[file]));
+    fileNames.forEach(file => encounters.push(data[file]));
     updateRactiveFromResponse({ encounters: encounters });
   }
 

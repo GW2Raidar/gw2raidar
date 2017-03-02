@@ -159,6 +159,5 @@ def upload(request):
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:
             result[filename] = _participation_data(own_participation)
-            result[filename]['new'] = encounter_created
 
     return JsonResponse(result)
