@@ -188,12 +188,16 @@
     // TODO single upload progress
   }
   let uploadProgressDone = (file, data) => {
-    let encounters = r.get('encounters');
-    let fileNames = Object.keys(data);
-    let newKeys = fileNames.map(file => data[file].id)
-    encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
-    fileNames.forEach(file => encounters.push(data[file]));
-    updateRactiveFromResponse({ encounters: encounters });
+    if (data.error) {
+      error(file.name + ': ' + data.error);
+    } else {
+      let encounters = r.get('encounters');
+      let fileNames = Object.keys(data);
+      let newKeys = fileNames.map(file => data[file].id)
+      encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
+      fileNames.forEach(file => encounters.push(data[file]));
+      updateRactiveFromResponse({ encounters: encounters });
+    }
   }
 
   let makeXHR = file => {
@@ -220,6 +224,7 @@
       let files = evt.originalEvent.dataTransfer.files;
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       let promises = Array.from(files).map(file => {
+        if (!file.name.endsWith('.evtc')) return;
         let form = new FormData();
         form.append(file.name, file);
         return $.ajax({

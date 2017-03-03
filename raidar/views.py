@@ -7,7 +7,7 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
-from evtcparser.parser import Encounter as EvtcEncounter
+from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from analyser.analyser import Analyser
 from django.utils import timezone
 from django.db import transaction
@@ -22,7 +22,7 @@ from gw2api.gw2api import GW2API, GW2APIException
 
 
 def _error(msg, **kwargs):
-    kwargs['error'] = msg
+    kwargs['error'] = str(msg)
     return JsonResponse(kwargs)
 
 
@@ -109,7 +109,6 @@ def register(request):
     try:
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
-        # TODO handle message
         return _error(e)
 
     try:
@@ -147,7 +146,11 @@ def upload(request):
     # so make adjustments to find out its name and only provide one result
 
     for filename, file in request.FILES.items():
-        evtc_encounter = EvtcEncounter(file)
+        try:
+            evtc_encounter = EvtcEncounter(file)
+        except EvtcParseException as e:
+            return _error(e)
+
         area = Area.objects.get(id=evtc_encounter.area_id)
         if not area:
             return _error('Unknown area')
@@ -156,6 +159,9 @@ def upload(request):
         players = analyser.players
         if players.empty:
             return _error('No players in encounter')
+
+        if analyser.info['end'] - analyser.info['start'] < 60:
+            return _error('Encounter shorter than 60s')
 
         started_at = analyser.info['start']
 

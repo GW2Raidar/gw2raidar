@@ -83,7 +83,7 @@ class Boon(IntEnum):
     SOOTHING_MIST = 14
 
 
-class FileFormatException(BaseException):
+class EvtcParseException(BaseException):
     pass
 
 
@@ -140,7 +140,7 @@ class Encounter:
     def _read_header(self, file):
         evtc, version, self.area_id = struct.unpack("<4s9sHx", file.read(16))
         if evtc != b"EVTC":
-            raise FileFormatException("Not an EVTC file")
+            raise EvtcParseException("Not an EVTC file")
         self.version = version.decode(ENCODING).rstrip('\0')
 
     def _read_agents(self, file):
@@ -172,6 +172,8 @@ class Encounter:
 
     def __init__(self, file):
         self._read_header(file)
+        if self.version <= "20170214":
+            raise EvtcParseException('Unsupported EVTC version')
         self._read_agents(file)
         self._read_skills(file)
         self._read_events(file)

@@ -276,7 +276,7 @@ class Analyser:
             )
 
         # per party
-        self.total = {
+        self.party = {
                 'direct': direct_damage_by_player.sum(),
                 'condi': condi_damage_by_player.sum(),
                 'direct_boss': direct_damage_by_player_to_boss.sum(),
