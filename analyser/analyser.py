@@ -289,3 +289,8 @@ class Analyser:
                 'start': int(start_timestamp),
                 'end': int(start_timestamp + int((encounter_end - start_time) / 1000)),
             }
+
+        # saved as a JSON dump
+        self.data = {
+                # TODO
+            }

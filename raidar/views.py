@@ -173,7 +173,8 @@ def upload(request):
         account_names = list(players['account'])
         encounter, encounter_created = Encounter.objects.get_or_create(
                 area=area, started_at=started_at,
-                account_names=account_names)
+                account_names=account_names,
+                dump=json_dumps(analyser.data))
 
         for player in players.itertuples():
             account, _ = Account.objects.get_or_create(
