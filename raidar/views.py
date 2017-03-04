@@ -7,18 +7,22 @@ from django.contrib.auth.models import User
 from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
-from evtcparser.parser import Encounter as EvtcEncounter
+from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from analyser.analyser import Analyser
 from django.utils import timezone
+from django.db import transaction
 from django.core import serializers
 from re import match
 from .models import *
+from gw2api.gw2api import GW2API, GW2APIException
+
+
 
 
 
 
 def _error(msg, **kwargs):
-    kwargs['error'] = msg
+    kwargs['error'] = str(msg)
     return JsonResponse(kwargs)
 
 
@@ -31,13 +35,21 @@ def _userprops(request):
     else:
         return {}
 
+def _participation_data(participation):
+    return {
+            'id': participation.encounter.id,
+            'area': participation.encounter.area.name,
+            'started_at': participation.encounter.started_at,
+            'character': participation.character.name,
+            'account': participation.character.account.name,
+            'profession': participation.character.profession,
+            'archetype': participation.archetype,
+        }
+
+
 def _encounter_data(request):
-    encounters = Encounter.objects.filter(characters__account__user=request.user)
-    return [{
-            'id': encounter.id,
-            'area': encounter.area.name,
-            'started_at': int(encounter.started_at.strftime('%s')),
-        } for encounter in encounters]
+    participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
+    return [_participation_data(participation) for participation in participations]
 
 def _login_successful(request, user):
     auth_login(request, user)
@@ -49,10 +61,15 @@ def _login_successful(request, user):
 
 
 
+
+
 @require_GET
 def index(request):
+    response = _userprops(request)
+    response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
+    response['professions'] = {k: v for k, v in Character.PROFESSION_CHOICES}
     return render(request, template_name='raidar/index.html', context={
-            'userprops': json_dumps(_userprops(request))
+            'userprops': json_dumps(response),
         })
 
 
@@ -86,16 +103,31 @@ def register(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     email = request.POST.get('email')
+    api_key = request.POST.get('api_key')
+    gw2api = GW2API(api_key)
 
     try:
-        user = User.objects.create_user(username, email, password)
-    except IntegrityError:
-        return _error('Such a user already exists')
+        gw2_account = gw2api.query("/account")
+    except GW2APIException as e:
+        return _error(e)
 
-    if user:
-        return _login_successful(request, user)
-    else:
-        return _error('Could not register user')
+    try:
+        with transaction.atomic():
+            try:
+                user = User.objects.create_user(username, email, password)
+            except IntegrityError:
+                return _error('Such a user already exists')
+
+            if not user:
+                return _error('Could not register user')
+
+            account_name = gw2_account['name']
+            account = Account.objects.get_or_create(user=user, api_key=api_key, name=account_name)
+
+            return _login_successful(request, user)
+
+    except IntegrityError:
+        return _error('The user with that GW2 account is already registered')
 
 
 @login_required
@@ -109,14 +141,16 @@ def logout(request):
 @login_required
 @require_POST
 def upload(request):
-    user_account_names = [account.name for account in request.user.accounts.all()]
-
     result = {}
     # TODO this should really only be one file
     # so make adjustments to find out its name and only provide one result
 
     for filename, file in request.FILES.items():
-        evtc_encounter = EvtcEncounter(file)
+        try:
+            evtc_encounter = EvtcEncounter(file)
+        except EvtcParseException as e:
+            return _error(e)
+
         area = Area.objects.get(id=evtc_encounter.area_id)
         if not area:
             return _error('Unknown area')
@@ -125,6 +159,9 @@ def upload(request):
         players = analyser.players
         if players.empty:
             return _error('No players in encounter')
+
+        if analyser.info['end'] - analyser.info['start'] < 60:
+            return _error('Encounter shorter than 60s')
 
         started_at = analyser.info['start']
 
@@ -138,10 +175,7 @@ def upload(request):
                 area=area, started_at=started_at,
                 account_names=account_names)
 
-        show = False
         for player in players.itertuples():
-            if player.account in user_account_names:
-                show = True
             account, _ = Account.objects.get_or_create(
                     name=player.account)
             character, _ = Character.objects.get_or_create(
@@ -149,12 +183,9 @@ def upload(request):
             participation, _ = Participation.objects.get_or_create(
                     character=character, encounter=encounter,
                     archetype=player.archetype, party=player.party)
-        if show:
-            result[filename] = {
-                    'id': encounter.id,
-                    'area': encounter.area.name,
-                    'started_at': started_at,
-                    'new': encounter_created,
-                }
+
+        own_participation = encounter.participations.filter(character__account__user=request.user).first()
+        if own_participation:
+            result[filename] = _participation_data(own_participation)
 
     return JsonResponse(result)

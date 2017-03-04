@@ -1,7 +1,10 @@
 {% load staticfiles %}
-<html>
+<!DOCTYPE html>
+<html lang="en">
   <head>
     <title>GW2 Raidar</title>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -10,93 +13,202 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/ractive/0.9.0-build-91/ractive.min.js"
       integrity="sha256-O4lYBK7KHXxgNrZrOj5o4kcDy097G4r/1tC78bUjWLs="
       crossorigin="anonymous"></script>
-    <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/css/uikit.min.css"
+      integrity="sha256-Y26f+YUup4fXzkyNHh6TYAc5jwy5abdgKSx3NBNE0AQ="
+      crossorigin="anonymous" />
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit.min.js"
+      integrity="sha256-HM5Ln23ZwUKUp2XJmTYmSVWc7Ymwdbt8YyQX/k3fsY4="
+      crossorigin="anonymous"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
+      integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
+      crossorigin="anonymous"></script>
+    <!-- <link href="{% static 'raidar/style.css' %}" rel="stylesheet"> -->
     <script>
       window.baseURL = "{% url 'index' %}";
-      window.userprops = {{ userprops|safe }};
+      window.raidar_data = {{ userprops|safe }};
     </script>
 
     <script id="template" type="text/ractive">
-      <header>
-        <div class="auth">
-          <div class="[[error.message && 'error']]" style="opacity: [[error.opacity]];">[[error.message]]</div>
+      <div class="uk-container uk-height-viewport uk-flex uk-flex-column">
+        {# Logo #}
+        <header class="uk-grid">
+          <div class="uk-width-1-1">
+            <h1 class="uk-heading-large uk-padding-small uk-light uk-background-primary">GW2 Raidar</h1>
+          </div>
+        </header>
+
+        {# Navbar #}
+        <nav class="uk-navbar uk-navbar-container">
+          <div class="uk-navbar-left">
+            <ul class="uk-navbar-nav">
+              [[#if username]]
+                <li class="[[page.name=='encounters' && 'uk-active']]"><a href="#" on-click="@this.page('encounters')">Encounters</a></li>
+                <li class="[[page.name=='profile' && 'uk-active']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
+              [[/if]]
+            </ul>
+          </div>
+          <div class="uk-navbar-right">
+            <ul class="uk-navbar-nav">
+              [[#if username]]
+                [[#if is_staff]]
+                  <li><a href="{% url 'admin:index' %}">Admin</a>
+                [[/if]]
+                <li class="[[page.name=='account' && 'uk-active']]"><a href="#">Account</a></li>
+                <li><a href="#" on-click="auth_logout">Logout</a></li>
+              [[else]]
+                <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login', 'login_username')">Login</a></li>
+                <li class="[[page.name=='register' && 'uk-active']]"><a href="#" on-click="@this.page('register', 'register_username')">Register</a></li>
+                <li class="[[page.name=='reset_pw' && 'uk-active']]"><a href="#" on-click="@this.page('reset_pw', 'reset_pw_email')">Reset Password</a></li>
+              [[/if]]
+            </ul>
+          </div>
+        </nav>
+
+        {# content #}
+        <div class="uk-flex-1">
           [[#if username]]
-            [[#if is_staff]]
-              <a href="{% url 'admin:index' %}">Admin</a>
+
+            [[#if page.name == "encounters"]]
+
+              [[#if encounters.length]]
+
+                <table class="uk-table uk-table-striped">
+                  <thead>
+                    <tr>
+                      <th class="uk-width-1-5">Area</th>
+                      <th class="uk-width-1-5">Started at</th>
+                      <th class="uk-width-1-5">Character</th>
+                      <th class="uk-width-1-5">Account</th>
+                      <th class="uk-width-1-5">Archetype</th>
+                    </tr>
+                  </thead>
+                  [[#each encounterSlice]]
+                    <tr>
+                      <td>
+                        [[area]]
+                      </td>
+                      <td>
+                        [[formatDate(started_at)]]
+                      </td>
+                      <td>
+                        [[character]]
+                      </td>
+                      <td>
+                        [[account]]
+                      </td>
+                      <td>
+                        [[data.archetypes[archetype]]]
+                        [[data.professions[profession]]]
+                      </td>
+                    </tr>
+                  [[/each]]
+                </table>
+
+                <hr class="uk-divider-icon">
+                <ul class="uk-pagination uk-flex-center">
+                  [[#each encounterPages]]
+                    [[#if a || d]]
+                      <li class="[[a ? 'uk-active' : 'uk-disabled']]"><span class="[[c]]">[[t]]</span></li>
+                    [[else]]
+                      <li><a href="#" class="[[c]]" data-page="[[n || t]]" on-click="page_no">[[t]]</a></li>
+                    [[/if]]
+                  [[/each]]
+                </ul>
+
+              [[else]]
+                <p>
+                  Drag and drop evtc files to this window to upload.
+                </p>
+              [[/if]]
+
+            [[elseif page.name == "profile"]]
+
+              TODO profile - all GW2 accounts, characters with stats
+
+            [[elseif page.name == "account"]]
+
+              TODO account settings (set own API keys etc)
+
+            [[elseif page.name == "encounter"]]
+
+              TODO encounter details
+
             [[/if]]
-            <a href="#" on-click="to_profile">[[username]]</a>
-            <button id="logout_submit" on-click="auth_logout">Logout</button>
-          [[elseif auth.login]]
-            <input id="login_username" value="[[auth.input.username]]" placeholder="Username">
-            <input id="login_password" value="[[auth.input.password]]" placeholder="Password" type="password">
-            <button id="login_submit" on-click="auth_login" disabled="[[authBad]]">Login</button><br>
-            Not registered? <button id="login_register" on-click="auth_swap">Register here</button>
-          [[else]]
-            <input id="register_username" value="[[auth.input.username]]" placeholder="Username">
-            <input id="register_email" value="[[auth.input.email]]" placeholder="Email">
-            <input id="register_password" value="[[auth.input.password]]" placeholder="Password" type="password">
-            <input id="register_password2" value="[[auth.input.password2]]" placeholder="Again" type="password">
-            <button id="register_submit" on-click="auth_register" disabled="[[authBad]]">Register</button><br>
-            Already registered? <button id="register_login" on-click="auth_swap">Login here</button>
-          [[/if]]
+
+          [[else]]{# username #}
+
+            [[#if page.name == "login"]]
+
+              <form class="uk-form-stacked uk-padding-large uk-text-center">
+                <div class="uk-margin">
+                  <input id="login_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username">
+                </div>
+                <div class="uk-margin">
+                  <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password">
+                </div>
+                <div class="uk-margin">
+                  <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login" disabled="[[authBad]]">Login</button><br>
+                </div>
+              </form>
+
+            [[elseif page.name == "register"]]
+
+              <form class="uk-form-stacked uk-padding-large uk-text-center">
+                <div class="uk-margin">
+                  <input id="register_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username">
+                </div>
+                <div class="uk-margin">
+                  <input id="register_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email">
+                </div>
+                <div class="uk-margin">
+                  <input id="register_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password">
+                </div>
+                <div class="uk-margin">
+                  <input id="register_password2" class="uk-input uk-form-width-medium" value="[[auth.input.password2]]" placeholder="Again" type="password">
+                </div>
+                <div class="uk-margin">
+                  <div class="uk-inline">
+                    <a class="uk-form-icon uk-form-icon-flip" href="https://account.arena.net/applications" uk-icon="icon: link" target="gw2apps"></a>
+                    <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="GW2 API key" autocomplete="off">
+                  </div>
+                </div>
+                <div class="uk-margin">
+                  <button id="register_submit" class="uk-button uk-button-default" on-click="auth_register" disabled="[[authBad]]">Register</button><br>
+                </div>
+              </form>
+
+            [[elseif page.name == "reset_pw"]]
+
+              TODO
+
+            [[else]]
+
+              <p>
+                Please log in to start using GW2 Raidar.
+              </p>
+              <h2>
+                About GW2 Raidar
+              </h2>
+              {% lorem 3 p %}
+
+            [[/if]]
+
+          [[/if]]{# username #}
         </div>
 
-        <div class="logo">
-          GW2 Raidar
-        </div>
-      </header>
-
-      [[#if username]]
-
-        [[#if page.name == "index"]]
-
-          [[#if encounters.length]]
-
-            <table>
-              [[#each encounters]]
-                <tr>
-                  <td>
-                    [[area]]
-                  </td>
-                  <td>
-                    [[formatDate(started_at)]]
-                  </td>
-                </tr>
-              [[/each]]
-            </table>
-
-          [[else]]
-            <p>
-              Drag and drop evtc files to this window to upload.
-            </p>
-          [[/if]]
-
-        [[elseif page.name == "profile"]]
-
-          TODO profile (set own API key etc), button to get back to index
-
-        [[elseif page.name == "encounter"]]
-
-          TODO encounter details
-
-        [[/if]]
-
-      [[else]]
-
-        <p>
-          Please log in to start using GW2 Raidar.
-        </p>
-        <h1>
-          About GW2 Raidar
-        </h1>
-        {% lorem 3 p %}
-
-      [[/if]]
+        <footer class="uk-heading uk-padding-small uk-light uk-background-secondary">
+          Footer
+        </footer>
+      </div>
     </script>
   </head>
-  <body>
+  <body class="uk-height-viewport">
     {% csrf_token %}
-    <div id="container">
+    <div id="container" class="uk-container uk-height-viewport">
     </div>
     <script src="{% static 'raidar/script.js' %}"></script>
   </body>

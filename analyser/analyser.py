@@ -259,7 +259,7 @@ class Analyser:
 
 
         # export analysis results
-        
+
         # per player
         self.players = players.assign(
                 condi = condi_damage_by_player,
@@ -276,7 +276,7 @@ class Analyser:
             )
 
         # per party
-        self.total = {
+        self.party = {
                 'direct': direct_damage_by_player.sum(),
                 'condi': condi_damage_by_player.sum(),
                 'direct_boss': direct_damage_by_player_to_boss.sum(),
@@ -286,6 +286,6 @@ class Analyser:
         # not player-related
         self.info = {
                 'name': boss.name,
-                'start': start_timestamp,
-                'end': start_timestamp + int((encounter_end - start_time) / 1000),
+                'start': int(start_timestamp),
+                'end': int(start_timestamp + int((encounter_end - start_time) / 1000)),
             }

@@ -2,6 +2,10 @@
 
 // XAcquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
+
+  const PAGE_SIZE = 10;
+  const PAGINATION_WINDOW = 5;
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -26,14 +30,13 @@
   }
 
   let initData = {
-    username: window.userprops.username,
-    is_staff: window.userprops.is_staff,
-    auth: {
-      login: true,
-    },
-    page: { name: 'index' },
+    data: window.raidar_data,
+    username: window.raidar_data.username,
+    is_staff: window.raidar_data.is_staff,
+    page: { name: window.raidar_data.username ? 'encounters' : 'index' },
     encounters: [],
   };
+  delete window.raidar_data;
 
 
   // Ractive
@@ -42,53 +45,73 @@
     template: '#template',
     data: initData,
     computed: {
-      'authBad': function authBad() {
+      authBad: function authBad() {
         let username = this.get('auth.input.username'),
             password = this.get('auth.input.password'),
             email = this.get('auth.input.email');
 
         let authOK = username != '' && password != '';
-        if (!this.get('auth.login')) {
+        if (this.get('page.name') == 'register') {
           let password2 = this.get('auth.input.password2');
           let emailOK = email != ''; // TODO maybe basic pattern check
           authOK = authOK && password == password2 && emailOK;
         }
         return !authOK;
       },
+      encounterSlice: function encounterSlice() {
+        let page = this.get('page.no') || 1;
+        let encounters = this.get('encounters') || [];
+        return encounters.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+      },
+      encounterPages: function encounterPages() {
+        let page = this.get('page.no') || 1;
+        let encounters = this.get('encounters') || [];
+        let totalPages = Math.ceil(encounters.length / PAGE_SIZE);
+        let minPage = Math.max(2, page - PAGINATION_WINDOW);
+        let maxPage = Math.min(totalPages - 1, page + PAGINATION_WINDOW);
+        let pages = []
+
+        pages.push({t: "<", c: 'uk-pagination-previous', d: 1 == page, n: page - 1})
+        pages.push({t: 1, a: 1 == page});
+        if (minPage > 2) pages.push({t: '...', d: true});
+        let i;
+        for (i = minPage; i <= maxPage; i++) pages.push({t: i, a: i == page});
+        if (maxPage < totalPages - 1) pages.push({t: '...', d: true});
+        if (maxPage < totalPages && totalPages != 1) pages.push({t: totalPages, a: totalPages == page});
+        pages.push({t: ">", c: 'uk-pagination-next', d: totalPages == page, n: page + 1});
+        return pages;
+      }
     },
     delimiters: ['[[', ']]'],
-    tripleDelimiters: ['[[[', ']]]']
+    tripleDelimiters: ['[[[', ']]]'],
+
+    page: function(page, field) {
+      this.set('page', { name: page });
+      if (field) {
+        $('#' + field).select().focus();
+      }
+    },
   });
   window.r = r; // XXX DEBUG
 
 
-  let errorAnimation;
   function error(str) {
-    if (errorAnimation) errorAnimation.stop();
-
-    r.set('error', {
-      message: str,
-      opacity: 1,
+    UIkit.notification(str, {
+      status: 'danger',
     });
-
-    errorAnimation = r.animate('error.opacity', 0, {
-      duration: 5000,
-      easing: 'easeIn',
-    })
-    errorAnimation.then(() => {
-      errorAnimation = null;
-      r.set('error', {})
-    })
   }
 
+  function updateRactiveFromResponse(response) {
+    if (response.encounters) {
+      response.encounters.sort((a, b) => b.started_at - a.started_at);
+    }
+    r.set(response);
+  }
 
   // test for shenanigans
   $.ajax({
     url: 'initial',
-  }).done(response => {
-    response.encounters.sort((a, b) => b.started_at - a.started_at);
-    r.set(response);
-  });
+  }).done(updateRactiveFromResponse);
 
 
 
@@ -100,10 +123,12 @@
         'auth.input.username': '',
         'auth.input.password': '',
         'auth.input.password2': '',
+        'auth.input.api_key': '',
+        'page.name': 'encounters'
       });
       csrftoken = response.csrftoken;
       delete response.csrftoken;
-      r.set(response);
+      updateRactiveFromResponse(response);
     }
   }
 
@@ -119,10 +144,13 @@
           password: password,
         },
       }).done(didLogin);
+
+      return false;
     },
     auth_register: function register() {
       let username = this.get('auth.input.username'),
           password = this.get('auth.input.password'),
+          apiKey = this.get('auth.input.api_key'),
           email = this.get('auth.input.email');
 
       $.post({
@@ -130,9 +158,12 @@
         data: {
           username: username,
           password: password,
+          api_key: apiKey,
           email: email,
         },
       }).done(didLogin);
+
+      return false;
     },
     auth_logout: function logout() {
       $.post({
@@ -140,19 +171,13 @@
       }).done(response => {
         this.set({
           username: null,
-          'auth.login': true,
+          'page.name': 'index',
         });
       });
     },
-    auth_swap: function swap() {
-      this.set({
-        'auth.login': !this.get('auth.login'),
-        'auth.input.password': '',
-        'auth.input.password2': '',
-      });
-    },
-    to_profile: function toProfile() {
-      r.set('page', { name: 'profile' })
+    page_no: function pageNo(evt) {
+      this.set('page.no', parseInt(evt.node.getAttribute('data-page')));
+      return false;
     },
   });
 
@@ -163,15 +188,16 @@
     // TODO single upload progress
   }
   let uploadProgressDone = (file, data) => {
-    let encounters = r.get('encounters');
-    Object.keys(data).forEach(file => {
-      let encounter = data[file];
-      if (encounter.new) {
-        delete encounter.new;
-        encounters.push(encounter);
-      }
-    });
-    r.set('encounters', encounters.sort((a, b) => b.started_at - a.started_at))
+    if (data.error) {
+      error(file.name + ': ' + data.error);
+    } else {
+      let encounters = r.get('encounters');
+      let fileNames = Object.keys(data);
+      let newKeys = fileNames.map(file => data[file].id)
+      encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
+      fileNames.forEach(file => encounters.push(data[file]));
+      updateRactiveFromResponse({ encounters: encounters });
+    }
   }
 
   let makeXHR = file => {
@@ -198,6 +224,7 @@
       let files = evt.originalEvent.dataTransfer.files;
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       let promises = Array.from(files).map(file => {
+        if (!file.name.endsWith('.evtc')) return;
         let form = new FormData();
         form.append(file.name, file);
         return $.ajax({
