@@ -113,6 +113,57 @@ BOSS_ARRAY = [
     ]
 BOSSES = { boss.profs[0]: boss for boss in BOSS_ARRAY }
 
+class StackType(IntEnum):
+    INTENSITY = 0
+    DURATION = 1
+
+class BoonType:
+    def __init__(self, name, abbrv, stacking, capacity):
+        self.name = name
+        self.abbrv = abbrv
+        self.stacking = stacking
+        self.capacity = capacity
+
+BOON_TYPES = [
+        # General Boons
+        BoonType('Might', 'MGHT', StackType.INTENSITY, 25),
+        BoonType('Quickness', 'QCKN', StackType.DURATION, 5),
+        BoonType('Fury', 'FURY', StackType.DURATION, 9),
+        BoonType('Protection', 'PROT', StackType.DURATION, 5),
+        BoonType('Alacrity', 'ALAC', StackType.DURATION, 9),
+
+        # Ranger
+        BoonType('Spotter', 'SPOT', StackType.DURATION, 1),
+        BoonType('Spirit of Frost', 'FRST', StackType.DURATION, 1),
+        BoonType('Sun Spirit', 'SUNS', StackType.DURATION, 1),
+        BoonType('Stone Spirit', 'STNE', StackType.DURATION, 1),
+        BoonType('Storm Spirit', 'STRM', StackType.DURATION, 1),
+        BoonType('Glyph of Empowerment', 'GOFE', StackType.DURATION, 1),
+        BoonType('Grace of the Land', 'GOTL', StackType.INTENSITY, 5),
+
+        # Warrior
+        BoonType('Empower Allies', 'EALL', StackType.DURATION, 1),
+        BoonType('Banner of Strength', 'STRB', StackType.DURATION, 1),
+        BoonType('Banner of Discipline', 'DISC', StackType.DURATION, 1),
+        BoonType('Banner of Tactics', 'TACT', StackType.DURATION, 1),
+        BoonType('Banner of Defence', 'DEFN', StackType.DURATION, 1),
+
+        # Revenant
+        BoonType('Assassin''s Presence', 'ASNP', StackType.DURATION, 1),
+        BoonType('Naturalistic Resonance', 'NATR', StackType.DURATION, 1),
+
+        # Engineer
+        BoonType('Pinpoint Distribution', 'PIND', StackType.DURATION, 1),
+
+        # Elementalist
+        BoonType('Soothing Mist', 'MIST', StackType.DURATION, 1),
+
+        # Necro
+        BoonType('Vampiric Presence', 'VAMP', StackType.DURATION, 1)
+    ]
+
+BOONS = { boon.name: boon for boon in BOON_TYPES }
+
 class Analyser:
     def __init__(self, encounter):
         self.encounter = encounter
@@ -217,7 +268,7 @@ class Analyser:
         # damage sums
         direct_damage_to_boss_events = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
         condi_damage_to_boss_events = non_gap(condi_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
-
+        
         direct_damage_to_boss_events_by_player = direct_damage_to_boss_events.groupby('ult_src_instid')
         condi_damage_to_boss_events_by_player = condi_damage_to_boss_events.groupby('ult_src_instid')
 
@@ -274,7 +325,7 @@ class Analyser:
                 ninety = ninety,
                 moving = moving,
             )
-
+        
         # per party
         self.party = {
                 'direct': direct_damage_by_player.sum(),
