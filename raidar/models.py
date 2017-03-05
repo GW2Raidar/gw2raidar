@@ -88,6 +88,7 @@ class Encounter(models.Model):
     started_at = models.IntegerField(db_index=True)
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
+    dump = models.TextField(editable=False)
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=16, editable=False)
     started_at_full = models.IntegerField(editable=False)
