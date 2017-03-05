@@ -164,6 +164,32 @@ BOON_TYPES = [
 
 BOONS = { boon.name: boon for boon in BOON_TYPES }
 
+class BoonTrack:
+    def __init__(self, buff_type, encounter_start, encounter_end):
+        self.buff_type = buff_type;
+        self.stack_end_times = []
+        self.start_time = encounter_start
+        self.end_time = encounter_end
+        self.total_time = encounter_end - encounter_start
+        self.data = np.array([np.arange(self.total_time)] * 2).T
+        self.current_time = 0
+        
+    def add_event(self, event):
+        self.simulate_to_time(event.time)
+        if len(self.stack_end_times) < self.buff_type.capacity:
+            self.stack_end_times += [self.current_time + event.value]
+            
+        self.data[event.time - self.start_time] = [event.time - self.start_time, len(self.stack_end_times)]
+                
+    def simulate_to_time(self, new_time):
+        for i in range(int(self.current_time + 1), int(new_time - self.start_time)):
+            if len(self.stack_end_times) == 0:
+                self.data[i] = [i, 0]
+            else:
+                self.stack_end_times = [v for v in self.stack_end_times if v > i]
+                self.data[i] = [i, len(self.stack_end_times)]
+        self.current_time = new_time - self.start_time
+        
 class Analyser:
     def __init__(self, encounter):
         self.encounter = encounter
@@ -301,13 +327,21 @@ class Analyser:
         # because this is dipping into Python, we want only the necessary data
         boon_events = (apply_events[apply_events.dst_instid.isin(players.index)]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
-        player_or_none = list(players.index) + [0]
-        boonremove_events = (statusremove_events[statusremove_events.dst_instid.isin(player_or_none)]
+        boonremove_events = (statusremove_events[statusremove_events.dst_instid.isin(list(players.index))]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
         boon_update_events = pd.concat([boon_events, boonremove_events]).sort_values('time')
-        for event in boon_update_events.itertuples():
-            pass # TODO
-
+        boon_update_events = boon_update_events.join(encounter.skills, how='inner', on='skillid').sort_values(by='time');
+        for buff_type in BOON_TYPES:
+            boontrack = {}        
+            if (buff_type.stacking == StackType.INTENSITY):
+                for player in list(players.index):
+                    boontrack[player] = BoonTrack(BOONS[buff_type.name], encounter_start, encounter_end)
+                relevent_events = boon_update_events[boon_update_events['name'] == buff_type.name]
+                for event in relevent_events.itertuples():
+                    boontrack[event.dst_instid].add_event(event)
+                for player, track in boontrack.items():           
+                    track.simulate_to_time(encounter_end)
+        
 
         # export analysis results
 
