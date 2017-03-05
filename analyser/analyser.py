@@ -332,16 +332,16 @@ class Analyser:
         boon_update_events = pd.concat([boon_events, boonremove_events]).sort_values('time')
         boon_update_events = boon_update_events.join(encounter.skills, how='inner', on='skillid').sort_values(by='time');
         for buff_type in BOON_TYPES:
-            boontrack = {}        
+            boontracks = {}        
             if (buff_type.stacking == StackType.INTENSITY):
+                buff_events = boon_update_events[boon_update_events['name'] == buff_type.name]
                 for player in list(players.index):
-                    boontrack[player] = BoonTrack(BOONS[buff_type.name], encounter_start, encounter_end)
-                relevent_events = boon_update_events[boon_update_events['name'] == buff_type.name]
-                for event in relevent_events.itertuples():
-                    boontrack[event.dst_instid].add_event(event)
-                for player, track in boontrack.items():           
-                    track.simulate_to_time(encounter_end)
-        
+                    boontrack = BoonTrack(BOONS[buff_type.name], encounter_start, encounter_end)
+                    relevent_events = buff_events[buff_events['dst_instid'] == player]
+                    for event in relevent_events.itertuples():
+                        boontrack.add_event(event)
+                    boontrack.simulate_to_time(encounter_end)
+                    boontracks[player] = boontrack       
 
         # export analysis results
 
