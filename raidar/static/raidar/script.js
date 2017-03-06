@@ -95,10 +95,12 @@
   window.r = r; // XXX DEBUG
 
 
+  function notification(str, style) {
+    UIkit.notification(str, style);
+  }
+
   function error(str) {
-    UIkit.notification(str, {
-      status: 'danger',
-    });
+    notification(str, 'danger')
   }
 
   function updateRactiveFromResponse(response) {
@@ -162,6 +164,20 @@
           email: email,
         },
       }).done(didLogin);
+
+      return false;
+    },
+    auth_reset_pw: function resetPw() {
+      let email = this.get('auth.input.email');
+
+      $.post({
+        url: 'reset_pw',
+        data: {
+          email: email,
+        },
+      }).done(() => {
+        notification('Sending now.', 'primary')
+      })
 
       return false;
     },
