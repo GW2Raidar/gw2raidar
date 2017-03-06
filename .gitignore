@@ -13,3 +13,7 @@ TestLogs
 # iPython
 .ipynb_checkpoints
 *.ipynb
+
+# Local settings, possibly with sensitive info
+# (copy from `gw2raidar/settings_local.py.example`)
+gw2raidar/settings_local.py
