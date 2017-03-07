@@ -3,7 +3,7 @@
 // XAcquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
 
-  const PAGE_SIZE = 3;
+  const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
