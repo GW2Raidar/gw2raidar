@@ -37,7 +37,7 @@
         {# Logo #}
         <header class="uk-grid">
           <div class="uk-width-1-1">
-            <h1 class="uk-heading-large uk-padding-small uk-light uk-background-primary">GW2 Raidar</h1>
+            <h1 on-click="XXX(7)" class="uk-heading-large uk-padding-small uk-light uk-background-primary">GW2 Raidar</h1>
           </div>
         </header>
 
@@ -46,7 +46,7 @@
           <div class="uk-navbar-left">
             <ul class="uk-navbar-nav">
               [[#if username]]
-                <li class="[[page.name=='encounters' && 'uk-active']]"><a href="#" on-click="@this.page('encounters')">Encounters</a></li>
+              <li class="[[page.name=='encounters' && 'uk-active']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
                 <li class="[[page.name=='profile' && 'uk-active']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
               [[/if]]
             </ul>
@@ -57,7 +57,7 @@
                 [[#if is_staff]]
                   <li><a href="{% url 'admin:index' %}">Admin</a>
                 [[/if]]
-                <li class="[[page.name=='account' && 'uk-active']]"><a href="#">Account</a></li>
+                <li class="[[page.name=='account' && 'uk-active']]"><a href="#" on-click="@this.page('account')">Account</a></li>
                 <li><a href="#" on-click="auth_logout">Logout</a></li>
               [[else]]
                 <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login', 'login_username')">Login</a></li>

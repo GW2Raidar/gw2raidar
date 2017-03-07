@@ -64,10 +64,11 @@ def _login_successful(request, user):
 
 
 @require_GET
-def index(request):
+def index(request, page={ 'name': 'encounters', 'no': 1 }):
     response = _userprops(request)
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['professions'] = {k: v for k, v in Character.PROFESSION_CHOICES}
+    response['page'] = page
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
@@ -81,8 +82,10 @@ def initial(request):
     return JsonResponse(response)
 
 
-@require_POST
 def login(request):
+    if request.method == 'GET':
+        return index(request, page={ 'name': 'login' })
+
     username = request.POST.get('username')
     password = request.POST.get('password')
     # stayloggedin = request.GET.get('stayloggedin')
@@ -98,8 +101,10 @@ def login(request):
         return _error('Could not log in')
 
 
-@require_POST
 def register(request):
+    if request.method == 'GET':
+        return index(request, page={ 'name': 'register' })
+
     username = request.POST.get('username')
     password = request.POST.get('password')
     email = request.POST.get('email')
@@ -190,3 +195,8 @@ def upload(request):
             result[filename] = _participation_data(own_participation)
 
     return JsonResponse(result)
+
+
+@require_GET
+def named(request, name, no):
+    return index(request, { 'name': name, 'no': no })

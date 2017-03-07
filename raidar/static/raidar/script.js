@@ -3,7 +3,7 @@
 // XAcquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
 
-  const PAGE_SIZE = 10;
+  const PAGE_SIZE = 3;
   const PAGINATION_WINDOW = 5;
 
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
@@ -29,14 +29,39 @@
     return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
   }
 
+  let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
-    page: { name: window.raidar_data.username ? 'encounters' : 'index' },
+    page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
   };
   delete window.raidar_data;
+
+  function URLForPage(page) {
+    let url = baseURL + page.name;
+    if (page.no) url += '/' + page.no;
+    return url;
+  }
+
+  function setPage(page, field) {
+    if (typeof page == "string") {
+      page = { name: page };
+    }
+    r.set('page', page);
+    history.pushState(page, null, URLForPage(page));
+    if (field) {
+      $('#' + field).select().focus();
+    }
+    return false;
+  }
+  history.replaceState(initData.page, null, URLForPage(initData.page));
+
+  $(window).on('popstate', evt => {
+    r.set('page', evt.originalEvent.state);
+  });
+
 
 
   // Ractive
@@ -84,15 +109,9 @@
     },
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
-
-    page: function(page, field) {
-      this.set('page', { name: page });
-      if (field) {
-        $('#' + field).select().focus();
-      }
-    },
+    page: setPage,
   });
-  window.r = r; // XXX DEBUG
+
 
 
   function error(str) {
@@ -124,8 +143,8 @@
         'auth.input.password': '',
         'auth.input.password2': '',
         'auth.input.api_key': '',
-        'page.name': 'encounters'
       });
+      setPage(response.page || loggedInPage);
       csrftoken = response.csrftoken;
       delete response.csrftoken;
       updateRactiveFromResponse(response);
@@ -171,12 +190,14 @@
       }).done(response => {
         this.set({
           username: null,
-          'page.name': 'index',
         });
+        setPage('index');
       });
     },
     page_no: function pageNo(evt) {
-      this.set('page.no', parseInt(evt.node.getAttribute('data-page')));
+      let page_no = parseInt(evt.node.getAttribute('data-page'));
+      let page = this.get('page');
+      setPage(Object.assign(page, { no: page_no }));
       return false;
     },
   });
@@ -242,4 +263,6 @@
       });
       evt.preventDefault();
     });
+
+  window.r = r; // XXX DEBUG
 })();
