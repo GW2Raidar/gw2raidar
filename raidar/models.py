@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
@@ -8,6 +9,18 @@ import re
 # unique to 30-60s precision
 START_RESOLUTION = 60
 
+
+
+class UserProfile(models.Model):
+    portrait_url = models.URLField(null=True)
+    private = models.BooleanField(default=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+def _create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+post_save.connect(_create_user_profile, sender=User)
 
 
 class Area(models.Model):
