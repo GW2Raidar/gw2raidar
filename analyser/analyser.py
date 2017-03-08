@@ -171,24 +171,24 @@ class BoonTrack:
         self.start_time = encounter_start
         self.end_time = encounter_end
         self.total_time = encounter_end - encounter_start
-        self.data = np.array([np.arange(self.total_time)] * 2).T
+        self.data = np.array([np.arange(1)] * 2).T
         self.current_time = 0
         
     def add_event(self, event):
-        self.simulate_to_time(event.time)
+        self.simulate_to_time(event.time - self.start_time)
         if len(self.stack_end_times) < self.buff_type.capacity:
             self.stack_end_times += [self.current_time + event.value]
-            
-        self.data[event.time - self.start_time] = [event.time - self.start_time, len(self.stack_end_times)]
+            self.stack_end_times.sort()
+        elif (self.stack_end_times[0] < self.current_time + event.value):
+            self.stack_end_times[0] = self.current_time + event.value
+            self.stack_end_times.sort()           
+        self.data = np.append(self.data, [[event.time - self.start_time, len(self.stack_end_times)]], axis=0)
                 
     def simulate_to_time(self, new_time):
-        for i in range(int(self.current_time + 1), int(new_time - self.start_time)):
-            if len(self.stack_end_times) == 0:
-                self.data[i] = [i, 0]
-            else:
-                self.stack_end_times = [v for v in self.stack_end_times if v > i]
-                self.data[i] = [i, len(self.stack_end_times)]
-        self.current_time = new_time - self.start_time
+        while len(self.stack_end_times) > 0 and self.stack_end_times[0] < new_time:
+            self.data = np.append(self.data, [[self.stack_end_times[0], len(self.stack_end_times) - 1]], axis=0)
+            self.stack_end_times.remove(self.stack_end_times[0])
+        self.current_time = new_time
         
 class Analyser:
     def __init__(self, encounter):
