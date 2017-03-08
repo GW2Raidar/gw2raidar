@@ -25,6 +25,10 @@ SECRET_KEY = 'o6x&+oy92&0qz9-8nkrqv$qyf3k0d$7zd4&o-6%qeg+44@@6d_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# When DEBUG is False (must for production),
+# this needs to be set for the app's host, like so:
+# ALLOWED_HOSTS = ['gw2raidar.example.com']
+# (it can be set in `settings_local.py`)
 ALLOWED_HOSTS = []
 
 
@@ -125,3 +129,12 @@ STATIC_URL = '/static/'
 
 LOGIN_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
+
+
+# Local settings, not checked into the repository
+# Model on the example at `settings_local.py.example`
+# They can override the options in this file
+try:
+    from .settings_local import *
+except ImportError:
+    pass
