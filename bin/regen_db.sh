@@ -12,7 +12,7 @@ if [[ "$dbengine" == "django.db.backends.postgresql" ]]; then
   dbuser=$(python3 -c "from gw2raidar.settings import DATABASES; print(DATABASES['default']['USER'])")
   dropdb $dbname
   createdb $dbname -O $dbuser
-elif [[ "$dbengine" -eq "django.db.backends.sqlite3" ]]; then
+elif [[ "$dbengine" == "django.db.backends.sqlite3" ]]; then
   dbname=$(python3 -c "from gw2raidar.settings import DATABASES; print(DATABASES['default']['NAME'])")
   rm $dbname
 fi
