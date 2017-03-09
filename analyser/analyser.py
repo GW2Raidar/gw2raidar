@@ -117,78 +117,91 @@ class StackType(IntEnum):
     INTENSITY = 0
     DURATION = 1
 
-class BoonType:
-    def __init__(self, name, abbrv, stacking, capacity):
+class BuffType:
+    def __init__(self, name, code, stacking, capacity):
         self.name = name
-        self.abbrv = abbrv
+        self.code = code
         self.stacking = stacking
         self.capacity = capacity
 
-BOON_TYPES = [
+BUFF_TYPES = [
         # General Boons
-        BoonType('Might', 'MGHT', StackType.INTENSITY, 25),
-        BoonType('Quickness', 'QCKN', StackType.DURATION, 5),
-        BoonType('Fury', 'FURY', StackType.DURATION, 9),
-        BoonType('Protection', 'PROT', StackType.DURATION, 5),
-        BoonType('Alacrity', 'ALAC', StackType.DURATION, 9),
+        BuffType('Might', 'might', StackType.INTENSITY, 25),
+        BuffType('Quickness', 'quickness', StackType.DURATION, 5),
+        BuffType('Fury', 'fury', StackType.DURATION, 9),
+        BuffType('Protection', 'protection', StackType.DURATION, 5),
+        BuffType('Alacrity', 'alacrity', StackType.DURATION, 9),
 
         # Ranger
-        BoonType('Spotter', 'SPOT', StackType.DURATION, 1),
-        BoonType('Spirit of Frost', 'FRST', StackType.DURATION, 1),
-        BoonType('Sun Spirit', 'SUNS', StackType.DURATION, 1),
-        BoonType('Stone Spirit', 'STNE', StackType.DURATION, 1),
-        BoonType('Storm Spirit', 'STRM', StackType.DURATION, 1),
-        BoonType('Glyph of Empowerment', 'GOFE', StackType.DURATION, 1),
-        BoonType('Grace of the Land', 'GOTL', StackType.INTENSITY, 5),
+        BuffType('Spotter', 'spotter', StackType.DURATION, 1),
+        BuffType('Spirit of Frost', 'spirit_of_frost', StackType.DURATION, 1),
+        BuffType('Sun Spirit', 'sun_spirit', StackType.DURATION, 1),
+        BuffType('Stone Spirit', 'stone_spirit', StackType.DURATION, 1),
+        BuffType('Storm Spirit', 'storm_spirit', StackType.DURATION, 1),
+        BuffType('Glyph of Empowerment', 'glyph_of_empowerment', StackType.DURATION, 1),
+        BuffType('Grace of the Land', 'gotl', StackType.INTENSITY, 5),
 
         # Warrior
-        BoonType('Empower Allies', 'EALL', StackType.DURATION, 1),
-        BoonType('Banner of Strength', 'STRB', StackType.DURATION, 1),
-        BoonType('Banner of Discipline', 'DISC', StackType.DURATION, 1),
-        BoonType('Banner of Tactics', 'TACT', StackType.DURATION, 1),
-        BoonType('Banner of Defence', 'DEFN', StackType.DURATION, 1),
+        BuffType('Empower Allies', 'empower_allies', StackType.DURATION, 1),
+        BuffType('Banner of Strength', 'banner_strength', StackType.DURATION, 1),
+        BuffType('Banner of Discipline', 'banner_discipline', StackType.DURATION, 1),
+        BuffType('Banner of Tactics', 'banner_tactics', StackType.DURATION, 1),
+        BuffType('Banner of Defence', 'banner_defence', StackType.DURATION, 1),
 
         # Revenant
-        BoonType('Assassin''s Presence', 'ASNP', StackType.DURATION, 1),
-        BoonType('Naturalistic Resonance', 'NATR', StackType.DURATION, 1),
+        BuffType('Assassin''s Presence', 'assassins_presence', StackType.DURATION, 1),
+        BuffType('Naturalistic Resonance', 'naturalistic_resonance', StackType.DURATION, 1),
 
         # Engineer
-        BoonType('Pinpoint Distribution', 'PIND', StackType.DURATION, 1),
+        BuffType('Pinpoint Distribution', 'pinpoint_distribution', StackType.DURATION, 1),
 
         # Elementalist
-        BoonType('Soothing Mist', 'MIST', StackType.DURATION, 1),
+        BuffType('Soothing Mist', 'soothing_mist', StackType.DURATION, 1),
 
         # Necro
-        BoonType('Vampiric Presence', 'VAMP', StackType.DURATION, 1)
+        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1)
     ]
 
-BOONS = { boon.name: boon for boon in BOON_TYPES }
+BUFFS = { buff.name: buff for buff in BUFF_TYPES }
 
-class BoonTrack:
+class BuffTrack:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type;
         self.stack_end_times = []
         self.start_time = encounter_start
-        self.end_time = encounter_end
-        self.total_time = encounter_end - encounter_start
         self.data = np.array([np.arange(1)] * 2).T
         self.current_time = 0
         
     def add_event(self, event):
-        self.simulate_to_time(event.time - self.start_time)
+        event_time = int(event.time - self.start_time);
+        if event_time != self.current_time:
+            self.simulate_to_time(event_time)
+                        
         if len(self.stack_end_times) < self.buff_type.capacity:
-            self.stack_end_times += [self.current_time + event.value]
+            self.stack_end_times += [event_time + event.value]
             self.stack_end_times.sort()
-        elif (self.stack_end_times[0] < self.current_time + event.value):
-            self.stack_end_times[0] = self.current_time + event.value
-            self.stack_end_times.sort()           
-        self.data = np.append(self.data, [[event.time - self.start_time, len(self.stack_end_times)]], axis=0)
-                
+            if self.data[-1][0] == event_time:
+                self.data[-1][1] = len(self.stack_end_times);
+            else:
+                self.data = np.append(self.data, [[event_time, len(self.stack_end_times)]], axis=0)
+        elif (self.stack_end_times[0] < event_time + event.value):
+            self.stack_end_times[0] = event_time + event.value
+            self.stack_end_times.sort()       
+        
     def simulate_to_time(self, new_time):
         while len(self.stack_end_times) > 0 and self.stack_end_times[0] < new_time:
-            self.data = np.append(self.data, [[self.stack_end_times[0], len(self.stack_end_times) - 1]], axis=0)
-            self.stack_end_times.remove(self.stack_end_times[0])
+            if self.data[-1][0] == self.stack_end_times[0]:
+                self.data[-1][1] = len(self.stack_end_times) - 1
+            else:
+                self.data = np.append(self.data, [[int(self.stack_end_times[0]), len(self.stack_end_times) - 1]], axis=0)
+            self.stack_end_times.remove(self.stack_end_times[0])  
         self.current_time = new_time
+        
+    def end_track(self, time):
+        end_time = int(time - self.start_time);
+        self.simulate_to_time(end_time)
+        if self.data[-1][0] != end_time:
+            self.data = np.append(self.data, [[end_time, len(self.stack_end_times)]], axis=0)
         
 class Analyser:
     def __init__(self, encounter):
@@ -321,28 +334,37 @@ class Analyser:
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
 
-        # boons (status application events from players targetting players)
-        # because boons linger, we can't use non_gap(apply_events)
-        # TODO ignore gaps for totals later
-        # because this is dipping into Python, we want only the necessary data
-        boon_events = (apply_events[apply_events.dst_instid.isin(players.index)]
+        # buffs (status application events from players targetting players)
+        buff_events = (apply_events[apply_events.dst_instid.isin(players.index)]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
-        boonremove_events = (statusremove_events[statusremove_events.dst_instid.isin(list(players.index))]
+        buffremove_events = (statusremove_events[statusremove_events.dst_instid.isin(list(players.index))]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
-        boon_update_events = pd.concat([boon_events, boonremove_events]).sort_values('time')
-        boon_update_events = boon_update_events.join(encounter.skills, how='inner', on='skillid').sort_values(by='time');
-        for buff_type in BOON_TYPES:
-            boontracks = {}        
+        buff_update_events = pd.concat([buff_events, buffremove_events]).sort_values('time')
+        buff_update_events = buff_update_events.join(encounter.skills, how='inner', on='skillid').sort_values(by='time');
+
+        for buff_type in BUFF_TYPES:
+            bufftracks = {}        
             if (buff_type.stacking == StackType.INTENSITY):
-                buff_events = boon_update_events[boon_update_events['name'] == buff_type.name]
+                buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
                 for player in list(players.index):
-                    boontrack = BoonTrack(BOONS[buff_type.name], encounter_start, encounter_end)
+                    bufftrack = BuffTrack(BUFFS[buff_type.name], encounter_start, encounter_end)
                     relevent_events = buff_events[buff_events['dst_instid'] == player]
                     for event in relevent_events.itertuples():
-                        boontrack.add_event(event)
-                    boontrack.simulate_to_time(encounter_end)
-                    boontracks[player] = boontrack       
+                        bufftrack.add_event(event)
+                    bufftrack.end_track(encounter_end)
+                    bufftracks[player] = bufftrack
 
+                mean_per_player = np.array([np.arange(0)] * 2).T
+
+                for player in list(players.index):
+                    buff_data = pd.DataFrame(columns = ['time', 'stacks'], data = bufftracks[player].data)
+                    diff_data = (buff_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_data[['stacks']])
+                    mean_per_player = np.append(mean_per_player, 
+                                                [[player, (diff_data['time'] * diff_data['stacks']).sum() / time]], axis = 0)
+                mean_per_player_df = pd.DataFrame(columns = [ buff_type.code], data = mean_per_player[0:,1:],
+                                                  index = mean_per_player[0:, 0])
+                players = players.join(mean_per_player_df)
+        
         # export analysis results
 
         # per player
