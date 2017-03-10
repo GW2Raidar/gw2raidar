@@ -164,7 +164,7 @@ BUFF_TYPES = [
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }
 
-class BuffTrack:
+class BuffTrackIntensity:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type;
         self.stack_end_times = []
@@ -189,7 +189,7 @@ class BuffTrack:
             self.stack_end_times.sort()       
         
     def simulate_to_time(self, new_time):
-        while len(self.stack_end_times) > 0 and self.stack_end_times[0] < new_time:
+        while len(self.stack_end_times) > 0 and self.stack_end_times[0] <= new_time:
             if self.data[-1][0] == self.stack_end_times[0]:
                 self.data[-1][1] = len(self.stack_end_times) - 1
             else:
@@ -202,6 +202,52 @@ class BuffTrack:
         self.simulate_to_time(end_time)
         if self.data[-1][0] != end_time:
             self.data = np.append(self.data, [[end_time, len(self.stack_end_times)]], axis=0)
+            
+class BuffTrackDuration:
+    def __init__(self, buff_type, encounter_start, encounter_end):
+        self.buff_type = buff_type;
+        self.stack_durations = np.array([np.arange(0)]).T
+        self.start_time = encounter_start
+        self.data = np.array([np.arange(1)] * 2).T
+        self.current_time = 0
+        
+    def add_event(self, event):
+        event_time = int(event.time - self.start_time);
+        if event_time != self.current_time:
+            self.simulate(event_time - self.current_time)
+
+        if self.stack_durations.size < self.buff_type.capacity:
+            if self.stack_durations.size == 0:
+                if self.data[-1][0] == event_time:
+                    self.data[-1][1] = 1;
+                else:
+                    self.data = np.append(self.data, [[event_time, 1]], axis=0)
+            self.stack_durations = np.append(self.stack_durations, [event.value])
+            self.stack_durations.sort()           
+        elif (self.stack_durations[0] < event.value):
+            self.stack_durations[0] = event.value
+            self.stack_durations.sort()       
+        
+    def simulate(self, delta_time):
+        remaining_delta = delta_time
+        while self.stack_durations.size > 0 and self.stack_durations[0] <= remaining_delta:
+            if self.stack_durations.size == 1:
+                if self.data[-1][0] == self.stack_durations[0] + self.current_time:
+                    self.data[-1][1] = 0
+                else:
+                    self.data = np.append(self.data, [[int(self.stack_durations[0] + self.current_time), 0]], axis=0)
+            remaining_delta -= self.stack_durations[0]
+            self.stack_durations = np.delete(self.stack_durations, 0)  
+            
+        self.current_time += delta_time
+        if self.stack_durations.size > 0:
+            self.stack_durations[0] -= remaining_delta
+        
+    def end_track(self, time):
+        end_time = int(time - self.start_time);
+        self.simulate(end_time - self.current_time)
+        if self.data[-1][0] != end_time:
+            self.data = np.append(self.data, [[end_time, self.stack_durations.size > 0]], axis=0)     
         
 class Analyser:
     def __init__(self, encounter):
@@ -344,26 +390,28 @@ class Analyser:
 
         for buff_type in BUFF_TYPES:
             bufftracks = {}        
-            if (buff_type.stacking == StackType.INTENSITY):
-                buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
-                for player in list(players.index):
-                    bufftrack = BuffTrack(BUFFS[buff_type.name], encounter_start, encounter_end)
-                    relevent_events = buff_events[buff_events['dst_instid'] == player]
-                    for event in relevent_events.itertuples():
-                        bufftrack.add_event(event)
-                    bufftrack.end_track(encounter_end)
-                    bufftracks[player] = bufftrack
+            buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
+            for player in list(players.index):
+                if (buff_type.stacking == StackType.INTENSITY):
+                    bufftrack = BuffTrackIntensity(BUFFS[buff_type.name], encounter_start, encounter_end)
+                else:
+                    bufftrack = BuffTrackDuration(BUFFS[buff_type.name], encounter_start, encounter_end)
+                relevent_events = buff_events[buff_events['dst_instid'] == player]
+                for event in relevent_events.itertuples():
+                    bufftrack.add_event(event)
+                bufftrack.end_track(encounter_end)
+                bufftracks[player] = bufftrack
 
-                mean_per_player = np.array([np.arange(0)] * 2).T
+            mean_per_player = np.array([np.arange(0)] * 2).T
 
-                for player in list(players.index):
-                    buff_data = pd.DataFrame(columns = ['time', 'stacks'], data = bufftracks[player].data)
-                    diff_data = (buff_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_data[['stacks']])
-                    mean_per_player = np.append(mean_per_player, 
-                                                [[player, (diff_data['time'] * diff_data['stacks']).sum() / time]], axis = 0)
-                mean_per_player_df = pd.DataFrame(columns = [ buff_type.code], data = mean_per_player[0:,1:],
-                                                  index = mean_per_player[0:, 0])
-                players = players.join(mean_per_player_df)
+            for player in list(players.index):
+                buff_data = pd.DataFrame(columns = ['time', 'stacks'], data = bufftracks[player].data)
+                diff_data = (buff_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_data[['stacks']])
+                mean_per_player = np.append(mean_per_player, 
+                                            [[player, (diff_data['time'] * diff_data['stacks']).sum() / time]], axis = 0)
+            mean_per_player_df = pd.DataFrame(columns = [ buff_type.code], data = mean_per_player[0:,1:],
+                                              index = mean_per_player[0:, 0])
+            players = players.join(mean_per_player_df)
         
         # export analysis results
 
