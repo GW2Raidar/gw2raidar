@@ -177,8 +177,21 @@ def collect_player_status(collector, players):
     players.loc[players.healing >= 7, 'archetype'] = "Heal"    # HEAL
     collector.group(collect_individual_status, players, ('name','Name'))
 
-def collect_damage(collector, events):
-    pass
+def collect_individual_damage(collector, events):
+    collector.add_data('power', events['value'].sum())
+
+def collect_individual_condi(collector, events):
+    collector.add_data('condi', events['buff_dmg'].sum())
+
+def collect_damage(collector, player_events):
+    not_state_change_events = player_events[player_events.state_change == parser.StateChange.NORMAL]
+    not_cancel_events = not_state_change_events[not_state_change_events.is_activation < parser.Activation.CANCEL_FIRE]
+    not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
+    hit_events = not_statusremove_events[not_statusremove_events.buff == 0]
+    status_events = not_statusremove_events[not_statusremove_events.buff != 0]
+    condi_events = status_events[status_events.value == 0]
+    collector.group(collect_individual_damage, hit_events, ('name', 'Name'), ('destination_name', 'To'))
+    collector.group(collect_individual_condi, condi_events, ('name', 'Name'), ('destination_name', 'To'))
 
 class Analyser:
     def __init__(self, encounter):
@@ -189,9 +202,17 @@ class Analyser:
         events = encounter.events
         agents = encounter.agents
 
+        destination_agents = agents.copy(True)
+        destination_agents.columns = destination_agents.columns.str.replace('name', 'destination_name')
+
         events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
-        collector.with_key("Category", "status").run(collect_player_status, agents[agents.party != 0])
-        collector.with_key("Category", "damage").run(collect_damage, events)
+        players = agents[agents.party != 0]
+        player_events = events.join(
+            players[['name', 'account']], how='right', on='ult_src_instid').join(
+            destination_agents[['destination_name']], how='right', on='dst_instid')
+
+        collector.with_key("Category", "status").run(collect_player_status, players)
+        collector.with_key("Category", "damage").run(collect_damage, player_events)
 
         # awareness is defined as interval between first skill use
         # and last skill use, on (dst) or by (src) an agent
@@ -215,7 +236,7 @@ class Analyser:
         encounter_end = boss_agents.last_aware.max()
 
         # get player events (players are the only agents in a party)
-        players = agents[agents.party != 0]
+
         # TODO for speed we can convert join into restriction
         # (join gives more context for debugging)
         # For most of the metrics, we only care about the events
