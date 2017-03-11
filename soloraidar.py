@@ -3,7 +3,7 @@ __author__ = "Toeofdoom"
 import sys
 from evtcparser import *
 from analyser import *
-
+import json
 def is_basic_value(node):
     try:
         dict(node)
@@ -12,7 +12,7 @@ def is_basic_value(node):
         return True
 
 def flatten(root):
-    nodes = dict((key, dict(node)) for key,node in root)
+    nodes = dict((key, dict(node)) for key,node in root.items())
     stack = list(nodes.keys())
     for node_name in stack:
         node = nodes[node_name]
@@ -23,12 +23,15 @@ def flatten(root):
                 stack.append(full_child_name)
             except TypeError:
                 pass
+            except ValueError:
+                pass
     return nodes
 
 def print_node(key, node):
-    basic_values = filter(lambda key:is_basic_value(key[1]), node.items())
-    print("{0}: {1}".format(key, ", ".join(
-        ["{0}:{1}".format(name, value) for name,value in basic_values])))
+    basic_values = list(filter(lambda key:is_basic_value(key[1]), node.items()))
+    if basic_values:
+        print("{0}: {1}".format(key, ", ".join(
+            ["{0}:{1}".format(name, value) for name,value in basic_values])))
 
 def main():
     filename = sys.argv[1]
@@ -37,9 +40,21 @@ def main():
     with open(sys.argv[1], mode='rb') as file:
         e = parser.Encounter(file)
         a = analyser.Analyser(e)
-        print(a.players)
-        print(a.total)
-        print(a.info)
+        #print(a.players)
+        #print(a.party)
+        #print(a.info)
+
+        print()
+
+        print("Almost json")
+        print(str(a.collector.all_data).replace('\'', '"'))
+
+        print("Collector-based-data:")
+        flattened = flatten(a.collector.all_data)
+        for key in flattened:
+            print_node(key, flattened[key])
+
+        print(json.dumps(a.collector.all_data), file=open('output.json','w'))
 
 if __name__ == "__main__":
     main()

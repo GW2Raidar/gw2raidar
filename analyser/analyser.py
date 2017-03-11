@@ -113,8 +113,76 @@ BOSS_ARRAY = [
     ]
 BOSSES = { boss.profs[0]: boss for boss in BOSS_ARRAY }
 
+
+class Collector:
+    def __init__(self, registrations, context, all_data):
+        self.registrations = registrations
+        self.context = context
+        self.all_data = all_data
+
+    @classmethod
+    def root(cls):
+        return cls([], {}, {})
+
+    def group(self, function, data, *group_mappings):
+        if not group_mappings:
+            self.run(function, data)
+            return
+        group_from,group_to = group_mappings[0]
+        remaining_group_mappings = group_mappings[1:]
+        groups = data.groupby(group_from)
+        for name, group in groups:
+            self.with_key(group_to, name).group(function, group, *remaining_group_mappings)
+
+    def run(self, function, data):
+        function(self, data.copy(True))
+
+    def add_data(self, name, value):
+        output_block = self.all_data
+        print("Adding {0}:{1} to context {2}".format(name, value, self.context))
+        for path_key in self.context:
+            output_block = Collector._navigate(output_block, path_key)
+            output_block = Collector._navigate(output_block, self.context[path_key])
+        output_block[name] = value
+
+    @staticmethod
+    def _navigate(dictionary, key):
+        if key not in dictionary:
+            new_node = {}
+            dictionary[key] = new_node
+            return new_node
+        return dictionary[key]
+
+    def with_key(self, key, value):
+        new_context = dict(self.context)
+        new_context[key] = value
+        return Collector(self.registrations, new_context, self.all_data)
+
+def collect_individual_status(collector, player):
+    print(player)
+    only_entry = player.iloc[0]
+    collector.add_data('profession', parser.AgentType(only_entry['prof']).name)
+    collector.add_data('is_elite', only_entry['elite'])
+    collector.add_data('toughness', only_entry['toughness'])
+    collector.add_data('healing', only_entry['healing'])
+    collector.add_data('condition', only_entry['condition'])
+    collector.add_data('archetype', only_entry['archetype'])
+    collector.add_data('account', only_entry['account'])
+
+def collect_player_status(collector, players):
+    # player archetypes
+    players = players.assign(archetype= "Power") # POWER
+    players.loc[players.condition >= 7, 'archetype'] = "Condi"  # CONDI
+    players.loc[players.toughness >= 7, 'archetype'] = "Tank"  # TANK
+    players.loc[players.healing >= 7, 'archetype'] = "Heal"    # HEAL
+    collector.group(collect_individual_status, players, ('name','Name'))
+
+def collect_damage(collector, events):
+    pass
+
 class Analyser:
     def __init__(self, encounter):
+        collector = Collector.root()
         self.encounter = encounter
 
         # ultimate source (e.g. if necro minion attacks, the necro himself)
@@ -122,6 +190,8 @@ class Analyser:
         agents = encounter.agents
 
         events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
+        collector.with_key("Category", "status").run(collect_player_status, agents[agents.party != 0])
+        collector.with_key("Category", "damage").run(collect_damage, events)
 
         # awareness is defined as interval between first skill use
         # and last skill use, on (dst) or by (src) an agent
@@ -143,13 +213,6 @@ class Analyser:
         boss_agents = agents[agents.prof.isin(boss.profs)]
         encounter_start = boss_agents.first_aware.min()
         encounter_end = boss_agents.last_aware.max()
-
-        # player archetypes
-        agents['archetype'] = 0
-        agents.loc[agents.party != 0, 'archetype'] = 1     # POWER
-        agents.loc[agents.condition >= 7, 'archetype'] = 2  # CONDI
-        agents.loc[agents.toughness >= 7, 'archetype'] = 3  # TANK
-        agents.loc[agents.healing >= 7, 'archetype'] = 4    # HEAL
 
         # get player events (players are the only agents in a party)
         players = agents[agents.party != 0]
@@ -259,6 +322,10 @@ class Analyser:
 
 
         # export analysis results
+        #for player in players:
+        #    print(player)
+
+        print(collector.all_data)
 
         # per player
         self.players = players.assign(
@@ -294,3 +361,5 @@ class Analyser:
         self.data = {
                 # TODO
             }
+
+        self.collector = collector
