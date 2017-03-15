@@ -45,14 +45,26 @@
     return url;
   }
 
+  let pageInit = {
+    login: page => {
+      $('#login_username').select().focus();
+    },
+    register: page => {
+      $('#register_username').select().focus();
+    },
+    reset_pw: page => {
+      $('#reset_pw_email').select().focus();
+    },
+  };
+
   function setPage(page, field) {
     if (typeof page == "string") {
       page = { name: page };
     }
     r.set('page', page);
     history.pushState(page, null, URLForPage(page));
-    if (field) {
-      $('#' + field).select().focus();
+    if (pageInit[page.name]) {
+      pageInit[page.name](page);
     }
     return false;
   }

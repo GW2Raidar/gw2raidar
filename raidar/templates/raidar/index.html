@@ -60,9 +60,9 @@
                 <li class="[[page.name=='account' && 'uk-active']]"><a href="#" on-click="@this.page('account')">Account</a></li>
                 <li><a href="#" on-click="auth_logout">Logout</a></li>
               [[else]]
-                <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login', 'login_username')">Login</a></li>
-                <li class="[[page.name=='register' && 'uk-active']]"><a href="#" on-click="@this.page('register', 'register_username')">Register</a></li>
-                <li class="[[page.name=='reset_pw' && 'uk-active']]"><a href="#" on-click="@this.page('reset_pw', 'reset_pw_email')">Reset Password</a></li>
+                <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login')">Login</a></li>
+                <li class="[[page.name=='register' && 'uk-active']]"><a href="#" on-click="@this.page('register')">Register</a></li>
+                <li class="[[page.name=='reset_pw' && 'uk-active']]"><a href="#" on-click="@this.page('reset_pw')">Reset Password</a></li>
               [[/if]]
             </ul>
           </div>
