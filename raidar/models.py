@@ -90,7 +90,7 @@ class Encounter(models.Model):
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
     dump = models.TextField(editable=False)
     # hack to try to ensure uniqueness
-    account_hash = models.CharField(max_length=16, editable=False)
+    account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
     objects = EncounterManager()
