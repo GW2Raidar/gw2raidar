@@ -24,6 +24,18 @@ class LogType(IntEnum):
     ACTIVATION = 4
     STATUSREMOVE = 5
 
+class ContextType:
+    DURATION = "Duration"
+    TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION = "Total Damage"
+    TOTAL_DAMAGE_TO_DESTINATION = "Target Damage"
+    SKILL_NAME = "Skill Name"
+    AGENT_NAME = "Agent Name"
+    PROFESSION_NAME = "Profession Name"
+
+
+def per_second(f):
+    return portion_of(f, ContextType.DURATION)
+
 def assign_event_types(events):
     events['type'] = np.where(
         events['is_activation'] != parser.Activation.NONE, LogType.ACTIVATION,
@@ -95,29 +107,49 @@ def collect_power_skill_data(collector, events):
     collector.add_data('scholar', events['is_ninety'].mean(), percentage)
     collector.add_data('seaweed', events['is_moving'].mean(), percentage)
     collector.add_data('total', events['damage'].sum(), int)
+    collector.add_data('dps', events['damage'].sum(), per_second(int))
+    collector.add_data('percentage', events['damage'].sum(),
+                       percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
 def collect_condi_skill_data(collector, events):
     collector.add_data('total', events['damage'].sum(), int)
+    collector.add_data('dps', events['damage'].sum(), per_second(int))
+    collector.add_data('percentage', events['damage'].sum(),
+                       percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
 def collect_individual_damage(collector, events):
     power_events = events[events.type == LogType.POWER]
     condi_events = events[events.type == LogType.CONDI]
+    collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                events['damage'].sum())
     # print(events.columns)
-    collector.add_data('power', power_events['damage'].sum(), int)
     collector.add_data('fifty', power_events['is_fifty'].mean(), percentage)
     collector.add_data('scholar', power_events['is_ninety'].mean(), percentage)
     collector.add_data('seaweed', power_events['is_moving'].mean(), percentage)
+    collector.add_data('power', power_events['damage'].sum(), int)
     collector.add_data('condi', condi_events['damage'].sum(), int)
     collector.add_data('total', events['damage'].sum(), int)
+    collector.add_data('power_dps', power_events['damage'].sum(), per_second(int))
+    collector.add_data('condi_dps', condi_events['damage'].sum(), per_second(int))
+    collector.add_data('dps', events['damage'].sum(), per_second(int))
+    collector.add_data('percentage', events['damage'].sum(),
+                       percentage_of(ContextType.TOTAL_DAMAGE_TO_DESTINATION))
 
-    collector.group(collect_power_skill_data, power_events, ('skillid', Group.SKILL))
-    collector.group(collect_condi_skill_data, condi_events, ('skillid', Group.SKILL))
+    collector.group(collect_power_skill_data, power_events,
+                    ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
+    collector.group(collect_condi_skill_data, condi_events,
+                    ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
+
+def collect_destination_damage(collector, damage_events):
+    collector.set_context_value(ContextType.TOTAL_DAMAGE_TO_DESTINATION,
+                                damage_events['damage'].sum())
+    collector.group(collect_group_damage, damage_events)
+    collector.group(collect_individual_damage, damage_events, ('name', Group.PLAYER))
 
 def collect_phase_damage(collector, damage_events):
-    collector.group(collect_group_damage, damage_events, ('destination_name', Group.DESTINATION))
-    collector.group(collect_individual_damage, damage_events, ('name', Group.PLAYER), ('destination_name', Group.DESTINATION))
-    collector.with_key(Group.DESTINATION, "All").run(collect_group_damage, damage_events)
-    collector.with_key(Group.DESTINATION, "All").group(collect_individual_damage, damage_events, ('name', Group.PLAYER))
+    collector.set_context_value(ContextType.DURATION, float(damage_events['time'].max() - damage_events['time'].min())/1000.0)
+    collector.group(collect_destination_damage, damage_events, ('destination_name', Group.DESTINATION))
+    collector.with_key(Group.DESTINATION, "All").run(collect_destination_damage, damage_events)
 
 def collect_damage(collector, player_events):
     player_events = assign_event_types(player_events)
@@ -142,8 +174,8 @@ class Analyser:
         agents = encounter.agents
         skills = encounter.skills
 
-        skill_map = dict([(int(key), skills.loc[key, 'name']) for key in skills.index])
-        collector.alias('skillid', skill_map)
+        skill_map = dict([(key, skills.loc[key, 'name']) for key in skills.index])
+        collector.set_context_value(ContextType.SKILL_NAME, skill_map)
         destination_agents = agents.copy(True)
         destination_agents.columns = destination_agents.columns.str.replace('name', 'destination_name')
 

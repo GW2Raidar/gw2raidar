@@ -46,9 +46,6 @@ def main():
 
         print()
 
-        print("Almost json")
-        print(str(a.collector.all_data).replace('\'', '"'))
-
         print("Collector-based-data:")
         flattened = flatten(a.collector.all_data)
         for key in flattened:
