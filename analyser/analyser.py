@@ -141,11 +141,13 @@ def collect_destination_damage(collector, damage_events):
     collector.set_context_value(ContextType.TOTAL_DAMAGE_TO_DESTINATION,
                                 damage_events['damage'].sum())
     collector.group(collect_group_damage, damage_events)
-    collector.group(collect_individual_damage, damage_events, ('name', Group.PLAYER))
+    collector.group(collect_individual_damage, damage_events,
+                    ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 
 def collect_phase_damage(collector, damage_events):
     collector.set_context_value(ContextType.DURATION, float(damage_events['time'].max() - damage_events['time'].min())/1000.0)
-    collector.group(collect_destination_damage, damage_events, ('destination_name', Group.DESTINATION))
+    collector.group(collect_destination_damage, damage_events,
+                    ('dst_instid', Group.DESTINATION, mapped_to(ContextType.AGENT_NAME)))
     collector.with_key(Group.DESTINATION, "*All").run(collect_destination_damage, damage_events)
 
 def collect_damage(collector, player_events):
@@ -173,16 +175,13 @@ class Analyser:
         skills = encounter.skills
 
         skill_map = dict([(key, skills.loc[key, 'name']) for key in skills.index])
+        agent_map = dict([(key, agents.loc[key, 'name']) for key in agents.index])
         collector.set_context_value(ContextType.SKILL_NAME, skill_map)
-        destination_agents = agents.copy(True)
-        destination_agents.columns = destination_agents.columns.str.replace('name', 'destination_name')
+        collector.set_context_value(ContextType.AGENT_NAME, agent_map)
 
         events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
         players = agents[agents.party != 0]
-        player_events = events.join(
-            players[['name', 'account']], how='right', on='ult_src_instid').join(
-            destination_agents[['destination_name']], how='right', on='dst_instid').sort_values(
-            by='time')
+        player_events = events[events.ult_src_instid.isin(players.index)].sort_values(by='time')
 
         collector.with_key(Group.CATEGORY, "status").run(collect_player_status, players)
         collector.with_key(Group.CATEGORY, "damage").run(collect_damage, player_events)
