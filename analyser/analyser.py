@@ -167,7 +167,6 @@ def collect_damage(collector, player_events):
 class Analyser:
     def __init__(self, encounter):
         collector = Collector.root([Group.CATEGORY, Group.PHASE, Group.PLAYER, Group.DESTINATION, Group.SKILL])
-        self.encounter = encounter
 
         # ultimate source (e.g. if necro minion attacks, the necro himself)
         events = encounter.events
@@ -333,39 +332,5 @@ class Analyser:
         for event in boon_update_events.itertuples():
             pass  # TODO
 
-        # per player
-        self.players = players.assign(
-            condi=condi_damage_by_player,
-            direct=direct_damage_by_player,
-            condi_dps=condi_damage_by_player / time * 1000,
-            direct_dps=direct_damage_by_player / time * 1000,
-            condi_boss=condi_damage_by_player_to_boss,
-            direct_boss=direct_damage_by_player_to_boss,
-            condi_boss_dps=condi_damage_by_player_to_boss / time * 1000,
-            direct_boss_dps=direct_damage_by_player_to_boss / time * 1000,
-            flanking=flanking,
-            ninety=ninety,
-            moving=moving,
-        )
-
-        # per party
-        self.party = {
-            'direct': direct_damage_by_player.sum(),
-            'condi': condi_damage_by_player.sum(),
-            'direct_boss': direct_damage_by_player_to_boss.sum(),
-            'condi_boss': condi_damage_by_player_to_boss.sum(),
-        }
-
-        # not player-related
-        self.info = {
-            'name': boss.name,
-            'start': int(start_timestamp),
-            'end': int(start_timestamp + int((encounter_end - start_time) / 1000)),
-        }
-
         # saved as a JSON dump
-        self.data = {
-            # TODO
-        }
-
-        self.collector = collector
+        self.data = collector.all_data

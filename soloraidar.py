@@ -47,11 +47,11 @@ def main():
         print()
 
         print("Collector-based-data:")
-        flattened = flatten(a.collector.all_data)
+        flattened = flatten(a.data)
         for key in flattened:
             print_node(key, flattened[key])
 
-        print(json.dumps(a.collector.all_data), file=open('output.json','w'))
+        print(json.dumps(a.data), file=open('output.json','w'))
 
 if __name__ == "__main__":
     main()
