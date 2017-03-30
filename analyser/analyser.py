@@ -145,16 +145,20 @@ def collect_destination_damage(collector, damage_events):
                     ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 
 def collect_phase_damage(collector, damage_events):
-    collector.set_context_value(ContextType.DURATION, float(damage_events['time'].max() - damage_events['time'].min())/1000.0)
+    collector.set_context_value(
+        ContextType.DURATION,
+        float(damage_events['time'].max() - damage_events['time'].min())/1000.0)
     collector.group(collect_destination_damage, damage_events,
                     ('dst_instid', Group.DESTINATION, mapped_to(ContextType.AGENT_NAME)))
     collector.with_key(Group.DESTINATION, "*All").run(collect_destination_damage, damage_events)
 
 def collect_damage(collector, player_events):
     player_events = assign_event_types(player_events)
-    damage_events = player_events[(player_events.type == LogType.POWER)|(player_events.type == LogType.CONDI)]
-    damage_events = damage_events.assign(damage = np.where(damage_events.type == LogType.POWER,
-                                           damage_events['value'], damage_events['buff_dmg']))
+    damage_events = player_events[(player_events.type == LogType.POWER)
+                                  |(player_events.type == LogType.CONDI)]
+    damage_events = damage_events.assign(
+        damage = np.where(damage_events.type == LogType.POWER,
+                          damage_events['value'], damage_events['buff_dmg']))
 
     collector.with_key(Group.PHASE, "All").run(collect_phase_damage, damage_events)
 
@@ -179,12 +183,24 @@ class Analyser:
         collector.set_context_value(ContextType.SKILL_NAME, skill_map)
         collector.set_context_value(ContextType.AGENT_NAME, agent_map)
 
-        events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
+        events['ult_src_instid'] = events.src_master_instid.where(
+            events.src_master_instid != 0, events.src_instid)
         players = agents[agents.party != 0]
         player_events = events[events.ult_src_instid.isin(players.index)].sort_values(by='time')
 
         collector.with_key(Group.CATEGORY, "status").run(collect_player_status, players)
         collector.with_key(Group.CATEGORY, "damage").run(collect_damage, player_events)
+
+        start_event = events[events.state_change == parser.StateChange.LOG_START]
+        start_timestamp = start_event['value'][0]
+        start_time = start_event['time'][0]
+        encounter_end = events.time.max()
+
+        self.info = {
+            'name': boss.name,
+            'start': int(start_timestamp),
+            'end': int(start_timestamp + int((encounter_end - start_time) / 1000)),
+        }
 
         # saved as a JSON dump
         self.data = collector.all_data
