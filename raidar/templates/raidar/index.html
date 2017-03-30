@@ -26,7 +26,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
       integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
       crossorigin="anonymous"></script>
-    <!-- <link href="{% static 'raidar/style.css' %}" rel="stylesheet"> -->
+    <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
       window.raidar_data = {{ userprops|safe }};
@@ -72,7 +72,13 @@
         <div class="uk-flex-1">
           [[#if username]]
 
-            [[#if page.name == "encounters"]]
+            [[#if loading]]
+
+            <center class="uk-margin-large-top">
+              <div uk-spinner></div>
+            </center>
+
+            [[elseif page.name == "encounters"]]
 
               [[#if encounters.length]]
 
@@ -87,7 +93,7 @@
                     </tr>
                   </thead>
                   [[#each encounterSlice]]
-                    <tr>
+                    <tr on-click="@this.page({ name: 'encounter', no: id })">
                       <td>
                         [[area]]
                       </td>
@@ -135,7 +141,43 @@
 
             [[elseif page.name == "encounter"]]
 
-              TODO encounter details
+              
+
+              <ul class="uk-tab">
+                <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
+                <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
+              </ul>
+
+              [[#if page.tab == 'combat_stats']]
+                <div class="uk-overflow-auto">
+                  <table class="uk-table stats">
+                    [[#each encounter.parties:partyNo]]
+                      <tbody>
+                        <tr>
+                          <th>Party [[partyNo]]</th>
+                          <th>DPS</th>
+                        </tr>
+                        [[#each .]]
+                          <tr>
+                            <td>
+                              <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
+                              <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
+                              [[name]]
+                            </td>
+                            {# TODO: get max properly, instead of `50000` #}
+                            <td style="[[bar(phases['All']['actual']['dps'], phases['All']['average']['dps'], 50000)]]">
+                              <span>[[phases['All']['actual']['dps']]]</span>
+                              <span class="expected">[[Math.round(phases['All']['average']['dps'])]]</span>
+                            </td>
+                          </tr>
+                        [[/each]]
+                      </tbody>
+                    [[/each]]
+                  </table>
+                </div>
+              [[elseif page.tab == 'boon_uptime']]
+                Boon Uptime
+              [[/if]]
 
             [[/if]]
 

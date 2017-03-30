@@ -36,6 +36,18 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
+    bar: (actual, average, max) => {
+      max = Math.max(actual, average, max);
+      let good = actual > average;
+      let same = actual == average;
+      let values = same ? [0, actual, max] : good ?  [0, average, actual, max] : [0, actual, average, max];
+      values = values.map(value => 100 * value / max)
+      let colours = same ? ['#eeeeff', '#ffffff'] : good ? ['#eeffee', '#ccffcc', '#ffffff'] : ['#ffdddd', '#ffeeee', '#ffffff'];
+      let gradient = Array.from(Array(colours.length)).map((_, i) =>
+          `${colours[i]} ${values[i]}%,${colours[i]} ${values[i+1]}%`
+      ).join(',');
+      return `background: linear-gradient(to right, ${gradient})`
+    }
   };
   delete window.raidar_data;
 
@@ -43,6 +55,11 @@
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
     return url;
+  }
+
+  function setData(data) {
+    r.set(data);
+    r.set('loading', false);
   }
 
   let pageInit = {
@@ -55,20 +72,16 @@
     reset_pw: page => {
       $('#reset_pw_email').select().focus();
     },
+    encounter: page => {
+      r.set({
+        loading: true,
+        "page.tab": 'combat_stats',
+      });
+      $.get({
+        url: 'encounter/' + page.no + '.json',
+      }).then(setData);
+    },
   };
-
-  function setPage(page, field) {
-    if (typeof page == "string") {
-      page = { name: page };
-    }
-    r.set('page', page);
-    history.pushState(page, null, URLForPage(page));
-    if (pageInit[page.name]) {
-      pageInit[page.name](page);
-    }
-    return false;
-  }
-  history.replaceState(initData.page, null, URLForPage(initData.page));
 
   $(window).on('popstate', evt => {
     r.set('page', evt.originalEvent.state);
@@ -124,6 +137,23 @@
     page: setPage,
   });
 
+  // history, pushState
+  function setPage(page) {
+    if (typeof page == "string") {
+      page = { name: page };
+    }
+    r.set('page', page);
+    history.pushState(page, null, URLForPage(page));
+    if (pageInit[page.name]) {
+      pageInit[page.name](page);
+    }
+    return false;
+  }
+  history.replaceState(initData.page, null, URLForPage(initData.page));
+  if (pageInit[initData.page.name]) {
+    pageInit[initData.page.name](initData.page);
+  }
+
 
 
   function error(str) {
@@ -169,7 +199,7 @@
           password = this.get('auth.input.password');
 
       $.post({
-        url: 'login',
+        url: 'login.json',
         data: {
           username: username,
           password: password,
@@ -185,7 +215,7 @@
           email = this.get('auth.input.email');
 
       $.post({
-        url: 'register',
+        url: 'register.json',
         data: {
           username: username,
           password: password,
@@ -198,7 +228,7 @@
     },
     auth_logout: function logout() {
       $.post({
-        url: 'logout',
+        url: 'logout.json',
       }).done(response => {
         this.set({
           username: null,
@@ -261,7 +291,7 @@
         let form = new FormData();
         form.append(file.name, file);
         return $.ajax({
-          url: 'upload',
+          url: 'upload.json',
           data: form,
           type: 'POST',
           contentType: false,

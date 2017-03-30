@@ -24,6 +24,12 @@ class LogType(IntEnum):
     ACTIVATION = 4
     STATUSREMOVE = 5
 
+class Archetype(IntEnum):
+    POWER = 0
+    HEAL = 1
+    CONDI = 2
+    TANK = 3
+
 class ContextType:
     DURATION = "Duration"
     TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION = "Total Damage"
@@ -75,20 +81,22 @@ BOSSES = {boss.profs[0]: boss for boss in BOSS_ARRAY}
 
 def collect_individual_status(collector, player):
     only_entry = player.iloc[0]
-    collector.add_data('profession', parser.AgentType(only_entry['prof']).name, str)
-    collector.add_data('is_elite', only_entry['elite'], bool)
+    # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
+    collector.add_data('profession', only_entry['prof'], int)
+    collector.add_data('elite', only_entry['elite'], int)
     collector.add_data('toughness', only_entry['toughness'], int)
     collector.add_data('healing', only_entry['healing'], int)
     collector.add_data('condition', only_entry['condition'], int)
-    collector.add_data('archetype', only_entry['archetype'], str)
+    collector.add_data('archetype', only_entry['archetype'], int)
+    collector.add_data('party', only_entry['party'], int)
     collector.add_data('account', only_entry['account'], str)
 
 def collect_player_status(collector, players):
     # player archetypes
-    players = players.assign(archetype="Power")  # POWER
-    players.loc[players.condition >= 7, 'archetype'] = "Condi"  # CONDI
-    players.loc[players.toughness >= 7, 'archetype'] = "Tank"  # TANK
-    players.loc[players.healing >= 7, 'archetype'] = "Heal"  # HEAL
+    players = players.assign(archetype=Archetype.POWER)
+    players.loc[players.condition >= 7, 'archetype'] = Archetype.CONDI
+    players.loc[players.toughness >= 7, 'archetype'] = Archetype.TANK
+    players.loc[players.healing >= 7, 'archetype'] = Archetype.HEAL
     collector.group(collect_individual_status, players, ('name', 'Name'))
 
 def collect_group_damage(collector, events):
@@ -98,6 +106,11 @@ def collect_group_damage(collector, events):
     collector.add_data('power', power_events['damage'].sum(), int)
     collector.add_data('condi', condi_events['damage'].sum(), int)
     collector.add_data('total', events['damage'].sum(), int)
+    # XXX is this correct?
+    collector.add_data('fifty', events['is_fifty'].mean(), percentage)
+    collector.add_data('scholar', events['is_ninety'].mean(), percentage)
+    collector.add_data('seaweed', events['is_moving'].mean(), percentage)
+    collector.add_data('dps', events['damage'].sum(), per_second(int))
 
 def collect_power_skill_data(collector, events):
     collector.add_data('fifty', events['is_fifty'].mean(), percentage)

@@ -58,7 +58,7 @@ def main():
 
             with open('output.txt','w') as output_file:
                 flattened = flatten(a.data)
-                for key in flattened:
+                for key in sorted(flattened.keys()):
                     print_node(key, flattened[key], output_file)
             print("Readable dump took {0} seconds".format(time.clock() - start))
 
