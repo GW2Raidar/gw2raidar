@@ -101,6 +101,8 @@ def encounter(request, id=None, json=None):
             member['specialisation_name'] = Character.SPECIALISATIONS[(member['profession'], member['elite'])]
     data = {
         "encounter": {
+            "name": encounter.area.name,
+            "started_at": encounter.started_at,
             "phases": {
                 phase: {
                     'average': area_stats[phase]['overall'],

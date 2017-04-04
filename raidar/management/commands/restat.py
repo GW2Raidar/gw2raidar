@@ -7,28 +7,34 @@ import os
 import errno
 from collections import defaultdict
 
-# XXX
-import logging
-l = logging.getLogger('django.db.backends')
-l.setLevel(logging.DEBUG)
-l.addHandler(logging.StreamHandler())
+# XXX DEBUG
+# import logging
+# l = logging.getLogger('django.db.backends')
+# l.setLevel(logging.DEBUG)
+# l.addHandler(logging.StreamHandler())
 
 
 SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
 PIDFILE = os.path.join(SCRIPTDIR, 'restat.pid')
 
-def get_or_create(hash, prop, type):
+def get_or_create(hash, prop, type=dict):
     if prop not in hash:
         hash[prop] = type()
     return hash[prop]
 
 def get_or_create_then_increment(hash, prop, value=1):
-    get_or_create(hash, prop, int)
+    get_or_create(hash, prop, type(value))
     hash[prop] += value
+
+def get_or_create_then_maximum(hash, prop, value):
+    prop = "max_" + prop
+    get_or_create(hash, prop, type(value))
+    if value > hash[prop]:
+        hash[prop] = value
 
 def calculate_average(hash, prop):
     if prop in hash:
-        hash[prop] = hash[prop] / hash['count']
+        hash['avg_' + prop] = hash[prop] / hash['count']
 
 def check_running():
     # http://stackoverflow.com/questions/10978869
@@ -64,26 +70,27 @@ class Command(BaseCommand):
         }
         queryset = Encounter.objects.all()
         for encounter in queryset_iterator(queryset):
-            totals_in_area = get_or_create(totals['area'], encounter.area_id, dict)
+            totals_in_area = get_or_create(totals['area'], encounter.area_id)
             data = json_loads(encounter.dump)
             phases = data['Category']['damage']['Phase']
             participations = encounter.participations.select_related('character').all()
             for phase, stats_in_phase in phases.items():
                 stats_in_phase_to_all = stats_in_phase['To']['*All']
-                totals_in_phase = get_or_create(totals_in_area, phase, dict)
-                overall_totals = get_or_create(totals_in_phase, 'overall', dict)
+                totals_in_phase = get_or_create(totals_in_area, phase)
+                overall_totals = get_or_create(totals_in_phase, 'overall')
                 get_or_create_then_increment(overall_totals, 'dps', stats_in_phase_to_all['dps'])
                 # TODO: duration, damage_in, boss_damage
                 get_or_create_then_increment(overall_totals, 'count')
 
-                totals_by_build = get_or_create(totals_in_phase, 'build', dict)
+                totals_by_build = get_or_create(totals_in_phase, 'build')
                 for participation in participations:
                     stats_in_phase_to_all = stats_in_phase['Player'][participation.character.name]['To']['*All']
-                    totals_by_profession = get_or_create(totals_by_build, participation.character.profession, dict)
+                    totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
                     elite = data['Category']['status']['Name'][participation.character.name]['elite']
-                    totals_by_elite = get_or_create(totals_by_profession, elite, dict)
-                    totals_by_archetype = get_or_create(totals_by_elite, participation.archetype, dict)
+                    totals_by_elite = get_or_create(totals_by_profession, elite)
+                    totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
                     get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
+                    get_or_create_then_maximum(overall_totals, 'dps', stats_in_phase_to_all['dps'])
                     # TODO: damage_in, boss_damage...
                     get_or_create_then_increment(totals_by_archetype, 'count')
 
@@ -97,4 +104,11 @@ class Command(BaseCommand):
                         for archetype, totals_by_archetype in totals_by_elite.items():
                             calculate_average(totals_by_archetype, 'dps')
                             del totals_by_archetype['count']
+                            del totals_by_archetype['dps']
+
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
+
+        # XXX DEBUG
+        # import pprint
+        # pp = pprint.PrettyPrinter(indent=2)
+        # pp.pprint(totals)

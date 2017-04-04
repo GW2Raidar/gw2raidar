@@ -28,6 +28,18 @@
     let date = new Date(timestamp * 1000);
     return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
   }
+  helpers.bar = (actual, average, max) => {
+    max = Math.max(actual, average, max);
+    let good = actual > average;
+    let same = actual == average;
+    let values = same ? [0, actual, max] : good ?  [0, average, actual, max] : [0, actual, average, max];
+    values = values.map(value => 100 * value / max)
+    let colours = same ? ['#eeeeff', '#ffffff'] : good ? ['#eeffee', '#ccffcc', '#ffffff'] : ['#ffdddd', '#ffeeee', '#ffffff'];
+    let gradient = Array.from(Array(colours.length)).map((_, i) =>
+        `${colours[i]} ${values[i]}%,${colours[i]} ${values[i+1]}%`
+    ).join(',');
+    return `background: linear-gradient(to right, ${gradient})`
+  };
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initData = {
@@ -36,18 +48,6 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
-    bar: (actual, average, max) => {
-      max = Math.max(actual, average, max);
-      let good = actual > average;
-      let same = actual == average;
-      let values = same ? [0, actual, max] : good ?  [0, average, actual, max] : [0, actual, average, max];
-      values = values.map(value => 100 * value / max)
-      let colours = same ? ['#eeeeff', '#ffffff'] : good ? ['#eeffee', '#ccffcc', '#ffffff'] : ['#ffdddd', '#ffeeee', '#ffffff'];
-      let gradient = Array.from(Array(colours.length)).map((_, i) =>
-          `${colours[i]} ${values[i]}%,${colours[i]} ${values[i+1]}%`
-      ).join(',');
-      return `background: linear-gradient(to right, ${gradient})`
-    }
   };
   delete window.raidar_data;
 
@@ -76,6 +76,7 @@
       r.set({
         loading: true,
         "page.tab": 'combat_stats',
+        "page.phase": 'All',
       });
       $.get({
         url: 'encounter/' + page.no + '.json',

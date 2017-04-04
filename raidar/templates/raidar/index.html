@@ -26,6 +26,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
       integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
       crossorigin="anonymous"></script>
+    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
     <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
@@ -141,16 +142,47 @@
 
             [[elseif page.name == "encounter"]]
 
-              
+              <h2 class="uk-padding-small uk-clearfix">
+                <div class="uk-float-left">
+                  [[encounter.name]]
+                </div>
+                <div class="uk-float-right">
+                  [[formatDate(encounter.started_at)]]
+                </div>
+              </h2>
 
-              <ul class="uk-tab">
-                <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
-                <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
-              </ul>
+              <nav class="uk-navbar-container navbar-secondary" uk-navbar>
+                <div class="uk-navbar-left">
+                  <ul class="uk-navbar-nav">
+                    <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
+                    <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
+                  </ul>
+                </div>
+                <div class="uk-navbar-right">
+                  <ul class="uk-navbar-nav">
+                    [[#each encounter.phases:phaseName]]
+                    <li class="[[page.phase == phaseName && 'uk-active']]"><a on-click="@this.set('page.phase', phaseName)">[[phaseName]]</a></li>
+                    [[/each]]
+                  </ul>
+                </div>
+              </nav>
 
               [[#if page.tab == 'combat_stats']]
                 <div class="uk-overflow-auto">
                   <table class="uk-table stats">
+                    <tbody>
+                      <tr>
+                        <th>Squad</th>
+                        <th>DPS</th>
+                      </tr>
+                      <tr>
+                        <td></td>
+                        <td style="[[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].average.avg_dps, encounter.phases[page.phase].average.max_dps)]]">
+                          <span>[[encounter.phases[page.phase].actual.dps]]</span>
+                          <span class="expected">[[Math.round(encounter.phases[page.phase].average.avg_dps)]]</span>
+                        </td>
+                      </tr>
+                    </tbody>
                     [[#each encounter.parties:partyNo]]
                       <tbody>
                         <tr>
@@ -164,10 +196,9 @@
                               <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
                               [[name]]
                             </td>
-                            {# TODO: get max properly, instead of `50000` #}
-                            <td style="[[bar(phases['All']['actual']['dps'], phases['All']['average']['dps'], 50000)]]">
-                              <span>[[phases['All']['actual']['dps']]]</span>
-                              <span class="expected">[[Math.round(phases['All']['average']['dps'])]]</span>
+                            <td style="[[bar(phases[page.phase].actual.dps, phases[page.phase].average.avg_dps, encounter.phases[page.phase].average.max_dps)]]">
+                              <span>[[phases[page.phase].actual.dps]]</span>
+                              <span class="expected">[[Math.round(phases[page.phase].average.avg_dps)]]</span>
                             </td>
                           </tr>
                         [[/each]]
@@ -177,6 +208,7 @@
                 </div>
               [[elseif page.tab == 'boon_uptime']]
                 Boon Uptime
+                {# TODO #}
               [[/if]]
 
             [[/if]]
