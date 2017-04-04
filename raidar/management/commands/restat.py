@@ -79,6 +79,8 @@ class Command(BaseCommand):
                 totals_in_phase = get_or_create(totals_in_area, phase)
                 overall_totals = get_or_create(totals_in_phase, 'overall')
                 get_or_create_then_increment(overall_totals, 'dps', stats_in_phase_to_all['dps'])
+                get_or_create_then_increment(overall_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                get_or_create_then_increment(overall_totals, 'scholar', stats_in_phase_to_all['scholar'])
                 # TODO: duration, damage_in, boss_damage
                 get_or_create_then_increment(overall_totals, 'count')
 
@@ -91,18 +93,26 @@ class Command(BaseCommand):
                     totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
                     get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
                     get_or_create_then_maximum(overall_totals, 'dps', stats_in_phase_to_all['dps'])
+                    get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
+                    get_or_create_then_maximum(overall_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                    get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
+                    get_or_create_then_maximum(overall_totals, 'scholar', stats_in_phase_to_all['scholar'])
                     # TODO: damage_in, boss_damage...
                     get_or_create_then_increment(totals_by_archetype, 'count')
 
         for area_id, totals_in_area in totals['area'].items():
             for phase, totals_in_phase in totals_in_area.items():
                 calculate_average(totals_in_phase['overall'], 'dps')
+                calculate_average(totals_in_phase['overall'], 'seaweed')
+                calculate_average(totals_in_phase['overall'], 'scholar')
                 del totals_in_phase['overall']['count']
 
                 for character_id, totals_by_build in totals_in_phase['build'].items():
                     for elite, totals_by_elite in totals_by_build.items():
                         for archetype, totals_by_archetype in totals_by_elite.items():
                             calculate_average(totals_by_archetype, 'dps')
+                            calculate_average(totals_by_archetype, 'seaweed')
+                            calculate_average(totals_by_archetype, 'scholar')
                             del totals_by_archetype['count']
                             del totals_by_archetype['dps']
 

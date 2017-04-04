@@ -174,12 +174,22 @@
                       <tr>
                         <th>Squad</th>
                         <th>DPS</th>
+                        <th>Seaweed</th>
+                        <th>Scholar</th>
                       </tr>
                       <tr>
                         <td></td>
                         <td style="[[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].average.avg_dps, encounter.phases[page.phase].average.max_dps)]]">
                           <span>[[encounter.phases[page.phase].actual.dps]]</span>
                           <span class="expected">[[Math.round(encounter.phases[page.phase].average.avg_dps)]]</span>
+                        </td>
+                        <td style="[[bar(encounter.phases[page.phase].actual.seaweed, encounter.phases[page.phase].average.avg_seaweed, encounter.phases[page.phase].average.max_seaweed)]]">
+                          <span>[[encounter.phases[page.phase].actual.seaweed]]</span>
+                          <span class="expected">[[Math.round(encounter.phases[page.phase].average.avg_seaweed)]]</span>
+                        </td>
+                        <td style="[[bar(encounter.phases[page.phase].actual.scholar, encounter.phases[page.phase].average.avg_scholar, encounter.phases[page.phase].average.max_scholar)]]">
+                          <span>[[encounter.phases[page.phase].actual.scholar]]</span>
+                          <span class="expected">[[Math.round(encounter.phases[page.phase].average.avg_scholar)]]</span>
                         </td>
                       </tr>
                     </tbody>
@@ -191,7 +201,7 @@
                         </tr>
                         [[#each .]]
                           <tr>
-                            <td>
+                            <td class="[[self && 'uk-text-primary']]">
                               <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
                               <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
                               [[name]]
@@ -199,6 +209,14 @@
                             <td style="[[bar(phases[page.phase].actual.dps, phases[page.phase].average.avg_dps, encounter.phases[page.phase].average.max_dps)]]">
                               <span>[[phases[page.phase].actual.dps]]</span>
                               <span class="expected">[[Math.round(phases[page.phase].average.avg_dps)]]</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].actual.seaweed, phases[page.phase].average.avg_seaweed, encounter.phases[page.phase].average.max_seaweed)]]">
+                              <span>[[phases[page.phase].actual.seaweed]]</span>
+                              <span class="expected">[[Math.round(phases[page.phase].average.avg_seaweed)]]</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].actual.scholar, phases[page.phase].average.avg_scholar, encounter.phases[page.phase].average.max_scholar)]]">
+                              <span>[[phases[page.phase].actual.scholar]]</span>
+                              <span class="expected">[[Math.round(phases[page.phase].average.avg_scholar)]]</span>
                             </td>
                           </tr>
                         [[/each]]
