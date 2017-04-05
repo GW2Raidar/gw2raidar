@@ -71,7 +71,6 @@
   }
   helpers.bar = (actual, average, min, max, top) => {
     if (!top) top = max;
-    console.log("FOO", actual, average, min, max, top);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;
     let colour = scaleColour(actual, average, min, max);
@@ -84,6 +83,9 @@
 </svg>
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+  };
+  helpers.bar1 = (val, max) => {
+    console.log(val, max);
   };
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);

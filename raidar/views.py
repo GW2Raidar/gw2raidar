@@ -89,10 +89,12 @@ def encounter(request, id=None, json=None):
     phases = dump['Category']['damage']['Phase'].keys()
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Name'].items()]
     keyfunc = lambda member: member['party']
-    parties = { party: list(members)
-                for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
-    for party, members in parties.items():
-        for member in members:
+    parties = { party: {
+                    "members": list(members),
+                    "stats": {}, # TODO
+                } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
+    for party_no, party in parties.items():
+        for member in party['members']:
             if member['account'] == account.name:
                 member['self'] = True
             member['phases'] = {

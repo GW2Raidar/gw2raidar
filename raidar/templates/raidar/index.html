@@ -172,13 +172,13 @@
                   <table class="uk-table stats">
                     <tbody>
                       <tr>
-                        <th>Squad</th>
+                        <th>Totals</th>
                         <th>DPS</th>
                         <th>Seaweed</th>
                         <th>Scholar</th>
                       </tr>
                       <tr>
-                        <td></td>
+                        <td>Squad</td>
                         <td style="[[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].group.avg_dps, encounter.phases[page.phase].group.min_dps, encounter.phases[page.phase].group.max_dps)]]">
                           <span>[[encounter.phases[page.phase].actual.dps]]</span>
                           <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps)]]</span>
@@ -192,14 +192,30 @@
                           <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_scholar)]]%</span>
                         </td>
                       </tr>
+                      [[#each encounter.parties:partyNo]]
+                        <tr>
+                          <td>Party [[partyNo]] ([[.length]] member[[.length > 1 && 's' || '']])</td>
+                          <td style="{# TODO #}">
+                            <span>{# TODO #}</span>
+                          </td>
+                          <td style="{# TODO #}">
+                            <span>{# TODO #}</span>
+                          </td>
+                          <td style="{# TODO #}">
+                            <span>{# TODO #}</span>
+                          </td>
+                        </tr>
+                      [[/each]]
                     </tbody>
                     [[#each encounter.parties:partyNo]]
                       <tbody>
                         <tr>
                           <th>Party [[partyNo]]</th>
                           <th>DPS</th>
+                          <th>Seaweed</th>
+                          <th>Scholar</th>
                         </tr>
-                        [[#each .]]
+                        [[#each members]]
                           <tr>
                             <td class="[[self && 'uk-text-primary']]">
                               <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
