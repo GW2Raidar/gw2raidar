@@ -23,20 +23,118 @@
   $(document).ajaxError(evt => error("Error connecting to server"))
 
 
-  var helpers = Ractive.defaults.data;
+  let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
     let date = new Date(timestamp * 1000);
     return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
+  };
+  class Colour {
+    constructor(r, g, b, a) {
+      if (typeof(r) == 'string') {
+        [this.r, this.g, this.b] = r.match(Colour.colRE).slice(1).map(x => parseInt(x, 16));
+        this.a = g || 1;
+      } else {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+      }
+    }
+    blend(other, p) {
+      let rgba = ['r', 'g', 'b', 'a'].map(c => (1 - p) * this[c] + p * other[c]);
+      return new Colour(...rgba);
+    }
+    lighten(p) {
+      let rgba = ['r', 'g', 'b', 'a'].map(c => 255 - p * (255 - this[c]));
+      return new Colour(...rgba);
+    }
+    css() {
+      return `rgba(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)}, ${this.a})`;
+    }
   }
+  Colour.colRE = /^#(..)(..)(..)$/;
+  const barcss = {
+    average: new Colour("#cccc80"),
+    good: new Colour("#80ff80"),
+    bad: new Colour("#ff8080"),
+    expStroke: new Colour("#8080ff").css(),
+    expFill: new Colour("#8080ff", 0.5).css(),
+  };
+  const scaleColour = (val, avg, min, max) => {
+    if (val == avg) {
+      return barcss.average;
+    } else if (val < avg) {
+      return barcss.bad.blend(barcss.average, 1 - (avg - val) / (avg - min));
+    } else {
+      return barcss.good.blend(barcss.average, 1 - (val - avg) / (max - avg));
+    }
+  }
+  helpers.bar = (actual, average, min, max, top) => {
+    if (!top) top = max;
+    let avgPct = average * 100 / top;
+    let actPct = actual * 100 / top;
+    let colour = scaleColour(actual, average, min, max);
+    let stroke = colour.css();
+    let fill = colour.lighten(0.5).css();
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+<rect x='0%' width='${avgPct}%' y='10%' height='70%' stroke='${barcss.expStroke}' fill='${barcss.expFill}'/>
+<rect x='0%' width='${actPct}%' y='20%' height='70%' stroke='${stroke}' fill='${fill}'/>
+</svg>
+    `.replace(/\n\s*/g, "");
+    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+  };
+  helpers.bar1 = (val, max) => {
+    console.log(val, max);
+  };
 
+  let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
-    page: { name: window.raidar_data.username ? 'encounters' : 'index' },
+    page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
   };
   delete window.raidar_data;
+
+  function URLForPage(page) {
+    let url = baseURL + page.name;
+    if (page.no) url += '/' + page.no;
+    return url;
+  }
+
+  function setData(data) {
+    r.set(data);
+    r.set('loading', false);
+  }
+
+  let pageInit = {
+    login: page => {
+      $('#login_username').select().focus();
+    },
+    register: page => {
+      $('#register_username').select().focus();
+    },
+    reset_pw: page => {
+      $('#reset_pw_email').select().focus();
+    },
+    encounter: page => {
+      r.set({
+        loading: true,
+        "page.tab": 'combat_stats',
+        "page.phase": 'All',
+      });
+      $.get({
+        url: 'encounter/' + page.no + '.json',
+      }).then(setData);
+    },
+  };
+
+  $(window).on('popstate', evt => {
+    r.set('page', evt.originalEvent.state);
+  });
+
 
 
   // Ractive
@@ -84,15 +182,26 @@
     },
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
-
-    page: function(page, field) {
-      this.set('page', { name: page });
-      if (field) {
-        $('#' + field).select().focus();
-      }
-    },
+    page: setPage,
   });
-  window.r = r; // XXX DEBUG
+
+  // history, pushState
+  function setPage(page) {
+    if (typeof page == "string") {
+      page = { name: page };
+    }
+    r.set('page', page);
+    history.pushState(page, null, URLForPage(page));
+    if (pageInit[page.name]) {
+      pageInit[page.name](page);
+    }
+    return false;
+  }
+  history.replaceState(initData.page, null, URLForPage(initData.page));
+  if (pageInit[initData.page.name]) {
+    pageInit[initData.page.name](initData.page);
+  }
+
 
 
   function error(str) {
@@ -124,8 +233,8 @@
         'auth.input.password': '',
         'auth.input.password2': '',
         'auth.input.api_key': '',
-        'page.name': 'encounters'
       });
+      setPage(response.page || loggedInPage);
       csrftoken = response.csrftoken;
       delete response.csrftoken;
       updateRactiveFromResponse(response);
@@ -138,7 +247,7 @@
           password = this.get('auth.input.password');
 
       $.post({
-        url: 'login',
+        url: 'login.json',
         data: {
           username: username,
           password: password,
@@ -154,7 +263,7 @@
           email = this.get('auth.input.email');
 
       $.post({
-        url: 'register',
+        url: 'register.json',
         data: {
           username: username,
           password: password,
@@ -167,16 +276,18 @@
     },
     auth_logout: function logout() {
       $.post({
-        url: 'logout',
+        url: 'logout.json',
       }).done(response => {
         this.set({
           username: null,
-          'page.name': 'index',
         });
+        setPage('index');
       });
     },
     page_no: function pageNo(evt) {
-      this.set('page.no', parseInt(evt.node.getAttribute('data-page')));
+      let page_no = parseInt(evt.node.getAttribute('data-page'));
+      let page = this.get('page');
+      setPage(Object.assign(page, { no: page_no }));
       return false;
     },
   });
@@ -228,7 +339,7 @@
         let form = new FormData();
         form.append(file.name, file);
         return $.ajax({
-          url: 'upload',
+          url: 'upload.json',
           data: form,
           type: 'POST',
           contentType: false,
@@ -242,4 +353,6 @@
       });
       evt.preventDefault();
     });
+
+  window.r = r; // XXX DEBUG
 })();

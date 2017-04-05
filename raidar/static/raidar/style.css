@@ -1,28 +1,24 @@
-header {
-  position: relative;
-  color: white;
-  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#001d4c+0,000000+100 */
-  background: #001d4c; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #001d4c 0%, #000000 100%); /* FF3.6-15 */
-  background: -webkit-linear-gradient(-45deg,  #001d4c 0%,#000000 100%); /* Chrome10-25,Safari5.1-6 */
-  background: linear-gradient(135deg,  #001d4c 0%,#000000 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#001d4c', endColorstr='#000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
+.expected {
+  color: #999999;
+  font-size: 70%;
 }
-header .logo {
-  font-size: 60px;
-  color: lightblue;
-  padding: 2px 5px;
+.uk-h1, .uk-h2, .uk-h3, .uk-h4, .uk-h5, .uk-h6, h1, h2, h3, h4, h5, h6,
+body
+{
+  font-family: 'Raleway', sans-serif;
 }
-header .auth {
-  position: absolute;
-  bottom: 2px;
-  right: 5px;
-  text-align: right;
+.navbar-secondary .uk-navbar-nav > li > a {
+  height: 40px;
 }
-header .auth a {
-  padding: 2px 5px;
-  color: lightblue;
+rect.bar-average {
+  fill: #eeeeff;
+  stroke: #ddddff;
 }
-.error {
-  color: red;
+rect.bar-good {
+  fill: #eeffee;
+  stroke: #ddffdd;
+}
+rect.bar-bad {
+  fill: #ffeeee;
+  stroke: #ffdddd;
 }

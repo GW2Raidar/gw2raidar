@@ -1,4 +1,4 @@
-from json import dumps as json_dumps
+from json import dumps as json_dumps, loads as json_loads
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -8,12 +8,14 @@ from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
-from analyser.analyser import Analyser
+from analyser.analyser import Analyser, Group, Archetype
 from django.utils import timezone
+from time import time
 from django.db import transaction
 from django.core import serializers
 from re import match
 from .models import *
+from itertools import groupby
 from gw2api.gw2api import GW2API, GW2APIException
 
 
@@ -62,15 +64,67 @@ def _login_successful(request, user):
 
 
 
-
-@require_GET
-def index(request):
+def _html_response(request, page, data={}):
     response = _userprops(request)
+    response.update(data)
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['professions'] = {k: v for k, v in Character.PROFESSION_CHOICES}
+    response['page'] = page
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
+
+@require_GET
+def index(request, page={ 'name': 'encounters', 'no': 1 }):
+    return _html_response(request, page)
+
+@require_GET
+def encounter(request, id=None, json=None):
+    encounter = Encounter.objects.select_related('area').get(pk=id)
+    account = Account.objects.get(
+        characters__participations__encounter_id=encounter.id,
+        user=request.user)
+    dump = json_loads(encounter.dump)
+    area_stats = json_loads(encounter.area.stats)
+    phases = dump['Category']['damage']['Phase'].keys()
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Name'].items()]
+    keyfunc = lambda member: member['party']
+    parties = { party: {
+                    "members": list(members),
+                    "stats": {}, # TODO
+                } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
+    for party_no, party in parties.items():
+        for member in party['members']:
+            if member['account'] == account.name:
+                member['self'] = True
+            member['phases'] = {
+                phase: {
+                    'archetype': area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])],
+                    # too many values... Skills needed?
+                    'actual': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All'],
+                } for phase in phases
+            }
+            member['archetype_name'] = Archetype(member['archetype']).name
+            member['specialisation_name'] = Character.SPECIALISATIONS[(member['profession'], member['elite'])]
+    data = {
+        "encounter": {
+            "name": encounter.area.name,
+            "started_at": encounter.started_at,
+            "phases": {
+                phase: {
+                    'group': area_stats[phase]['group'],
+                    'individual': area_stats[phase]['individual'],
+                    'actual': dump['Category']['damage']['Phase'][phase]['To']['*All'],
+                } for phase in phases
+            },
+            "parties": parties,
+        }
+    }
+
+    if json:
+        return JsonResponse(data)
+    else:
+        return _html_response(request, { "name": "encounter", "no": str(id) }, data)
 
 
 @require_GET
@@ -81,8 +135,10 @@ def initial(request):
     return JsonResponse(response)
 
 
-@require_POST
 def login(request):
+    if request.method == 'GET':
+        return index(request, page={ 'name': 'login' })
+
     username = request.POST.get('username')
     password = request.POST.get('password')
     # stayloggedin = request.GET.get('stayloggedin')
@@ -98,8 +154,10 @@ def login(request):
         return _error('Could not log in')
 
 
-@require_POST
 def register(request):
+    if request.method == 'GET':
+        return index(request, page={ 'name': 'register' })
+
     username = request.POST.get('username')
     password = request.POST.get('password')
     email = request.POST.get('email')
@@ -156,12 +214,10 @@ def upload(request):
             return _error('Unknown area')
 
         analyser = Analyser(evtc_encounter)
-        players = analyser.players
-        if players.empty:
-            return _error('No players in encounter')
 
-        if analyser.info['end'] - analyser.info['start'] < 60:
-            return _error('Encounter shorter than 60s')
+        # XXX
+        # if analyser.info['end'] - analyser.info['start'] < 60:
+        #     return _error('Encounter shorter than 60s')
 
         started_at = analyser.info['start']
 
@@ -170,23 +226,33 @@ def upload(request):
         # account_names are being hashed, and the triplet
         # (area, account_hash, started_at) is being checked for
         # uniqueness (along with some fuzzing to started_at)
-        account_names = list(players['account'])
+        dump = analyser.data
+        status_for = dump[Group.CATEGORY]['status']['Name']
+        account_names = [player['account'] for player in status_for.values()]
         encounter, encounter_created = Encounter.objects.get_or_create(
-                area=area, started_at=started_at,
-                account_names=account_names,
-                dump=json_dumps(analyser.data))
+            uploaded_at=time(), uploaded_by=request.user,
+            area=area, started_at=started_at,
+            account_names=account_names,
+            dump=json_dumps(dump)
+        )
 
-        for player in players.itertuples():
-            account, _ = Account.objects.get_or_create(
-                    name=player.account)
-            character, _ = Character.objects.get_or_create(
-                    name=player.name, account=account, profession=player.prof)
-            participation, _ = Participation.objects.get_or_create(
-                    character=character, encounter=encounter,
-                    archetype=player.archetype, party=player.party)
+        if encounter_created:
+            for name, player in status_for.items():
+                account, _ = Account.objects.get_or_create(
+                        name=player['account'])
+                character, _ = Character.objects.get_or_create(
+                        name=name, account=account, profession=player['profession'])
+                Participation.objects.create(
+                        character=character, encounter=encounter,
+                        archetype=player['archetype'], party=player['party'])
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:
             result[filename] = _participation_data(own_participation)
 
     return JsonResponse(result)
+
+
+@require_GET
+def named(request, name, no):
+    return index(request, { 'name': name, 'no': no })
