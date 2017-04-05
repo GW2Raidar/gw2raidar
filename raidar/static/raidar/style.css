@@ -10,3 +10,15 @@ body
 .navbar-secondary .uk-navbar-nav > li > a {
   height: 40px;
 }
+rect.bar-average {
+  fill: #eeeeff;
+  stroke: #ddddff;
+}
+rect.bar-good {
+  fill: #eeffee;
+  stroke: #ddffdd;
+}
+rect.bar-bad {
+  fill: #ffeeee;
+  stroke: #ffdddd;
+}

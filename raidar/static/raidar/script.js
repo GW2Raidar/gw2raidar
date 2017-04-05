@@ -23,22 +23,67 @@
   $(document).ajaxError(evt => error("Error connecting to server"))
 
 
-  var helpers = Ractive.defaults.data;
+  let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
     let date = new Date(timestamp * 1000);
     return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
+  };
+  class Colour {
+    constructor(r, g, b, a) {
+      if (typeof(r) == 'string') {
+        [this.r, this.g, this.b] = r.match(Colour.colRE).slice(1).map(x => parseInt(x, 16));
+        this.a = g || 1;
+      } else {
+        this.r = r;
+        this.g = g;
+        this.b = b;
+        this.a = a;
+      }
+    }
+    blend(other, p) {
+      let rgba = ['r', 'g', 'b', 'a'].map(c => (1 - p) * this[c] + p * other[c]);
+      return new Colour(...rgba);
+    }
+    lighten(p) {
+      let rgba = ['r', 'g', 'b', 'a'].map(c => 255 - p * (255 - this[c]));
+      return new Colour(...rgba);
+    }
+    css() {
+      return `rgba(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)}, ${this.a})`;
+    }
   }
-  helpers.bar = (actual, average, max) => {
-    max = Math.max(actual, average, max);
-    let good = actual > average;
-    let same = actual == average;
-    let values = same ? [0, actual, max] : good ?  [0, average, actual, max] : [0, actual, average, max];
-    values = values.map(value => 100 * value / max)
-    let colours = same ? ['#eeeeff', '#ffffff'] : good ? ['#eeffee', '#ccffcc', '#ffffff'] : ['#ffdddd', '#ffeeee', '#ffffff'];
-    let gradient = Array.from(Array(colours.length)).map((_, i) =>
-        `${colours[i]} ${values[i]}%,${colours[i]} ${values[i+1]}%`
-    ).join(',');
-    return `background: linear-gradient(to right, ${gradient})`
+  Colour.colRE = /^#(..)(..)(..)$/;
+  const barcss = {
+    average: new Colour("#cccc80"),
+    good: new Colour("#80ff80"),
+    bad: new Colour("#ff8080"),
+    expStroke: new Colour("#8080ff").css(),
+    expFill: new Colour("#8080ff", 0.5).css(),
+  };
+  const scaleColour = (val, avg, min, max) => {
+    if (val == avg) {
+      return barcss.average;
+    } else if (val < avg) {
+      return barcss.bad.blend(barcss.average, 1 - (avg - val) / (avg - min));
+    } else {
+      return barcss.good.blend(barcss.average, 1 - (val - avg) / (max - avg));
+    }
+  }
+  helpers.bar = (actual, average, min, max, top) => {
+    if (!top) top = max;
+    console.log("FOO", actual, average, min, max, top);
+    let avgPct = average * 100 / top;
+    let actPct = actual * 100 / top;
+    let colour = scaleColour(actual, average, min, max);
+    let stroke = colour.css();
+    let fill = colour.lighten(0.5).css();
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+<rect x='0%' width='${avgPct}%' y='10%' height='70%' stroke='${barcss.expStroke}' fill='${barcss.expFill}'/>
+<rect x='0%' width='${actPct}%' y='20%' height='70%' stroke='${stroke}' fill='${fill}'/>
+</svg>
+    `.replace(/\n\s*/g, "");
+    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);

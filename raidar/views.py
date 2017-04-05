@@ -97,7 +97,7 @@ def encounter(request, id=None, json=None):
                 member['self'] = True
             member['phases'] = {
                 phase: {
-                    'average': area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])],
+                    'archetype': area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])],
                     # too many values... Skills needed?
                     'actual': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All'],
                 } for phase in phases
@@ -110,7 +110,8 @@ def encounter(request, id=None, json=None):
             "started_at": encounter.started_at,
             "phases": {
                 phase: {
-                    'average': area_stats[phase]['overall'],
+                    'group': area_stats[phase]['group'],
+                    'individual': area_stats[phase]['individual'],
                     'actual': dump['Category']['damage']['Phase'][phase]['To']['*All'],
                 } for phase in phases
             },

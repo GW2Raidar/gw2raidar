@@ -26,15 +26,19 @@ def get_or_create_then_increment(hash, prop, value=1):
     get_or_create(hash, prop, type(value))
     hash[prop] += value
 
-def get_or_create_then_maximum(hash, prop, value):
-    prop = "max_" + prop
-    get_or_create(hash, prop, type(value))
-    if value > hash[prop]:
-        hash[prop] = value
+def find_bounds(hash, prop, value):
+    maxprop = "max_" + prop
+    if maxprop not in hash or value > hash[maxprop]:
+        hash[maxprop] = value
+
+    minprop = "min_" + prop
+    if minprop not in hash or value < hash[minprop]:
+        hash[minprop] = value
 
 def calculate_average(hash, prop):
     if prop in hash:
         hash['avg_' + prop] = hash[prop] / hash['count']
+        del hash[prop]
 
 def check_running():
     # http://stackoverflow.com/questions/10978869
@@ -74,15 +78,22 @@ class Command(BaseCommand):
             data = json_loads(encounter.dump)
             phases = data['Category']['damage']['Phase']
             participations = encounter.participations.select_related('character').all()
+
             for phase, stats_in_phase in phases.items():
                 stats_in_phase_to_all = stats_in_phase['To']['*All']
                 totals_in_phase = get_or_create(totals_in_area, phase)
-                overall_totals = get_or_create(totals_in_phase, 'overall')
-                get_or_create_then_increment(overall_totals, 'dps', stats_in_phase_to_all['dps'])
-                get_or_create_then_increment(overall_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
-                get_or_create_then_increment(overall_totals, 'scholar', stats_in_phase_to_all['scholar'])
+                group_totals = get_or_create(totals_in_phase, 'group')
+                individual_totals = get_or_create(totals_in_phase, 'individual')
+
+                get_or_create_then_increment(group_totals, 'dps', stats_in_phase_to_all['dps'])
+                find_bounds(group_totals, 'dps', stats_in_phase_to_all['dps'])
+                get_or_create_then_increment(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                find_bounds(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
+                find_bounds(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
+
                 # TODO: duration, damage_in, boss_damage
-                get_or_create_then_increment(overall_totals, 'count')
+                get_or_create_then_increment(group_totals, 'count')
 
                 totals_by_build = get_or_create(totals_in_phase, 'build')
                 for participation in participations:
@@ -91,21 +102,30 @@ class Command(BaseCommand):
                     elite = data['Category']['status']['Name'][participation.character.name]['elite']
                     totals_by_elite = get_or_create(totals_by_profession, elite)
                     totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
+
                     get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
-                    get_or_create_then_maximum(overall_totals, 'dps', stats_in_phase_to_all['dps'])
+                    find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
+                    find_bounds(individual_totals, 'dps', stats_in_phase_to_all['dps'])
+
                     get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
-                    get_or_create_then_maximum(overall_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                    find_bounds(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
+                    find_bounds(individual_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+
                     get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
-                    get_or_create_then_maximum(overall_totals, 'scholar', stats_in_phase_to_all['scholar'])
+                    find_bounds(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
+                    find_bounds(individual_totals, 'scholar', stats_in_phase_to_all['scholar'])
+
                     # TODO: damage_in, boss_damage...
                     get_or_create_then_increment(totals_by_archetype, 'count')
 
         for area_id, totals_in_area in totals['area'].items():
             for phase, totals_in_phase in totals_in_area.items():
-                calculate_average(totals_in_phase['overall'], 'dps')
-                calculate_average(totals_in_phase['overall'], 'seaweed')
-                calculate_average(totals_in_phase['overall'], 'scholar')
-                del totals_in_phase['overall']['count']
+                group_totals = totals_in_phase['group']
+                individual_totals = totals_in_phase['individual']
+                calculate_average(group_totals, 'dps')
+                calculate_average(group_totals, 'seaweed')
+                calculate_average(group_totals, 'scholar')
+                del group_totals['count']
 
                 for character_id, totals_by_build in totals_in_phase['build'].items():
                     for elite, totals_by_elite in totals_by_build.items():
@@ -114,11 +134,10 @@ class Command(BaseCommand):
                             calculate_average(totals_by_archetype, 'seaweed')
                             calculate_average(totals_by_archetype, 'scholar')
                             del totals_by_archetype['count']
-                            del totals_by_archetype['dps']
 
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
 
         # XXX DEBUG
-        # import pprint
-        # pp = pprint.PrettyPrinter(indent=2)
-        # pp.pprint(totals)
+        import pprint
+        pp = pprint.PrettyPrinter(indent=2)
+        pp.pprint(totals)
