@@ -16,6 +16,7 @@ class Group:
     PHASE = "Phase"
     DESTINATION = "To"
     SKILL = "Skill"
+    SUBGROUP = "Subgroup"
 
 class LogType(IntEnum):
     UNKNOWN = 0
@@ -114,6 +115,8 @@ class Analyser:
         players = agents[agents.party != 0]
         bosses = agents[agents.prof.isin(boss.profs)]
 
+        self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
+        print(self.subgroups)
         self.boss_instids = bosses.index.values
         player_events = events[events.ult_src_instid.isin(players.index)].sort_values(by='time')
 
@@ -209,7 +212,13 @@ class Analyser:
     def collect_destination_damage(self, collector, damage_events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_TO_DESTINATION,
                                     damage_events['damage'].sum())
-        collector.group(self.collect_group_damage, damage_events)
+        collector.run(self.collect_group_damage, damage_events)
+        for subgroup in self.subgroups:
+            subgroup_players = self.subgroups[subgroup]
+            subgroup_events = damage_events[damage_events.ult_src_instid.isin(subgroup_players)]
+            collector.with_key(Group.SUBGROUP, "{0}".format(subgroup)).run(
+                self.collect_group_damage, subgroup_events)
+
         collector.group(self.collect_individual_damage, damage_events,
                         ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 
