@@ -408,7 +408,7 @@ class Analyser:
                 buff_data = pd.DataFrame(columns = ['time', 'stacks'], data = bufftracks[player].data)
                 diff_data = (buff_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_data[['stacks']])
                 mean_per_player = np.append(mean_per_player, 
-                                            [[player, (diff_data['time'] * diff_data['stacks']).sum() / time]], axis = 0)
+                                            [[player, (diff_data['time'] * diff_data['stacks']).sum() / (encounter_end - encounter_start)]], axis = 0)
             mean_per_player_df = pd.DataFrame(columns = [ buff_type.code], data = mean_per_player[0:,1:],
                                               index = mean_per_player[0:, 0])
             players = players.join(mean_per_player_df)
