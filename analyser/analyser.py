@@ -172,6 +172,7 @@ def collect_damage(collector, player_events):
     damage_events = damage_events.assign(
         damage = np.where(damage_events.type == LogType.POWER,
                           damage_events['value'], damage_events['buff_dmg']))
+    damage_events = damage_events[damage_events.damage > 0]
 
     collector.with_key(Group.PHASE, "All").run(collect_phase_damage, damage_events)
 
