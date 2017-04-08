@@ -4,6 +4,7 @@ import pandas as pd
 import numpy as np
 from functools import reduce
 from .collector import *
+from .buffs import *
 
 # DEBUG
 from sys import exit
@@ -78,142 +79,6 @@ BOSS_ARRAY = [
     Boss('Deimos', [0x4302]),
 ]
 BOSSES = {boss.profs[0]: boss for boss in BOSS_ARRAY}
-
-class StackType(IntEnum):
-    INTENSITY = 0
-    DURATION = 1
-
-class BuffType:
-    def __init__(self, name, code, stacking, capacity):
-        self.name = name
-        self.code = code
-        self.stacking = stacking
-        self.capacity = capacity
-
-BUFF_TYPES = [
-        # General Boons
-        BuffType('Might', 'might', StackType.INTENSITY, 25),
-        BuffType('Quickness', 'quickness', StackType.DURATION, 5),
-        BuffType('Fury', 'fury', StackType.DURATION, 9),
-        BuffType('Protection', 'protection', StackType.DURATION, 5),
-        BuffType('Alacrity', 'alacrity', StackType.DURATION, 9),
-
-        # Ranger
-        BuffType('Spotter', 'spotter', StackType.DURATION, 1),
-        BuffType('Spirit of Frost', 'spirit_of_frost', StackType.DURATION, 1),
-        BuffType('Sun Spirit', 'sun_spirit', StackType.DURATION, 1),
-        BuffType('Stone Spirit', 'stone_spirit', StackType.DURATION, 1),
-        BuffType('Storm Spirit', 'storm_spirit', StackType.DURATION, 1),
-        BuffType('Glyph of Empowerment', 'glyph_of_empowerment', StackType.DURATION, 1),
-        BuffType('Grace of the Land', 'gotl', StackType.INTENSITY, 5),
-
-        # Warrior
-        BuffType('Empower Allies', 'empower_allies', StackType.DURATION, 1),
-        BuffType('Banner of Strength', 'banner_strength', StackType.DURATION, 1),
-        BuffType('Banner of Discipline', 'banner_discipline', StackType.DURATION, 1),
-        BuffType('Banner of Tactics', 'banner_tactics', StackType.DURATION, 1),
-        BuffType('Banner of Defence', 'banner_defence', StackType.DURATION, 1),
-
-        # Revenant
-        BuffType('Assassin''s Presence', 'assassins_presence', StackType.DURATION, 1),
-        BuffType('Naturalistic Resonance', 'naturalistic_resonance', StackType.DURATION, 1),
-
-        # Engineer
-        BuffType('Pinpoint Distribution', 'pinpoint_distribution', StackType.DURATION, 1),
-
-        # Elementalist
-        BuffType('Soothing Mist', 'soothing_mist', StackType.DURATION, 1),
-
-        # Necro
-        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1)
-    ]
-
-BUFFS = { buff.name: buff for buff in BUFF_TYPES }
-
-class BuffTrackIntensity:
-    def __init__(self, buff_type, encounter_start, encounter_end):
-        self.buff_type = buff_type;
-        self.stack_end_times = []
-        self.start_time = encounter_start
-        self.data = np.array([np.arange(1)] * 2).T
-        self.current_time = 0
-
-    def add_event(self, event):
-        event_time = int(event.time - self.start_time);
-        if event_time != self.current_time:
-            self.simulate_to_time(event_time)
-
-        if len(self.stack_end_times) < self.buff_type.capacity:
-            self.stack_end_times += [event_time + event.value]
-            self.stack_end_times.sort()
-            if self.data[-1][0] == event_time:
-                self.data[-1][1] = len(self.stack_end_times);
-            else:
-                self.data = np.append(self.data, [[event_time, len(self.stack_end_times)]], axis=0)
-        elif (self.stack_end_times[0] < event_time + event.value):
-            self.stack_end_times[0] = event_time + event.value
-            self.stack_end_times.sort()
-
-    def simulate_to_time(self, new_time):
-        while len(self.stack_end_times) > 0 and self.stack_end_times[0] <= new_time:
-            if self.data[-1][0] == self.stack_end_times[0]:
-                self.data[-1][1] = len(self.stack_end_times) - 1
-            else:
-                self.data = np.append(self.data, [[int(self.stack_end_times[0]), len(self.stack_end_times) - 1]], axis=0)
-            self.stack_end_times.remove(self.stack_end_times[0])
-        self.current_time = new_time
-
-    def end_track(self, time):
-        end_time = int(time - self.start_time);
-        self.simulate_to_time(end_time)
-        if self.data[-1][0] != end_time:
-            self.data = np.append(self.data, [[end_time, len(self.stack_end_times)]], axis=0)
-
-class BuffTrackDuration:
-    def __init__(self, buff_type, encounter_start, encounter_end):
-        self.buff_type = buff_type;
-        self.stack_durations = np.array([np.arange(0)]).T
-        self.start_time = encounter_start
-        self.data = np.array([np.arange(1)] * 2).T
-        self.current_time = 0
-
-    def add_event(self, event):
-        event_time = int(event.time - self.start_time);
-        if event_time != self.current_time:
-            self.simulate(event_time - self.current_time)
-
-        if self.stack_durations.size < self.buff_type.capacity:
-            if self.stack_durations.size == 0:
-                if self.data[-1][0] == event_time:
-                    self.data[-1][1] = 1;
-                else:
-                    self.data = np.append(self.data, [[event_time, 1]], axis=0)
-            self.stack_durations = np.append(self.stack_durations, [event.value])
-            self.stack_durations.sort()
-        elif (self.stack_durations[0] < event.value):
-            self.stack_durations[0] = event.value
-            self.stack_durations.sort()
-
-    def simulate(self, delta_time):
-        remaining_delta = delta_time
-        while self.stack_durations.size > 0 and self.stack_durations[0] <= remaining_delta:
-            if self.stack_durations.size == 1:
-                if self.data[-1][0] == self.stack_durations[0] + self.current_time:
-                    self.data[-1][1] = 0
-                else:
-                    self.data = np.append(self.data, [[int(self.stack_durations[0] + self.current_time), 0]], axis=0)
-            remaining_delta -= self.stack_durations[0]
-            self.stack_durations = np.delete(self.stack_durations, 0)
-
-        self.current_time += delta_time
-        if self.stack_durations.size > 0:
-            self.stack_durations[0] -= remaining_delta
-
-    def end_track(self, time):
-        end_time = int(time - self.start_time);
-        self.simulate(end_time - self.current_time)
-        if self.data[-1][0] != end_time:
-            self.data = np.append(self.data, [[end_time, self.stack_durations.size > 0]], axis=0)
 
 def collect_individual_status(collector, player):
     only_entry = player.iloc[0]
@@ -344,6 +209,8 @@ class Analyser:
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
         encounter_end = events.time.max()
+        
+        self.buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_events)
 
         self.info = {
             'name': boss.name,
