@@ -180,6 +180,20 @@ def collect_damage(collector, player_events):
         phase_events = damage_events
         collector.with_key(Group.PHASE, "Phase {0}".format(i)).run(collect_phase_damage, phase_events)
 
+def unique_names(dictionary):
+    unique = dict()
+    existing_names = set()
+    for key in dictionary:
+        base_name = dictionary[key]
+        name = base_name
+        index = 1
+        while name in existing_names:
+            index += 1
+            name = "{0}-{1}".format(base_name, index)
+        unique[key] = name
+        existing_names.add(name)
+    return unique
+
 class Analyser:
     def __init__(self, encounter):
         boss = BOSSES[encounter.area_id]
@@ -191,8 +205,8 @@ class Analyser:
         agents = encounter.agents
         skills = encounter.skills
 
-        skill_map = dict([(key, skills.loc[key, 'name']) for key in skills.index])
-        agent_map = dict([(key, agents.loc[key, 'name']) for key in agents.index])
+        skill_map = unique_names(dict([(key, skills.loc[key, 'name']) for key in skills.index]))
+        agent_map = unique_names(dict([(key, agents.loc[key, 'name']) for key in agents.index]))
         collector.set_context_value(ContextType.SKILL_NAME, skill_map)
         collector.set_context_value(ContextType.AGENT_NAME, agent_map)
 
