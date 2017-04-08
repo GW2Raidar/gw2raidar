@@ -181,6 +181,20 @@ def collect_damage(collector, player_events):
         phase_events = damage_events
         collector.with_key(Group.PHASE, "Phase {0}".format(i)).run(collect_phase_damage, phase_events)
 
+def collect_player_buffs(collector, buff_data):
+    collector.group(collect_individual_player_buffs, buff_data,
+                    ('player', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+    
+def collect_individual_player_buffs(collector, buff_data):
+    for buff_type in BUFF_TYPES:
+        buff_specific_data = buff_data[buff_data['buff'] == buff_type.code];
+        diff_data = (buff_specific_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_specific_data[['stacks']])
+        mean = (diff_data['time'] * diff_data['stacks']).sum() / diff_data['time'].sum()
+        if buff_type.stacking == StackType.INTENSITY:
+            collector.add_data(buff_type.code, mean)
+        else:
+            collector.add_data(buff_type.code, mean, percentage)
+        
 class Analyser:
     def __init__(self, encounter):
         boss = BOSSES[encounter.area_id]
@@ -210,8 +224,10 @@ class Analyser:
         start_time = start_event['time'][0]
         encounter_end = events.time.max()
         
-        self.buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_events)
+        buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_events)
 
+        collector.with_key(Group.CATEGORY, "buffs").run(collect_player_buffs, buff_data);
+        
         self.info = {
             'name': boss.name,
             'start': int(start_timestamp),

@@ -164,7 +164,7 @@ class BuffPreprocessor:
         # Add in skill ids for ease of processing
         buff_update_events = buff_update_events.join(skills, how='inner', on='skillid').sort_values(by='time');
 
-        raw_buff_data = np.array([]).T.reshape(0,4)
+        raw_buff_data = np.array([]).reshape(0,4)
         for buff_type in BUFF_TYPES: 
             buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
             for player in list(players.index):
@@ -182,4 +182,5 @@ class BuffPreprocessor:
                 raw_buff_data = np.r_[raw_buff_data, track_data]
                 
         buff_data = pd.DataFrame(columns = ['buff', 'player', 'time', 'stacks'], data = raw_buff_data)
+        buff_data[['player', 'time', 'stacks']] = buff_data[['player', 'time', 'stacks']].apply(pd.to_numeric)
         return buff_data;
