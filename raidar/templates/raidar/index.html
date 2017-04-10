@@ -174,6 +174,7 @@
                       <tr>
                         <th>Totals</th>
                         <th>DPS</th>
+                        <th>DPS to Boss</th>
                         <th>Seaweed</th>
                         <th>Scholar</th>
                       </tr>
@@ -183,11 +184,15 @@
                           <span>[[encounter.phases[page.phase].actual.dps]]</span>
                           <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps)]]</span>
                         </td>
-                        <td style="[[bar(encounter.phases[page.phase].actual.seaweed, encounter.phases[page.phase].group.avg_seaweed, encounter.phases[page.phase].group.min_seaweed, encounter.phases[page.phase].group.max_seaweed)]]">
+                        <td style="[[bar(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].group.avg_dps_boss, encounter.phases[page.phase].group.min_dps_boss, encounter.phases[page.phase].group.max_dps)]]">
+                          <span>[[encounter.phases[page.phase].actual_boss.dps]]</span>
+                          <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps_boss)]]</span>
+                        </td>
+                        <td style="[[bar(encounter.phases[page.phase].actual.seaweed, encounter.phases[page.phase].group.avg_seaweed, encounter.phases[page.phase].group.min_seaweed, encounter.phases[page.phase].group.max_seaweed, 100)]]">
                           <span>[[encounter.phases[page.phase].actual.seaweed]]%</span>
                           <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_seaweed)]]%</span>
                         </td>
-                        <td style="[[bar(encounter.phases[page.phase].actual.scholar, encounter.phases[page.phase].group.avg_scholar, encounter.phases[page.phase].group.min_scholar, encounter.phases[page.phase].group.max_scholar)]]">
+                        <td style="[[bar(encounter.phases[page.phase].actual.scholar, encounter.phases[page.phase].group.avg_scholar, encounter.phases[page.phase].group.min_scholar, encounter.phases[page.phase].group.max_scholar, 100)]]">
                           <span>[[encounter.phases[page.phase].actual.scholar]]%</span>
                           <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_scholar)]]%</span>
                         </td>
@@ -195,14 +200,17 @@
                       [[#each encounter.parties:partyNo]]
                         <tr>
                           <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-                          <td style="{# TODO #}">
-                            <span>{# TODO #}</span>
+                          <td style="[[bar1(stats[page.phase].actual.dps, encounter.phases[page.phase].group.max_dps)]]">
+                            <span>[[stats[page.phase].actual.dps]]</span>
                           </td>
-                          <td style="{# TODO #}">
-                            <span>{# TODO #}</span>
+                          <td style="[[bar1(stats[page.phase].actual_boss.dps, encounter.phases[page.phase].group.max_dps)]]">
+                            <span>[[stats[page.phase].actual_boss.dps]]</span>
                           </td>
-                          <td style="{# TODO #}">
-                            <span>{# TODO #}</span>
+                          <td style="[[bar1(stats[page.phase].actual.seaweed, 100)]]">
+                            <span>[[stats[page.phase].actual.seaweed]]%</span>
+                          </td>
+                          <td style="[[bar1(stats[page.phase].actual.scholar, 100)]]">
+                            <span>[[stats[page.phase].actual.scholar]]%</span>
                           </td>
                         </tr>
                       [[/each]]
@@ -212,6 +220,7 @@
                         <tr>
                           <th>Party [[partyNo]]</th>
                           <th>DPS</th>
+                          <th>DPS To Boss</th>
                           <th>Seaweed</th>
                           <th>Scholar</th>
                         </tr>
@@ -226,11 +235,15 @@
                               <span>[[phases[page.phase].actual.dps]]</span>
                               <span class="expected">[[Math.round(phases[page.phase].archetype.avg_dps)]]</span>
                             </td>
-                            <td style="[[bar(phases[page.phase].actual.seaweed, phases[page.phase].archetype.avg_seaweed, phases[page.phase].archetype.min_seaweed, phases[page.phase].archetype.max_seaweed, encounter.phases[page.phase].individual.max_seaweed)]]">
+                            <td style="[[bar(phases[page.phase].actual_boss.dps, phases[page.phase].archetype.avg_dps_boss, phases[page.phase].archetype.min_dps_boss, phases[page.phase].archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]]">
+                              <span>[[phases[page.phase].actual_boss.dps]]</span>
+                              <span class="expected">[[Math.round(phases[page.phase].archetype.avg_dps_boss)]]</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].actual.seaweed, phases[page.phase].archetype.avg_seaweed, phases[page.phase].archetype.min_seaweed, phases[page.phase].archetype.max_seaweed, 100)]]">
                               <span>[[phases[page.phase].actual.seaweed]]%</span>
                               <span class="expected">[[Math.round(phases[page.phase].archetype.avg_seaweed)]]%</span>
                             </td>
-                            <td style="[[bar(phases[page.phase].actual.scholar, phases[page.phase].archetype.avg_scholar, phases[page.phase].archetype.min_scholar, phases[page.phase].archetype.max_scholar, encounter.phases[page.phase].individual.max_scholar)]]">
+                            <td style="[[bar(phases[page.phase].actual.scholar, phases[page.phase].archetype.avg_scholar, phases[page.phase].archetype.min_scholar, phases[page.phase].archetype.max_scholar, 100)]]">
                               <span>[[phases[page.phase].actual.scholar]]%</span>
                               <span class="expected">[[Math.round(phases[page.phase].archetype.avg_scholar)]]%</span>
                             </td>
@@ -241,8 +254,158 @@
                   </table>
                 </div>
               [[elseif page.tab == 'boon_uptime']]
-                Boon Uptime
-                {# TODO #}
+                <div class="uk-overflow-auto">
+                  <table class="uk-table buffs">
+                    [[#each encounter.parties:partyNo]]
+                      <tbody>
+                        <tr>
+                          <th>Party [[partyNo]]</th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Might.png' %}" title="Might" alt="Might"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Fury.png' %}" title="Fury" alt="Fury"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Quickness.png' %}" title="Quickness" alt="Quickness"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Alacrity.png' %}" title="Alacrity" alt="Alacrity"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Protection.png' %}" title="Protection" alt="Protection"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Spotter.png' %}" title="Spotter" alt="Spotter"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Glyph_of_Empowerment.png' %}" title="Glyph of Empowerment" alt="Glyph of Empowerment"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Grace_of_the_Land.png' %}" title="Grace of the Land" alt="Grace of the Land"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Frost_Spirit.png' %}" title="Frost Spirit" alt="Frost Spirit"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Sun_Spirit.png' %}" title="Sun Spirit" alt="Sun Spirit"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Stone_Spirit.png' %}" title="Stone Spirit" alt="Stone Spirit"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Storm_Spirit.png' %}" title="Storm Spirit" alt="Storm Spirit"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Empower_Allies.png' %}" title="Empower Allies" alt="Empower Allies"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Strength.png' %}" title="Banner of Strength" alt="Banner of Strength"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Discipline.png' %}" title="Banner of Discipline" alt="Banner of Discipline"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Tactics.png' %}" title="Banner of Tactics" alt="Banner of Tactics"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Defense.png' %}" title="Banner of Defense" alt="Banner of Defense"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Assassin\'s_Presence.png' %}" title="Assassin's Presence" alt="Assassin's Presence"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Facet_of_Nature.png' %}" title="Naturalistic Resonance" alt="Naturalistic Resonance"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Pinpoint_Distribution.png' %}" title="Pinpoint Distribution" alt="Pinpoint Distribution"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Soothing_Mist.png' %}" title="Soothing Mist" alt="Soothing Mist"/></th>
+                          <th width="100"><img src="{% static 'raidar/img/buff/Vampiric_Presence.png' %}" title="Vampiric Presence" alt="Vampiric Presence"/></th>
+                        </tr>
+                        [[#each members]]
+                          <tr>
+                            <td class="[[self && 'uk-text-primary']]">
+                              <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
+                              <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
+                              [[name]]
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.might, phases[page.phase].archetype.buffs.avg_might, phases[page.phase].archetype.buffs.min_might, phases[page.phase].archetype.buffs.max_might, 25)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.might.toPrecision(3)]]</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_might.toPrecision(3)]]</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.fury, phases[page.phase].archetype.buffs.avg_fury, phases[page.phase].archetype.buffs.min_fury, phases[page.phase].archetype.buffs.max_fury, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.fury.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_fury.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.quickness, phases[page.phase].archetype.buffs.avg_quickness, phases[page.phase].archetype.buffs.min_quickness, phases[page.phase].archetype.buffs.max_quickness, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.quickness.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_quickness.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.alacrity, phases[page.phase].archetype.buffs.avg_alacrity, phases[page.phase].archetype.buffs.min_alacrity, phases[page.phase].archetype.buffs.max_alacrity, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.alacrity.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_alacrity.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.protection, phases[page.phase].archetype.buffs.avg_protection, phases[page.phase].archetype.buffs.min_protection, phases[page.phase].archetype.buffs.max_protection, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.protection.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_protection.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.spotter, phases[page.phase].archetype.buffs.avg_spotter, phases[page.phase].archetype.buffs.min_spotter, phases[page.phase].archetype.buffs.max_spotter, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.spotter.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_spotter.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.glyph_of_empowerment, phases[page.phase].archetype.buffs.avg_glyph_of_empowerment, phases[page.phase].archetype.buffs.min_glyph_of_empowerment, phases[page.phase].archetype.buffs.max_glyph_of_empowerment, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.glyph_of_empowerment.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_glyph_of_empowerment.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.gotl, phases[page.phase].archetype.buffs.avg_gotl, phases[page.phase].archetype.buffs.min_gotl, phases[page.phase].archetype.buffs.max_gotl, 5)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.gotl.toPrecision(3)]]</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_gotl.toPrecision(3)]]</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.spirit_of_frost, phases[page.phase].archetype.buffs.avg_spirit_of_frost, phases[page.phase].archetype.buffs.min_spirit_of_frost, phases[page.phase].archetype.buffs.max_spirit_of_frost, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.spirit_of_frost.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_spirit_of_frost.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.sun_spirit, phases[page.phase].archetype.buffs.avg_sun_spirit, phases[page.phase].archetype.buffs.min_sun_spirit, phases[page.phase].archetype.buffs.max_sun_spirit, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.sun_spirit.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_sun_spirit.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.stone_spirit, phases[page.phase].archetype.buffs.avg_stone_spirit, phases[page.phase].archetype.buffs.min_stone_spirit, phases[page.phase].archetype.buffs.max_stone_spirit, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.stone_spirit.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_stone_spirit.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.storm_spirit, phases[page.phase].archetype.buffs.avg_storm_spirit, phases[page.phase].archetype.buffs.min_storm_spirit, phases[page.phase].archetype.buffs.max_storm_spirit, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.storm_spirit.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_storm_spirit.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.empower_allies, phases[page.phase].archetype.buffs.avg_empower_allies, phases[page.phase].archetype.buffs.min_empower_allies, phases[page.phase].archetype.buffs.max_empower_allies, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.empower_allies.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_empower_allies.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.banner_strength, phases[page.phase].archetype.buffs.avg_banner_strength, phases[page.phase].archetype.buffs.min_banner_strength, phases[page.phase].archetype.buffs.max_banner_strength, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.banner_strength.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_banner_strength.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.banner_discipline, phases[page.phase].archetype.buffs.avg_banner_discipline, phases[page.phase].archetype.buffs.min_banner_discipline, phases[page.phase].archetype.buffs.max_banner_discipline, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.banner_discipline.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_banner_discipline.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.banner_tactics, phases[page.phase].archetype.buffs.avg_banner_tactics, phases[page.phase].archetype.buffs.min_banner_tactics, phases[page.phase].archetype.buffs.max_banner_tactics, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.banner_tactics.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_banner_tactics.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.banner_defence, phases[page.phase].archetype.buffs.avg_banner_defence, phases[page.phase].archetype.buffs.min_banner_defence, phases[page.phase].archetype.buffs.max_banner_defence, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.banner_defence.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_banner_defence.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.assassins_presence, phases[page.phase].archetype.buffs.avg_assassins_presence, phases[page.phase].archetype.buffs.min_assassins_presence, phases[page.phase].archetype.buffs.max_assassins_presence, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.assassins_presence.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_assassins_presence.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.naturalistic_resonance, phases[page.phase].archetype.buffs.avg_naturalistic_resonance, phases[page.phase].archetype.buffs.min_naturalistic_resonance, phases[page.phase].archetype.buffs.max_naturalistic_resonance, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.naturalistic_resonance.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_naturalistic_resonance.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.pinpoint_distribution, phases[page.phase].archetype.buffs.avg_pinpoint_distribution, phases[page.phase].archetype.buffs.min_pinpoint_distribution, phases[page.phase].archetype.buffs.max_pinpoint_distribution, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.pinpoint_distribution.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_pinpoint_distribution.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.soothing_mist, phases[page.phase].archetype.buffs.avg_soothing_mist, phases[page.phase].archetype.buffs.min_soothing_mist, phases[page.phase].archetype.buffs.max_soothing_mist, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.soothing_mist.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_soothing_mist.toPrecision(3)]]%</span>
+                            </td>
+                            <td style="[[bar(phases[page.phase].buffs.vampiric_presence, phases[page.phase].archetype.buffs.avg_vampiric_presence, phases[page.phase].archetype.buffs.min_vampiric_presence, phases[page.phase].archetype.buffs.max_vampiric_presence, 100)]]">
+                              {# TODO #}
+                              <span>[[phases[page.phase].buffs.vampiric_presence.toPrecision(3)]]%</span>
+                              <span class="expected">[[phases[page.phase].archetype.buffs.avg_vampiric_presence.toPrecision(3)]]%</span>
+                            </td>
+                          </tr>
+                        [[/each]]
+                      </tbody>
+                    [[/each]]
+                  </table>
+                </div>
               [[/if]]
 
             [[/if]]

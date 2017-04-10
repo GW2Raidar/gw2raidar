@@ -91,7 +91,12 @@ def encounter(request, id=None, json=None):
     keyfunc = lambda member: member['party']
     parties = { party: {
                     "members": list(members),
-                    "stats": {}, # TODO
+                    "stats": {
+                        phase: {
+                            "actual": dump['Category']['damage']['Phase'][phase]['To']['*All']['Subgroup'][str(party)],
+                            "actual_boss": dump['Category']['damage']['Phase'][phase]['To']['*Boss']['Subgroup'][str(party)],
+                        } for phase in phases
+                    }
                 } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
     for party_no, party in parties.items():
         for member in party['members']:
@@ -102,6 +107,8 @@ def encounter(request, id=None, json=None):
                     'archetype': area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])],
                     # too many values... Skills needed?
                     'actual': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All'],
+                    'actual_boss': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss'],
+                    'buffs': dump['Category']['buffs']['Phase'][phase]['Player'][member['name']],
                 } for phase in phases
             }
             member['archetype_name'] = Archetype(member['archetype']).name
@@ -115,6 +122,7 @@ def encounter(request, id=None, json=None):
                     'group': area_stats[phase]['group'],
                     'individual': area_stats[phase]['individual'],
                     'actual': dump['Category']['damage']['Phase'][phase]['To']['*All'],
+                    'actual_boss': dump['Category']['damage']['Phase'][phase]['To']['*Boss'],
                 } for phase in phases
             },
             "parties": parties,
