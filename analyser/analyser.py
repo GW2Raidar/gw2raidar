@@ -32,6 +32,10 @@ class Archetype(IntEnum):
     CONDI = 2
     TANK = 3
 
+class Elite(IntEnum):
+    CORE = 0
+    HEART_OF_THORNS = 1
+
 class ContextType:
     DURATION = "Duration"
     TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION = "Total Damage"
@@ -165,12 +169,12 @@ class Analyser:
     def collect_individual_status(self, collector, player):
         only_entry = player.iloc[0]
         # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
-        collector.add_data('profession', only_entry['prof'], int)
-        collector.add_data('elite', only_entry['elite'], int)
+        collector.add_data('profession', only_entry['prof'], parser.AgentType)
+        collector.add_data('elite', only_entry['elite'], Elite)
         collector.add_data('toughness', only_entry['toughness'], int)
         collector.add_data('healing', only_entry['healing'], int)
         collector.add_data('condition', only_entry['condition'], int)
-        collector.add_data('archetype', only_entry['archetype'], int)
+        collector.add_data('archetype', only_entry['archetype'], Archetype)
         collector.add_data('party', only_entry['party'], int)
         collector.add_data('account', only_entry['account'], str)
 
@@ -232,6 +236,8 @@ class Analyser:
         power_events = events[events.type == LogType.POWER]
         condi_events = events[events.type == LogType.CONDI]
         # print(events.columns)
+        collector.add_data('scholar', power_events['is_ninety'].mean(), percentage)
+        collector.add_data('seaweed', power_events['is_moving'].mean(), percentage)
         collector.add_data('power', power_events['damage'].sum(), int)
         collector.add_data('condi', condi_events['damage'].sum(), int)
         collector.add_data('total', events['damage'].sum(), int)
