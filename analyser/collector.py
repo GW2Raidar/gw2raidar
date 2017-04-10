@@ -66,13 +66,14 @@ class Collector:
                 value = type.apply(value, self.context_values)
 
         output_block = self.all_data
-        #print("Adding {0}:{1} to context {2}".format(name, value, self.context))
         sorted_context = [key for key in self.ordering if key in self.context] + sorted([
             key for key in self.context if key not in self.ordering])
 
         for path_key in sorted_context:
             output_block = Collector._navigate(output_block, path_key)
             output_block = Collector._navigate(output_block, self.context[path_key])
+        if name in output_block:
+            print("Clash for {0}:{1}".format(self.context, name))
         output_block[name] = value
 
     def with_key(self, key, value):
