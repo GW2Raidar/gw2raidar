@@ -288,6 +288,9 @@ class Analyser:
 
     #Section: buff stats
     def collect_player_buffs(self, collector, buff_data):
+        collector.with_key(Group.PHASE, "All").run(self.collect_all_player_buffs, buff_data);
+
+    def collect_all_player_buffs(self, collector, buff_data):
         collector.group(self.collect_individual_player_buffs, buff_data,
                         ('player', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 
