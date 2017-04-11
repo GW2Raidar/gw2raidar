@@ -104,13 +104,18 @@ def encounter(request, id=None, json=None):
                 member['self'] = True
             member['phases'] = {
                 phase: {
-                    'archetype': area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])],
                     # too many values... Skills needed?
                     'actual': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All'],
                     'actual_boss': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss'],
                     'buffs': dump['Category']['buffs']['Phase'][phase]['Player'][member['name']],
                 } for phase in phases
             }
+            for phase in phases:
+                try:
+                    member['phases'][phase]['archetype'] = area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]
+                except KeyError:
+                    # no data yet
+                    pass
             member['archetype_name'] = Archetype(member['archetype']).name
             member['specialisation_name'] = Character.SPECIALISATIONS[(member['profession'], member['elite'])]
     data = {
@@ -128,6 +133,10 @@ def encounter(request, id=None, json=None):
             "parties": parties,
         }
     }
+    if area_stats:
+        for phase in phases:
+            data["encounter"]["phases"][phase]['group'] = area_stats[phase]['group']
+            data["encounter"]["phases"][phase]['individual'] = area_stats[phase]['individual']
 
     if json:
         return JsonResponse(data)
