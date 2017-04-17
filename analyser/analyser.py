@@ -85,6 +85,9 @@ BOSS_ARRAY = [
 ]
 BOSSES = {boss.profs[0]: boss for boss in BOSS_ARRAY}
 
+def only_entry(frame):
+    return frame.iloc[0] if not frame.empty else None
+
 def unique_names(dictionary):
     unique = dict()
     existing_names = set()
@@ -149,8 +152,9 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_status, bosses)
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
+        collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_events)
         collector.with_key(Group.CATEGORY, "damage").run(self.collect_damage, player_events)
-        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_player_buffs, buff_data)
+        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_player_buffs_by_phase, buff_data)
         
         self.info = {
             'name': boss.name,
@@ -174,10 +178,10 @@ class Analyser:
 
     def collect_invididual_boss_key_events(self, collector, events):
         #all_state_changes = events[events.state_change != parser.StateChange.NORMAL]
-        enter_combat_event = events[events.state_change == parser.StateChange.ENTER_COMBAT].iloc[0]
-        death_event = events[events.state_change == parser.StateChange.CHANGE_DEAD].iloc[0]
-        collector.add_data("EnterCombat", enter_combat_event.time)
-        collector.add_data("Death", death_event.time)
+        enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
+        death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
+        collector.add_data("EnterCombat", enter_combat_time, int)
+        collector.add_data("Death", death_time, int)
 
     def collect_boss_key_events(self, collector, events):
         boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
@@ -191,9 +195,9 @@ class Analyser:
         players.loc[players.condition >= 7, 'archetype'] = Archetype.CONDI
         players.loc[players.toughness >= 7, 'archetype'] = Archetype.TANK
         players.loc[players.healing >= 7, 'archetype'] = Archetype.HEAL
-        collector.group(self.collect_individual_status, players, ('name', 'Name'))
+        collector.group(self.collect_individual_player_status, players, ('name', 'Name'))
 
-    def collect_individual_status(self, collector, player):
+    def collect_individual_player_status(self, collector, player):
         only_entry = player.iloc[0]
         # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
         collector.add_data('profession', only_entry['prof'], parser.AgentType)
@@ -205,6 +209,18 @@ class Analyser:
         collector.add_data('party', only_entry['party'], int)
         collector.add_data('account', only_entry['account'], str)
 
+    def collect_player_key_events(self, collector, events):
+        # player archetypes
+        collector.group(self.collect_individual_player_key_events,
+                        events,
+                        ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+
+    def collect_individual_player_key_events(self, collector, events):
+        # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
+        enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
+        death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
+        collector.add_data("EnterCombat", enter_combat_time, int)
+        collector.add_data("Death", death_time, int)
 
     #section: Damage stats
     #subsection: Filtering events
@@ -315,10 +331,10 @@ class Analyser:
                            percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
     #Section: buff stats
-    def collect_player_buffs(self, collector, buff_data):
-        collector.with_key(Group.PHASE, "All").run(self.collect_all_player_buffs, buff_data);
+    def collect_player_buffs_by_phase(self, collector, buff_data):
+        collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
 
-    def collect_all_player_buffs(self, collector, buff_data):
+    def collect_buffs_by_target(self, collector, buff_data):
         collector.group(self.collect_individual_player_buffs, buff_data,
                         ('player', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 

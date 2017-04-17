@@ -57,10 +57,6 @@ def main():
         print("Analyser took {0} seconds".format(time.clock() - start))
 
         start = time.clock()
-        print()
-
-        print("Collector-based-data:")
-
         with open('output.txt','w') as output_file:
             flattened = flatten(a.data)
             for key in sorted(flattened.keys()):
