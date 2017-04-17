@@ -100,38 +100,53 @@ class Analyser:
         boss = BOSSES[encounter.area_id]
         collector = Collector.root([Group.CATEGORY, Group.PHASE, Group.PLAYER, Group.DESTINATION, Group.SKILL])
 
-        # ultimate source (e.g. if necro minion attacks, the necro himself)
+        #set up data structures
         events = encounter.events
         agents = encounter.agents
         skills = encounter.skills
+        players = agents[agents.party != 0]
+        bosses = agents[agents.prof.isin(boss.profs)]
 
+        events['ult_src_instid'] = events.src_master_instid.where(
+            events.src_master_instid != 0, events.src_instid)
+        events = assign_event_types(events)
+        player_events = events[events.ult_src_instid.isin(players.index)].sort_values(by='time')
+
+        #set up context
         skill_map = unique_names(dict([(key, skills.loc[key, 'name']) for key in skills.index]))
         agent_map = unique_names(dict([(key, agents.loc[key, 'name']) for key in agents.index]))
         collector.set_context_value(ContextType.SKILL_NAME, skill_map)
         collector.set_context_value(ContextType.AGENT_NAME, agent_map)
 
-        events['ult_src_instid'] = events.src_master_instid.where(
-            events.src_master_instid != 0, events.src_instid)
-        players = agents[agents.party != 0]
-        bosses = agents[agents.prof.isin(boss.profs)]
-
+        #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
-        print(self.subgroups)
         self.boss_instids = bosses.index.values
-        player_events = events[events.ult_src_instid.isin(players.index)].sort_values(by='time')
 
-        collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_status, bosses)
-        collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
-        collector.with_key(Group.CATEGORY, "damage").run(self.collect_damage, player_events)
+        #experimental phase calculations
+        boss_events = events[events.dst_instid.isin(self.boss_instids)]
+        boss_power_events = boss_events[boss_events.type == LogType.POWER]
 
+        deltas = boss_power_events.time - boss_power_events.time.shift(1)
+        boss_power_events = boss_power_events.assign(delta = deltas)
+        phase_splits = boss_power_events[boss_power_events.delta > 10000]
+        phase_starts = [events.time.min()] + list(phase_splits.time)
+        phase_ends = list(phase_splits.time - phase_splits.delta) + [events.time.max()]
+        print("Autodetected phases: {0} {1}".format(phase_starts, phase_ends))
+        self.phases = list(zip(phase_starts, phase_ends))
+
+        #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
         encounter_end = events.time.max()
-        
+
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_events)
 
-        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_player_buffs, buff_data);
+        collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_status, bosses)
+        collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
+        collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
+        collector.with_key(Group.CATEGORY, "damage").run(self.collect_damage, player_events)
+        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_player_buffs, buff_data)
         
         self.info = {
             'name': boss.name,
@@ -152,6 +167,18 @@ class Analyser:
 
     def collect_boss_status(self, collector, bosses):
         collector.group(self.collect_invididual_boss_status, bosses, ('name', 'Name'))
+
+    def collect_invididual_boss_key_events(self, collector, events):
+        #all_state_changes = events[events.state_change != parser.StateChange.NORMAL]
+        enter_combat_event = events[events.state_change == parser.StateChange.ENTER_COMBAT].iloc[0]
+        death_event = events[events.state_change == parser.StateChange.CHANGE_DEAD].iloc[0]
+        collector.add_data("EnterCombat", enter_combat_event.time)
+        collector.add_data("Death", death_event.time)
+
+    def collect_boss_key_events(self, collector, events):
+        boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
+        collector.group(self.collect_invididual_boss_key_events, boss_events,
+                        ('ult_src_instid', 'Name', mapped_to(ContextType.AGENT_NAME)))
 
     #subsection: player stats
     def collect_player_status(self, collector, players):
@@ -179,7 +206,6 @@ class Analyser:
     #subsection: Filtering events
     def collect_damage(self, collector, player_events):
         #prepare damage_events
-        player_events = assign_event_types(player_events)
         damage_events = player_events[(player_events.type == LogType.POWER)
                                       |(player_events.type == LogType.CONDI)]
         damage_events = damage_events.assign(
@@ -189,10 +215,10 @@ class Analyser:
 
         #determine phases
         collector.with_key(Group.PHASE, "All").run(self.collect_phase_damage, damage_events)
-        phases = []
-        for i in range(0,len(phases)):
-            phase_events = damage_events
-            collector.with_key(Group.PHASE, "Phase {0}".format(i)).run(self.collect_phase_damage, phase_events)
+        for i in range(0,len(self.phases)):
+            phase = self.phases[i]
+            phase_events = damage_events[(damage_events.time >= phase[0]) & (damage_events.time <= phase[1])]
+            collector.with_key(Group.PHASE, "{0}".format(i+1)).run(self.collect_phase_damage, phase_events)
 
     def collect_phase_damage(self, collector, damage_events):
         collector.set_context_value(
@@ -236,6 +262,8 @@ class Analyser:
         collector.add_data('condi', condi_events['damage'].sum(), int)
         collector.add_data('total', events['damage'].sum(), int)
         collector.add_data('dps', events['damage'].sum(), per_second(int))
+        collector.add_data('power_dps', power_events['damage'].sum(), per_second(int))
+        collector.add_data('condi_dps', condi_events['damage'].sum(), per_second(int))
 
     def collect_individual_damage(self, collector, events):
         power_events = events[events.type == LogType.POWER]

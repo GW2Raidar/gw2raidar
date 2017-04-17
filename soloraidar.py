@@ -29,13 +29,12 @@ def flatten(root):
                 pass
     return nodes
 
-def print_node(key, node, f):
+def print_node(key, node, f=None):
     basic_values = list(filter(lambda key:is_basic_value(key[1]), node.items()))
     if basic_values:
         output_string = "{0}: {1}".format(key, ", ".join(
             ["{0}:{1}".format(name, value) for name,value in basic_values]))
         print(output_string, file=f)
-        print(output_string)
 
 def main():
     filename = sys.argv[1]
@@ -50,17 +49,18 @@ def main():
         a = analyser.Analyser(e)
         print("Analyser took {0} seconds".format(time.clock() - start))
 
-        if "-s" not in sys.argv:
-            start = time.clock()
-            print()
+        start = time.clock()
+        print()
 
-            print("Collector-based-data:")
+        print("Collector-based-data:")
 
-            with open('output.txt','w') as output_file:
-                flattened = flatten(a.data)
-                for key in sorted(flattened.keys()):
-                    print_node(key, flattened[key], output_file)
-            print("Readable dump took {0} seconds".format(time.clock() - start))
+        with open('output.txt','w') as output_file:
+            flattened = flatten(a.data)
+            for key in sorted(flattened.keys()):
+                if "-s" not in sys.argv:
+                    print_node(key, flattened[key])
+                print_node(key, flattened[key], output_file)
+        print("Readable dump took {0} seconds".format(time.clock() - start))
 
         if "--no-json" not in sys.argv:
             start = time.clock()
