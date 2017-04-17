@@ -128,7 +128,7 @@ class Analyser:
 
         #experimental phase calculations
         boss_events = events[events.dst_instid.isin(self.boss_instids)]
-        boss_power_events = boss_events[boss_events.type == LogType.POWER]
+        boss_power_events = boss_events[(boss_events.type == LogType.POWER) & (boss_events.value > 0)]
 
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
         boss_power_events = boss_power_events.assign(delta = deltas)
