@@ -17,6 +17,8 @@ from re import match
 from .models import *
 from itertools import groupby
 from gw2api.gw2api import GW2API, GW2APIException
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 
@@ -273,3 +275,41 @@ def upload(request):
 @require_GET
 def named(request, name, no):
     return index(request, { 'name': name, 'no': no })
+
+@login_required
+@require_POST
+def change_email(request):
+    request.user.email = request.POST.get('email')
+    request.user.save()
+    return JsonResponse({})
+
+@login_required
+@require_POST
+def change_password(request):
+    form = PasswordChangeForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        return JsonResponse({})
+    else:
+        return _error(' '.join(' '.join(v) for k, v in form.errors.items()))
+
+@login_required
+@require_POST
+def add_api_key(request):
+    api_key = request.POST.get('api_key')
+    gw2api = GW2API(api_key)
+
+    try:
+        gw2_account = gw2api.query("/account")
+    except GW2APIException as e:
+        return _error(e)
+
+    account_name = gw2_account['name']
+    account = Account.objects.get_or_create(user=request.user, api_key=api_key, name=account_name)
+
+    result = _login_successful(request, request.user)
+    return JsonResponse({
+        'account_name': account_name,
+        'encounters': _encounter_data(request)
+    })
