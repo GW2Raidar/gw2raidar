@@ -199,7 +199,9 @@ def register(request):
                 return _error('Could not register user')
 
             account_name = gw2_account['name']
-            account = Account.objects.get_or_create(user=user, api_key=api_key, name=account_name)
+            account, _ = Account.objects.get_or_create(user=user, name=account_name)
+            account.api_key = api_key
+            account.save()
 
             return _login_successful(request, user)
 
@@ -306,9 +308,8 @@ def add_api_key(request):
         return _error(e)
 
     account_name = gw2_account['name']
-    account = Account.objects.get_or_create(user=request.user, name=account_name)
+    account, _ = Account.objects.get_or_create(user=request.user, name=account_name)
     account.api_key = api_key
-    account.save()
 
     result = _login_successful(request, request.user)
     return JsonResponse({
