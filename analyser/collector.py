@@ -59,7 +59,7 @@ class Collector:
         function(self, data.copy(True))
 
     def add_data(self, name, value, type = None):
-        if type:
+        if value != None and type:
             try:
                 value = type(value)
             except:
