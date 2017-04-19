@@ -158,6 +158,6 @@ class Command(BaseCommand):
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
 
         # XXX DEBUG
-        import pprint
-        pp = pprint.PrettyPrinter(indent=2)
-        pp.pprint(totals)
+        # import pprint
+        # pp = pprint.PrettyPrinter(indent=2)
+        # pp.pprint(totals)
