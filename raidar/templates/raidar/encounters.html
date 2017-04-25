@@ -1,0 +1,42 @@
+<table class="uk-table uk-table-striped">
+  <thead>
+    <tr>
+      <th class="uk-width-1-5">Area</th>
+      <th class="uk-width-1-5">Started at</th>
+      <th class="uk-width-1-5">Character</th>
+      <th class="uk-width-1-5">Account</th>
+      <th class="uk-width-1-5">Archetype</th>
+    </tr>
+  </thead>
+  [[#each encounterSlice]]
+    <tr on-click="@this.page({ name: 'encounter', no: id })">
+      <td>
+        [[area]]
+      </td>
+      <td>
+        [[formatDate(started_at)]]
+      </td>
+      <td>
+        [[character]]
+      </td>
+      <td>
+        [[account]]
+      </td>
+      <td>
+        [[data.archetypes[archetype]]]
+        [[data.professions[profession]]]
+      </td>
+    </tr>
+  [[/each]]
+</table>
+
+<hr class="uk-divider-icon">
+<ul class="uk-pagination uk-flex-center">
+  [[#each encounterPages]]
+    [[#if a || d]]
+      <li class="[[a ? 'uk-active' : 'uk-disabled']]"><span class="[[c]]">[[t]]</span></li>
+    [[else]]
+      <li><a href="#" class="[[c]]" data-page="[[n || t]]" on-click="page_no">[[t]]</a></li>
+    [[/if]]
+  [[/each]]
+</ul>

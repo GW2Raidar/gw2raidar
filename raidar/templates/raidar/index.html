@@ -38,36 +38,11 @@
         {# Logo #}
         <header class="uk-grid">
           <div class="uk-width-1-1">
-            <h1 on-click="XXX(7)" class="uk-heading-large uk-padding-small uk-light uk-background-primary">GW2 Raidar</h1>
+            <h1 class="uk-heading-large uk-padding-small uk-light uk-background-primary">GW2 Raidar</h1>
           </div>
         </header>
 
-        {# Navbar #}
-        <nav class="uk-navbar uk-navbar-container">
-          <div class="uk-navbar-left">
-            <ul class="uk-navbar-nav">
-              [[#if username]]
-              <li class="[[page.name=='encounters' && 'uk-active']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
-                <li class="[[page.name=='profile' && 'uk-active']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
-              [[/if]]
-            </ul>
-          </div>
-          <div class="uk-navbar-right">
-            <ul class="uk-navbar-nav">
-              [[#if username]]
-                [[#if is_staff]]
-                  <li><a href="{% url 'admin:index' %}">Admin</a>
-                [[/if]]
-                <li class="[[page.name=='account' && 'uk-active']]"><a href="#" on-click="@this.page('account')">Account</a></li>
-                <li><a href="#" on-click="auth_logout">Logout</a></li>
-              [[else]]
-                <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login')">Login</a></li>
-                <li class="[[page.name=='register' && 'uk-active']]"><a href="#" on-click="@this.page('register')">Register</a></li>
-                <li class="[[page.name=='reset_pw' && 'uk-active']]"><a href="#" on-click="@this.page('reset_pw')">Reset Password</a></li>
-              [[/if]]
-            </ul>
-          </div>
-        </nav>
+        {% include 'raidar/navbar.html' %}
 
         {# content #}
         <div class="uk-flex-1">
@@ -82,50 +57,7 @@
             [[elseif page.name == "encounters"]]
 
               [[#if encounters.length]]
-
-                <table class="uk-table uk-table-striped">
-                  <thead>
-                    <tr>
-                      <th class="uk-width-1-5">Area</th>
-                      <th class="uk-width-1-5">Started at</th>
-                      <th class="uk-width-1-5">Character</th>
-                      <th class="uk-width-1-5">Account</th>
-                      <th class="uk-width-1-5">Archetype</th>
-                    </tr>
-                  </thead>
-                  [[#each encounterSlice]]
-                    <tr on-click="@this.page({ name: 'encounter', no: id })">
-                      <td>
-                        [[area]]
-                      </td>
-                      <td>
-                        [[formatDate(started_at)]]
-                      </td>
-                      <td>
-                        [[character]]
-                      </td>
-                      <td>
-                        [[account]]
-                      </td>
-                      <td>
-                        [[data.archetypes[archetype]]]
-                        [[data.professions[profession]]]
-                      </td>
-                    </tr>
-                  [[/each]]
-                </table>
-
-                <hr class="uk-divider-icon">
-                <ul class="uk-pagination uk-flex-center">
-                  [[#each encounterPages]]
-                    [[#if a || d]]
-                      <li class="[[a ? 'uk-active' : 'uk-disabled']]"><span class="[[c]]">[[t]]</span></li>
-                    [[else]]
-                      <li><a href="#" class="[[c]]" data-page="[[n || t]]" on-click="page_no">[[t]]</a></li>
-                    [[/if]]
-                  [[/each]]
-                </ul>
-
+                {% include 'raidar/encounters.html' %}
               [[else]]
                 <p>
                   Drag and drop evtc files to this window to upload.
@@ -142,108 +74,7 @@
 
             [[elseif page.name == "encounter"]]
 
-              <h2 class="uk-padding-small uk-clearfix">
-                <div class="uk-float-left">
-                  [[encounter.name]]
-                </div>
-                <div class="uk-float-right">
-                  [[formatDate(encounter.started_at)]]
-                </div>
-              </h2>
-
-              <nav class="uk-navbar-container navbar-secondary" uk-navbar>
-                <div class="uk-navbar-left">
-                  <ul class="uk-navbar-nav">
-                    <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
-                    <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
-                  </ul>
-                </div>
-                <div class="uk-navbar-right">
-                  <ul class="uk-navbar-nav">
-                    [[#each encounter.phases:phaseName]]
-                    <li class="[[page.phase == phaseName && 'uk-active']]"><a on-click="@this.set('page.phase', phaseName)">[[phaseName]]</a></li>
-                    [[/each]]
-                  </ul>
-                </div>
-              </nav>
-
-              [[#if page.tab == 'combat_stats']]
-                <div class="uk-overflow-auto">
-                  <table class="uk-table stats">
-                    <tbody>
-                      <tr>
-                        <th>Totals</th>
-                        <th>DPS</th>
-                        <th>Seaweed</th>
-                        <th>Scholar</th>
-                      </tr>
-                      <tr>
-                        <td>Squad</td>
-                        <td style="[[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].group.avg_dps, encounter.phases[page.phase].group.min_dps, encounter.phases[page.phase].group.max_dps)]]">
-                          <span>[[encounter.phases[page.phase].actual.dps]]</span>
-                          <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps)]]</span>
-                        </td>
-                        <td style="[[bar(encounter.phases[page.phase].actual.seaweed, encounter.phases[page.phase].group.avg_seaweed, encounter.phases[page.phase].group.min_seaweed, encounter.phases[page.phase].group.max_seaweed)]]">
-                          <span>[[encounter.phases[page.phase].actual.seaweed]]%</span>
-                          <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_seaweed)]]%</span>
-                        </td>
-                        <td style="[[bar(encounter.phases[page.phase].actual.scholar, encounter.phases[page.phase].group.avg_scholar, encounter.phases[page.phase].group.min_scholar, encounter.phases[page.phase].group.max_scholar)]]">
-                          <span>[[encounter.phases[page.phase].actual.scholar]]%</span>
-                          <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_scholar)]]%</span>
-                        </td>
-                      </tr>
-                      [[#each encounter.parties:partyNo]]
-                        <tr>
-                          <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-                          <td style="{# TODO #}">
-                            <span>{# TODO #}</span>
-                          </td>
-                          <td style="{# TODO #}">
-                            <span>{# TODO #}</span>
-                          </td>
-                          <td style="{# TODO #}">
-                            <span>{# TODO #}</span>
-                          </td>
-                        </tr>
-                      [[/each]]
-                    </tbody>
-                    [[#each encounter.parties:partyNo]]
-                      <tbody>
-                        <tr>
-                          <th>Party [[partyNo]]</th>
-                          <th>DPS</th>
-                          <th>Seaweed</th>
-                          <th>Scholar</th>
-                        </tr>
-                        [[#each members]]
-                          <tr>
-                            <td class="[[self && 'uk-text-primary']]">
-                              <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
-                              <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
-                              [[name]]
-                            </td>
-                            <td style="[[bar(phases[page.phase].actual.dps, phases[page.phase].archetype.avg_dps, phases[page.phase].archetype.min_dps, phases[page.phase].archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]]">
-                              <span>[[phases[page.phase].actual.dps]]</span>
-                              <span class="expected">[[Math.round(phases[page.phase].archetype.avg_dps)]]</span>
-                            </td>
-                            <td style="[[bar(phases[page.phase].actual.seaweed, phases[page.phase].archetype.avg_seaweed, phases[page.phase].archetype.min_seaweed, phases[page.phase].archetype.max_seaweed, encounter.phases[page.phase].individual.max_seaweed)]]">
-                              <span>[[phases[page.phase].actual.seaweed]]%</span>
-                              <span class="expected">[[Math.round(phases[page.phase].archetype.avg_seaweed)]]%</span>
-                            </td>
-                            <td style="[[bar(phases[page.phase].actual.scholar, phases[page.phase].archetype.avg_scholar, phases[page.phase].archetype.min_scholar, phases[page.phase].archetype.max_scholar, encounter.phases[page.phase].individual.max_scholar)]]">
-                              <span>[[phases[page.phase].actual.scholar]]%</span>
-                              <span class="expected">[[Math.round(phases[page.phase].archetype.avg_scholar)]]%</span>
-                            </td>
-                          </tr>
-                        [[/each]]
-                      </tbody>
-                    [[/each]]
-                  </table>
-                </div>
-              [[elseif page.tab == 'boon_uptime']]
-                Boon Uptime
-                {# TODO #}
-              [[/if]]
+              {% include 'raidar/encounter.html' %}
 
             [[/if]]
 
