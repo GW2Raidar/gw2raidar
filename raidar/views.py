@@ -17,6 +17,8 @@ from re import match
 from .models import *
 from itertools import groupby
 from gw2api.gw2api import GW2API, GW2APIException
+from django.contrib.auth import update_session_auth_hash
+from django.contrib.auth.forms import PasswordChangeForm
 
 
 
@@ -187,22 +189,20 @@ def register(request):
         return _error(e)
 
     try:
-        with transaction.atomic():
-            try:
-                user = User.objects.create_user(username, email, password)
-            except IntegrityError:
-                return _error('Such a user already exists')
-
-            if not user:
-                return _error('Could not register user')
-
-            account_name = gw2_account['name']
-            account = Account.objects.get_or_create(user=user, api_key=api_key, name=account_name)
-
-            return _login_successful(request, user)
-
+        user = User.objects.create_user(username, email, password)
     except IntegrityError:
-        return _error('The user with that GW2 account is already registered')
+        return _error('Such a user already exists')
+
+    if not user:
+        return _error('Could not register user')
+
+    account_name = gw2_account['name']
+    account, _ = Account.objects.get_or_create(name=account_name)
+    account.user = user
+    account.api_key = api_key
+    account.save()
+
+    return _login_successful(request, user)
 
 
 @login_required
@@ -273,3 +273,43 @@ def upload(request):
 @require_GET
 def named(request, name, no):
     return index(request, { 'name': name, 'no': no })
+
+@login_required
+@require_POST
+def change_email(request):
+    request.user.email = request.POST.get('email')
+    request.user.save()
+    return JsonResponse({})
+
+@login_required
+@require_POST
+def change_password(request):
+    form = PasswordChangeForm(request.user, request.POST)
+    if form.is_valid():
+        user = form.save()
+        update_session_auth_hash(request, user)
+        return JsonResponse({})
+    else:
+        return _error(' '.join(' '.join(v) for k, v in form.errors.items()))
+
+@login_required
+@require_POST
+def add_api_key(request):
+    api_key = request.POST.get('api_key')
+    gw2api = GW2API(api_key)
+
+    try:
+        gw2_account = gw2api.query("/account")
+    except GW2APIException as e:
+        return _error(e)
+
+    account_name = gw2_account['name']
+    account, _ = Account.objects.get_or_create(user=request.user, name=account_name)
+    account.api_key = api_key
+    account.save()
+
+    result = _login_successful(request, request.user)
+    return JsonResponse({
+        'account_name': account_name,
+        'encounters': _encounter_data(request)
+    })
