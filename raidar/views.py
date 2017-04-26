@@ -189,24 +189,20 @@ def register(request):
         return _error(e)
 
     try:
-        with transaction.atomic():
-            try:
-                user = User.objects.create_user(username, email, password)
-            except IntegrityError:
-                return _error('Such a user already exists')
-
-            if not user:
-                return _error('Could not register user')
-
-            account_name = gw2_account['name']
-            account, _ = Account.objects.get_or_create(user=user, name=account_name)
-            account.api_key = api_key
-            account.save()
-
-            return _login_successful(request, user)
-
+        user = User.objects.create_user(username, email, password)
     except IntegrityError:
-        return _error('The user with that GW2 account is already registered')
+        return _error('Such a user already exists')
+
+    if not user:
+        return _error('Could not register user')
+
+    account_name = gw2_account['name']
+    account, _ = Account.objects.get_or_create(name=account_name)
+    account.user = user
+    account.api_key = api_key
+    account.save()
+
+    return _login_successful(request, user)
 
 
 @login_required
@@ -310,6 +306,7 @@ def add_api_key(request):
     account_name = gw2_account['name']
     account, _ = Account.objects.get_or_create(user=request.user, name=account_name)
     account.api_key = api_key
+    account.save()
 
     result = _login_successful(request, request.user)
     return JsonResponse({
