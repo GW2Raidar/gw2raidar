@@ -57,6 +57,7 @@
     average: new Colour("#cccc80"),
     good: new Colour("#80ff80"),
     bad: new Colour("#ff8080"),
+    single: new Colour("#999999"),
     expStroke: new Colour("#8080ff").css(),
     expFill: new Colour("#8080ff", 0.5).css(),
   };
@@ -70,7 +71,9 @@
     }
   }
   helpers.bar = (actual, average, min, max, top) => {
-    if (!top) top = max;
+    if (min > actual) min = actual;
+    if (max < actual) max = actual
+    top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;
     let colour = scaleColour(actual, average, min, max);
@@ -85,7 +88,15 @@
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
   helpers.bar1 = (val, max) => {
-    console.log(val, max);
+    let actPct = val * 100 / max;
+    let stroke = barcss.single.css();
+    let fill = barcss.single.lighten(0.5).css();
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+<rect x='0%' width='${actPct}%' y='20%' height='70%' stroke='${stroke}' fill='${fill}'/>
+</svg>
+    `.replace(/\n\s*/g, "");
+    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
