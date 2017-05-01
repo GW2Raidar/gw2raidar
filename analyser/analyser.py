@@ -17,6 +17,7 @@ class Group:
     DESTINATION = "To"
     SKILL = "Skill"
     SUBGROUP = "Subgroup"
+    BUFF = "Buff"
 
 class LogType(IntEnum):
     UNKNOWN = 0
@@ -43,6 +44,7 @@ class ContextType:
     SKILL_NAME = "Skill Name"
     AGENT_NAME = "Agent Name"
     PROFESSION_NAME = "Profession Name"
+    BUFF_TYPE = "Buff"
 
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
@@ -105,7 +107,7 @@ def unique_names(dictionary):
 class Analyser:
     def __init__(self, encounter):
         boss = BOSSES[encounter.area_id]
-        collector = Collector.root([Group.CATEGORY, Group.PHASE, Group.PLAYER, Group.DESTINATION, Group.SKILL])
+        collector = Collector.root([Group.CATEGORY, Group.PHASE, Group.PLAYER, Group.DESTINATION, Group.SKILL, Group.BUFF])
 
         #set up data structures
         events = encounter.events
@@ -137,7 +139,7 @@ class Analyser:
         boss_power_events = boss_power_events.assign(delta = deltas)
         phase_splits = boss_power_events[boss_power_events.delta > 10000]
         phase_starts = [events.time.min()] + list(phase_splits.time)
-        phase_ends = list(phase_splits.time - phase_splits.delta) + [events.time.max()]
+        phase_ends = [int(x) for x in phase_splits.time - phase_splits.delta] + [events.time.max()]
         print("Autodetected phases: {0} {1}".format(phase_starts, phase_ends))
         self.phases = list(zip(phase_starts, phase_ends))
 
@@ -154,7 +156,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_events)
         collector.with_key(Group.CATEGORY, "damage").run(self.collect_damage, player_events)
-        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_player_buffs_by_phase, buff_data)
+        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_buffs_by_target, buff_data)
         
         self.info = {
             'name': boss.name,
@@ -331,20 +333,50 @@ class Analyser:
                            percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
     #Section: buff stats
-    def collect_player_buffs_by_phase(self, collector, buff_data):
-        collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
-
     def collect_buffs_by_target(self, collector, buff_data):
-        collector.group(self.collect_individual_player_buffs, buff_data,
+        collector.group(self.collect_buffs_by_type, buff_data,
                         ('player', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 
-    def collect_individual_player_buffs(self, collector, buff_data):
+    def collect_buffs_by_type(self, collector, buff_data):
+        #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
         for buff_type in BUFF_TYPES:
-            buff_specific_data = buff_data[buff_data['buff'] == buff_type.code];
-            diff_data = (buff_specific_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_specific_data[['stacks']])
-            mean = (diff_data['time'] * diff_data['stacks']).sum() / diff_data['time'].sum()
-            if buff_type.stacking == StackType.INTENSITY:
-                collector.add_data(buff_type.code, mean)
-            else:
-                collector.add_data(buff_type.code, mean, percentage)
+            collector.set_context_value(ContextType.BUFF_TYPE, buff_type)
+            buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
+            diff_data = (buff_specific_data[['time']].diff(periods=-1, axis=0)[:-1] * -1).join(buff_specific_data[['stacks', 'time']], lsuffix="_diff")
+            collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, diff_data)
 
+    def _slice_diff_data(self, diff_data, phase):
+        pre_phase_row_index = diff_data[diff_data.time < phase[0]].index[-1]
+        last_phase_row_index = diff_data[diff_data.time < phase[1]].index[-1]
+        pre_phase_row = diff_data.loc[pre_phase_row_index : pre_phase_row_index + 1]
+        if len(pre_phase_row) == 0:
+            print("BOOO")
+            return pre_phase_row
+        phase_rows = diff_data.loc[pre_phase_row_index + 1 : last_phase_row_index]
+        last_phase_row = diff_data.loc[last_phase_row_index : last_phase_row_index + 1]
+        trunc_pre_phase_row = pre_phase_row.assign(time=phase[0], time_diff=pre_phase_row['time'].iloc[0] + pre_phase_row['time_diff'].iloc[0] - phase[0])
+        trunc_last_phase_row = last_phase_row.assign(time_diff=phase[1] - last_phase_row['time'].iloc[0])
+        phase_data = trunc_pre_phase_row.append(phase_rows).append(trunc_last_phase_row)
+        return phase_data
+
+    def collect_buff(self, collector, diff_data):
+        phase = (self.phases[0][0], self.phases[-1][1])
+        phase_data = self._slice_diff_data(diff_data, phase)
+        collector.with_key(Group.PHASE, "All").run(self.collect_phase_buff, phase_data)
+
+        for i in range(0, len(self.phases)):
+            phase = self.phases[i]
+            phase_data = self._slice_diff_data(diff_data, phase)
+            collector.with_key(Group.PHASE, "{0}".format(i+1)).run(self.collect_phase_buff, phase_data)
+
+    def collect_phase_buff(self, collector, diff_data):
+        total_time = diff_data['time_diff'].sum()
+        if total_time == 0:
+            mean = 0
+        else:
+            mean = (diff_data['time_diff'] * diff_data['stacks']).sum() / total_time
+        buff_type = collector.context_values[ContextType.BUFF_TYPE]
+        if buff_type.stacking == StackType.INTENSITY:
+            collector.add_data(None, mean)
+        else:
+            collector.add_data(None, mean, percentage)
