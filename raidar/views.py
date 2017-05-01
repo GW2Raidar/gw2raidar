@@ -81,9 +81,9 @@ def index(request, page={ 'name': 'encounters', 'no': 1 }):
 @require_GET
 def encounter(request, id=None, json=None):
     encounter = Encounter.objects.select_related('area').get(pk=id)
-    account = Account.objects.get(
+    own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
-        user=request.user)
+        user=request.user)]
     dump = json_loads(encounter.dump)
     area_stats = json_loads(encounter.area.stats)
     phases = dump['Category']['damage']['Phase'].keys()
@@ -100,7 +100,7 @@ def encounter(request, id=None, json=None):
                 } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
     for party_no, party in parties.items():
         for member in party['members']:
-            if member['account'] == account.name:
+            if member['account'] in own_account_names:
                 member['self'] = True
             member['phases'] = {
                 phase: {
