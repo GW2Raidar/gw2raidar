@@ -20,13 +20,21 @@
       settings.url = baseURL + settings.url
     }
   });
-  $(document).ajaxError(evt => error("Error connecting to server"))
+  $(document).ajaxError((evt, xhr, settings, error) => {
+    console.error(error);
+    console.dir(xhr);
+    error("Error connecting to server")
+  })
 
 
   let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
-    let date = new Date(timestamp * 1000);
-    return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
+    if (timestamp) {
+      let date = new Date(timestamp * 1000);
+      return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
+    } else {
+      return '';
+    }
   };
   class Colour {
     constructor(r, g, b, a) {
@@ -107,6 +115,30 @@
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
   };
+  initData.data.boons = [
+    { boon: 'might', stacks: 25 },
+    { boon: 'fury' },
+    { boon: 'quickness' },
+    { boon: 'alacrity' },
+    { boon: 'protection' },
+    { boon: 'spotter' },
+    { boon: 'glyph_of_empowerment' },
+    { boon: 'gotl', stacks: 5 },
+    { boon: 'spirit_of_frost' },
+    { boon: 'sun_spirit' },
+    { boon: 'stone_spirit' },
+    { boon: 'storm_spirit' },
+    { boon: 'empower_allies' },
+    { boon: 'banner_strength' },
+    { boon: 'banner_discipline' },
+    { boon: 'banner_tactics' },
+    { boon: 'banner_defence' },
+    { boon: 'assassins_presence' },
+    { boon: 'naturalistic_resonance' },
+    { boon: 'pinpoint_distribution' },
+    { boon: 'soothing_mist' },
+    { boon: 'vampiric_presence' },
+  ];
   delete window.raidar_data;
 
   function URLForPage(page) {
@@ -116,6 +148,7 @@
   }
 
   function setData(data) {
+    console.log("loaded");
     r.set(data);
     r.set('loading', false);
   }

@@ -280,8 +280,8 @@ class Analyser:
         power_events = events[events.type == LogType.POWER]
         condi_events = events[events.type == LogType.CONDI]
         # print(events.columns)
-        collector.add_data('scholar', power_events['is_ninety'].mean(), percentage)
-        collector.add_data('seaweed', power_events['is_moving'].mean(), percentage)
+        collector.add_data('scholar', power_events['is_ninety'].mean() if not power_events['is_ninety'].empty else 0, percentage)
+        collector.add_data('seaweed', power_events['is_moving'].mean() if not power_events['is_moving'].empty else 0, percentage)
         collector.add_data('power', power_events['damage'].sum(), int)
         collector.add_data('condi', condi_events['damage'].sum(), int)
         collector.add_data('total', events['damage'].sum(), int)

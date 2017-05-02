@@ -21,7 +21,11 @@ from gw2api.gw2api import GW2API, GW2APIException
 
 
 
-
+def _safe_get(f):
+    try:
+        return f()
+    except KeyError:
+        return None
 
 def _error(msg, **kwargs):
     kwargs['error'] = str(msg)
@@ -105,17 +109,12 @@ def encounter(request, id=None, json=None):
             member['phases'] = {
                 phase: {
                     # too many values... Skills needed?
-                    'actual': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All'],
-                    'actual_boss': dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss'],
-                    'buffs': dump['Category']['buffs']['Phase'][phase]['Player'][member['name']],
+                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['buffs']['Phase'][phase]['Player'][member['name']]),
+                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])])
                 } for phase in phases
             }
-            for phase in phases:
-                try:
-                    member['phases'][phase]['archetype'] = area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]
-                except KeyError:
-                    # no data yet
-                    pass
             member['archetype_name'] = Archetype(member['archetype']).name
             member['specialisation_name'] = Character.SPECIALISATIONS[(member['profession'], member['elite'])]
     data = {
@@ -124,19 +123,15 @@ def encounter(request, id=None, json=None):
             "started_at": encounter.started_at,
             "phases": {
                 phase: {
-                    'group': area_stats[phase]['group'],
-                    'individual': area_stats[phase]['individual'],
-                    'actual': dump['Category']['damage']['Phase'][phase]['To']['*All'],
-                    'actual_boss': dump['Category']['damage']['Phase'][phase]['To']['*Boss'],
+                    'group': _safe_get(lambda: area_stats[phase]['group']),
+                    'individual': _safe_get(lambda: area_stats[phase]['individual']),
+                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*Boss']),
                 } for phase in phases
             },
             "parties": parties,
         }
     }
-    if area_stats:
-        for phase in phases:
-            data["encounter"]["phases"][phase]['group'] = area_stats[phase]['group']
-            data["encounter"]["phases"][phase]['individual'] = area_stats[phase]['individual']
 
     if json:
         return JsonResponse(data)
