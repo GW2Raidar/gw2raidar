@@ -22,8 +22,8 @@
         [[#each members]]
           <tr>
             <td class="[[self && 'uk-text-primary']]">
-              <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
-              <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
+              <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
               [[name]]
             </td>
           </tr>
@@ -102,8 +102,8 @@
           [[#each members]]
             <tr>
               <td class="[[self && 'uk-text-primary']]">
-                <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
-                <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
+                <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+                <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
                 [[name]]
               </td>
               [[#each data.boons]]

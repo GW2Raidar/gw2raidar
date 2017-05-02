@@ -1,11 +1,11 @@
+{% load staticfiles %}
 <table class="uk-table uk-table-striped">
   <thead>
     <tr>
-      <th class="uk-width-1-5">Area</th>
-      <th class="uk-width-1-5">Started at</th>
-      <th class="uk-width-1-5">Character</th>
-      <th class="uk-width-1-5">Account</th>
-      <th class="uk-width-1-5">Archetype</th>
+      <th class="uk-width-1-4">Area</th>
+      <th class="uk-width-1-4">Time</th>
+      <th class="uk-width-1-4">Character</th>
+      <th class="uk-width-1-4">Account</th>
     </tr>
   </thead>
   [[#each encounterSlice]]
@@ -14,17 +14,16 @@
         [[area]]
       </td>
       <td>
-        [[formatDate(started_at)]]
+        <span class="uk-float-left">[[formatDate(started_at)]]</span>
+        <span class="uk-float-right">&#91;[[formatTime(duration)]]&#93;</span>
       </td>
       <td>
+        <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+        <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
         [[character]]
       </td>
       <td>
         [[account]]
-      </td>
-      <td>
-        [[data.archetypes[archetype]]]
-        [[data.professions[profession]]]
       </td>
     </tr>
   [[/each]]

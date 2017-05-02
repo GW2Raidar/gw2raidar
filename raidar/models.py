@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
+from analyser.analyser import Archetype, Elite
 import re
 
 
@@ -102,6 +103,7 @@ class Encounter(models.Model):
     objects = EncounterManager()
 
     started_at = models.IntegerField(db_index=True)
+    duration = models.FloatField()
     uploaded_at = models.IntegerField(db_index=True)
     uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
@@ -136,21 +138,22 @@ class Encounter(models.Model):
 
 
 class Participation(models.Model):
-    POWER = 1
-    CONDI = 2
-    TANK = 3
-    HEAL = 4
-
     ARCHETYPE_CHOICES = (
-            (POWER, "Power"),
-            (CONDI, "Condi"),
-            (TANK, "Tank"),
-            (HEAL, "Heal"),
+            (Archetype.POWER, "Power"),
+            (Archetype.CONDI, "Condi"),
+            (Archetype.TANK, "Tank"),
+            (Archetype.HEAL, "Heal"),
+        )
+
+    ELITE_CHOICES = (
+            (Elite.CORE, "Core"),
+            (Elite.HEART_OF_THORNS, "Heart of Thorns"),
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
     character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='participations')
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):

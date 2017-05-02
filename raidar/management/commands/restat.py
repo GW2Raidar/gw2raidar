@@ -107,7 +107,7 @@ class Command(BaseCommand):
 
                     stats_in_phase_to_all = stats_in_phase['Player'][participation.character.name]['To']['*All']
                     totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
-                    elite = data['Category']['status']['Name'][participation.character.name]['elite']
+                    elite = data['Category']['status']['Player'][participation.character.name]['elite']
                     totals_by_elite = get_or_create(totals_by_profession, elite)
                     totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
 

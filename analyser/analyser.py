@@ -28,10 +28,10 @@ class LogType(IntEnum):
     STATUSREMOVE = 5
 
 class Archetype(IntEnum):
-    POWER = 0
-    HEAL = 1
+    POWER = 1
     CONDI = 2
     TANK = 3
+    HEAL = 4
 
 class Elite(IntEnum):
     CORE = 0
@@ -157,12 +157,10 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_events)
         collector.with_key(Group.CATEGORY, "damage").run(self.collect_damage, player_events)
         collector.with_key(Group.CATEGORY, "buffs").run(self.collect_buffs_by_target, buff_data)
-        
-        self.info = {
-            'name': boss.name,
-            'start': int(start_timestamp),
-            'end': int(start_timestamp + int((encounter_end - start_time) / 1000)),
-        }
+
+        encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
+        encounter_collector.add_data('start', start_timestamp, int)
+        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
 
         # saved as a JSON dump
         self.data = collector.all_data
@@ -188,7 +186,7 @@ class Analyser:
     def collect_boss_key_events(self, collector, events):
         boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
         collector.group(self.collect_invididual_boss_key_events, boss_events,
-                        ('ult_src_instid', 'Name', mapped_to(ContextType.AGENT_NAME)))
+                        ('ult_src_instid', 'Player', mapped_to(ContextType.AGENT_NAME)))
 
     #subsection: player stats
     def collect_player_status(self, collector, players):
@@ -197,7 +195,7 @@ class Analyser:
         players.loc[players.condition >= 7, 'archetype'] = Archetype.CONDI
         players.loc[players.toughness >= 7, 'archetype'] = Archetype.TANK
         players.loc[players.healing >= 7, 'archetype'] = Archetype.HEAL
-        collector.group(self.collect_individual_player_status, players, ('name', 'Name'))
+        collector.group(self.collect_individual_player_status, players, ('name', 'Player'))
 
     def collect_individual_player_status(self, collector, player):
         only_entry = player.iloc[0]

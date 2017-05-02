@@ -11,14 +11,14 @@
       </tr>
       <tr>
         <td>Squad</td>
-        <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].group.avg_dps, encounter.phases[page.phase].group.min_dps, encounter.phases[page.phase].group.max_dps)]][[else]][[bar1(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].group.max_dps)]][[/if]]">
+        <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].group.avg_dps, encounter.phases[page.phase].group.min_dps, encounter.phases[page.phase].group.max_dps)]][[else]][[bar1(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].actual.dps)]][[/if]]">
           <span>[[encounter.phases[page.phase].actual.dps]]</span>
           [[#if encounter.phases[page.phase].group]]
             <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps)]]</span>
           [[/if]]
         </td>
         [[#if encounter.phases[page.phase].actual_boss]]
-          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].group.avg_dps_boss, encounter.phases[page.phase].group.min_dps_boss, encounter.phases[page.phase].group.max_dps)]][[else]][[bar1(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].group.max_dps)]][[/if]]">
+          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].group.avg_dps_boss, encounter.phases[page.phase].group.min_dps_boss, encounter.phases[page.phase].group.max_dps)]][[else]][[bar1(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].actual.dps)]][[/if]]">
             <span>[[encounter.phases[page.phase].actual_boss.dps]]</span>
             [[#if encounter.phases[page.phase].group]]
               <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps_boss)]]</span>
@@ -43,11 +43,11 @@
       [[#each encounter.parties:partyNo]]
         <tr>
           <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-          <td style="[[bar1(stats[page.phase].actual.dps, encounter.phases[page.phase].group.max_dps)]]">
+          <td style="[[bar1(stats[page.phase].actual.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
             <span>[[stats[page.phase].actual.dps]]</span>
           </td>
           [[#if stats[page.phase].actual_boss]]
-            <td style="[[bar1(stats[page.phase].actual_boss.dps, encounter.phases[page.phase].group.max_dps)]]">
+            <td style="[[bar1(stats[page.phase].actual_boss.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
               <span>[[stats[page.phase].actual_boss.dps]]</span>
             </td>
           [[else]]
@@ -74,37 +74,38 @@
         [[#each members]]
           <tr>
             <td class="[[self && 'uk-text-primary']]">
-              <img alt="[[archetype_name]]" src="{% static 'raidar/img/arch/' %}/[[archetype_name]].png"/>
-              <img alt="[[specialisation_name]]" src="{% static 'raidar/img/20px/' %}/[[specialisation_name]]_tango_icon_20px.png"/>
+              <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
               [[name]]
             </td>
-            [[#if phases[page.phase]]]
-              <td style="[[#if phases[page.phase].archetype]][[bar(phases[page.phase].actual.dps, phases[page.phase].archetype.avg_dps, phases[page.phase].archetype.min_dps, phases[page.phase].archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(phases[page.phase].actual.dps, encounter.phases[page.phase].individual.max_dps)]][[/if]]">
-                <span>[[phases[page.phase].actual.dps]]</span>
-                [[#if phases[page.phase].archetype]]
-                  <span class="expected">[[Math.round(phases[page.phase].archetype.avg_dps)]]</span>
+            [[#with phases[page.phase]]]
+            [[#if .]]
+              <td style="[[#if archetype]][[bar(actual.dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, individual.max_dps)]][[else]][[bar1(actual ? actual.dps : 0, individual && individual.max_dps)]][[/if]]">
+                <span>[[actual ? actual.dps : 0]]</span>
+                [[#if archetype]]
+                  <span class="expected">[[Math.round(archetype.avg_dps)]]</span>
                 [[/if]]
               </td>
-              [[#if phases[page.phase].actual_boss]]
-                <td style="[[#if phases[page.phase].archetype]][[bar(phases[page.phase].actual_boss.dps, phases[page.phase].archetype.avg_dps_boss, phases[page.phase].archetype.min_dps_boss, phases[page.phase].archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(phases[page.phase].actual_boss.dps, encounter.phases[page.phase].individual.max_dps)]][[/if]]">
-                  <span>[[phases[page.phase].actual_boss.dps]]</span>
-                  [[#if phases[page.phase].archetype]]
-                    <span class="expected">[[Math.round(phases[page.phase].archetype.avg_dps_boss)]]</span>
+              [[#if actual_boss]]
+                <td style="[[#if archetype]][[bar(actual_boss.dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual_boss.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps)]][[/if]]">
+                  <span>[[actual_boss ? actual_boss.dps : 0]]</span>
+                  [[#if archetype]]
+                    <span class="expected">[[Math.round(archetype.avg_dps_boss)]]</span>
                   [[/if]]
                 </td>
               [[else]]
-                <td></td>
+                <td>0</td>
               [[/if]]
-              <td style="[[#if phases[page.phase].archetype]][[bar(phases[page.phase].actual.seaweed, phases[page.phase].archetype.avg_seaweed, phases[page.phase].archetype.min_seaweed, phases[page.phase].archetype.max_seaweed, 100)]][[else]][[bar1(phases[page.phase].actual.seaweed, 100)]][[/if]]">
-                <span>[[phases[page.phase].actual.seaweed]]%</span>
-                [[#if phases[page.phase].archetype]]
-                  <span class="expected">[[phases[page.phase].archetype.avg_seaweed.toPrecision(3)]]%</span>
+              <td style="[[#if archetype]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
+                <span>[[actual ? actual.seaweed : 0]]%</span>
+                [[#if archetype]]
+                  <span class="expected">[[archetype.avg_seaweed.toPrecision(3)]]%</span>
                 [[/if]]
               </td>
-              <td style="[[#if phases[page.phase].archetype]][[bar(phases[page.phase].actual.scholar, phases[page.phase].archetype.avg_scholar, phases[page.phase].archetype.min_scholar, phases[page.phase].archetype.max_scholar, 100)]][[else]][[bar1(phases[page.phase].actual.scholar, 100)]][[/if]]">
-                <span>[[phases[page.phase].actual.scholar]]%</span>
-                [[#if phases[page.phase].archetype]]
-                  <span class="expected">[[phases[page.phase].archetype.avg_scholar.toPrecision(3)]]%</span>
+              <td style="[[#if archetype]][[bar(actual ? actual.scholar : 0, archetype.avg_scholar, archetype.min_scholar, archetype.max_scholar, 100)]][[else]][[bar1(actual ? actual.scholar : 0, 100)]][[/if]]">
+                <span>[[actual ? actual.scholar : 0]]%</span>
+                [[#if archetype]]
+                  <span class="expected">[[archetype.avg_scholar.toPrecision(3)]]%</span>
                 [[/if]]
               </td>
             [[else]]
@@ -113,6 +114,7 @@
               <td></td>
               <td></td>
             [[/if]]
+            [[/with]]
           </tr>
         [[/each]]
       </tbody>

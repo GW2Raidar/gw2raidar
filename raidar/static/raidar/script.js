@@ -35,6 +35,20 @@
       return '';
     }
   };
+  helpers.formatTime = duration => {
+    if (duration) {
+      let seconds = Math.trunc(duration);
+      let minutes = Math.trunc(seconds / 60);
+      let usec = Math.trunc((duration - seconds) * 1000);
+      seconds -= minutes * 60
+      if (seconds < 10) seconds = "0" + seconds;
+      if (usec < 100) usec = "0" + usec;
+      if (usec < 10) usec = "0" + usec;
+      return minutes + ":" + seconds + "." + usec;
+    } else {
+      return '';
+    }
+  };
   class Colour {
     constructor(r, g, b, a) {
       if (typeof(r) == 'string') {
@@ -95,6 +109,7 @@
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
   helpers.bar1 = (val, max) => {
+    if (!max) return '';
     let actPct = val * 100 / max;
     let stroke = barcss.single.css();
     let fill = barcss.single.lighten(0.5).css();

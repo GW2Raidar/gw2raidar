@@ -46,10 +46,12 @@ def _participation_data(participation):
             'id': participation.encounter.id,
             'area': participation.encounter.area.name,
             'started_at': participation.encounter.started_at,
+            'duration': participation.encounter.duration,
             'character': participation.character.name,
             'account': participation.character.account.name,
             'profession': participation.character.profession,
             'archetype': participation.archetype,
+            'elite': participation.elite,
         }
 
 
@@ -72,7 +74,7 @@ def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
-    response['professions'] = {k: v for k, v in Character.PROFESSION_CHOICES}
+    response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
@@ -91,7 +93,7 @@ def encounter(request, id=None, json=None):
     dump = json_loads(encounter.dump)
     area_stats = json_loads(encounter.area.stats)
     phases = dump['Category']['damage']['Phase'].keys()
-    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Name'].items()]
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items()]
     keyfunc = lambda member: member['party']
     parties = { party: {
                     "members": list(members),
@@ -115,8 +117,6 @@ def encounter(request, id=None, json=None):
                     'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])])
                 } for phase in phases
             }
-            member['archetype_name'] = Archetype(member['archetype']).name
-            member['specialisation_name'] = Character.SPECIALISATIONS[(member['profession'], member['elite'])]
     data = {
         "encounter": {
             "name": encounter.area.name,
@@ -226,24 +226,26 @@ def upload(request):
             return _error('Unknown area')
 
         analyser = Analyser(evtc_encounter)
+        dump = analyser.data
 
         # XXX
-        # if analyser.info['end'] - analyser.info['start'] < 60:
-        #     return _error('Encounter shorter than 60s')
 
-        started_at = analyser.info['start']
+        started_at = dump['Category']['encounter']['start']
+        duration = dump['Category']['encounter']['duration']
+
+        if duration < 60:
+            return _error('Encounter shorter than 60s')
 
         # heuristics to see if the encounter is a re-upload:
         # a character can only be in one raid at a time
         # account_names are being hashed, and the triplet
         # (area, account_hash, started_at) is being checked for
         # uniqueness (along with some fuzzing to started_at)
-        dump = analyser.data
-        status_for = dump[Group.CATEGORY]['status']['Name']
+        status_for = dump[Group.CATEGORY]['status']['Player']
         account_names = [player['account'] for player in status_for.values()]
         encounter, encounter_created = Encounter.objects.get_or_create(
             uploaded_at=time(), uploaded_by=request.user,
-            area=area, started_at=started_at,
+            area=area, started_at=started_at, duration=duration,
             account_names=account_names,
             dump=json_dumps(dump)
         )
@@ -256,7 +258,7 @@ def upload(request):
                         name=name, account=account, profession=player['profession'])
                 Participation.objects.create(
                         character=character, encounter=encounter,
-                        archetype=player['archetype'], party=player['party'])
+                        archetype=player['archetype'], party=player['party'], elite=player['elite'])
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:
