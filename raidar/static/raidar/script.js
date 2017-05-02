@@ -20,10 +20,9 @@
       settings.url = baseURL + settings.url
     }
   });
-  $(document).ajaxError((evt, xhr, settings, error) => {
-    console.error(error);
-    console.dir(xhr);
-    error("Error connecting to server")
+  $(document).ajaxError((evt, xhr, settings, err) => {
+    console.error(err);
+    error("Error communicating to server")
   })
 
 
