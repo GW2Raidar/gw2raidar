@@ -101,20 +101,28 @@ class Command(BaseCommand):
 
                 totals_by_build = get_or_create(totals_in_phase, 'build')
                 for participation in participations:
+                    # XXX in case player did not actually participate (hopefully fix in analyser)
+                    if (participation.character.name not in stats_in_phase['Player']):
+                        continue
+
                     stats_in_phase_to_all = stats_in_phase['Player'][participation.character.name]['To']['*All']
-                    stats_in_phase_to_boss = stats_in_phase['Player'][participation.character.name]['To']['*Boss']
                     totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
-                    elite = data['Category']['status']['Name'][participation.character.name]['elite']
+                    elite = data['Category']['status']['Player'][participation.character.name]['elite']
                     totals_by_elite = get_or_create(totals_by_profession, elite)
                     totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
+
+                    try:
+                        # XXX what if TO *BOSS is not there? (hopefully fix in analyser)
+                        stats_in_phase_to_boss = stats_in_phase['Player'][participation.character.name]['To']['*Boss']
+                        get_or_create_then_increment(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
+                        find_bounds(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
+                        find_bounds(individual_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
+                    except KeyError:
+                        pass
 
                     get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
                     find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
                     find_bounds(individual_totals, 'dps', stats_in_phase_to_all['dps'])
-
-                    get_or_create_then_increment(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
-                    find_bounds(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
-                    find_bounds(individual_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
 
                     get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
                     find_bounds(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
@@ -158,6 +166,6 @@ class Command(BaseCommand):
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
 
         # XXX DEBUG
-        import pprint
-        pp = pprint.PrettyPrinter(indent=2)
-        pp.pprint(totals)
+        # import pprint
+        # pp = pprint.PrettyPrinter(indent=2)
+        # pp.pprint(totals)
