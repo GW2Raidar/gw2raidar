@@ -308,7 +308,6 @@ def add_api_key(request):
     account, _ = Account.objects.get_or_create(user=request.user, name=account_name)
     account.api_key = api_key
 
-    result = _login_successful(request, request.user)
     return JsonResponse({
         'account_name': account_name,
         'encounters': _encounter_data(request)
