@@ -1,0 +1,41 @@
+{% load staticfiles %}
+<table class="uk-table uk-table-striped">
+  <thead>
+    <tr>
+      <th class="uk-width-1-4">Area</th>
+      <th class="uk-width-1-4">Time</th>
+      <th class="uk-width-1-4">Character</th>
+      <th class="uk-width-1-4">Account</th>
+    </tr>
+  </thead>
+  [[#each encounterSlice]]
+    <tr on-click="@this.page({ name: 'encounter', no: id })">
+      <td>
+        [[area]]
+      </td>
+      <td>
+        <span class="uk-float-left">[[formatDate(started_at)]]</span>
+        <span class="uk-float-right">&#91;[[formatTime(duration)]]&#93;</span>
+      </td>
+      <td>
+        <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+        <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+        [[character]]
+      </td>
+      <td>
+        [[account]]
+      </td>
+    </tr>
+  [[/each]]
+</table>
+
+<hr class="uk-divider-icon">
+<ul class="uk-pagination uk-flex-center">
+  [[#each encounterPages]]
+    [[#if a || d]]
+      <li class="[[a ? 'uk-active' : 'uk-disabled']]"><span class="[[c]]">[[t]]</span></li>
+    [[else]]
+      <li><a href="#" class="[[c]]" data-page="[[n || t]]" on-click="page_no">[[t]]</a></li>
+    [[/if]]
+  [[/each]]
+</ul>

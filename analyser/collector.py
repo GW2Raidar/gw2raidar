@@ -59,7 +59,7 @@ class Collector:
         function(self, data.copy(True))
 
     def add_data(self, name, value, type = None):
-        if type:
+        if value != None and type:
             try:
                 value = type(value)
             except:
@@ -68,6 +68,9 @@ class Collector:
         output_block = self.all_data
         sorted_context = [key for key in self.ordering if key in self.context] + sorted([
             key for key in self.context if key not in self.ordering])
+
+        if name == None:
+            name = self.context[sorted_context.pop()]
 
         for path_key in sorted_context:
             output_block = Collector._navigate(output_block, path_key)
