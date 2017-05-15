@@ -69,6 +69,9 @@ class Collector:
         sorted_context = [key for key in self.ordering if key in self.context] + sorted([
             key for key in self.context if key not in self.ordering])
 
+        if name == None:
+            name = self.context[sorted_context.pop()]
+
         for path_key in sorted_context:
             output_block = Collector._navigate(output_block, path_key)
             output_block = Collector._navigate(output_block, self.context[path_key])
