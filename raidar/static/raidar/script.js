@@ -1,6 +1,6 @@
 "use strict";
 
-// XAcquire Django CSRF token for AJAX, and prefix the base URL
+// Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
 
   const PAGE_SIZE = 10;
@@ -214,6 +214,11 @@
         }
         return !authOK;
       },
+      changePassBad: function changePassBad() {
+        let password = this.get('account.password'),
+            password2 = this.get('account.password2');
+        return password == '' || password !== password2;
+      },
       encounterSlice: function encounterSlice() {
         let page = this.get('page.no') || 1;
         let encounters = this.get('encounters') || [];
@@ -265,6 +270,11 @@
   function error(str) {
     UIkit.notification(str, {
       status: 'danger',
+    });
+  }
+  function success(str) {
+    UIkit.notification(str, {
+      status: 'success',
     });
   }
 
@@ -346,6 +356,58 @@
       let page_no = parseInt(evt.node.getAttribute('data-page'));
       let page = this.get('page');
       setPage(Object.assign(page, { no: page_no }));
+      return false;
+    },
+    change_password: function changePassword(evt) {
+      $.post({
+        url: 'change_password.json',
+        data: {
+          old_password: r.get('account.old_password'),
+          new_password1: r.get('account.password'),
+          new_password2: r.get('account.password2'),
+        },
+      }).done(response => {
+        if (response.error) {
+          error(response.error);
+        } else {
+          success('Password changed');
+          r.set('account.old_password', '');
+          r.set('account.password', '');
+          r.set('account.password2', '');
+        }
+      });
+      return false;
+    },
+    change_email: function changeEmail(evt) {
+      $.post({
+        url: 'change_email.json',
+        data: {
+          email: r.get('account.email'),
+        },
+      }).done(response => {
+        if (response.error) {
+          error(response.error);
+        } else {
+          success('Email changed');
+          r.set('account.email', '');
+        }
+      });
+      return false;
+    },
+    add_api_key: function addAPIKey(evt) {
+      $.post({
+        url: 'add_api_key.json',
+        data: {
+          api_key: r.get('account.api_key'),
+        },
+      }).done(response => {
+        if (response.error) {
+          error(response.error);
+        } else {
+          success(`API key for ${response.account_name} added`);
+          r.set('account.api_key', '');
+        }
+      });
       return false;
     },
   });
