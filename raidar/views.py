@@ -123,6 +123,7 @@ def encounter(request, id=None, json=None):
         "encounter": {
             "name": encounter.area.name,
             "started_at": encounter.started_at,
+            "duration": encounter.duration,
             "phases": {
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
