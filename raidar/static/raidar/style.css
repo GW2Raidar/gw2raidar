@@ -1,3 +1,26 @@
+.uk-badge.uploading {
+  background-color:#4282bb;
+  background-image:-webkit-linear-gradient(top,#569fd2,#346fac);
+  background-image:linear-gradient(to bottom,#569fd2,#346fac);
+}
+.uk-badge.analysing {
+  background-color:#f9a124;
+  background-image:-webkit-linear-gradient(top,#fbb450,#f89406);
+  background-image:linear-gradient(to bottom,#fbb450,#f89406);
+}
+.uk-badge.uploaded {
+  background-color:#82bb42;
+  background-image:-webkit-linear-gradient(top,#9fd256,#6fac34);
+  background-image:linear-gradient(to bottom,#9fd256,#6fac34);
+}
+.uk-badge.rejected {
+  background-color:#d32c46;
+  background-image:-webkit-linear-gradient(top,#ee465a,#c11a39);
+  background-image:linear-gradient(to bottom,#ee465a,#c11a39);
+}
+.states .uk-badge, .states .uk-badge:hover {
+  color: #ffffff;
+}
 .expected {
   color: #999999;
   font-size: 70%;
