@@ -128,6 +128,7 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
+    upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
   };
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
@@ -241,7 +242,15 @@
         if (maxPage < totalPages && totalPages != 1) pages.push({t: totalPages, a: totalPages == page});
         pages.push({t: ">", c: 'uk-pagination-next', d: totalPages == page, n: page + 1});
         return pages;
-      }
+      },
+      uploadsByState: function uploadsByState() {
+        let states = this.get('upload');
+        let files = { 1: [], 2: [], 3: [], 4: [] };
+        Object.keys(states).forEach(fileName => {
+          files[states[fileName]].push(fileName);
+        });
+        return files;
+      },
     },
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
@@ -413,14 +422,19 @@
   });
 
 
-
   let uploadProgressHandler = (file, evt) => {
-    let progress = Math.round(100 * evt.loaded / evt.total);
-    // TODO single upload progress
+    // let progress = Math.round(100 * evt.loaded / evt.total);
+    if (evt.loaded == evt.total) {
+      r.get('upload')[file.name] = 2;
+      r.update('upload');
+    }
   }
   let uploadProgressDone = (file, data) => {
     if (data.error) {
       error(file.name + ': ' + data.error);
+
+      r.get('upload')[file.name] = 4;
+      r.update('upload');
     } else {
       let encounters = r.get('encounters');
       let fileNames = Object.keys(data);
@@ -428,6 +442,9 @@
       encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
       fileNames.forEach(file => encounters.push(data[file]));
       updateRactiveFromResponse({ encounters: encounters });
+
+      r.get('upload')[file.name] = 3;
+      r.update('upload');
     }
   }
 
@@ -454,8 +471,12 @@
 
       let files = evt.originalEvent.dataTransfer.files;
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
-      let promises = Array.from(files).map(file => {
+      Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc')) return;
+
+        r.get('upload')[file.name] = 1;
+        r.update('upload');
+
         let form = new FormData();
         form.append(file.name, file);
         return $.ajax({
@@ -467,9 +488,6 @@
           xhr: makeXHR.bind(null, file),
         })
         .done(uploadProgressDone.bind(null, file));
-      });
-      $.when(promises).then(results => {
-        // TODO all done
       });
       evt.preventDefault();
     });

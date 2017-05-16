@@ -244,12 +244,15 @@ def upload(request):
         # uniqueness (along with some fuzzing to started_at)
         status_for = dump[Group.CATEGORY]['status']['Player']
         account_names = [player['account'] for player in status_for.values()]
-        encounter, encounter_created = Encounter.objects.get_or_create(
-            uploaded_at=time(), uploaded_by=request.user,
-            area=area, started_at=started_at, duration=duration,
-            account_names=account_names,
-            dump=json_dumps(dump)
-        )
+        try:
+            encounter, encounter_created = Encounter.objects.get_or_create(
+                uploaded_at=time(), uploaded_by=request.user,
+                area=area, started_at=started_at, duration=duration,
+                account_names=account_names,
+                dump=json_dumps(dump)
+            )
+        except IntegrityError:
+            return _error("Already uploaded")
 
         if encounter_created:
             for name, player in status_for.items():

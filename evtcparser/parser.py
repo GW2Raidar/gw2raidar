@@ -3,6 +3,7 @@ from enum import IntEnum
 import struct
 import numpy as np
 import pandas as pd
+from io import UnsupportedOperation
 
 ENCODING = "utf8"
 
@@ -171,10 +172,13 @@ class Encounter:
         self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
 
     def __init__(self, file):
-        self._read_header(file)
-        if self.version <= "20170214":
-            raise EvtcParseException('Unsupported EVTC version')
-        self._read_agents(file)
-        self._read_skills(file)
-        self._read_events(file)
-        self._add_inst_id_to_agents()
+        try:
+            self._read_header(file)
+            if self.version <= "20170214":
+                raise EvtcParseException('Unsupported EVTC version')
+            self._read_agents(file)
+            self._read_skills(file)
+            self._read_events(file)
+            self._add_inst_id_to_agents()
+        except UnsupportedOperation:
+            raise EvtcParseException('Bad EVTC file')
