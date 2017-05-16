@@ -25,12 +25,15 @@
     error("Error communicating to server")
   })
 
+  function f0X(x) {
+    return (x < 10) ? "0" + x : x;
+  }
 
   let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
     if (timestamp) {
       let date = new Date(timestamp * 1000);
-      return date.toISOString().replace('T', ' ').replace(/.000Z$/, '');
+      return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
     } else {
       return '';
     }
@@ -41,10 +44,9 @@
       let minutes = Math.trunc(seconds / 60);
       let usec = Math.trunc((duration - seconds) * 1000);
       seconds -= minutes * 60
-      if (seconds < 10) seconds = "0" + seconds;
-      if (usec < 100) usec = "0" + usec;
-      if (usec < 10) usec = "0" + usec;
-      return minutes + ":" + seconds + "." + usec;
+      if (usec < 10) usec = "00" + usec;
+      else if (usec < 100) usec = "0" + usec;
+      return minutes + ":" + f0X(seconds) + "." + usec;
     } else {
       return '';
     }
