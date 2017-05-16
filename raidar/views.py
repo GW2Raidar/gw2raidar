@@ -302,7 +302,11 @@ def add_api_key(request):
         return _error(e)
 
     account_name = gw2_account['name']
-    account, _ = Account.objects.get_or_create(user=request.user, name=account_name)
+    account, _ = Account.objects.get_or_create(name=account_name)
+    if account.user and account.user != request.user:
+        return _error("The associated GW2 account is already registered to another user")
+
+    account.user = request.user
     account.api_key = api_key
     account.save()
 
