@@ -474,7 +474,7 @@
       let files = evt.originalEvent.dataTransfer.files;
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
-        if (!file.name.endsWith('.evtc')) return;
+        if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
 
         r.get('upload')[file.name] = 1;
         r.update('upload');

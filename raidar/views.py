@@ -16,6 +16,7 @@ from django.core import serializers
 from re import match
 from .models import *
 from itertools import groupby
+from zipfile import ZipFile
 from gw2api.gw2api import GW2API, GW2APIException
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -217,10 +218,22 @@ def upload(request):
     # so make adjustments to find out its name and only provide one result
 
     for filename, file in request.FILES.items():
+        zipfile = None
+        if filename.endswith('.evtc.zip'):
+            zipfile = ZipFile(file)
+            contents = zipfile.infolist()
+            if len(contents) == 1:
+                file = zipfile.open(contents[0].filename)
+            else:
+                return _error('Only single-file ZIP archives are allowed')
+
         try:
             evtc_encounter = EvtcEncounter(file)
         except EvtcParseException as e:
             return _error(e)
+
+        if zipfile:
+            zipfile.close()
 
         area = Area.objects.get(id=evtc_encounter.area_id)
         if not area:
