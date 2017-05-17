@@ -146,7 +146,8 @@ class Encounter:
 
     def _read_agents(self, file):
         num_agents, = struct.unpack("<i", file.read(4))
-        self.agents = pd.DataFrame(np.fromfile(file, dtype=AGENT_DTYPE, count=num_agents))
+        agents_string = file.read(AGENT_DTYPE.itemsize * num_agents)
+        self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=AGENT_DTYPE, count=num_agents))
         split = self.agents.name.str.split(b'\x00:?', expand=True)
         self.agents['name'] = split[0].str.decode(ENCODING)
         self.agents['account'] = split[1].str.decode(ENCODING)
@@ -154,11 +155,13 @@ class Encounter:
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
-        self.skills = pd.DataFrame(np.fromfile(file, dtype=SKILL_DTYPE, count=num_skills)).set_index('id')
+        skills_string = file.read(SKILL_DTYPE.itemsize * num_skills)
+        self.skills = pd.DataFrame(np.fromstring(skills_string, dtype=SKILL_DTYPE, count=num_skills)).set_index('id')
         self.skills['name'] = self.skills['name'].str.decode(ENCODING)
 
     def _read_events(self, file):
-        self.events = pd.DataFrame(np.fromfile(file, dtype=EVENT_DTYPE))
+        events_string = file.read()
+        self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_DTYPE))
 
         self.log_started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
