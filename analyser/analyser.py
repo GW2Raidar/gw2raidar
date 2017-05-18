@@ -87,6 +87,9 @@ BOSS_ARRAY = [
 ]
 BOSSES = {boss.profs[0]: boss for boss in BOSS_ARRAY}
 
+class EvtcAnalysisException(BaseException):
+    pass
+
 def only_entry(frame):
     return frame.iloc[0] if not frame.empty else None
 
@@ -241,6 +244,9 @@ class Analyser:
             collector.with_key(Group.PHASE, "{0}".format(i+1)).run(self.collect_phase_damage, phase_events)
 
     def collect_phase_damage(self, collector, damage_events):
+        if damage_events.empty:
+            raise EvtcAnalysisException('No damage events detected: Phase %s' % collector.context[Group.PHASE])
+
         collector.set_context_value(
             ContextType.DURATION,
             float(damage_events['time'].max() - damage_events['time'].min())/1000.0)
