@@ -97,7 +97,7 @@ def encounter(request, id=None, json=None):
     dump = json_loads(encounter.dump)
     area_stats = json_loads(encounter.area.stats)
     phases = dump['Category']['damage']['Phase'].keys()
-    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items()]
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
     keyfunc = lambda member: member['party']
     parties = { party: {
                     "members": list(members),
@@ -260,27 +260,29 @@ def upload(request):
         # account_names are being hashed, and the triplet
         # (area, account_hash, started_at) is being checked for
         # uniqueness (along with some fuzzing to started_at)
-        status_for = dump[Group.CATEGORY]['status']['Player']
+        status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
         account_names = [player['account'] for player in status_for.values()]
         try:
             encounter, encounter_created = Encounter.objects.get_or_create(
-                uploaded_at=time(), uploaded_by=request.user,
-                area=area, started_at=started_at, duration=duration,
-                account_names=account_names,
-                dump=json_dumps(dump)
+                area=area, started_at=started_at, account_names=account_names,
             )
-        except IntegrityError:
-            return _error("Already uploaded")
 
-        if encounter_created:
+            encounter.uploaded_at = time()
+            encounter.uploaded_by = request.user
+            encounter.duration = duration
+            encounter.dump = json_dumps(dump)
+            encounter.save()
+
             for name, player in status_for.items():
                 account, _ = Account.objects.get_or_create(
                         name=player['account'])
                 character, _ = Character.objects.get_or_create(
                         name=name, account=account, profession=player['profession'])
-                Participation.objects.create(
+                Participation.objects.get_or_create(
                         character=character, encounter=encounter,
                         archetype=player['archetype'], party=player['party'], elite=player['elite'])
+        except IntegrityError:
+            return _error("Conflict with an uploaded encounter")
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:
