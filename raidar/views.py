@@ -8,7 +8,7 @@ from django.db.utils import IntegrityError
 from django.views.decorators.http import require_GET, require_POST
 from django.contrib.auth.decorators import login_required
 from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
-from analyser.analyser import Analyser, Group, Archetype
+from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
 from django.utils import timezone
 from time import time
 from django.db import transaction
@@ -55,6 +55,7 @@ def _participation_data(participation):
             'profession': participation.character.profession,
             'archetype': participation.archetype,
             'elite': participation.elite,
+            'uploaded_at': participation.encounter.uploaded_at,
         }
 
 
@@ -239,7 +240,11 @@ def upload(request):
         if not area:
             return _error('Unknown area')
 
-        analyser = Analyser(evtc_encounter)
+        try:
+            analyser = Analyser(evtc_encounter)
+        except EvtcAnalysisException as e:
+            return _error(e)
+
         dump = analyser.data
 
         # XXX

@@ -2,10 +2,12 @@
 <table class="uk-table uk-table-striped">
   <thead>
     <tr>
-      <th class="uk-width-1-4">Area</th>
-      <th class="uk-width-1-4">Time</th>
-      <th class="uk-width-1-4">Character</th>
-      <th class="uk-width-1-4">Account</th>
+      <th class="uk-width-auto">Area</th>
+      <th class="uk-width-auto">Time</th>
+      <th class="uk-width-auto">Duration</th>
+      <th class="uk-width-auto">Character</th>
+      <th class="uk-width-auto">Account</th>
+      <th class="uk-width-auto">Upload</th>
     </tr>
   </thead>
   [[#each encounterSlice]]
@@ -14,8 +16,10 @@
         [[area]]
       </td>
       <td>
-        <span class="uk-float-left">[[formatDate(started_at)]]</span>
-        <span class="uk-float-right">&#91;[[formatTime(duration)]]&#93;</span>
+        [[formatDate(started_at)]]
+      </td>
+      <td>
+        &#91;[[formatTime(duration)]]&#93;
       </td>
       <td>
         <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
@@ -24,6 +28,9 @@
       </td>
       <td>
         [[account]]
+      </td>
+      <td>
+        [[formatDate(uploaded_at)]]
       </td>
     </tr>
   [[/each]]
