@@ -291,7 +291,7 @@
 
   function updateRactiveFromResponse(response) {
     if (response.encounters) {
-      response.encounters.sort((a, b) => b.started_at - a.started_at);
+      response.encounters.sort((a, b) => b.uploaded_at - a.uploaded_at);
     }
     r.set(response);
   }

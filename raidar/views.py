@@ -55,6 +55,7 @@ def _participation_data(participation):
             'profession': participation.character.profession,
             'archetype': participation.archetype,
             'elite': participation.elite,
+            'uploaded_at': participation.encounter.uploaded_at,
         }
 
 

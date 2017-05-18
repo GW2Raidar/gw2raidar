@@ -70,3 +70,7 @@ table.row-header {
   background: #ffffff;
   pointer-events: none;
 }
+
+table td {
+  white-space: nowrap;
+}
