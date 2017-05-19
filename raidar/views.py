@@ -263,24 +263,25 @@ def upload(request):
         status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
         account_names = [player['account'] for player in status_for.values()]
         try:
-            encounter, encounter_created = Encounter.objects.get_or_create(
-                area=area, started_at=started_at, account_names=account_names,
-            )
+            with transaction.atomic():
+                encounter, _ = Encounter.objects.get_or_create(
+                    area=area, started_at=started_at, account_names=account_names,
+                    defaults = {
+                        'uploaded_at': time(),
+                        'uploaded_by': request.user,
+                        'duration': duration,
+                        'dump': json_dumps(dump),
+                    }
+                )
 
-            encounter.uploaded_at = time()
-            encounter.uploaded_by = request.user
-            encounter.duration = duration
-            encounter.dump = json_dumps(dump)
-            encounter.save()
-
-            for name, player in status_for.items():
-                account, _ = Account.objects.get_or_create(
-                        name=player['account'])
-                character, _ = Character.objects.get_or_create(
-                        name=name, account=account, profession=player['profession'])
-                Participation.objects.get_or_create(
-                        character=character, encounter=encounter,
-                        archetype=player['archetype'], party=player['party'], elite=player['elite'])
+                for name, player in status_for.items():
+                    account, _ = Account.objects.get_or_create(
+                            name=player['account'])
+                    character, _ = Character.objects.get_or_create(
+                            name=name, account=account, profession=player['profession'])
+                    participation, _ = Participation.objects.get_or_create(
+                            character=character, encounter=encounter,
+                            archetype=player['archetype'], party=player['party'], elite=player['elite'])
         except IntegrityError:
             return _error("Conflict with an uploaded encounter")
 
