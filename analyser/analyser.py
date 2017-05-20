@@ -107,36 +107,29 @@ def unique_names(dictionary):
         existing_names.add(name)
     return unique
 
+def create_mapping(df, column):
+    return unique_names(df.to_dict()[column])
+
 class Analyser:
-    def __init__(self, encounter):
-        boss = BOSSES[encounter.area_id]
-        collector = Collector.root([Group.CATEGORY, Group.PHASE, Group.PLAYER, Group.DESTINATION, Group.SKILL, Group.BUFF])
-
-        #set up data structures
-        events = encounter.events
-        agents = encounter.agents
-        skills = encounter.skills
+    def preprocess_agents(self, agents, collector):
         players = agents[agents.party != 0]
-        bosses = agents[agents.prof.isin(boss.profs)]
-        final_bosses = agents[agents.prof == boss.profs[-1]]
-
-        events['ult_src_instid'] = events.src_master_instid.where(
-            events.src_master_instid != 0, events.src_instid)
-        events = assign_event_types(events)
-        player_events = events[events.ult_src_instid.isin(players.index)].sort_values(by='time')
-
-        #set up context
-        skill_map = unique_names(dict([(key, skills.loc[key, 'name']) for key in skills.index]))
-        agent_map = unique_names(dict([(key, agents.loc[key, 'name']) for key in agents.index]))
-        collector.set_context_value(ContextType.SKILL_NAME, skill_map)
-        collector.set_context_value(ContextType.AGENT_NAME, agent_map)
+        bosses = agents[agents.prof.isin(self.boss_info.profs)]
+        final_bosses = agents[agents.prof == self.boss_info.profs[-1]]
 
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
+        self.player_instids = players.index.values
         self.boss_instids = bosses.index.values
         self.final_boss_instids = final_bosses.index.values
+        collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
+        return players, bosses, final_bosses
 
+    def preprocess_events(self, events):
         #experimental phase calculations
+        events['ult_src_instid'] = events.src_master_instid.where(
+            events.src_master_instid != 0, events.src_instid)
+        events = assign_event_types(events)
+        player_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
         boss_events = events[events.dst_instid.isin(self.boss_instids)]
         final_boss_events = boss_events[boss_events.dst_instid.isin(self.boss_instids)]
         boss_power_events = boss_events[(boss_events.type == LogType.POWER) & (boss_events.value > 0)]
@@ -148,6 +141,23 @@ class Analyser:
         phase_ends = [int(x) for x in phase_splits.time - phase_splits.delta] + [events.time.max()]
         print("Autodetected phases: {0} {1}".format(phase_starts, phase_ends))
         self.phases = list(zip(phase_starts, phase_ends))
+
+        return player_events, boss_events, final_boss_events
+
+    def preprocess_skills(self, skills, collector):
+        collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
+
+    def __init__(self, encounter):
+        self.boss_info = BOSSES[encounter.area_id]
+        collector = Collector.root([Group.CATEGORY, Group.PHASE, Group.PLAYER, Group.DESTINATION, Group.SKILL, Group.BUFF])
+
+        #set up data structures
+        events = encounter.events
+        agents = encounter.agents
+        skills = encounter.skills
+        players, bosses, final_bosses = self.preprocess_agents(agents, collector)
+        self.preprocess_skills(skills, collector)
+        player_events, boss_events, final_boss_events = self.preprocess_events(events)
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
@@ -167,9 +177,8 @@ class Analyser:
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('success',
-                                     not final_boss_events[final_boss_events.state_change == parser.StateChange.CHANGE_DEAD].empty > 1,
-                                     bool)
+        success = not final_boss_events[final_boss_events.state_change == parser.StateChange.CHANGE_DEAD].empty
+        encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
         self.data = collector.all_data
