@@ -315,20 +315,9 @@ class Analyser:
         collector.group(method, events,
                         ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
 
-    #section: Damage stats
-    #subsection: Filtering events
-    def collect_incoming_damage(self, collector, player_events):
-        #prepare damage_events
-        damage_events = filter_damage_events(player_events)
-
-        #determine phases
-        self.split_by_phase(collector, self.collect_phase_incoming_damage, damage_events)
-
+    #section: Outgoing damage stats filtering
     def collect_outgoing_damage(self, collector, player_events):
-        #prepare damage_events
         damage_events = filter_damage_events(player_events)
-
-        #determine phases
         self.split_by_phase(collector, self.collect_phase_damage, damage_events)
 
     def collect_phase_damage(self, collector, damage_events):
@@ -339,15 +328,7 @@ class Analyser:
                             Group.DESTINATION,
                             'dst_instid')
 
-    def collect_phase_incoming_damage(self, collector, damage_events):
-        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
-                                    damage_events['damage'].sum())
-        collector.with_key(Group.SOURCE, "*All").group(
-            self.aggregate_basic_damage_stats, damage_events,
-            ('dst_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
-        collector.with_key(Group.SOURCE, "*All").group(
-            self.collect_player_incoming_damage, damage_events,
-            ('dst_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+
 
     def collect_destination_damage(self, collector, damage_events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_TO_DESTINATION,
@@ -372,7 +353,19 @@ class Analyser:
         self.split_by_skill(collector, self.aggregate_power_damage_stats, power_events)
         self.split_by_skill(collector, self.aggregate_basic_damage_stats, events)
 
-    def collect_player_incoming_damage(self, collector, events):
+    #subsection incoming damage stat filtering
+    def collect_incoming_damage(self, collector, player_events):
+        damage_events = filter_damage_events(player_events)
+        self.split_by_phase(collector, self.collect_phase_incoming_damage, damage_events)
+
+    def collect_phase_incoming_damage(self, collector, damage_events):
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                    damage_events['damage'].sum())
+        source_collector =  collector.with_key(Group.SOURCE, "*All")
+        self.split_by_player(source_collector, self.aggregate_basic_damage_stats, damage_events, 'dst_instid')
+        self.split_by_player(source_collector, self.collect_player_incoming_skill_damage, damage_events, 'dst_instid')
+
+    def collect_player_incoming_skill_damage(self, collector, events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     events['damage'].sum())
         self.split_by_skill(collector, self.aggregate_basic_damage_stats, events)
@@ -387,7 +380,6 @@ class Analyser:
         collector.add_data('condi', condi_events['damage'].sum(), int)
         collector.add_data('power_dps', power_events['damage'].sum(), per_second(int))
         collector.add_data('condi_dps', condi_events['damage'].sum(), per_second(int))
-
 
     def aggregate_power_damage_stats(self, collector, events):
         collector.add_data('fifty', events['is_fifty'].mean(), percentage)
