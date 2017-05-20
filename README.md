@@ -10,3 +10,5 @@ Quickstart
 * `python3 manage.py createsuperuser`
 * `python3 manage.py runserver`
 * Browse to http://localhost:8000/
+
+To generate statistics, use `python3 manage.py restat`.

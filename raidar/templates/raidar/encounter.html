@@ -1,0 +1,35 @@
+<h2 class="uk-padding-small uk-clearfix">
+  <div class="uk-float-left">
+    [[encounter.name]]
+  </div>
+  <div class="uk-float-right">
+    <span class="uk-float-left">[[formatDate(encounter.started_at)]]</span>
+    &nbsp;
+    <span class="uk-float-right">&#91;[[formatTime(encounter.duration)]]&#93;</span>
+  </div>
+</h2>
+
+<nav class="uk-navbar-container navbar-secondary" uk-navbar>
+  <div class="uk-navbar-left">
+    <ul class="uk-navbar-nav">
+      <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
+      <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
+    </ul>
+  </div>
+  <div class="uk-navbar-right">
+    <ul class="uk-navbar-nav">
+      [[#each encounter.phases:phaseName]]
+      <li class="[[page.phase == phaseName && 'uk-active']]"><a on-click="@this.set('page.phase', phaseName)">[[phaseName]]</a></li>
+      [[/each]]
+    </ul>
+  </div>
+</nav>
+
+<div class="uk-overflow-auto">
+</div>
+
+[[#if page.tab == 'combat_stats']]
+  {% include 'raidar/encounter_combat_data.html' %}
+[[elseif page.tab == 'boon_uptime']]
+  {% include 'raidar/encounter_boon_uptime.html' %}
+[[/if]]
