@@ -118,6 +118,7 @@ class Analyser:
         skills = encounter.skills
         players = agents[agents.party != 0]
         bosses = agents[agents.prof.isin(boss.profs)]
+        final_bosses = agents[agents.prof == boss.profs[-1]]
 
         events['ult_src_instid'] = events.src_master_instid.where(
             events.src_master_instid != 0, events.src_instid)
@@ -133,9 +134,11 @@ class Analyser:
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
         self.boss_instids = bosses.index.values
+        self.final_boss_instids = final_bosses.index.values
 
         #experimental phase calculations
         boss_events = events[events.dst_instid.isin(self.boss_instids)]
+        final_boss_events = boss_events[boss_events.dst_instid.isin(self.boss_instids)]
         boss_power_events = boss_events[(boss_events.type == LogType.POWER) & (boss_events.value > 0)]
 
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
@@ -164,6 +167,9 @@ class Analyser:
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
+        encounter_collector.add_data('success',
+                                     not final_boss_events[final_boss_events.state_change == parser.StateChange.CHANGE_DEAD].empty > 1,
+                                     bool)
 
         # saved as a JSON dump
         self.data = collector.all_data
