@@ -62,7 +62,6 @@ class Collector:
 
     def add_data(self, name, value, type_function = None):
         if isinstance(value, np.float) and np.isnan(value):
-            print("No value for: {0} - {1}".format(self.context, name))
             value = 0
 
         if value != None and type_function:

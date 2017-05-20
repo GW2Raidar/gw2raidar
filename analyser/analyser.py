@@ -159,6 +159,7 @@ class Analyser:
         collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
 
     def __init__(self, encounter):
+        self.debug = False
         self.boss_info = BOSSES[encounter.area_id]
         collector = Collector.root([Group.CATEGORY,
                                     Group.PHASE,
@@ -214,8 +215,11 @@ class Analyser:
 
     def collect_boss_key_events(self, collector, events):
         boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
-        collector.group(self.collect_invididual_boss_key_events, boss_events,
-                        ('ult_src_instid', Group.BOSS, mapped_to(ContextType.AGENT_NAME)))
+        self.split_by_boss(collector,
+                           self.collect_invididual_boss_key_events,
+                           boss_events,
+                           'ult_src_instid',
+                           Group.BOSS)
 
     #subsection: player stats
     def collect_player_status(self, collector, players):
@@ -240,9 +244,7 @@ class Analyser:
 
     def collect_player_key_events(self, collector, events):
         # player archetypes
-        collector.group(self.collect_individual_player_key_events,
-                        events,
-                        ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+        self.split_by_player(collector, self.collect_individual_player_key_events, events, 'src_instid')
 
     def collect_individual_player_key_events(self, collector, events):
         # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
@@ -261,7 +263,14 @@ class Analyser:
             collector.with_key(Group.PHASE, name).run(method, phase_events)
 
         collect_phase("All", events)
-        collect_phase("None", events[0:0])
+        if self.debug:
+            collect_phase("None", events[0:0])
+
+        #Yes, this lists each phase individually even if there is only one
+        #That's for consistency for things like:
+        #Some things happen outside a phase.
+        #Some fights have multiple phases, but you only get to phase one
+        #Still want to list it as phase 1
         for i in range(0,len(self.phases)):
             phase = self.phases[i]
             phase_events = events[(events.time >= phase[0]) & (events.time <= phase[1])]
@@ -269,15 +278,18 @@ class Analyser:
 
     def split_by_player_groups(self, collector, method, events, player_column):
         collector.run(method, events)
-        collector.with_key(Group.SUBGROUP, "*None").run(method, events[0:0])
+        if self.debug:
+            collector.with_key(Group.SUBGROUP, "*None").run(method, events[0:0])
         for subgroup in self.subgroups:
             subgroup_players = self.subgroups[subgroup]
-            subgroup_events = events[player_column.isin(subgroup_players)]
+            subgroup_events = events[events[player_column].isin(subgroup_players)]
             collector.with_key(Group.SUBGROUP, "{0}".format(subgroup)).run(
                 method, subgroup_events)
+        self.split_by_player(collector, method, events, player_column)
 
+    def split_by_player(self, collector, method, events, player_column):
         collector.group(method, events,
-                        ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+                        (player_column, Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
 
     def split_by_agent(self, collector, method, events, group, enemy_column):
         boss_events = events[events[enemy_column].isin(self.boss_instids)]
@@ -290,10 +302,18 @@ class Analyser:
         collector.with_key(group, "*Boss").run(method, boss_events)
         collector.with_key(group, "*Players").run(method, player_events)
         collector.with_key(group, "*Adds").run(method, add_events)
-        collector.with_key(group, "*None").run(method, events[0:0])
+        if self.debug:
+            collector.with_key(group, "*None").run(method, events[0:0])
         if len(self.boss_instids) > 1:
-             collector.group(method, boss_events,
+            self.split_by_boss(collector, method, boss_events, enemy_column, group)
+
+    def split_by_boss(self, collector, method, events, enemy_column, group):
+        collector.group(method, events,
                 (enemy_column, group, mapped_to(ContextType.AGENT_NAME)))
+
+    def split_by_skill(self, collector, method, events):
+        collector.group(method, events,
+                        ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
 
     #section: Damage stats
     #subsection: Filtering events
@@ -320,11 +340,6 @@ class Analyser:
                             'dst_instid')
 
     def collect_phase_incoming_damage(self, collector, damage_events):
-        #self.split_by_agent(collector,
-        #                    self.collect_destination_damage,
-        #                    damage_events,
-        #                    Group.SOURCE,
-        #                    'ult_src_instid')
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     damage_events['damage'].sum())
         collector.with_key(Group.SOURCE, "*All").group(
@@ -337,38 +352,35 @@ class Analyser:
     def collect_destination_damage(self, collector, damage_events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_TO_DESTINATION,
                                     damage_events['damage'].sum())
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                    damage_events['damage'].sum())
         self.split_by_player_groups(collector,
                                     self.aggregate_overall_damage_stats,
                                     damage_events,
-                                    damage_events.ult_src_instid)
+                                    'ult_src_instid')
 
     def collect_skill_data(self, collector, damage_events):
-        collector.group(self.collect_player_skill_damage, damage_events,
-                        ('ult_src_instid', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+        self.split_by_player(collector,
+                             self.collect_player_skill_damage,
+                             damage_events,
+                             'ult_src_instid')
 
     def collect_player_skill_damage(self, collector, events):
         power_events = events[events.type == LogType.POWER]
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     events['damage'].sum())
-        collector.group(self.aggregate_power_damage_stats, power_events,
-                        ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
-        collector.group(self.aggregate_basic_damage_stats, events,
-                        ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
+        self.split_by_skill(collector, self.aggregate_power_damage_stats, power_events)
+        self.split_by_skill(collector, self.aggregate_basic_damage_stats, events)
 
     def collect_player_incoming_damage(self, collector, events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     events['damage'].sum())
-        collector.group(self.aggregate_basic_damage_stats, events,
-                        ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
+        self.split_by_skill(collector, self.aggregate_basic_damage_stats, events)
 
     #subsection: Aggregating damage
     def aggregate_overall_damage_stats(self, collector, events):
         power_events = events[events.type == LogType.POWER]
         condi_events = events[events.type == LogType.CONDI]
-
-        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
-                                    events['damage'].sum())
-
         self.aggregate_power_damage_stats(collector, power_events)
         self.aggregate_basic_damage_stats(collector, events)
         collector.add_data('power', power_events['damage'].sum(), int)
@@ -390,8 +402,10 @@ class Analyser:
 
     #Section: buff stats
     def collect_buffs_by_target(self, collector, buff_data):
-        collector.group(self.collect_buffs_by_type, buff_data,
-                        ('player', Group.PLAYER, mapped_to(ContextType.AGENT_NAME)))
+         self.split_by_player(collector,
+                              self.collect_buffs_by_type,
+                              buff_data,
+                              'player')
 
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
