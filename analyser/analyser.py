@@ -244,7 +244,8 @@ class Analyser:
 
     def collect_player_key_events(self, collector, events):
         # player archetypes
-        self.split_by_player(collector, self.collect_individual_player_key_events, events, 'src_instid')
+        player_only_events = events[events.src_instid.isin(self.player_instids)]
+        self.split_by_player(collector, self.collect_individual_player_key_events, player_only_events, 'src_instid')
 
     def collect_individual_player_key_events(self, collector, events):
         # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
