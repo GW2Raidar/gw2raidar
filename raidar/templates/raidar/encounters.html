@@ -2,12 +2,66 @@
 <table class="uk-table uk-table-striped">
   <thead>
     <tr>
-      <th class="uk-width-auto">Area</th>
-      <th class="uk-width-auto">Time</th>
-      <th class="uk-width-auto">Duration</th>
-      <th class="uk-width-auto">Character</th>
-      <th class="uk-width-auto">Account</th>
-      <th class="uk-width-auto">Upload</th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="area:up">
+        Area
+        [[#if encounterSort.prop != 'area']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="started_at:down">
+        Time
+        [[#if encounterSort.prop != 'started_at']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="duration:down">
+        Duration
+        [[#if encounterSort.prop != 'duration']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="character:up">
+        Character
+        [[#if encounterSort.prop != 'character']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="account:up">
+        Account
+        [[#if encounterSort.prop != 'account']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="uploaded_at:down">
+        Upload
+        [[#if encounterSort.prop != 'uploaded_at']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
     </tr>
   </thead>
   [[#each encounterSlice]]
