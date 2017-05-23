@@ -130,6 +130,7 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
+    encounterSort: { prop: 'uploaded_at', dir: 'down' },
     upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
   };
   initData.data.boons = [
@@ -289,11 +290,16 @@
     });
   }
 
+  function sortEncounters() {
+    let currentProp = r.get('encounterSort.prop');
+    let currentDir = r.get('encounterSort.dir');
+    r.get('encounters').sort((currentDir == 'up' ? ascSort : descSort)(currentProp));
+    r.update('encounters');
+  }
+
   function updateRactiveFromResponse(response) {
-    if (response.encounters) {
-      response.encounters.sort((a, b) => b.uploaded_at - a.uploaded_at);
-    }
     r.set(response);
+    sortEncounters();
   }
 
   // test for shenanigans
@@ -319,6 +325,13 @@
       updateRactiveFromResponse(response);
     }
   }
+
+  const ascSort = (prop) => (a, b) =>
+    a[prop] > b[prop] ? 1 :
+    a[prop] < b[prop] ? -1 : 0;
+  const descSort = (prop) => (a, b) =>
+    a[prop] < b[prop] ? 1 :
+    a[prop] > b[prop] ? -1 : 0;
 
   r.on({
     auth_login: function login() {
@@ -421,7 +434,23 @@
       });
       return false;
     },
+    sort_encounters: function sortEncountersChange(evt) {
+      let currentProp = r.get('encounterSort.prop');
+      let currentDir = r.get('encounterSort.dir');
+      let [clickedProp, clickedDir] = evt.node.getAttribute('data-sort').split(':');
+      if (clickedProp == currentProp) {
+        currentDir = currentDir == 'up' ? 'down' : 'up';
+        r.set('encounterSort.dir', currentDir);
+      } else {
+        currentProp = clickedProp;
+        currentDir = clickedDir;
+        r.set('encounterSort.prop', clickedProp);
+        r.set('encounterSort.dir', clickedDir);
+      }
+      sortEncounters();
+    }
   });
+
 
 
   let uploadProgressHandler = (file, evt) => {
