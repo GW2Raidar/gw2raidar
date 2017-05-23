@@ -1,4 +1,4 @@
-
+import numpy as np
 
 class Filter:
     def __init__(self, conversion_function, context_function):
@@ -24,6 +24,8 @@ def percentage_of(name):
 
 def mapped_to(name):
     return Filter(None, lambda value,context: context.get(name).get(value))
+
+all_data_types = set()
 
 #NOTE: May want to add "range" style data to context levels, such as time or total damage?
 class Collector:
@@ -58,16 +60,21 @@ class Collector:
     def run(self, function, data):
         function(self, data.copy(True))
 
-    def add_data(self, name, value, type = None):
-        if value != None and type:
+    def add_data(self, name, value, type_function = None):
+        if isinstance(value, np.float) and np.isnan(value):
+            value = 0
+
+        if value != None and type_function:
             try:
-                value = type(value)
+                value = type_function(value)
             except:
-                value = type.apply(value, self.context_values)
+                value = type_function.apply(value, self.context_values)
 
         output_block = self.all_data
         sorted_context = [key for key in self.ordering if key in self.context] + sorted([
             key for key in self.context if key not in self.ordering])
+
+
 
         if name == None:
             name = self.context[sorted_context.pop()]
