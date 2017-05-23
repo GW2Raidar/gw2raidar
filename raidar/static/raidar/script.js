@@ -130,7 +130,7 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
-    encounterSort: { prop: 'uploaded_at', dir: 'down' },
+    encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: {} },
     upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
   };
   initData.data.boons = [
@@ -226,6 +226,36 @@
       encounterSlice: function encounterSlice() {
         let page = this.get('page.no') || 1;
         let encounters = this.get('encounters') || [];
+        let filters = this.get('encounterSort.filter');
+        const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
+        if (filters.area) {
+          let f = filters.area.toLowerCase();
+          encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
+        }
+        // TODO started_from, started_till
+        if (filters.duration_from) {
+          let m = filters.duration_from.match(durRE);
+          if (m) {
+            let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
+            encounters = encounters.filter(e => e.duration >= f);
+          }
+        }
+        if (filters.duration_till) {
+          let m = filters.duration_till.match(durRE);
+          if (m) {
+            let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
+            encounters = encounters.filter(e => e.duration <= f);
+          }
+        }
+        if (filters.character) {
+          let f = filters.character.toLowerCase();
+          encounters = encounters.filter(e => e.character.toLowerCase().startsWith(f));
+        }
+        if (filters.account) {
+          let f = filters.account.toLowerCase();
+          encounters = encounters.filter(e => e.account.toLowerCase().startsWith(f));
+        }
+        // TODO uploaded_from, uploaded_till
         return encounters.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
       },
       encounterPages: function encounterPages() {
@@ -448,6 +478,10 @@
         r.set('encounterSort.dir', clickedDir);
       }
       sortEncounters();
+    },
+    encounter_filter_toggle: function encounterFilterToggle(evt) {
+      r.toggle('encounterSort.filters');
+      return false;
     }
   });
 

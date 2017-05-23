@@ -61,8 +61,40 @@
         [[else]]
           <span uk-icon="icon: chevron-down"></span>
         [[/if]]
+        <div class="uk-float-right" on-click="encounter_filter_toggle">
+          [[#if encounterSort.filters]]
+            <span uk-icon="icon: minus-circle"></span>
+          [[else]]
+            <span uk-icon="icon: plus-circle"></span>
+          [[/if]]
+        </div>
       </th>
     </tr>
+    [[#if encounterSort.filters]]
+      <tr>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.area]]" placeholder="Starts with">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.started_from]]" placeholder="From"><br>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.started_till]]" placeholder="Till">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.duration_from]]" placeholder="From"><br>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.duration_till]]" placeholder="Till">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.character]]" placeholder="Starts with">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.account]]" placeholder="Starts with">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.uploaded_from]]" placeholder="From"><br>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.uploaded_till]]" placeholder="Till">
+        </th>
+      </tr>
+    [[/if]]
   </thead>
   [[#each encounterSlice]]
     <tr on-click="@this.page({ name: 'encounter', no: id })">
