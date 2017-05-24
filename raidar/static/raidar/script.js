@@ -223,8 +223,22 @@
             password2 = this.get('account.password2');
         return password == '' || password !== password2;
       },
-      encounterSlice: function encounterSlice() {
-        let page = this.get('page.no') || 1;
+      encountersAreas: function encountersAreas() {
+        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.area)));
+        result.sort();
+        return result;
+      },
+      encountersCharacters: function encountersCharacters() {
+        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.character)));
+        result.sort();
+        return result;
+      },
+      encountersAccounts: function encountersAccounts() {
+        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.account)));
+        result.sort();
+        return result;
+      },
+      encountersFiltered: function encountersFiltered() {
         let encounters = this.get('encounters') || [];
         let filters = this.get('encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
@@ -232,7 +246,21 @@
           let f = filters.area.toLowerCase();
           encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
         }
-        // TODO started_from, started_till
+        if (filters.started_from) {
+          let d = new Date(filters.started_from);
+          if (d) {
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.started_at >= f);
+          }
+        }
+        if (filters.started_till) {
+          let d = new Date(filters.started_till);
+          if (d) {
+            d.setDate(d.getDate() + 1);
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.started_at < f);
+          }
+        }
         if (filters.duration_from) {
           let m = filters.duration_from.match(durRE);
           if (m) {
@@ -255,7 +283,26 @@
           let f = filters.account.toLowerCase();
           encounters = encounters.filter(e => e.account.toLowerCase().startsWith(f));
         }
-        // TODO uploaded_from, uploaded_till
+        if (filters.uploaded_from) {
+          let d = new Date(filters.uploaded_from);
+          if (d) {
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.uploaded_at >= f);
+          }
+        }
+        if (filters.uploaded_till) {
+          let d = new Date(filters.uploaded_till);
+          if (d) {
+            d.setDate(d.getDate() + 1);
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.uploaded_at < f);
+          }
+        }
+        return encounters;
+      },
+      encounterSlice: function encounterSlice() {
+        let encounters = this.get('encountersFiltered');
+        let page = this.get('page.no') || 1;
         return encounters.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
       },
       encounterPages: function encounterPages() {
@@ -482,7 +529,10 @@
     encounter_filter_toggle: function encounterFilterToggle(evt) {
       r.toggle('encounterSort.filters');
       return false;
-    }
+    },
+    fill_value: function fillValue(evt) {
+      console.log(evt.node);
+    },
   });
 
 
