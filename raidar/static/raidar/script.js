@@ -166,7 +166,6 @@
   }
 
   function setData(data) {
-    console.log("loaded");
     r.set(data);
     r.set('loading', false);
   }
@@ -242,21 +241,26 @@
         let encounters = this.get('encounters') || [];
         let filters = this.get('encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
+        const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
         if (filters.area) {
           let f = filters.area.toLowerCase();
           encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
         }
         if (filters.started_from) {
-          let d = new Date(filters.started_from);
-          if (d) {
+          let m = filters.started_from.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.started_at >= f);
           }
         }
         if (filters.started_till) {
-          let d = new Date(filters.started_till);
-          if (d) {
-            d.setDate(d.getDate() + 1);
+          let m = filters.started_till.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
+            if (m[3]) d.setDate(d.getDate() + 1);
+            else if (m[2]) d.setMonth(d.getMonth() + 1);
+            else if (m[1]) d.setFullYear(d.getFullYear() + 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.started_at < f);
           }
@@ -284,16 +288,20 @@
           encounters = encounters.filter(e => e.account.toLowerCase().startsWith(f));
         }
         if (filters.uploaded_from) {
-          let d = new Date(filters.uploaded_from);
-          if (d) {
+          let m = filters.uploaded_from.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at >= f);
           }
         }
         if (filters.uploaded_till) {
-          let d = new Date(filters.uploaded_till);
-          if (d) {
-            d.setDate(d.getDate() + 1);
+          let m = filters.uploaded_till.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
+            if (m[3]) d.setDate(d.getDate() + 1);
+            else if (m[2]) d.setMonth(d.getMonth() + 1);
+            else if (m[1]) d.setFullYear(d.getFullYear() + 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at < f);
           }
@@ -529,9 +537,6 @@
     encounter_filter_toggle: function encounterFilterToggle(evt) {
       r.toggle('encounterSort.filters');
       return false;
-    },
-    fill_value: function fillValue(evt) {
-      console.log(evt.node);
     },
   });
 
