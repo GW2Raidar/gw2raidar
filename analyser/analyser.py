@@ -190,7 +190,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
         collector.with_key(Group.CATEGORY, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "damage").run(self.collect_incoming_damage, player_dst_events)
-        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_buffs_by_target, buff_data)
+        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_incoming_buffs, buff_data)
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
@@ -394,11 +394,12 @@ class Analyser:
                            percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
     #Section: buff stats
+    def collect_incoming_buffs(self, collector, buff_data):
+        source_collector = collector.with_key(Group.SOURCE, "*All");
+        self.collect_buffs_by_target(source_collector, buff_data)
+    
     def collect_buffs_by_target(self, collector, buff_data):
-         self.split_by_player(collector,
-                              self.collect_buffs_by_type,
-                              buff_data,
-                              'player')
+        self.split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player')        
 
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
@@ -407,7 +408,7 @@ class Analyser:
             buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
             collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
 
-    def _slice_diff_data(self, diff_data, phase):
+    def _split_buff_by_phase(self, diff_data, phase):
         pre_phase_row_index = diff_data[diff_data.time < phase[0]].index[-1]
         last_phase_row_index = diff_data[diff_data.time < phase[1]].index[-1]
 
@@ -431,12 +432,12 @@ class Analyser:
 
     def collect_buff(self, collector, diff_data):
         phase = (self.phases[0][0], self.phases[-1][1])
-        phase_data = self._slice_diff_data(diff_data, phase)
+        phase_data = self._split_buff_by_phase(diff_data, phase)
         collector.with_key(Group.PHASE, "All").run(self.collect_phase_buff, phase_data)
 
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
-            phase_data = self._slice_diff_data(diff_data, phase)
+            phase_data = self._split_buff_by_phase(diff_data, phase)
             collector.with_key(Group.PHASE, "{0}".format(i+1)).run(self.collect_phase_buff, phase_data)
 
     def collect_phase_buff(self, collector, diff_data):
