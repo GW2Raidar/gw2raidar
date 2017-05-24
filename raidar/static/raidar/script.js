@@ -166,7 +166,6 @@
   }
 
   function setData(data) {
-    console.log("loaded");
     r.set(data);
     r.set('loading', false);
   }
@@ -249,6 +248,7 @@
         if (filters.started_from) {
           let d = new Date(filters.started_from);
           if (d) {
+            d.setMinutes(d.getMinutes()+d.getTimezoneOffset());
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.started_at >= f);
           }
@@ -256,6 +256,7 @@
         if (filters.started_till) {
           let d = new Date(filters.started_till);
           if (d) {
+            d.setMinutes(d.getMinutes()+d.getTimezoneOffset());
             d.setDate(d.getDate() + 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.started_at < f);
@@ -286,6 +287,7 @@
         if (filters.uploaded_from) {
           let d = new Date(filters.uploaded_from);
           if (d) {
+            d.setMinutes(d.getMinutes()+d.getTimezoneOffset());
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at >= f);
           }
@@ -293,6 +295,7 @@
         if (filters.uploaded_till) {
           let d = new Date(filters.uploaded_till);
           if (d) {
+            d.setMinutes(d.getMinutes()+d.getTimezoneOffset());
             d.setDate(d.getDate() + 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at < f);
@@ -529,9 +532,6 @@
     encounter_filter_toggle: function encounterFilterToggle(evt) {
       r.toggle('encounterSort.filters');
       return false;
-    },
-    fill_value: function fillValue(evt) {
-      console.log(evt.node);
     },
   });
 
