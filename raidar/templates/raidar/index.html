@@ -33,16 +33,6 @@
       window.raidar_data = {{ userprops|safe }};
     </script>
 
-    <script id="sortIcons" type="text/ractive">
-      FOO[[column]]
-      [[#if encounterSort.prop != column]]
-        <span uk-icon="icon: minus"></span>
-      [[elseif encounterSort.dir == 'up']]
-        <span uk-icon="icon: chevron-up"></span>
-      [[elseif ]]
-        <span uk-icon="icon: chevron-down"></span>
-      [[/if]]
-    </script>
 
     <script id="template" type="text/ractive">
       <div class="uk-container uk-height-viewport uk-flex uk-flex-column">
@@ -170,7 +160,8 @@
 
             [[else]]
 
-              {% include 'raidar/intro.html' %}
+              TODO
+              {#% include 'raidar/intro.html' %#}
 
             [[/if]]
 
