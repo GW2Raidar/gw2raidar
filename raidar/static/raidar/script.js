@@ -351,15 +351,25 @@
       page = { name: page };
     }
     r.set('page', page);
-    history.pushState(page, null, URLForPage(page));
+    let url = URLForPage(page);
+    history.pushState(page, null, url);
     if (pageInit[page.name]) {
       pageInit[page.name](page);
     }
+    if (window.ga) {
+      window.ga('set', 'page', url);
+      window.ga('send', 'pageview');
+    }
     return false;
   }
-  history.replaceState(initData.page, null, URLForPage(initData.page));
+  let url = URLForPage(initData.page);
+  history.replaceState(initData.page, null, url);
   if (pageInit[initData.page.name]) {
     pageInit[initData.page.name](initData.page);
+  }
+  if (window.ga) {
+    window.ga('set', 'page', url);
+    window.ga('send', 'pageview');
   }
 
 

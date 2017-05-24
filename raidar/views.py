@@ -1,4 +1,5 @@
 from json import dumps as json_dumps, loads as json_loads
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -77,6 +78,7 @@ def _login_successful(request, user):
 def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
+    response['ga_property_id'] = settings.GA_PROPERTY_ID
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
