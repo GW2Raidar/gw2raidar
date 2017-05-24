@@ -131,6 +131,11 @@ LOGIN_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
 
 
+
+# Google Analytics
+GA_PROPERTY_ID = None
+
+
 # Local settings, not checked into the repository
 # Model on the example at `settings_local.py.example`
 # They can override the options in this file

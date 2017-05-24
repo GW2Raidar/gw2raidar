@@ -2,13 +2,114 @@
 <table class="uk-table uk-table-striped">
   <thead>
     <tr>
-      <th class="uk-width-auto">Area</th>
-      <th class="uk-width-auto">Time</th>
-      <th class="uk-width-auto">Duration</th>
-      <th class="uk-width-auto">Character</th>
-      <th class="uk-width-auto">Account</th>
-      <th class="uk-width-auto">Upload</th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="area:up">
+        Area
+        [[#if encounterSort.prop != 'area']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="started_at:down">
+        Time
+        [[#if encounterSort.prop != 'started_at']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="duration:down">
+        Dur.
+        [[#if encounterSort.prop != 'duration']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="character:up">
+        Character
+        [[#if encounterSort.prop != 'character']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="account:up">
+        Account
+        [[#if encounterSort.prop != 'account']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+      </th>
+      <th class="uk-width-auto" on-click="sort_encounters" data-sort="uploaded_at:down">
+        Upload
+        [[#if encounterSort.prop != 'uploaded_at']]
+          <span uk-icon="icon: minus"></span>
+        [[elseif encounterSort.dir == 'up']]
+          <span uk-icon="icon: chevron-up"></span>
+        [[else]]
+          <span uk-icon="icon: chevron-down"></span>
+        [[/if]]
+        <div class="uk-float-right" on-click="encounter_filter_toggle">
+          [[#if encounterSort.filters]]
+            <span uk-icon="icon: minus-circle"></span>
+          [[else]]
+            <span uk-icon="icon: plus-circle"></span>
+          [[/if]]
+        </div>
+      </th>
     </tr>
+    [[#if encounterSort.filters]]
+      <tr>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.area]]" placeholder="Starts with" list="encountersAreas">
+          <datalist id="encountersAreas">
+            [[#each encountersAreas]]
+              <option value="[[.]]"/>
+            [[/each]]
+          </datalist>
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.started_from]]" placeholder="From" type="date"><br>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.started_till]]" placeholder="Till" type="date">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.duration_from]]" placeholder="From"><br>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.duration_till]]" placeholder="Till">
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.character]]" placeholder="Starts with" list="encountersCharacters">
+          <datalist id="encountersCharacters">
+            [[#each encountersCharacters]]
+              <option value="[[.]]"/>
+            [[/each]]
+          </datalist>
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.account]]" placeholder="Starts with" list="encountersAccounts">
+          <datalist id="encountersAccounts">
+            [[#each encountersAccounts]]
+              <option value="[[.]]"/>
+            [[/each]]
+          </datalist>
+        </th>
+        <th>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.uploaded_from]]" placeholder="From" type="date"><br>
+          <input class="uk-input uk-form-small" value="[[encounterSort.filter.uploaded_till]]" placeholder="Till" type="date">
+        </th>
+      </tr>
+    [[/if]]
   </thead>
   [[#each encounterSlice]]
     <tr on-click="@this.page({ name: 'encounter', no: id })">
