@@ -409,26 +409,17 @@ class Analyser:
             collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
 
     def _split_buff_by_phase(self, diff_data, phase):
-        pre_phase_row_index = diff_data[diff_data.time < phase[0]].index[-1]
-        last_phase_row_index = diff_data[diff_data.time < phase[1]].index[-1]
+        #HACK: review why copy?
+        before_phase = diff_data[(diff_data['time'] < phase[0]) & (diff_data['time'] + diff_data['duration'] > phase[0])].copy()
+        main_phase = diff_data[(diff_data['time'] >= phase[0]) & (diff_data['time'] + diff_data['duration'] <= phase[1])]
+        after_phase = diff_data[(diff_data['time'] < phase[1]) & (diff_data['time'] + diff_data['duration'] > phase[1])]
 
-        #All rows within the phase
-        phase_rows = diff_data.loc[pre_phase_row_index + 1 : last_phase_row_index]
+        before_phase.loc[:, 'duration'] = before_phase[['duration']] + before_phase['time'] - phase[0]
+        before_phase = before_phase.assign(time = phase[0], stripped = 0)
 
-        if len(phase_rows) == 0:
-            phase_rows = diff_data.loc[pre_phase_row_index : pre_phase_row_index].assign(time = phase[0], duration = phase[1] - phase[0], stripped = 0)
-            phase_rows = phase_rows.append(diff_data.loc[pre_phase_row_index : pre_phase_row_index].assign(time = phase[1], duration = 0, stripped = 0))
-
-        else:
-            if phase_rows['time'].iloc[0] != phase[0]:
-                pre_phase_row = diff_data.loc[pre_phase_row_index : pre_phase_row_index].assign(time = phase[0], duration = phase_rows['time'].iloc[0] - phase[0], stripped = 0)
-                phase_rows = pre_phase_row.append(phase_rows);
-
-            if phase_rows['time'].iloc[-1] != phase[1]:
-                last_row = phase_rows[-1:].assign(duration = phase[1] - phase_rows[-1::]['time'].iloc[0])
-                post_phase_row = diff_data.loc[last_phase_row_index : last_phase_row_index].assign(time = phase[1], duration = 0, stripped = 0)
-                phase_rows = phase_rows[:-1].append(last_row).append(post_phase_row)
-        return phase_rows
+        after_phase = after_phase.assign(duration = phase[1])
+        after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
+        return before_phase.append(main_phase).append(after_phase)
 
     def collect_buff(self, collector, diff_data):
         phase = (self.phases[0][0], self.phases[-1][1])
