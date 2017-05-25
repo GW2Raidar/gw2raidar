@@ -20,6 +20,7 @@ class Group:
     SKILL = "Skill"
     SUBGROUP = "Subgroup"
     BUFF = "Buff"
+    METRICS = "Metrics"
 
 class LogType(IntEnum):
     UNKNOWN = 0
@@ -164,10 +165,14 @@ class Analyser:
         collector = Collector.root([Group.CATEGORY,
                                     Group.PHASE,
                                     Group.PLAYER,
+                                    Group.SUBGROUP,
+                                    Group.METRICS,
                                     Group.SOURCE,
                                     Group.DESTINATION,
                                     Group.SKILL,
-                                    Group.BUFF])
+                                    Group.BUFF,
+                                    
+                                    ])
 
         #set up data structures
         events = encounter.events
@@ -184,13 +189,13 @@ class Analyser:
         encounter_end = events.time.max()
 
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
-
+        
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
-        collector.with_key(Group.CATEGORY, "damage").run(self.collect_outgoing_damage, player_src_events)
-        collector.with_key(Group.CATEGORY, "damage").run(self.collect_incoming_damage, player_dst_events)
-        collector.with_key(Group.CATEGORY, "buffs").run(self.collect_incoming_buffs, buff_data)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
@@ -278,7 +283,7 @@ class Analyser:
             collect_phase("{0}".format(i+1), phase_events)
 
     def split_by_player_groups(self, collector, method, events, player_column):
-        collector.run(method, events)
+        collector.with_key(Group.SUBGROUP, "*All").run(method, events)
         if self.debug:
             collector.with_key(Group.SUBGROUP, "*None").run(method, events[0:0])
         for subgroup in self.subgroups:
