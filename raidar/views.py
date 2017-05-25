@@ -57,6 +57,7 @@ def _participation_data(participation):
             'archetype': participation.archetype,
             'elite': participation.elite,
             'uploaded_at': participation.encounter.uploaded_at,
+            'success': participation.encounter.success,
         }
 
 
@@ -128,6 +129,7 @@ def encounter(request, id=None, json=None):
             "name": encounter.area.name,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
+            "success": encounter.success,
             "phases": {
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
@@ -272,6 +274,7 @@ def upload(request):
 
         started_at = dump['Category']['encounter']['start']
         duration = dump['Category']['encounter']['duration']
+        success = dump['Category']['encounter']['success']
 
         if duration < 60:
             return _error('Encounter shorter than 60s')
@@ -285,24 +288,31 @@ def upload(request):
         account_names = [player['account'] for player in status_for.values()]
         try:
             with transaction.atomic():
-                encounter, _ = Encounter.objects.get_or_create(
+                encounter, _ = Encounter.objects.update_or_create(
                     area=area, started_at=started_at, account_names=account_names,
                     defaults = {
+                        'filename': filename,
                         'uploaded_at': time(),
                         'uploaded_by': request.user,
                         'duration': duration,
+                        'success': success,
                         'dump': json_dumps(dump),
                     }
                 )
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
-                            name=player['account'])
+                        name=player['account'])
                     character, _ = Character.objects.get_or_create(
-                            name=name, account=account, profession=player['profession'])
-                    participation, _ = Participation.objects.get_or_create(
-                            character=character, encounter=encounter,
-                            archetype=player['archetype'], party=player['party'], elite=player['elite'])
+                        name=name, account=account, profession=player['profession'])
+                    participation, _ = Participation.objects.update_or_create(
+                        character=character, encounter=encounter,
+                        defaults = {
+                            'archetype': player['archetype'],
+                            'party': player['party'],
+                            'elite': player['elite']
+                        }
+                    )
         except IntegrityError:
             return _error("Conflict with an uploaded encounter")
 

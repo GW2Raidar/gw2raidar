@@ -72,7 +72,7 @@ class Command(BaseCommand):
             "area": {},
             "character": {},
         }
-        queryset = Encounter.objects.all()
+        queryset = Encounter.objects.filter(success=True)
         buffs = set()
         for encounter in queryset_iterator(queryset):
             totals_in_area = get_or_create(totals['area'], encounter.area_id)
