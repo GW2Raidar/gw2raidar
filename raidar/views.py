@@ -1,4 +1,5 @@
 from json import dumps as json_dumps, loads as json_loads
+from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
@@ -56,6 +57,7 @@ def _participation_data(participation):
             'archetype': participation.archetype,
             'elite': participation.elite,
             'uploaded_at': participation.encounter.uploaded_at,
+            'success': participation.encounter.success,
         }
 
 
@@ -77,6 +79,7 @@ def _login_successful(request, user):
 def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
+    response['ga_property_id'] = settings.GA_PROPERTY_ID
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
@@ -126,6 +129,7 @@ def encounter(request, id=None, json=None):
             "name": encounter.area.name,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
+            "success": encounter.success,
             "phases": {
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
@@ -186,6 +190,27 @@ def register(request):
     except GW2APIException as e:
         return _error(e)
 
+    account_name = gw2_account['name']
+    account, _ = Account.objects.get_or_create(name=account_name)
+
+    if account.user and account.user != request.user:
+        # Registered to another account
+        old_gw2api = GW2API(account.api_key)
+        try:
+            gw2_account = old_gw2api.query("/account")
+            # Old key is still valid, ask user to invalidate it
+            try:
+                old_api_key_info = old_gw2api.query("/tokeninfo")
+                key_id = "named '%s'" % old_api_key_info['name']
+            except GW2APIException as e:
+                key_id = "ending in '%s'" % api_key[-4:]
+            new_key = "" if account.api_key != api_key else " and generate a new key"
+
+            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
+        except GW2APIException as e:
+            # Old key is invalid, reassign OK
+            pass
+
     try:
         user = User.objects.create_user(username, email, password)
     except IntegrityError:
@@ -194,8 +219,6 @@ def register(request):
     if not user:
         return _error('Could not register user')
 
-    account_name = gw2_account['name']
-    account, _ = Account.objects.get_or_create(name=account_name)
     account.user = user
     account.api_key = api_key
     account.save()
@@ -251,6 +274,7 @@ def upload(request):
 
         started_at = dump['Category']['encounter']['start']
         duration = dump['Category']['encounter']['duration']
+        success = dump['Category']['encounter']['success']
 
         if duration < 60:
             return _error('Encounter shorter than 60s')
@@ -264,24 +288,31 @@ def upload(request):
         account_names = [player['account'] for player in status_for.values()]
         try:
             with transaction.atomic():
-                encounter, _ = Encounter.objects.get_or_create(
+                encounter, _ = Encounter.objects.update_or_create(
                     area=area, started_at=started_at, account_names=account_names,
                     defaults = {
+                        'filename': filename,
                         'uploaded_at': time(),
                         'uploaded_by': request.user,
                         'duration': duration,
+                        'success': success,
                         'dump': json_dumps(dump),
                     }
                 )
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
-                            name=player['account'])
+                        name=player['account'])
                     character, _ = Character.objects.get_or_create(
-                            name=name, account=account, profession=player['profession'])
-                    participation, _ = Participation.objects.get_or_create(
-                            character=character, encounter=encounter,
-                            archetype=player['archetype'], party=player['party'], elite=player['elite'])
+                        name=name, account=account, profession=player['profession'])
+                    participation, _ = Participation.objects.update_or_create(
+                        character=character, encounter=encounter,
+                        defaults = {
+                            'archetype': player['archetype'],
+                            'party': player['party'],
+                            'elite': player['elite']
+                        }
+                    )
         except IntegrityError:
             return _error("Conflict with an uploaded encounter")
 
@@ -327,8 +358,24 @@ def add_api_key(request):
 
     account_name = gw2_account['name']
     account, _ = Account.objects.get_or_create(name=account_name)
+
     if account.user and account.user != request.user:
-        return _error("The associated GW2 account is already registered to another user")
+        # Registered to another account
+        old_gw2api = GW2API(account.api_key)
+        try:
+            gw2_account = old_gw2api.query("/account")
+            # Old key is still valid, ask user to invalidate it
+            try:
+                old_api_key_info = old_gw2api.query("/tokeninfo")
+                key_id = "named '%s'" % old_api_key_info['name']
+            except GW2APIException as e:
+                key_id = "ending in '%s'" % api_key[-4:]
+            new_key = "" if account.api_key != api_key else " and generate a new key"
+
+            return _error("This account is registered to another user. To confirm this account is yours, please invalidate the key %s%s." % (key_id, new_key))
+        except GW2APIException as e:
+            # Old key is invalid, reassign OK
+            pass
 
     account.user = request.user
     account.api_key = api_key

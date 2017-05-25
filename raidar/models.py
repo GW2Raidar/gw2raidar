@@ -93,17 +93,19 @@ class Character(models.Model):
 class EncounterManager(models.Manager):
     # hash account names at construction
     # (do they need to ever be updated? I don't think so)
-    def get_or_create(self, *args, **kwargs):
+    def update_or_create(self, *args, **kwargs):
         account_names = kwargs.pop('account_names', False)
         if account_names:
             kwargs['account_hash'] = Encounter.calculate_account_hash(account_names)
-        return super(EncounterManager, self).get_or_create(*args, **kwargs)
+        return super(EncounterManager, self).update_or_create(*args, **kwargs)
 
 class Encounter(models.Model):
     objects = EncounterManager()
 
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
+    success = models.BooleanField()
+    filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
     uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')

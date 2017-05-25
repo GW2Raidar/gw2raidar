@@ -130,6 +130,7 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
+    encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
   };
   initData.data.boons = [
@@ -165,7 +166,6 @@
   }
 
   function setData(data) {
-    console.log("loaded");
     r.set(data);
     r.set('loading', false);
   }
@@ -222,9 +222,98 @@
             password2 = this.get('account.password2');
         return password == '' || password !== password2;
       },
-      encounterSlice: function encounterSlice() {
-        let page = this.get('page.no') || 1;
+      encountersAreas: function encountersAreas() {
+        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.area)));
+        result.sort();
+        return result;
+      },
+      encountersCharacters: function encountersCharacters() {
+        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.character)));
+        result.sort();
+        return result;
+      },
+      encountersAccounts: function encountersAccounts() {
+        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.account)));
+        result.sort();
+        return result;
+      },
+      encountersFiltered: function encountersFiltered() {
         let encounters = this.get('encounters') || [];
+        let filters = this.get('encounterSort.filter');
+        const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
+        const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
+        if (filters.success !== null) {
+          encounters = encounters.filter(e => e.success === filters.success);
+        }
+        if (filters.area) {
+          let f = filters.area.toLowerCase();
+          encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
+        }
+        if (filters.started_from) {
+          let m = filters.started_from.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.started_at >= f);
+          }
+        }
+        if (filters.started_till) {
+          let m = filters.started_till.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
+            if (m[3]) d.setDate(d.getDate() + 1);
+            else if (m[2]) d.setMonth(d.getMonth() + 1);
+            else if (m[1]) d.setFullYear(d.getFullYear() + 1);
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.started_at < f);
+          }
+        }
+        if (filters.duration_from) {
+          let m = filters.duration_from.match(durRE);
+          if (m) {
+            let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
+            encounters = encounters.filter(e => e.duration >= f);
+          }
+        }
+        if (filters.duration_till) {
+          let m = filters.duration_till.match(durRE);
+          if (m) {
+            let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
+            encounters = encounters.filter(e => e.duration <= f);
+          }
+        }
+        if (filters.character) {
+          let f = filters.character.toLowerCase();
+          encounters = encounters.filter(e => e.character.toLowerCase().startsWith(f));
+        }
+        if (filters.account) {
+          let f = filters.account.toLowerCase();
+          encounters = encounters.filter(e => e.account.toLowerCase().startsWith(f));
+        }
+        if (filters.uploaded_from) {
+          let m = filters.uploaded_from.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.uploaded_at >= f);
+          }
+        }
+        if (filters.uploaded_till) {
+          let m = filters.uploaded_till.match(dateRE);
+          if (m) {
+            let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
+            if (m[3]) d.setDate(d.getDate() + 1);
+            else if (m[2]) d.setMonth(d.getMonth() + 1);
+            else if (m[1]) d.setFullYear(d.getFullYear() + 1);
+            let f = d.getTime() / 1000;
+            encounters = encounters.filter(e => e.uploaded_at < f);
+          }
+        }
+        return encounters;
+      },
+      encounterSlice: function encounterSlice() {
+        let encounters = this.get('encountersFiltered');
+        let page = this.get('page.no') || 1;
         return encounters.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
       },
       encounterPages: function encounterPages() {
@@ -265,15 +354,25 @@
       page = { name: page };
     }
     r.set('page', page);
-    history.pushState(page, null, URLForPage(page));
+    let url = URLForPage(page);
+    history.pushState(page, null, url);
     if (pageInit[page.name]) {
       pageInit[page.name](page);
     }
+    if (window.ga) {
+      window.ga('set', 'page', url);
+      window.ga('send', 'pageview');
+    }
     return false;
   }
-  history.replaceState(initData.page, null, URLForPage(initData.page));
+  let url = URLForPage(initData.page);
+  history.replaceState(initData.page, null, url);
   if (pageInit[initData.page.name]) {
     pageInit[initData.page.name](initData.page);
+  }
+  if (window.ga) {
+    window.ga('set', 'page', url);
+    window.ga('send', 'pageview');
   }
 
 
@@ -289,11 +388,16 @@
     });
   }
 
+  function sortEncounters() {
+    let currentProp = r.get('encounterSort.prop');
+    let currentDir = r.get('encounterSort.dir');
+    r.get('encounters').sort((currentDir == 'up' ? ascSort : descSort)(currentProp));
+    r.update('encounters');
+  }
+
   function updateRactiveFromResponse(response) {
-    if (response.encounters) {
-      response.encounters.sort((a, b) => b.uploaded_at - a.uploaded_at);
-    }
     r.set(response);
+    sortEncounters();
   }
 
   // test for shenanigans
@@ -319,6 +423,13 @@
       updateRactiveFromResponse(response);
     }
   }
+
+  const ascSort = (prop) => (a, b) =>
+    a[prop] > b[prop] ? 1 :
+    a[prop] < b[prop] ? -1 : 0;
+  const descSort = (prop) => (a, b) =>
+    a[prop] < b[prop] ? 1 :
+    a[prop] > b[prop] ? -1 : 0;
 
   r.on({
     auth_login: function login() {
@@ -421,7 +532,32 @@
       });
       return false;
     },
+    sort_encounters: function sortEncountersChange(evt) {
+      let currentProp = r.get('encounterSort.prop');
+      let currentDir = r.get('encounterSort.dir');
+      let [clickedProp, clickedDir] = evt.node.getAttribute('data-sort').split(':');
+      if (clickedProp == currentProp) {
+        currentDir = currentDir == 'up' ? 'down' : 'up';
+        r.set('encounterSort.dir', currentDir);
+      } else {
+        currentProp = clickedProp;
+        currentDir = clickedDir;
+        r.set('encounterSort.prop', clickedProp);
+        r.set('encounterSort.dir', clickedDir);
+      }
+      sortEncounters();
+    },
+    encounter_filter_toggle: function encounterFilterToggle(evt) {
+      r.toggle('encounterSort.filters');
+      return false;
+    },
+    encounter_filter_success: function encounterFilterSuccess(evt) {
+      r.set('encounterSort.filter.success', JSON.parse(evt.node.value));
+      console.log(r.get('encounterSort.filter.success'));
+      return false;
+    },
   });
+
 
 
   let uploadProgressHandler = (file, evt) => {
