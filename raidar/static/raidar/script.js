@@ -93,9 +93,10 @@
       return barcss.good.blend(barcss.average, 1 - (val - avg) / (max - avg));
     }
   }
-  helpers.bar = (actual, average, min, max, top) => {
+  helpers.bar = (actual, average, min, max, top, flip) => {
     if (min > actual) min = actual;
-    if (max < actual) max = actual
+    if (max < actual) max = actual;
+    if (flip) [min, max] = [max, min];
     top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;

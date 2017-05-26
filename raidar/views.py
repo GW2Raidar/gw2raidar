@@ -99,15 +99,16 @@ def encounter(request, id=None, json=None):
         user=request.user)]
     dump = json_loads(encounter.dump)
     area_stats = json_loads(encounter.area.stats)
-    phases = dump['Category']['damage']['Phase'].keys()
+    phases = dump['Category']['combat']['Phase'].keys()
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
     keyfunc = lambda member: member['party']
     parties = { party: {
                     "members": list(members),
-                    "stats": {
+                    "phases": {
                         phase: {
-                            "actual": dump['Category']['damage']['Phase'][phase]['To']['*All']['Subgroup'][str(party)],
-                            "actual_boss": dump['Category']['damage']['Phase'][phase]['To']['*Boss']['Subgroup'][str(party)],
+                            "actual": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All'],
+                            "actual_boss": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss'],
+                            "buffs": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All'],
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
@@ -117,11 +118,11 @@ def encounter(request, id=None, json=None):
                 member['self'] = True
             member['phases'] = {
                 phase: {
-                    # too many values... Skills needed?
-                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss']),
-                    'buffs': _safe_get(lambda: dump['Category']['buffs']['Phase'][phase]['Player'][member['name']]),
-                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])])
+                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
+                    'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
     data = {
@@ -134,8 +135,9 @@ def encounter(request, id=None, json=None):
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
                     'individual': _safe_get(lambda: area_stats[phase]['individual']),
-                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*Boss']),
+                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
                 } for phase in phases
             },
             "parties": parties,
