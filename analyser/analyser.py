@@ -143,7 +143,7 @@ class Analyser:
         player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
         player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
         boss_events = events[events.dst_instid.isin(self.boss_instids)]
-        final_boss_events = boss_events[boss_events.dst_instid.isin(self.boss_instids)]
+        final_boss_events = events[events.src_instid == self.boss_instids[-1]]
         boss_power_events = boss_events[(boss_events.type == LogType.POWER) & (boss_events.value > 0)]
 
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
