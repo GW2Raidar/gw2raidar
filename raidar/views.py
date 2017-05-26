@@ -315,7 +315,11 @@ def upload(request):
                             'elite': player['elite']
                         }
                     )
-        except IntegrityError:
+        except IntegrityError as e:
+            # DEBUG
+            logger = logging.getLogger(__name__)
+            logger.error(e)
+            print(e, file=sys.stderr)
             return _error("Conflict with an uploaded encounter")
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()

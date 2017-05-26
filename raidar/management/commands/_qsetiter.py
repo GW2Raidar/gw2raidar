@@ -13,7 +13,12 @@ def queryset_iterator(queryset, chunksize=1000):
     Note that the implementation of the iterator does not support ordered query sets.
     '''
     pk = 0
-    last_pk = queryset.order_by('-pk')[0].pk
+    last_pk_query = queryset.order_by('-pk')
+    try:
+        last_pk = last_pk_query[0].pk
+    except IndexError:
+        return
+
     queryset = queryset.order_by('pk')
     while pk < last_pk:
         for row in queryset.filter(pk__gt=pk)[:chunksize]:

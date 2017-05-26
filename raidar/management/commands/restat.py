@@ -1,4 +1,5 @@
 from django.core.management.base import BaseCommand, CommandError
+from django.conf import settings
 from ._qsetiter import queryset_iterator
 from raidar.models import *
 from json import loads as json_loads, dumps as json_dumps
@@ -14,8 +15,7 @@ from collections import defaultdict
 # l.addHandler(logging.StreamHandler())
 
 
-SCRIPTDIR = os.path.dirname(os.path.realpath(__file__))
-PIDFILE = os.path.join(SCRIPTDIR, 'restat.pid')
+PIDFILE = settings.RESTAT_PID_FILE
 
 def get_or_create(hash, prop, type=dict):
     if prop not in hash:
