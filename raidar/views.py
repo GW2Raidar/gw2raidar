@@ -57,6 +57,7 @@ def _participation_data(participation):
             'archetype': participation.archetype,
             'elite': participation.elite,
             'uploaded_at': participation.encounter.uploaded_at,
+            'success': participation.encounter.success,
         }
 
 
@@ -98,15 +99,16 @@ def encounter(request, id=None, json=None):
         user=request.user)]
     dump = json_loads(encounter.dump)
     area_stats = json_loads(encounter.area.stats)
-    phases = dump['Category']['damage']['Phase'].keys()
+    phases = dump['Category']['combat']['Phase'].keys()
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
     keyfunc = lambda member: member['party']
     parties = { party: {
                     "members": list(members),
-                    "stats": {
+                    "phases": {
                         phase: {
-                            "actual": dump['Category']['damage']['Phase'][phase]['To']['*All']['Subgroup'][str(party)],
-                            "actual_boss": dump['Category']['damage']['Phase'][phase]['To']['*Boss']['Subgroup'][str(party)],
+                            "actual": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All'],
+                            "actual_boss": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss'],
+                            "buffs": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All'],
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
@@ -116,11 +118,11 @@ def encounter(request, id=None, json=None):
                 member['self'] = True
             member['phases'] = {
                 phase: {
-                    # too many values... Skills needed?
-                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss']),
-                    'buffs': _safe_get(lambda: dump['Category']['buffs']['Phase'][phase]['Player'][member['name']]),
-                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])])
+                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
+                    'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
     data = {
@@ -128,12 +130,14 @@ def encounter(request, id=None, json=None):
             "name": encounter.area.name,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
+            "success": encounter.success,
             "phases": {
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
                     'individual': _safe_get(lambda: area_stats[phase]['individual']),
-                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*Boss']),
+                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
                 } for phase in phases
             },
             "parties": parties,
@@ -272,6 +276,7 @@ def upload(request):
 
         started_at = dump['Category']['encounter']['start']
         duration = dump['Category']['encounter']['duration']
+        success = dump['Category']['encounter']['success']
 
         if duration < 60:
             return _error('Encounter shorter than 60s')
@@ -285,24 +290,31 @@ def upload(request):
         account_names = [player['account'] for player in status_for.values()]
         try:
             with transaction.atomic():
-                encounter, _ = Encounter.objects.get_or_create(
+                encounter, _ = Encounter.objects.update_or_create(
                     area=area, started_at=started_at, account_names=account_names,
                     defaults = {
+                        'filename': filename,
                         'uploaded_at': time(),
                         'uploaded_by': request.user,
                         'duration': duration,
+                        'success': success,
                         'dump': json_dumps(dump),
                     }
                 )
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
-                            name=player['account'])
+                        name=player['account'])
                     character, _ = Character.objects.get_or_create(
-                            name=name, account=account, profession=player['profession'])
-                    participation, _ = Participation.objects.get_or_create(
-                            character=character, encounter=encounter,
-                            archetype=player['archetype'], party=player['party'], elite=player['elite'])
+                        name=name, account=account, profession=player['profession'])
+                    participation, _ = Participation.objects.update_or_create(
+                        character=character, encounter=encounter,
+                        defaults = {
+                            'archetype': player['archetype'],
+                            'party': player['party'],
+                            'elite': player['elite']
+                        }
+                    )
         except IntegrityError:
             return _error("Conflict with an uploaded encounter")
 

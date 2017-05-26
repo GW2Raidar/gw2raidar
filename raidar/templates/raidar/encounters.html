@@ -70,9 +70,15 @@
         </div>
       </th>
     </tr>
+
     [[#if encounterSort.filters]]
       <tr>
         <th>
+          <div class="uk-button-group">
+            <button class="uk-button uk-button-default uk-button-small [[encounterSort.filter.success === true && 'uk-button-primary' || '']]" value="true" on-click="encounter_filter_success"><span uk-icon="icon: check"></span></button>
+            <button class="uk-button uk-button-default uk-button-small [[encounterSort.filter.success === null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_success"></button>
+            <button class="uk-button uk-button-default uk-button-small [[encounterSort.filter.success === false && 'uk-button-primary' || '']]" value="false" on-click="encounter_filter_success"><span uk-icon="icon: close"></span></button>
+          </div><br/>
           <input class="uk-input uk-form-small" value="[[encounterSort.filter.area]]" placeholder="Starts with" list="encountersAreas">
           <datalist id="encountersAreas">
             [[#each encountersAreas]]
@@ -111,9 +117,10 @@
       </tr>
     [[/if]]
   </thead>
+
   [[#each encounterSlice]]
     <tr on-click="@this.page({ name: 'encounter', no: id })">
-      <td>
+      <td class="[[success ? 'uk-text-success' : 'uk-text-danger']]">
         [[area]]
       </td>
       <td>
