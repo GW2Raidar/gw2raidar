@@ -6,6 +6,7 @@
         <th>Totals</th>
         <th>DPS</th>
         <th>DPS to Boss</th>
+        <th>DPS Received</th>
         <th>Seaweed</th>
         <th>Scholar</th>
       </tr>
@@ -27,6 +28,16 @@
         [[else]]
           <td></td>
         [[/if]]
+        [[#if encounter.phases[page.phase].received]]
+          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].received.dps, encounter.phases[page.phase].group.avg_dps_received, encounter.phases[page.phase].group.min_dps_received, encounter.phases[page.phase].group.max_dps_received)]][[/if]]">
+            <span>[[encounter.phases[page.phase].received.dps]]</span>
+            [[#if encounter.phases[page.phase].group]]
+              <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps_received)]]</span>
+            [[/if]]
+          </td>
+        [[else]]
+          <td></td>
+        [[/if]]
         <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual.seaweed, encounter.phases[page.phase].group.avg_seaweed, encounter.phases[page.phase].group.min_seaweed, encounter.phases[page.phase].group.max_seaweed, 100)]][[else]][[bar1(encounter.phases[page.phase].actual.seaweed, 100)]][[/if]]">
           <span>[[encounter.phases[page.phase].actual.seaweed]]%</span>
           [[#if encounter.phases[page.phase].group]]
@@ -43,21 +54,28 @@
       [[#each encounter.parties:partyNo]]
         <tr>
           <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-          <td style="[[bar1(stats[page.phase].actual.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
-            <span>[[stats[page.phase].actual.dps]]</span>
+          <td style="[[bar1(phases[page.phase].actual.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
+            <span>[[phases[page.phase].actual.dps]]</span>
           </td>
-          [[#if stats[page.phase].actual_boss]]
-            <td style="[[bar1(stats[page.phase].actual_boss.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
-              <span>[[stats[page.phase].actual_boss.dps]]</span>
+          [[#if phases[page.phase].actual_boss]]
+            <td style="[[bar1(phases[page.phase].actual_boss.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
+              <span>[[phases[page.phase].actual_boss.dps]]</span>
             </td>
           [[else]]
             <td></td>
           [[/if]]
-          <td style="[[bar1(stats[page.phase].actual.seaweed, 100)]]">
-            <span>[[stats[page.phase].actual.seaweed]]%</span>
+          [[#if phases[page.phase].received]]
+            <td style="[[encounter.phases[page.phase].group ? bar1(phases[page.phase].received.dps, encounter.phases[page.phase].group && encounter.phases[page.phase].group.max_dps) : '']]">
+              <span>[[phases[page.phase].received.dps]]</span>
+            </td>
+          [[else]]
+            <td></td>
+          [[/if]]
+          <td style="[[bar1(phases[page.phase].actual.seaweed, 100)]]">
+            <span>[[phases[page.phase].actual.seaweed]]%</span>
           </td>
-          <td style="[[bar1(stats[page.phase].actual.scholar, 100)]]">
-            <span>[[stats[page.phase].actual.scholar]]%</span>
+          <td style="[[bar1(phases[page.phase].actual.scholar, 100)]]">
+            <span>[[phases[page.phase].actual.scholar]]%</span>
           </td>
         </tr>
       [[/each]]
@@ -68,6 +86,7 @@
           <th>Party [[partyNo]]</th>
           <th>DPS</th>
           <th>DPS To Boss</th>
+          <th>DPS Received</th>
           <th>Seaweed</th>
           <th>Scholar</th>
         </tr>
@@ -96,6 +115,12 @@
               [[else]]
                 <td>0</td>
               [[/if]]
+              <td style="[[#if archetype]][[bar(received.dps, archetype.avg_dps_received, archetype.min_dps_received, archetype.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[/if]]">
+                <span>[[received ? received.dps : 0]]</span>
+                [[#if archetype]]
+                  <span class="expected">[[Math.round(archetype.avg_dps_received)]]</span>
+                [[/if]]
+              </td>
               <td style="[[#if archetype]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
                 <span>[[actual ? actual.seaweed : 0]]%</span>
                 [[#if archetype]]

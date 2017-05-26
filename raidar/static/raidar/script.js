@@ -93,9 +93,10 @@
       return barcss.good.blend(barcss.average, 1 - (val - avg) / (max - avg));
     }
   }
-  helpers.bar = (actual, average, min, max, top) => {
+  helpers.bar = (actual, average, min, max, top, flip) => {
     if (min > actual) min = actual;
-    if (max < actual) max = actual
+    if (max < actual) max = actual;
+    if (flip) [min, max] = [max, min];
     top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;
@@ -130,7 +131,7 @@
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     encounters: [],
-    encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: {} },
+    encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
   };
   initData.data.boons = [
@@ -242,6 +243,9 @@
         let filters = this.get('encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
         const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
+        if (filters.success !== null) {
+          encounters = encounters.filter(e => e.success === filters.success);
+        }
         if (filters.area) {
           let f = filters.area.toLowerCase();
           encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
@@ -546,6 +550,11 @@
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
       r.toggle('encounterSort.filters');
+      return false;
+    },
+    encounter_filter_success: function encounterFilterSuccess(evt) {
+      r.set('encounterSort.filter.success', JSON.parse(evt.node.value));
+      console.log(r.get('encounterSort.filter.success'));
       return false;
     },
   });
