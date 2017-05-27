@@ -128,12 +128,13 @@ class BuffTrackDuration:
     def simulate(self, delta_time):
         remaining_delta = delta_time
         while self.stack_durations.size > 0 and self.stack_durations[0] <= remaining_delta:
+            self.current_time += self.stack_durations[0]
             if self.stack_durations.size == 1:
-                self.record_event(int(self.stack_durations[0] + self.current_time), 0, 0)
+                self.record_event(self.current_time, 0, 0)
             remaining_delta -= self.stack_durations[0]
             self.stack_durations = np.delete(self.stack_durations, 0)
 
-        self.current_time += delta_time
+        self.current_time += remaining_delta
         if self.stack_durations.size > 0:
             self.stack_durations[0] -= remaining_delta
 
@@ -161,12 +162,12 @@ class BuffPreprocessor:
         # Extract out the buff events
         not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
         status_events = not_statusremove_events[not_statusremove_events.buff != 0]
-        apply_events = status_events[status_events.value != 0]
+        apply_events = status_events[(status_events.value != 0)]
         buff_events = (apply_events[apply_events.dst_instid.isin(players.index)]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
 
         # Extract out buff removal events
-        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove != 0]
+        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
         buffremove_events = (statusremove_events[statusremove_events.dst_instid.isin(list(players.index))]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
 
