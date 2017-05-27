@@ -368,8 +368,8 @@ class Analyser:
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     damage_events['damage'].sum())
         source_collector =  collector.with_key(Group.SOURCE, "*All")
-        self.split_by_player(source_collector, self.aggregate_basic_damage_stats, damage_events, 'dst_instid')
-        self.split_by_player(source_collector, self.collect_player_incoming_skill_damage, damage_events, 'dst_instid')
+        self.split_by_player_groups(source_collector, self.aggregate_basic_damage_stats, damage_events, 'dst_instid')
+        self.split_by_player_groups(source_collector, self.collect_player_incoming_skill_damage, damage_events, 'dst_instid')
 
     def collect_player_incoming_skill_damage(self, collector, events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
