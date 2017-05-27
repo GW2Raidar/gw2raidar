@@ -419,7 +419,7 @@ class Analyser:
         main_phase = diff_data[(diff_data['time'] >= phase[0]) & (diff_data['time'] + diff_data['duration'] <= phase[1])]
         after_phase = diff_data[(diff_data['time'] < phase[1]) & (diff_data['time'] + diff_data['duration'] > phase[1])]
 
-        before_phase.loc[:, 'duration'] = before_phase[['duration']] + before_phase['time'] - phase[0]
+        before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - phase[0]
         before_phase = before_phase.assign(time = phase[0], stripped = 0)
 
         after_phase = after_phase.assign(duration = phase[1])
