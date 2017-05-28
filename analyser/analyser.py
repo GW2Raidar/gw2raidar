@@ -166,8 +166,11 @@ BOSS_ARRAY = [
     ]),
     Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD], phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
+        #Phase("Clear 1", False, phase_end_health = 99),
         Phase("Berg", True, phase_end_damage_stop = 10000),
+        Phase("Clear 2", False, phase_end_damage_start= 10000),
         Phase("Zane", True, phase_end_damage_stop = 10000),
+        Phase("Clear 3", False, phase_end_damage_start = 10000),
         Phase("Narella", True, phase_end_damage_stop = 10000)
     ]),
     Boss('Matthias', [0x3EF3], phases = [
