@@ -129,14 +129,14 @@ class Phase:
 
 BOSS_ARRAY = [
     Boss('Vale Guardian', [0x3C4E], phases = [
-        Phase("Phase 1", True, phase_end_health = 67, phase_end_damage_stop = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True)
     ]),
     Boss('Gorseval', [0x3C45], phases = [
-        Phase("Phase 1", True, phase_end_health = 67, phase_end_damage_stop = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
         Phase("First souls", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second souls", False, phase_end_damage_start = 10000),
@@ -164,21 +164,31 @@ BOSS_ARRAY = [
         Phase("Break 5", False, phase_end_damage_start = 1000),
         Phase("Phase 6", True)
     ]),
-    Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD]),
+    Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD], phases = [
+        #Needs to be a little bit more robust, but it's trio - not the most important fight.
+        Phase("Berg", True, phase_end_damage_stop = 10000),
+        Phase("Zane", True, phase_end_damage_stop = 10000),
+        Phase("Narella", True, phase_end_damage_stop = 10000)
+    ]),
     Boss('Matthias', [0x3EF3], phases = [
+        #Will currently detect phases slightly early - but probably not a big deal?
         Phase("Ice", True, phase_end_health = 80),
         Phase("Fire", True, phase_end_health = 60),
         Phase("Rain", True, phase_end_health = 40),
         Phase("Abomination", True)
     ]),
     Boss('Keep Construct', [0x3F6B], phases = [
+        # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
         Phase("Pre-burn 1", True, phase_end_damage_stop = 30000),
-        Phase("Burn 1", True, phase_end_health = 67, phase_end_damage_stop = 30000),
+        Phase("Split 1", False, phase_end_damage_start = 30000),
+        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 30000),
         Phase("Pacman 1", False, phase_end_damage_start = 30000),
         Phase("Pre-burn 2", True, phase_end_damage_stop = 30000),
+        Phase("Split 2", False, phase_end_damage_start = 30000),
         Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 30000),
         Phase("Pacman 2", False, phase_end_damage_start = 30000),
         Phase("Pre-burn 3", True, phase_end_damage_stop = 30000),
+        Phase("Split 3", False, phase_end_damage_start = 30000),
         Phase("Burn 3", True)
     ]),
     Boss('Xera', [0x3F76, 0x3F9E], phases = [
@@ -189,7 +199,7 @@ BOSS_ARRAY = [
     Boss('Cairn', [0x432A]),
     Boss('Mursaat Overseer', [0x4314]),
     Boss('Samarog', [0x4324], phases = [
-        Phase("Phase 1", True, phase_end_health = 67, phase_end_damage_stop = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
@@ -269,7 +279,8 @@ class Analyser:
             pass
 
         #Determine phases...
-        current_time = events.time.min()
+        start_time = events.time.min()
+        current_time = start_time
         phase_starts = []
         phase_ends = []
         phase_names = []
@@ -286,10 +297,15 @@ class Analyser:
             current_time = phase_end
         phase_ends.append(events.time.max())
 
+        def print_phase(phase):
+            print("{0}: {1} - {2} ({3})".format(phase[0], phase[1] - start_time, phase[2] - start_time, phase[2] - phase[1]))
+
         all_phases = list(zip(phase_names, phase_starts, phase_ends))
-        print("Autodetected phases: {0}".format(all_phases))
+        print("Autodetected phases:")
+        list(map(print_phase, all_phases))
         self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
-        print("Important phases: {0}".format(self.phases))
+        print("Important phases:")
+        list(map(print_phase, self.phases))
 
         return player_src_events, player_dst_events, from_boss_events, from_final_boss_events
 
