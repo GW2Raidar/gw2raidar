@@ -104,10 +104,6 @@ class Phase:
         if self.phase_end_health is not None:
             relevant_health_updates = health_updates[(health_updates.time >= current_time) &
                                                      (health_updates.dst_agent >= self.phase_end_health * 100)]
-            print(relevant_health_updates['time'].head())
-            print(relevant_health_updates['dst_agent'].head())
-            print(relevant_health_updates['time'].tail())
-            print(relevant_health_updates['dst_agent'].tail())
 
             if relevant_health_updates['dst_agent'].min() > (self.phase_end_health + 1) * 100:
                 return None
@@ -117,8 +113,6 @@ class Phase:
         if self.phase_end_damage_stop is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
-            print(relevant_gaps['time'].head())
-            print(relevant_gaps['delta'].head())
             if relevant_gaps.empty:
                 return None
             end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
@@ -171,12 +165,36 @@ BOSS_ARRAY = [
         Phase("Phase 6", True)
     ]),
     Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD]),
-    Boss('Matthias', [0x3EF3]),
-    Boss('Keep Construct', [0x3F6B]),
-    Boss('Xera', [0x3F76, 0x3F9E]),
+    Boss('Matthias', [0x3EF3], phases = [
+        Phase("Ice", True, phase_end_health = 80),
+        Phase("Fire", True, phase_end_health = 60),
+        Phase("Rain", True, phase_end_health = 40),
+        Phase("Abomination", True)
+    ]),
+    Boss('Keep Construct', [0x3F6B], phases = [
+        Phase("Pre-burn 1", True, phase_end_damage_stop = 30000),
+        Phase("Burn 1", True, phase_end_health = 67, phase_end_damage_stop = 30000),
+        Phase("Pacman 1", False, phase_end_damage_start = 30000),
+        Phase("Pre-burn 2", True, phase_end_damage_stop = 30000),
+        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 30000),
+        Phase("Pacman 2", False, phase_end_damage_start = 30000),
+        Phase("Pre-burn 3", True, phase_end_damage_stop = 30000),
+        Phase("Burn 3", True)
+    ]),
+    Boss('Xera', [0x3F76, 0x3F9E], phases = [
+        Phase("Phase 1", True, phase_end_health = 50, phase_end_damage_stop = 30000),
+        Phase("Leyline", False, phase_end_damage_start = 30000),
+        Phase("Phase 2", True),
+    ]),
     Boss('Cairn', [0x432A]),
     Boss('Mursaat Overseer', [0x4314]),
-    Boss('Samarog', [0x4324]),
+    Boss('Samarog', [0x4324], phases = [
+        Phase("Phase 1", True, phase_end_health = 67, phase_end_damage_stop = 10000),
+        Phase("First split", False, phase_end_damage_start = 10000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
+        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 3", True)
+    ]),
     Boss('Deimos', [0x4302]),
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
@@ -245,9 +263,6 @@ class Analyser:
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
 
-        print(health_updates['time'])
-        print(health_updates['dst_agent'])
-
         #construct frame of all boss skill activations
         boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
         def process_end_condition(end_condition, phase_end):
@@ -271,8 +286,10 @@ class Analyser:
             current_time = phase_end
         phase_ends.append(events.time.max())
 
-        print("Autodetected phases: {0} {1} {2}".format(phase_names, phase_starts, phase_ends))
-        self.phases = list(zip(phase_names, phase_starts, phase_ends))
+        all_phases = list(zip(phase_names, phase_starts, phase_ends))
+        print("Autodetected phases: {0}".format(all_phases))
+        self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
+        print("Important phases: {0}".format(self.phases))
 
         return player_src_events, player_dst_events, from_boss_events, from_final_boss_events
 
