@@ -69,26 +69,117 @@ def assign_event_types(events):
     return events
 
 class Boss:
-    def __init__(self, name, profs, invuln=None):
+    def __init__(self, name, boss_ids, sub_boss_ids=None, phases=None):
         self.name = name
-        self.profs = profs
-        self.invuln = invuln
+        self.boss_ids = boss_ids
+        self.sub_boss_ids = [] if sub_boss_ids is None else sub_boss_ids
+        self.phases = [] if phases is None else phases
+
+def phase_end_damage_stop(damage_stop_duration):
+    pass
+
+def phase_end_damage_start(damage_stop_duration):
+    pass
+
+def phase_end_health(health_level):
+    pass
+
+class Phase:
+    def __init__(self, name, important,
+                 phase_end_damage_stop=None,
+                 phase_end_damage_start=None,
+                 phase_end_health=None):
+        self.name = name
+        self.important = important
+        self.phase_end_damage_stop = phase_end_damage_stop
+        self.phase_end_damage_start = phase_end_damage_start
+        self.phase_end_health = phase_end_health
+
+    def find_end_time(self,
+                      current_time,
+                      damage_gaps,
+                      health_updates,
+                      skill_activations):
+        end_time = None
+        if self.phase_end_health is not None:
+            relevant_health_updates = health_updates[(health_updates.time >= current_time) &
+                                                     (health_updates.dst_agent >= self.phase_end_health * 100)]
+            print(relevant_health_updates['time'].head())
+            print(relevant_health_updates['dst_agent'].head())
+            print(relevant_health_updates['time'].tail())
+            print(relevant_health_updates['dst_agent'].tail())
+
+            if relevant_health_updates['dst_agent'].min() > (self.phase_end_health + 1) * 100:
+                return None
+            end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
+            print("{0}: Detected health below {1} at time {2}".format(self.name, self.phase_end_health, current_time))
+
+        if self.phase_end_damage_stop is not None:
+            relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
+                                        (damage_gaps.delta > self.phase_end_damage_stop)]
+            print(relevant_gaps['time'].head())
+            print(relevant_gaps['delta'].head())
+            if relevant_gaps.empty:
+                return None
+            end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+            print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, current_time))
+
+        if self.phase_end_damage_start is not None:
+            relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
+                                        (damage_gaps.delta > self.phase_end_damage_start)]
+            if relevant_gaps.empty:
+                return None
+            end_time = current_time = int(relevant_gaps['time'].iloc[0])
+            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, current_time))
+        return end_time
 
 BOSS_ARRAY = [
-    Boss('Vale Guardian', [0x3C4E], invuln=20000),
-    Boss('Gorseval', [0x3C45], invuln=30000),
-    Boss('Sabetha', [0x3C0F], invuln=25000),
-    Boss('Slothasor', [0x3EFB], invuln=7000),
+    Boss('Vale Guardian', [0x3C4E], phases = [
+        Phase("Phase 1", True, phase_end_health = 67, phase_end_damage_stop = 10000),
+        Phase("First split", False, phase_end_damage_start = 10000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
+        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 3", True)
+    ]),
+    Boss('Gorseval', [0x3C45], phases = [
+        Phase("Phase 1", True, phase_end_health = 67, phase_end_damage_stop = 10000),
+        Phase("First souls", False, phase_end_damage_start = 10000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
+        Phase("Second souls", False, phase_end_damage_start = 10000),
+        Phase("Phase 3", True)
+    ]),
+    Boss('Sabetha', [0x3C0F], phases = [
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),
+        Phase("Kernan", False, phase_end_damage_start = 10000),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000),
+        Phase("Knuckles", False, phase_end_damage_start = 10000),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000),
+        Phase("Karde", False, phase_end_damage_start = 10000),
+        Phase("Phase 4", True)
+    ]),
+    Boss('Slothasor', [0x3EFB], phases = [
+        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
+        Phase("Break 1", False, phase_end_damage_start = 1000),
+        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000),
+        Phase("Break 2", False, phase_end_damage_start = 1000),
+        Phase("Phase 3", True, phase_end_health = 40, phase_end_damage_stop = 1000),
+        Phase("Break 3", False, phase_end_damage_start = 1000),
+        Phase("Phase 4", True, phase_end_health = 20, phase_end_damage_stop = 1000),
+        Phase("Break 4", False, phase_end_damage_start = 1000),
+        Phase("Phase 5", True, phase_end_health = 10, phase_end_damage_stop = 1000),
+        Phase("Break 5", False, phase_end_damage_start = 1000),
+        Phase("Phase 6", True)
+    ]),
     Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD]),
     Boss('Matthias', [0x3EF3]),
     Boss('Keep Construct', [0x3F6B]),
-    Boss('Xera', [0x3F76, 0x3F9E], invuln=60000),
+    Boss('Xera', [0x3F76, 0x3F9E]),
     Boss('Cairn', [0x432A]),
     Boss('Mursaat Overseer', [0x4314]),
-    Boss('Samarog', [0x4324], invuln=20000),
+    Boss('Samarog', [0x4324]),
     Boss('Deimos', [0x4302]),
 ]
-BOSSES = {boss.profs[0]: boss for boss in BOSS_ARRAY}
+BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
 
 class EvtcAnalysisException(BaseException):
     pass
@@ -124,8 +215,8 @@ def filter_damage_events(events):
 class Analyser:
     def preprocess_agents(self, agents, collector):
         players = agents[agents.party != 0]
-        bosses = agents[agents.prof.isin(self.boss_info.profs)]
-        final_bosses = agents[agents.prof == self.boss_info.profs[-1]]
+        bosses = agents[agents.prof.isin(self.boss_info.boss_ids)]
+        final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
 
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
@@ -142,19 +233,48 @@ class Analyser:
         events = assign_event_types(events)
         player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
         player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
-        boss_events = events[events.dst_instid.isin(self.boss_instids)]
-        final_boss_events = events[events.src_instid == self.boss_instids[-1]]
-        boss_power_events = boss_events[(boss_events.type == LogType.POWER) & (boss_events.value > 0)]
+        from_boss_events = events[events.src_instid.isin(self.boss_instids)]
+        to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
+        from_final_boss_events = events[events.src_instid == self.boss_instids[-1]]
 
+        #construct frame of all power damage to boss, including deltas since last hit.
+        boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
         boss_power_events = boss_power_events.assign(delta = deltas)
-        phase_splits = boss_power_events[boss_power_events.delta > 10000]
-        phase_starts = [events.time.min()] + list(phase_splits.time)
-        phase_ends = [int(x) for x in phase_splits.time - phase_splits.delta] + [events.time.max()]
-        print("Autodetected phases: {0} {1}".format(phase_starts, phase_ends))
-        self.phases = list(zip(phase_starts, phase_ends))
 
-        return player_src_events, player_dst_events, boss_events, final_boss_events
+        #construct frame of all health updates from the boss
+        health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
+
+        print(health_updates['time'])
+        print(health_updates['dst_agent'])
+
+        #construct frame of all boss skill activations
+        boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
+        def process_end_condition(end_condition, phase_end):
+            pass
+
+        #Determine phases...
+        current_time = events.time.min()
+        phase_starts = []
+        phase_ends = []
+        phase_names = []
+        for phase in self.boss_info.phases:
+            phase_names.append(phase.name)
+            phase_starts.append(current_time)
+            phase_end = phase.find_end_time(current_time,
+                                            boss_power_events,
+                                            health_updates,
+                                            boss_skill_activations)
+            if phase_end is None:
+                break
+            phase_ends.append(phase_end)
+            current_time = phase_end
+        phase_ends.append(events.time.max())
+
+        print("Autodetected phases: {0} {1} {2}".format(phase_names, phase_starts, phase_ends))
+        self.phases = list(zip(phase_names, phase_starts, phase_ends))
+
+        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events
 
     def preprocess_skills(self, skills, collector):
         collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
@@ -279,8 +399,8 @@ class Analyser:
         #Still want to list it as phase 1
         for i in range(0,len(self.phases)):
             phase = self.phases[i]
-            phase_events = events[(events.time >= phase[0]) & (events.time <= phase[1])]
-            collect_phase("{0}".format(i+1), phase_events)
+            phase_events = events[(events.time >= phase[1]) & (events.time <= phase[2])]
+            collect_phase(phase[0], phase_events)
 
     def split_by_player_groups(self, collector, method, events, player_column):
         collector.with_key(Group.SUBGROUP, "*All").run(method, events)
@@ -413,28 +533,27 @@ class Analyser:
             buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
             collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
 
-    def _split_buff_by_phase(self, diff_data, phase):
+    def _split_buff_by_phase(self, diff_data, start, end):
         #HACK: review why copy?
-        before_phase = diff_data[(diff_data['time'] < phase[0]) & (diff_data['time'] + diff_data['duration'] > phase[0])].copy()
-        main_phase = diff_data[(diff_data['time'] >= phase[0]) & (diff_data['time'] + diff_data['duration'] <= phase[1])]
-        after_phase = diff_data[(diff_data['time'] < phase[1]) & (diff_data['time'] + diff_data['duration'] > phase[1])]
+        before_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > start)].copy()
+        main_phase = diff_data[(diff_data['time'] >= start) & (diff_data['time'] + diff_data['duration'] <= end)]
+        after_phase = diff_data[(diff_data['time'] < end) & (diff_data['time'] + diff_data['duration'] > end)]
 
-        before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - phase[0]
-        before_phase = before_phase.assign(time = phase[0], stripped = 0)
+        before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
+        before_phase = before_phase.assign(time = start, stripped = 0)
 
-        after_phase = after_phase.assign(duration = phase[1])
+        after_phase = after_phase.assign(duration = end)
         after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
         return before_phase.append(main_phase).append(after_phase)
 
     def collect_buff(self, collector, diff_data):
-        phase = (self.phases[0][0], self.phases[-1][1])
-        phase_data = self._split_buff_by_phase(diff_data, phase)
+        phase_data = self._split_buff_by_phase(diff_data, self.phases[0][1], self.phases[-1][2])
         collector.with_key(Group.PHASE, "All").run(self.collect_phase_buff, phase_data)
 
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
-            phase_data = self._split_buff_by_phase(diff_data, phase)
-            collector.with_key(Group.PHASE, "{0}".format(i+1)).run(self.collect_phase_buff, phase_data)
+            phase_data = self._split_buff_by_phase(diff_data, phase[1], phase[2])
+            collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_phase_buff, phase_data)
 
     def collect_phase_buff(self, collector, diff_data):
         total_time = diff_data['duration'].sum()
