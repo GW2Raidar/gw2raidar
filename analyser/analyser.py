@@ -192,7 +192,7 @@ BOSS_ARRAY = [
         Phase("Burn 3", True)
     ]),
     Boss('Xera', [0x3F76, 0x3F9E], phases = [
-        Phase("Phase 1", True, phase_end_health = 50, phase_end_damage_stop = 30000),
+        Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),
     ]),
