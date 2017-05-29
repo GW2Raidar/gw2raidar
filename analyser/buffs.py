@@ -59,31 +59,28 @@ class BuffTrackIntensity:
         self.buff_type = buff_type
         self.stack_end_times = []
         self.start_time = encounter_start
-        self.data = np.array([np.arange(1)] * 2).T
+        self.data = np.array([np.arange(1)] * 4).T
         self.current_time = 0
 
     def add_event(self, event):
-        event_time = int(event.time)
-        if event_time != self.current_time:
-            self.simulate_to_time(event_time)
+        if event.time != self.current_time:
+            self.simulate_to_time(event.time)
 
-        if len(self.stack_end_times) < self.buff_type.capacity:
-            self.stack_end_times += [event_time + event.value]
+        if event.is_buffremove:
+            if len(self.stack_end_times) > 0:
+                self.stack_end_times = []
+                self.record_event(event.time, 0, 1)
+        elif len(self.stack_end_times) < self.buff_type.capacity:
+            self.stack_end_times += [event.time + event.value]
             self.stack_end_times.sort()
-            if self.data[-1][0] == event_time:
-                self.data[-1][1] = len(self.stack_end_times);
-            else:
-                self.data = np.append(self.data, [[event_time, len(self.stack_end_times)]], axis=0)
-        elif (self.stack_end_times[0] < event_time + event.value):
-            self.stack_end_times[0] = event_time + event.value
+            self.record_event(event.time, len(self.stack_end_times), 0)
+        elif (self.stack_end_times[0] < event.time + event.value):
+            self.stack_end_times[0] = event.time + event.value
             self.stack_end_times.sort()
 
     def simulate_to_time(self, new_time):
         while len(self.stack_end_times) > 0 and self.stack_end_times[0] <= new_time:
-            if self.data[-1][0] == self.stack_end_times[0]:
-                self.data[-1][1] = len(self.stack_end_times) - 1
-            else:
-                self.data = np.append(self.data, [[int(self.stack_end_times[0]), len(self.stack_end_times) - 1]], axis=0)
+            self.record_event(self.stack_end_times[0], len(self.stack_end_times) - 1, 0)
             self.stack_end_times.remove(self.stack_end_times[0])
         self.current_time = new_time
 
@@ -91,27 +88,35 @@ class BuffTrackIntensity:
         end_time = int(time)
         self.simulate_to_time(end_time)
         if self.data[-1][0] != end_time:
-            self.data = np.append(self.data, [[end_time, len(self.stack_end_times)]], axis=0)
+            self.record_event(end_time, len(self.stack_end_times), 0)
+            
+    def record_event(self, new_time, stacks, stripped):
+        if self.data[-1][0] == new_time:
+            self.data[-1][1] = stacks
+            self.data[-1][2] = max(self.data[-1][2], stripped)
+        else:
+            self.data[-1][3] = new_time - self.data[-1][0]
+            self.data = np.append(self.data, [[new_time, stacks, stripped, 0]], axis=0)
 
 class BuffTrackDuration:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type
         self.stack_durations = np.array([np.arange(0)]).T
         self.start_time = encounter_start
-        self.data = np.array([np.arange(1)] * 2).T
-        self.current_time = encounter_start
+        self.data = np.array([np.arange(1)] * 4).T
+        self.current_time = 0
 
     def add_event(self, event):
-        event_time = int(event.time)
-        if event_time != self.current_time:
-            self.simulate(event_time - self.current_time)
+        if event.time != self.current_time:
+            self.simulate(event.time - self.current_time)
 
-        if self.stack_durations.size < self.buff_type.capacity:
+        if event.is_buffremove:
+            if self.stack_durations.size > 0:
+                self.stack_durations = np.array([np.arange(0)]).T
+                self.record_event(event.time, 0, 1)
+        elif self.stack_durations.size < self.buff_type.capacity:
             if self.stack_durations.size == 0:
-                if self.data[-1][0] == event_time:
-                    self.data[-1][1] = 1;
-                else:
-                    self.data = np.append(self.data, [[event_time, 1]], axis=0)
+                self.record_event(event.time, 1, 0)
             self.stack_durations = np.append(self.stack_durations, [event.value])
             self.stack_durations.sort()
         elif (self.stack_durations[0] < event.value):
@@ -121,15 +126,13 @@ class BuffTrackDuration:
     def simulate(self, delta_time):
         remaining_delta = delta_time
         while self.stack_durations.size > 0 and self.stack_durations[0] <= remaining_delta:
+            self.current_time += self.stack_durations[0]
             if self.stack_durations.size == 1:
-                if self.data[-1][0] == self.stack_durations[0] + self.current_time:
-                    self.data[-1][1] = 0
-                else:
-                    self.data = np.append(self.data, [[int(self.stack_durations[0] + self.current_time), 0]], axis=0)
+                self.record_event(self.current_time, 0, 0)
             remaining_delta -= self.stack_durations[0]
             self.stack_durations = np.delete(self.stack_durations, 0)
 
-        self.current_time += delta_time
+        self.current_time += remaining_delta
         if self.stack_durations.size > 0:
             self.stack_durations[0] -= remaining_delta
 
@@ -137,7 +140,15 @@ class BuffTrackDuration:
         end_time = int(time)
         self.simulate(end_time - self.current_time)
         if self.data[-1][0] != end_time:
-            self.data = np.append(self.data, [[end_time, self.stack_durations.size > 0]], axis=0)
+            self.record_event(end_time, self.stack_durations.size > 0, 0)
+            
+    def record_event(self, new_time, stacks, stripped):
+        if self.data[-1][0] == new_time:
+            self.data[-1][1] = stacks
+            self.data[-1][2] = max(self.data[-1][2], stripped)
+        else:
+            self.data[-1][3] = new_time - self.data[-1][0]
+            self.data = np.append(self.data, [[new_time, stacks, stripped, 0]], axis=0)
 
 class BuffPreprocessor:
 
@@ -149,12 +160,12 @@ class BuffPreprocessor:
         # Extract out the buff events
         not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
         status_events = not_statusremove_events[not_statusremove_events.buff != 0]
-        apply_events = status_events[status_events.value != 0]
+        apply_events = status_events[(status_events.value != 0)]
         buff_events = (apply_events[apply_events.dst_instid.isin(players.index)]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
 
         # Extract out buff removal events
-        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove != 0]
+        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
         buffremove_events = (statusremove_events[statusremove_events.dst_instid.isin(list(players.index))]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
 
@@ -164,7 +175,9 @@ class BuffPreprocessor:
         # Add in skill ids for ease of processing
         buff_update_events = buff_update_events.join(skills, how='inner', on='skillid').sort_values(by='time');
 
-        raw_buff_data = np.array([]).reshape(0,4)
+        buff_update_events[['time', 'value']] = buff_update_events[['time', 'value']].apply(pd.to_numeric)
+        
+        raw_buff_data = np.array([]).reshape(0,6)
         for buff_type in BUFF_TYPES: 
             buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
             for player in list(players.index):
@@ -181,6 +194,6 @@ class BuffPreprocessor:
                 track_data = np.c_[[buff_type.code] * track_data.shape[0], [player] * track_data.shape[0], track_data]
                 raw_buff_data = np.r_[raw_buff_data, track_data]
 
-        buff_data = pd.DataFrame(columns = ['buff', 'player', 'time', 'stacks'], data = raw_buff_data)
-        buff_data[['player', 'time', 'stacks']] = buff_data[['player', 'time', 'stacks']].apply(pd.to_numeric)
+        buff_data = pd.DataFrame(columns = ['buff', 'player', 'time', 'stacks', 'stripped', 'duration'], data = raw_buff_data)
+        buff_data[['player', 'time', 'stacks', 'duration']] = buff_data[['player', 'time', 'stacks', 'duration']].apply(pd.to_numeric)
         return buff_data;

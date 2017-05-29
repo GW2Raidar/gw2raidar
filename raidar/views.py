@@ -1,25 +1,29 @@
-from json import dumps as json_dumps, loads as json_loads
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.middleware.csrf import get_token
-from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
-from django.views.decorators.http import require_GET, require_POST
-from django.contrib.auth.decorators import login_required
-from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
-from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
-from django.utils import timezone
-from time import time
-from django.db import transaction
-from django.core import serializers
-from re import match
 from .models import *
-from itertools import groupby
-from zipfile import ZipFile
+from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from django.conf import settings
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core import serializers
+from django.db import transaction
+from django.db.utils import IntegrityError
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
+from django.views.decorators.cache import never_cache
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.http import require_GET, require_POST
+from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2api.gw2api import GW2API, GW2APIException
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from itertools import groupby
+from json import dumps as json_dumps, loads as json_loads
+from re import match
+from time import time
+from zipfile import ZipFile
 
 
 
@@ -56,6 +60,7 @@ def _participation_data(participation):
             'archetype': participation.archetype,
             'elite': participation.elite,
             'uploaded_at': participation.encounter.uploaded_at,
+            'success': participation.encounter.success,
         }
 
 
@@ -77,6 +82,7 @@ def _login_successful(request, user):
 def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
+    response['ga_property_id'] = settings.GA_PROPERTY_ID
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
@@ -96,15 +102,16 @@ def encounter(request, id=None, json=None):
         user=request.user)]
     dump = json_loads(encounter.dump)
     area_stats = json_loads(encounter.area.stats)
-    phases = dump['Category']['damage']['Phase'].keys()
+    phases = dump['Category']['combat']['Phase'].keys()
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
     keyfunc = lambda member: member['party']
     parties = { party: {
                     "members": list(members),
-                    "stats": {
+                    "phases": {
                         phase: {
-                            "actual": dump['Category']['damage']['Phase'][phase]['To']['*All']['Subgroup'][str(party)],
-                            "actual_boss": dump['Category']['damage']['Phase'][phase]['To']['*Boss']['Subgroup'][str(party)],
+                            "actual": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All'],
+                            "actual_boss": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss'],
+                            "buffs": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All'],
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
@@ -114,11 +121,11 @@ def encounter(request, id=None, json=None):
                 member['self'] = True
             member['phases'] = {
                 phase: {
-                    # too many values... Skills needed?
-                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['Player'][member['name']]['To']['*Boss']),
-                    'buffs': _safe_get(lambda: dump['Category']['buffs']['Phase'][phase]['Player'][member['name']]),
-                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])])
+                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
+                    'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
     data = {
@@ -126,12 +133,14 @@ def encounter(request, id=None, json=None):
             "name": encounter.area.name,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
+            "success": encounter.success,
             "phases": {
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
                     'individual': _safe_get(lambda: area_stats[phase]['individual']),
-                    'actual': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['damage']['Phase'][phase]['To']['*Boss']),
+                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
+                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
                 } for phase in phases
             },
             "parties": parties,
@@ -170,6 +179,23 @@ def login(request):
     else:
         return _error('Could not log in')
 
+@require_POST
+@sensitive_post_parameters()
+@never_cache
+def reset_pw(request):
+    email = request.POST.get('email')
+    form = PasswordResetForm(request.POST)
+    if form.is_valid():
+        opts = {
+            'use_https': request.is_secure(),
+            'email_template_name': 'registration/password_reset_email.html',
+            'subject_template_name': 'registration/password_reset_subject.txt',
+            'request': request,
+        }
+        form.save(**opts)
+        return JsonResponse({});
+
+
 
 def register(request):
     if request.method == 'GET':
@@ -186,6 +212,27 @@ def register(request):
     except GW2APIException as e:
         return _error(e)
 
+    account_name = gw2_account['name']
+    account, _ = Account.objects.get_or_create(name=account_name)
+
+    if account.user and account.user != request.user:
+        # Registered to another account
+        old_gw2api = GW2API(account.api_key)
+        try:
+            gw2_account = old_gw2api.query("/account")
+            # Old key is still valid, ask user to invalidate it
+            try:
+                old_api_key_info = old_gw2api.query("/tokeninfo")
+                key_id = "named '%s'" % old_api_key_info['name']
+            except GW2APIException as e:
+                key_id = "ending in '%s'" % api_key[-4:]
+            new_key = "" if account.api_key != api_key else " and generate a new key"
+
+            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
+        except GW2APIException as e:
+            # Old key is invalid, reassign OK
+            pass
+
     try:
         user = User.objects.create_user(username, email, password)
     except IntegrityError:
@@ -194,8 +241,6 @@ def register(request):
     if not user:
         return _error('Could not register user')
 
-    account_name = gw2_account['name']
-    account, _ = Account.objects.get_or_create(name=account_name)
     account.user = user
     account.api_key = api_key
     account.save()
@@ -251,6 +296,7 @@ def upload(request):
 
         started_at = dump['Category']['encounter']['start']
         duration = dump['Category']['encounter']['duration']
+        success = dump['Category']['encounter']['success']
 
         if duration < 60:
             return _error('Encounter shorter than 60s')
@@ -264,25 +310,36 @@ def upload(request):
         account_names = [player['account'] for player in status_for.values()]
         try:
             with transaction.atomic():
-                encounter, _ = Encounter.objects.get_or_create(
+                encounter, _ = Encounter.objects.update_or_create(
                     area=area, started_at=started_at, account_names=account_names,
                     defaults = {
+                        'filename': filename,
                         'uploaded_at': time(),
                         'uploaded_by': request.user,
                         'duration': duration,
+                        'success': success,
                         'dump': json_dumps(dump),
                     }
                 )
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
-                            name=player['account'])
+                        name=player['account'])
                     character, _ = Character.objects.get_or_create(
-                            name=name, account=account, profession=player['profession'])
-                    participation, _ = Participation.objects.get_or_create(
-                            character=character, encounter=encounter,
-                            archetype=player['archetype'], party=player['party'], elite=player['elite'])
-        except IntegrityError:
+                        name=name, account=account, profession=player['profession'])
+                    participation, _ = Participation.objects.update_or_create(
+                        character=character, encounter=encounter,
+                        defaults = {
+                            'archetype': player['archetype'],
+                            'party': player['party'],
+                            'elite': player['elite']
+                        }
+                    )
+        except IntegrityError as e:
+            # DEBUG
+            logger = logging.getLogger(__name__)
+            logger.error(e)
+            print(e, file=sys.stderr)
             return _error("Conflict with an uploaded encounter")
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
@@ -327,8 +384,24 @@ def add_api_key(request):
 
     account_name = gw2_account['name']
     account, _ = Account.objects.get_or_create(name=account_name)
+
     if account.user and account.user != request.user:
-        return _error("The associated GW2 account is already registered to another user")
+        # Registered to another account
+        old_gw2api = GW2API(account.api_key)
+        try:
+            gw2_account = old_gw2api.query("/account")
+            # Old key is still valid, ask user to invalidate it
+            try:
+                old_api_key_info = old_gw2api.query("/tokeninfo")
+                key_id = "named '%s'" % old_api_key_info['name']
+            except GW2APIException as e:
+                key_id = "ending in '%s'" % api_key[-4:]
+            new_key = "" if account.api_key != api_key else " and generate a new key"
+
+            return _error("This account is registered to another user. To confirm this account is yours, please invalidate the key %s%s." % (key_id, new_key))
+        except GW2APIException as e:
+            # Old key is invalid, reassign OK
+            pass
 
     account.user = request.user
     account.api_key = api_key
