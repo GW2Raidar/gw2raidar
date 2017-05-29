@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from .models import Area, Account, Character, Encounter, Participation
+from .models import Area, Account, Character, Encounter, Participation, UserProfile
 
 class ParticipationInline(admin.TabularInline):
     model = Participation
@@ -29,3 +29,4 @@ admin.site.register(Area)
 admin.site.register(Account, AccountAdmin)
 admin.site.register(Character)
 admin.site.register(Encounter, EncounterAdmin)
+admin.site.register(UserProfile)

@@ -3,6 +3,7 @@ from django.db.models.signals import post_save
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
+from analyser.analyser import Archetype, Elite
 import re
 
 
@@ -16,6 +17,9 @@ class UserProfile(models.Model):
     private = models.BooleanField(default=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    def __str__(self):
+        return self.user.username
+
 def _create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
@@ -26,6 +30,7 @@ post_save.connect(_create_user_profile, sender=User)
 class Area(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)
+    stats = models.TextField(editable=False, default="{}")
 
     def __str__(self):
         return self.name
@@ -74,6 +79,19 @@ class Character(models.Model):
             (REVENANT, 'Revenant'),
         )
 
+    SPECIALISATIONS = { (id, 0): name for id, name in PROFESSION_CHOICES }
+    SPECIALISATIONS.update({
+        (GUARDIAN, 1): 'Dragonhunter',
+        (WARRIOR, 1): 'Berserker',
+        (ENGINEER, 1): 'Scrapper',
+        (RANGER, 1): 'Druid',
+        (THIEF, 1): 'Daredevil',
+        (ELEMENTALIST, 1): 'Tempest',
+        (MESMER, 1): 'Chronomancer',
+        (NECROMANCER, 1): 'Reaper',
+        (REVENANT, 1): 'Herald',
+    })
+
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
     name = models.CharField(max_length=64, db_index=True)
     profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
@@ -91,22 +109,28 @@ class Character(models.Model):
 class EncounterManager(models.Manager):
     # hash account names at construction
     # (do they need to ever be updated? I don't think so)
-    def get_or_create(self, *args, **kwargs):
+    def update_or_create(self, *args, **kwargs):
         account_names = kwargs.pop('account_names', False)
         if account_names:
             kwargs['account_hash'] = Encounter.calculate_account_hash(account_names)
-        return super(EncounterManager, self).get_or_create(*args, **kwargs)
+        return super(EncounterManager, self).update_or_create(*args, **kwargs)
 
 class Encounter(models.Model):
+    objects = EncounterManager()
+
     started_at = models.IntegerField(db_index=True)
+    duration = models.FloatField()
+    success = models.BooleanField()
+    filename = models.CharField(max_length=255)
+    uploaded_at = models.IntegerField(db_index=True)
+    uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
     dump = models.TextField(editable=False)
     # hack to try to ensure uniqueness
-    account_hash = models.CharField(max_length=16, editable=False)
+    account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
-    objects = EncounterManager()
 
     def __str__(self):
         return '%s (%s)' % (self.area.name, self.started_at)
@@ -125,26 +149,29 @@ class Encounter(models.Model):
     class Meta:
         index_together = ('area', 'started_at')
         ordering = ('started_at',)
-        unique_together = ('area', 'account_hash', 'started_at_full')
-        unique_together = ('area', 'account_hash', 'started_at_half')
+        unique_together = (
+            ('area', 'account_hash', 'started_at_full'),
+            ('area', 'account_hash', 'started_at_half'),
+        )
 
 
 class Participation(models.Model):
-    POWER = 1
-    CONDI = 2
-    TANK = 3
-    HEAL = 4
-
     ARCHETYPE_CHOICES = (
-            (POWER, "Power"),
-            (CONDI, "Condi"),
-            (TANK, "Tank"),
-            (HEAL, "Heal"),
+            (Archetype.POWER, "Power"),
+            (Archetype.CONDI, "Condi"),
+            (Archetype.TANK, "Tank"),
+            (Archetype.HEAL, "Heal"),
+        )
+
+    ELITE_CHOICES = (
+            (Elite.CORE, "Core"),
+            (Elite.HEART_OF_THORNS, "Heart of Thorns"),
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
     character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='participations')
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):
