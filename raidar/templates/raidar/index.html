@@ -166,7 +166,14 @@
 
             [[elseif page.name == "reset_pw"]]
 
-              TODO
+              <form class="uk-form-stacked uk-padding-large uk-text-center">
+                <div class="uk-margin">
+                  <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email">
+                </div>
+                <div class="uk-margin">
+                  <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw" disabled="[[authBad]]">Reset password</button><br>
+                </div>
+              </form>
 
             [[else]]
 
