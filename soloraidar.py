@@ -1,8 +1,11 @@
 __author__ = "Toeofdoom"
 
+import time
 import sys
 from evtcparser import *
 from analyser import *
+from enum import IntEnum
+import json
 
 def is_basic_value(node):
     try:
@@ -12,7 +15,7 @@ def is_basic_value(node):
         return True
 
 def flatten(root):
-    nodes = dict((key, dict(node)) for key,node in root)
+    nodes = dict((key, dict(node)) for key,node in root.items())
     stack = list(nodes.keys())
     for node_name in stack:
         node = nodes[node_name]
@@ -23,23 +26,49 @@ def flatten(root):
                 stack.append(full_child_name)
             except TypeError:
                 pass
+            except ValueError:
+                pass
     return nodes
 
-def print_node(key, node):
-    basic_values = filter(lambda key:is_basic_value(key[1]), node.items())
-    print("{0}: {1}".format(key, ", ".join(
-        ["{0}:{1}".format(name, value) for name,value in basic_values])))
+def format_value(value):
+    if isinstance(value, IntEnum):
+        return value.name
+    else:
+        return value
+
+def print_node(key, node, f=None):
+    basic_values = list(filter(lambda key:is_basic_value(key[1]), node.items()))
+    if basic_values:
+        output_string = "{0}: {1}".format(key, ", ".join(
+            ["{0}:{1}".format(name, format_value(value)) for name,value in basic_values]))
+        print(output_string, file=f)
 
 def main():
     filename = sys.argv[1]
 
     print("Parsing {0}".format(filename))
     with open(sys.argv[1], mode='rb') as file:
+        start = time.clock()
         e = parser.Encounter(file)
+        print("Parsing took {0} seconds".format(time.clock() - start))
+
+        start = time.clock()
         a = analyser.Analyser(e)
-        print(a.players)
-        print(a.total)
-        print(a.info)
+        print("Analyser took {0} seconds".format(time.clock() - start))
+
+        start = time.clock()
+        with open('output.txt','w') as output_file:
+            flattened = flatten(a.data)
+            for key in sorted(flattened.keys()):
+                if "-s" not in sys.argv:
+                    print_node(key, flattened[key])
+                print_node(key, flattened[key], output_file)
+        print("Readable dump took {0} seconds".format(time.clock() - start))
+
+        if "--no-json" not in sys.argv:
+            start = time.clock()
+            print(json.dumps(a.data), file=open('output.json','w'))
+            print("JSon dump took {0} seconds".format(time.clock() - start))
 
 if __name__ == "__main__":
     main()

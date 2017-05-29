@@ -2,10 +2,10 @@
 *.pyc
 
 # dev database
-db.sqlite3
+/db.sqlite3
 
 # test data
-TestLogs
+/TestLogs
 
 # IntelliJ IDEA
 .idea
@@ -16,4 +16,7 @@ TestLogs
 
 # Local settings, possibly with sensitive info
 # (copy from `gw2raidar/settings_local.py.example`)
-gw2raidar/settings_local.py
+/gw2raidar/settings_local.py
+
+# result of `python3 manage.py collectstatic --noinput`
+/static

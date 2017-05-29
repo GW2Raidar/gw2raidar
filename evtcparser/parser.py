@@ -3,6 +3,7 @@ from enum import IntEnum
 import struct
 import numpy as np
 import pandas as pd
+from io import UnsupportedOperation
 
 ENCODING = "utf8"
 
@@ -145,7 +146,8 @@ class Encounter:
 
     def _read_agents(self, file):
         num_agents, = struct.unpack("<i", file.read(4))
-        self.agents = pd.DataFrame(np.fromfile(file, dtype=AGENT_DTYPE, count=num_agents))
+        agents_string = file.read(AGENT_DTYPE.itemsize * num_agents)
+        self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=AGENT_DTYPE, count=num_agents))
         split = self.agents.name.str.split(b'\x00:?', expand=True)
         self.agents['name'] = split[0].str.decode(ENCODING)
         self.agents['account'] = split[1].str.decode(ENCODING)
@@ -153,11 +155,13 @@ class Encounter:
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
-        self.skills = pd.DataFrame(np.fromfile(file, dtype=SKILL_DTYPE, count=num_skills)).set_index('id')
+        skills_string = file.read(SKILL_DTYPE.itemsize * num_skills)
+        self.skills = pd.DataFrame(np.fromstring(skills_string, dtype=SKILL_DTYPE, count=num_skills)).set_index('id')
         self.skills['name'] = self.skills['name'].str.decode(ENCODING)
 
     def _read_events(self, file):
-        self.events = pd.DataFrame(np.fromfile(file, dtype=EVENT_DTYPE))
+        events_string = file.read()
+        self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_DTYPE))
 
         self.log_started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
@@ -171,10 +175,13 @@ class Encounter:
         self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
 
     def __init__(self, file):
-        self._read_header(file)
-        if self.version <= "20170214":
-            raise EvtcParseException('Unsupported EVTC version')
-        self._read_agents(file)
-        self._read_skills(file)
-        self._read_events(file)
-        self._add_inst_id_to_agents()
+        try:
+            self._read_header(file)
+            if self.version <= "20170214":
+                raise EvtcParseException('Unsupported EVTC version')
+            self._read_agents(file)
+            self._read_skills(file)
+            self._read_events(file)
+            self._add_inst_id_to_agents()
+        except UnsupportedOperation:
+            raise EvtcParseException('Bad EVTC file')
