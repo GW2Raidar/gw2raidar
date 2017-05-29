@@ -1,26 +1,29 @@
-from json import dumps as json_dumps, loads as json_loads
-from django.conf import settings
-from django.http import JsonResponse
-from django.shortcuts import render
-from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout
-from django.middleware.csrf import get_token
-from django.contrib.auth.models import User
-from django.db.utils import IntegrityError
-from django.views.decorators.http import require_GET, require_POST
-from django.contrib.auth.decorators import login_required
-from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
-from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
-from django.utils import timezone
-from time import time
-from django.db import transaction
-from django.core import serializers
-from re import match
 from .models import *
-from itertools import groupby
-from zipfile import ZipFile
+from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from django.conf import settings
+from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
+from django.contrib.auth.models import User
+from django.contrib.auth.tokens import default_token_generator
+from django.core import serializers
+from django.db import transaction
+from django.db.utils import IntegrityError
+from django.http import JsonResponse
+from django.middleware.csrf import get_token
+from django.shortcuts import render
+from django.utils import timezone
+from django.utils.http import urlsafe_base64_decode
+from django.views.decorators.cache import never_cache
+from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.http import require_GET, require_POST
+from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2api.gw2api import GW2API, GW2APIException
-from django.contrib.auth import update_session_auth_hash
-from django.contrib.auth.forms import PasswordChangeForm
+from itertools import groupby
+from json import dumps as json_dumps, loads as json_loads
+from re import match
+from time import time
+from zipfile import ZipFile
 
 
 
@@ -175,6 +178,23 @@ def login(request):
         return _login_successful(request, user)
     else:
         return _error('Could not log in')
+
+@require_POST
+@sensitive_post_parameters()
+@never_cache
+def reset_pw(request):
+    email = request.POST.get('email')
+    form = PasswordResetForm(request.POST)
+    if form.is_valid():
+        opts = {
+            'use_https': request.is_secure(),
+            'email_template_name': 'registration/password_reset_email.html',
+            'subject_template_name': 'registration/password_reset_subject.txt',
+            'request': request,
+        }
+        form.save(**opts)
+        return JsonResponse({});
+
 
 
 def register(request):
