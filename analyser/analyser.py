@@ -356,6 +356,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_src_events)
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
@@ -370,8 +371,23 @@ class Analyser:
     # a more concrete split in future
 
     # section: Agent stats (player/boss
+    # subsection: player events
+    def collect_player_combat_events(self, collector, events):
+        player_only_events = events[events.src_instid.isin(self.player_instids)]
+        self.split_by_player(collector, self.collect_combat_events_by_phase, player_only_events, 'src_instid')  
+        
+    def collect_combat_events_by_phase(self, collector, events):
+        self.split_by_phase(collector, self.collect_combat_events, events)  
+        
+    def collect_combat_events(self, collector, events):
+        death_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DEAD])
+        down_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DOWN])
+        collector.add_data('deaths', death_events, int)
+        collector.add_data('downs', down_events, int)
+        
+    
     # subsection: boss stats
-    def collect_invididual_boss_key_events(self, collector, events):
+    def collect_individual_boss_key_events(self, collector, events):
         #all_state_changes = events[events.state_change != parser.StateChange.NORMAL]
         enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
         death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
@@ -381,7 +397,7 @@ class Analyser:
     def collect_boss_key_events(self, collector, events):
         boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
         self.split_by_boss(collector,
-                           self.collect_invididual_boss_key_events,
+                           self.collect_individual_boss_key_events,
                            boss_events,
                            'ult_src_instid',
                            Group.BOSS)
