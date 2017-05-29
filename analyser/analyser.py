@@ -282,8 +282,9 @@ class Analyser:
             pass
 
         #Determine phases...
-        start_time = events.time.min()
-        current_time = start_time
+        self.start_time = events.time.min()
+        self.end_time = events.time.max()
+        current_time = self.start_time
         phase_starts = []
         phase_ends = []
         phase_names = []
@@ -298,10 +299,13 @@ class Analyser:
                 break
             phase_ends.append(phase_end)
             current_time = phase_end
-        phase_ends.append(events.time.max())
+        phase_ends.append( self.end_time)
 
         def print_phase(phase):
-            print("{0}: {1} - {2} ({3})".format(phase[0], phase[1] - start_time, phase[2] - start_time, phase[2] - phase[1]))
+            print("{0}: {1} - {2} ({3})".format(phase[0],
+                                                phase[1] - self.start_time,
+                                                phase[2] - self.start_time,
+                                                phase[2] - phase[1]))
 
         all_phases = list(zip(phase_names, phase_starts, phase_ends))
         print("Autodetected phases:")
@@ -583,7 +587,7 @@ class Analyser:
         return before_phase.append(main_phase).append(after_phase)
 
     def collect_buff(self, collector, diff_data):
-        phase_data = self._split_buff_by_phase(diff_data, self.phases[0][1], self.phases[-1][2])
+        phase_data = self._split_buff_by_phase(diff_data, self.start_time, self.end_time)
         collector.with_key(Group.PHASE, "All").run(self.collect_phase_buff, phase_data)
 
         for i in range(0, len(self.phases)):
