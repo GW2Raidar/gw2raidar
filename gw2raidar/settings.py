@@ -135,6 +135,9 @@ LOGOUT_REDIRECT_URL = 'index'
 # Google Analytics
 GA_PROPERTY_ID = None
 
+import os.path
+RESTAT_PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'log', 'restat.pid')
+
 
 # Local settings, not checked into the repository
 # Model on the example at `settings_local.py.example`

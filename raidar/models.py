@@ -141,15 +141,15 @@ class Encounter(models.Model):
 
 class Participation(models.Model):
     ARCHETYPE_CHOICES = (
-            (Archetype.POWER, "Power"),
-            (Archetype.CONDI, "Condi"),
-            (Archetype.TANK, "Tank"),
-            (Archetype.HEAL, "Heal"),
+            (int(Archetype.POWER), "Power"),
+            (int(Archetype.CONDI), "Condi"),
+            (int(Archetype.TANK), "Tank"),
+            (int(Archetype.HEAL), "Heal"),
         )
 
     ELITE_CHOICES = (
-            (Elite.CORE, "Core"),
-            (Elite.HEART_OF_THORNS, "Heart of Thorns"),
+            (int(Elite.CORE), "Core"),
+            (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
