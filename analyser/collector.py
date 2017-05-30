@@ -58,7 +58,7 @@ class Collector:
             self.with_key(group_to, name).group(function, group, *remaining_group_mappings)
 
     def run(self, function, data):
-        function(self, data.copy(True))
+        function(self, data)
 
     def add_data(self, name, value, type_function = None):
         if isinstance(value, np.float) and np.isnan(value):
