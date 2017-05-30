@@ -374,7 +374,7 @@ class Analyser:
     # subsection: player events
     def collect_player_combat_events(self, collector, events):
         player_only_events = events[events.src_instid.isin(self.player_instids)]
-        self.split_by_player(collector, self.collect_combat_events_by_phase, player_only_events, 'src_instid')  
+        self.split_by_player_groups(collector, self.collect_combat_events_by_phase, player_only_events, 'src_instid')  
         
     def collect_combat_events_by_phase(self, collector, events):
         self.split_by_phase(collector, self.collect_combat_events, events)  
