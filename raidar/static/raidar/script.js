@@ -94,13 +94,12 @@
     }
   }
   helpers.bar = (actual, average, min, max, top, flip) => {
-    if (flip) [min, max] = [max, min];
     if (min > actual) min = actual;
     if (max < actual) max = actual;
     top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;
-    let colour = scaleColour(actual, average, min, max);
+    let colour = scaleColour(actual, average, flip ? max : min, flip ? min : max);
     let stroke = colour.css();
     let fill = colour.lighten(0.5).css();
     let svg = `
