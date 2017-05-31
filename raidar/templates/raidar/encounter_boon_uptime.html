@@ -21,7 +21,7 @@
         </tr>
         [[#each members]]
           <tr>
-            <td class="[[self && 'uk-text-primary']]">
+            <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
               <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
               <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
               [[name]]
@@ -120,7 +120,7 @@
           </tr>
           [[#each members]]
             <tr>
-              <td class="[[self && 'uk-text-primary']]">
+              <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
                 <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
                 <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
                 [[name]]
