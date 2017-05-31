@@ -116,7 +116,6 @@
                 <td>0</td>
               [[/if]]
               <td style="[[#if archetype.avg_dps_received]][[bar(received.dps, archetype.avg_dps_received, archetype.min_dps_received, archetype.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[else]][[bar1(received.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps_received)]][[/if]]">
-                <code>[[received.dps]]/[[encounter.phases[page.phase].individual.max_dps_received]]</code>
                 <span>[[received ? received.dps : 0]]</span>
                 [[#if archetype.avg_dps_received]]
                   <span class="expected">[[Math.round(archetype.avg_dps_received)]]</span>
