@@ -56,6 +56,12 @@ def check_running():
             f.write(str(os.getpid()))
         return False
 
+def _safe_get(func, default=0):
+    try:
+        return func()
+    except KeyError:
+        return default
+
 class Command(BaseCommand):
     help = 'Recalculates the stats'
 
@@ -84,7 +90,7 @@ class Command(BaseCommand):
                 squad_stats_in_phase = stats_in_phase['Subgroup']['*All']
                 stats_in_phase_to_all = squad_stats_in_phase['Metrics']['damage']['To']['*All']
                 stats_in_phase_to_boss = squad_stats_in_phase['Metrics']['damage']['To']['*Boss']
-                stats_in_phase_received = squad_stats_in_phase['Metrics']['damage']['From']['*All']
+                stats_in_phase_received = _safe_get(lambda: squad_stats_in_phase['Metrics']['damage']['From']['*All'], { 'dps': 0 }) # XXX Old data
                 stats_in_phase_buffs = squad_stats_in_phase['Metrics']['buffs']['From']['*All']
                 totals_in_phase = get_or_create(totals_in_area, phase)
                 group_totals = get_or_create(totals_in_phase, 'group')
