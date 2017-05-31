@@ -7,6 +7,7 @@ from sys import exit
 import os
 import errno
 from collections import defaultdict
+from time import time
 
 # XXX DEBUG
 # import logging
@@ -65,20 +66,12 @@ def _safe_get(func, default=0):
 class Command(BaseCommand):
     help = 'Recalculates the stats'
 
-    def handle(self, *args, **options):
-        if check_running():
-            exit()
-        try:
-            self.process(*args, **options)
-        finally:
-            os.remove(PIDFILE)
-
     def process(self, *args, **options):
         totals = {
             "area": {},
             "character": {},
         }
-        queryset = Encounter.objects.filter(success=True)
+        queryset = Encounter.objects.all()
         buffs = set()
         for encounter in queryset_iterator(queryset):
             totals_in_area = get_or_create(totals['area'], encounter.area_id)
@@ -96,29 +89,35 @@ class Command(BaseCommand):
                 group_totals = get_or_create(totals_in_phase, 'group')
                 individual_totals = get_or_create(totals_in_phase, 'individual')
 
-                get_or_create_then_increment(group_totals, 'dps', stats_in_phase_to_all['dps'])
-                find_bounds(group_totals, 'dps', stats_in_phase_to_all['dps'])
-                get_or_create_then_increment(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
-                find_bounds(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
-                get_or_create_then_increment(group_totals, 'dps_received', stats_in_phase_received['dps'])
-                find_bounds(group_totals, 'dps_received', stats_in_phase_received['dps'])
-                get_or_create_then_increment(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
-                find_bounds(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
-                get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
-                find_bounds(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
-
-                # TODO: duration
-
                 buffs_by_party = get_or_create(group_totals, 'buffs')
                 for buff, value in squad_stats_in_phase['Metrics']['buffs']['From']['*All'].items():
-                    buffs.add(buff)
-                    get_or_create_then_increment(buffs_by_party, buff, value)
                     find_bounds(buffs_by_party, buff, value)
 
-                get_or_create_then_increment(group_totals, 'count')
+                # sums and averages, per encounter
+                if encounter.success:
+                    get_or_create_then_increment(group_totals, 'dps', stats_in_phase_to_all['dps'])
+                    get_or_create_then_increment(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
+                    get_or_create_then_increment(group_totals, 'dps_received', stats_in_phase_received['dps'])
+                    get_or_create_then_increment(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                    get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
+
+                    for buff, value in squad_stats_in_phase['Metrics']['buffs']['From']['*All'].items():
+                        buffs.add(buff)
+                        get_or_create_then_increment(buffs_by_party, buff, value)
+
+                    get_or_create_then_increment(group_totals, 'count')
+
+                # mins and maxes, per encounter
+                find_bounds(group_totals, 'dps', stats_in_phase_to_all['dps'])
+                find_bounds(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
+                find_bounds(group_totals, 'dps_received', stats_in_phase_received['dps'])
+                find_bounds(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+                find_bounds(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
 
                 totals_by_build = get_or_create(totals_in_phase, 'build')
                 for participation in participations:
+                    # now per archetype
+
                     # XXX in case player did not actually participate (hopefully fix in analyser)
                     if (participation.character.name not in stats_in_phase['Player']):
                         continue
@@ -137,7 +136,8 @@ class Command(BaseCommand):
                     try:
                         # XXX what if DAMAGE TO *BOSS is not there? (hopefully fix in analyser)
                         stats_in_phase_to_boss = player_stats['Metrics']['damage']['To']['*Boss']
-                        get_or_create_then_increment(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
+                        if encounter.success:
+                            get_or_create_then_increment(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
                         find_bounds(totals_by_archetype, 'dps_boss', stats_in_phase_to_boss['dps'])
                         find_bounds(individual_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
                     except KeyError:
@@ -146,31 +146,38 @@ class Command(BaseCommand):
                     try:
                         # XXX what if DAMAGE FROM *ALL is not there? (hopefully fix in analyser)
                         stats_in_phase_from_all = player_stats['Metrics']['damage']['From']['*All']
-                        get_or_create_then_increment(totals_by_archetype, 'dps_received', stats_in_phase_from_all['dps'])
+                        if encounter.success:
+                            get_or_create_then_increment(totals_by_archetype, 'dps_received', stats_in_phase_from_all['dps'])
                         find_bounds(totals_by_archetype, 'dps_received', stats_in_phase_from_all['dps'])
                         find_bounds(individual_totals, 'dps_received', stats_in_phase_from_all['dps'])
                     except KeyError:
                         pass
 
-                    get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
+                    if encounter.success:
+                        get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
                     find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
                     find_bounds(individual_totals, 'dps', stats_in_phase_to_all['dps'])
 
-                    get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
+                    if encounter.success:
+                        get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
                     find_bounds(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
                     find_bounds(individual_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
 
-                    get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
+                    if encounter.success:
+                        get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
                     find_bounds(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
                     find_bounds(individual_totals, 'scholar', stats_in_phase_to_all['scholar'])
-
-                    get_or_create_then_increment(totals_by_archetype, 'count')
 
                     buffs_by_archetype = get_or_create(totals_by_archetype, 'buffs')
                     for buff, value in player_stats['Metrics']['buffs']['From']['*All'].items():
                         buffs.add(buff)
-                        get_or_create_then_increment(buffs_by_archetype, buff, value)
+                        if encounter.success:
+                            get_or_create_then_increment(buffs_by_archetype, buff, value)
                         find_bounds(buffs_by_archetype, buff, value)
+
+                    if encounter.success:
+                        get_or_create_then_increment(totals_by_archetype, 'count')
+
 
         for area_id, totals_in_area in totals['area'].items():
             for phase, totals_in_phase in totals_in_area.items():
@@ -184,7 +191,6 @@ class Command(BaseCommand):
                 buffs_by_party = group_totals['buffs']
                 for buff in buffs:
                     calculate_average(buffs_by_party, buff, group_totals['count'])
-                del group_totals['count']
 
                 for character_id, totals_by_build in totals_in_phase['build'].items():
                     for elite, totals_by_elite in totals_by_build.items():
@@ -194,14 +200,32 @@ class Command(BaseCommand):
                             calculate_average(totals_by_archetype, 'dps_received')
                             calculate_average(totals_by_archetype, 'seaweed')
                             calculate_average(totals_by_archetype, 'scholar')
-                            buffs_by_archetype = totals_by_archetype['buffs']
-                            for buff in buffs:
-                                calculate_average(buffs_by_archetype, buff, totals_by_archetype['count'])
-                            del totals_by_archetype['count']
+
+                            if 'count' in totals_by_archetype:
+                                buffs_by_archetype = totals_by_archetype['buffs']
+                                for buff in buffs:
+                                    calculate_average(buffs_by_archetype, buff, totals_by_archetype['count'])
+                                del totals_by_archetype['count']
+
+                del group_totals['count']
 
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
 
-        # XXX DEBUG
-        import pprint
-        pp = pprint.PrettyPrinter(indent=2)
-        pp.pprint(totals)
+        return totals
+
+    def handle(self, *args, **options):
+        if check_running():
+            exit()
+        try:
+            start = time()
+            totals = self.process(*args, **options)
+            end = time()
+
+            import pprint
+            pp = pprint.PrettyPrinter(indent=2)
+            pp.pprint(totals)
+
+            print()
+            print("Completed in %ss" % (end - start))
+        finally:
+            os.remove(PIDFILE)
