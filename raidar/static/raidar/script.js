@@ -94,9 +94,9 @@
     }
   }
   helpers.bar = (actual, average, min, max, top, flip) => {
+    if (flip) [min, max] = [max, min];
     if (min > actual) min = actual;
     if (max < actual) max = actual;
-    if (flip) [min, max] = [max, min];
     top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;

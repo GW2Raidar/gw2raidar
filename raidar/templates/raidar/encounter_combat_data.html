@@ -99,7 +99,7 @@
             </td>
             [[#with phases[page.phase]]]
             [[#if .]]
-              <td style="[[#if archetype]][[bar(actual.dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, individual.max_dps)]][[else]][[bar1(actual ? actual.dps : 0, individual && individual.max_dps)]][[/if]]">
+              <td style="[[#if archetype]][[bar(actual.dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual ? actual.dps : 0, individual && individual.max_dps)]][[/if]]">
                 <span>[[actual ? actual.dps : 0]]</span>
                 [[#if archetype]]
                   <span class="expected">[[Math.round(archetype.avg_dps)]]</span>
