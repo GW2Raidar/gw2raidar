@@ -29,7 +29,7 @@
           <td></td>
         [[/if]]
         [[#if encounter.phases[page.phase].received]]
-          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].received.dps, encounter.phases[page.phase].group.avg_dps_received, encounter.phases[page.phase].group.min_dps_received, encounter.phases[page.phase].group.max_dps_received)]][[/if]]">
+          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].received.dps, encounter.phases[page.phase].group.avg_dps_received, encounter.phases[page.phase].group.min_dps_received, encounter.phases[page.phase].group.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[/if]]">
             <span>[[encounter.phases[page.phase].received.dps]]</span>
             [[#if encounter.phases[page.phase].group]]
               <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps_received)]]</span>

@@ -84,8 +84,7 @@ class Command(BaseCommand):
                 squad_stats_in_phase = stats_in_phase['Subgroup']['*All']
                 stats_in_phase_to_all = squad_stats_in_phase['Metrics']['damage']['To']['*All']
                 stats_in_phase_to_boss = squad_stats_in_phase['Metrics']['damage']['To']['*Boss']
-                # TODO
-                # stats_in_phase_received = squad_stats_in_phase['Metrics']['damage']['To']['*Boss']
+                stats_in_phase_received = squad_stats_in_phase['Metrics']['damage']['From']['*All']
                 stats_in_phase_buffs = squad_stats_in_phase['Metrics']['buffs']['From']['*All']
                 totals_in_phase = get_or_create(totals_in_area, phase)
                 group_totals = get_or_create(totals_in_phase, 'group')
@@ -95,9 +94,8 @@ class Command(BaseCommand):
                 find_bounds(group_totals, 'dps', stats_in_phase_to_all['dps'])
                 get_or_create_then_increment(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
                 find_bounds(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
-                # TODO
-                #get_or_create_then_increment(group_totals, 'dps_received', stats_in_phase_received['dps'])
-                #find_bounds(group_totals, 'dps_received', stats_in_phase_received['dps'])
+                get_or_create_then_increment(group_totals, 'dps_received', stats_in_phase_received['dps'])
+                find_bounds(group_totals, 'dps_received', stats_in_phase_received['dps'])
                 get_or_create_then_increment(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
                 find_bounds(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
                 get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
@@ -174,7 +172,7 @@ class Command(BaseCommand):
                 individual_totals = totals_in_phase['individual']
                 calculate_average(group_totals, 'dps')
                 calculate_average(group_totals, 'dps_boss')
-                #calculate_average(group_totals, 'dps_received')
+                calculate_average(group_totals, 'dps_received')
                 calculate_average(group_totals, 'seaweed')
                 calculate_average(group_totals, 'scholar')
                 buffs_by_party = group_totals['buffs']
