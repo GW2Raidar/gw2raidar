@@ -100,10 +100,15 @@ def encounter(request, id=None, json=None):
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
         user=request.user)]
+
     dump = json_loads(encounter.dump)
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
+    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
+    if not allowed:
+        return _error('Not allowed')
+
     area_stats = json_loads(encounter.area.stats)
     phases = dump['Category']['combat']['Phase'].keys()
-    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
     partyfunc = lambda member: member['party']
     namefunc = lambda member: member['name']
     parties = { party: {
