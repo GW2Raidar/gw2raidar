@@ -94,6 +94,7 @@
     }
   }
   helpers.bar = (actual, average, min, max, top, flip) => {
+  if(flip)console.log(actual, average, min, max, top, flip)
     if (min > actual) min = actual;
     if (max < actual) max = actual;
     top = Math.max(top || max, actual);
@@ -102,6 +103,7 @@
     let colour = scaleColour(actual, average, flip ? max : min, flip ? min : max);
     let stroke = colour.css();
     let fill = colour.lighten(0.5).css();
+    if(flip)console.log(fill)
     let svg = `
 <svg xmlns='http://www.w3.org/2000/svg'>
 <rect x='0%' width='${avgPct}%' y='10%' height='70%' stroke='${barcss.expStroke}' fill='${barcss.expFill}'/>
