@@ -29,7 +29,7 @@
           <td></td>
         [[/if]]
         [[#if encounter.phases[page.phase].received]]
-          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].received.dps, encounter.phases[page.phase].group.avg_dps_received, encounter.phases[page.phase].group.min_dps_received, encounter.phases[page.phase].group.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[/if]]">
+          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].received.dps, encounter.phases[page.phase].group.avg_dps_received, encounter.phases[page.phase].group.min_dps_received, encounter.phases[page.phase].group.max_dps_received, encounter.phases[page.phase].group.max_dps_received, true)]][[else]][[bar1(encounter.phases[page.phase].received.dps, encounter.phases[page.phase].received.dps)]][[/if]]">
             <span>[[encounter.phases[page.phase].received.dps]]</span>
             [[#if encounter.phases[page.phase].group]]
               <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps_received)]]</span>
@@ -65,7 +65,7 @@
             <td></td>
           [[/if]]
           [[#if phases[page.phase].received]]
-            <td style="[[encounter.phases[page.phase].group ? bar1(phases[page.phase].received.dps, encounter.phases[page.phase].group && encounter.phases[page.phase].group.max_dps) : '']]">
+          <td style="[[bar1(phases[page.phase].received.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps_received : encounter.phases[page.phase].received.dps)]]">
               <span>[[phases[page.phase].received.dps]]</span>
             </td>
           [[else]]
@@ -99,37 +99,38 @@
             </td>
             [[#with phases[page.phase]]]
             [[#if .]]
-              <td style="[[#if archetype]][[bar(actual.dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual ? actual.dps : 0, individual && individual.max_dps)]][[/if]]">
+              <td style="[[#if archetype.avg_dps]][[bar(actual.dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps)]][[/if]]">
                 <span>[[actual ? actual.dps : 0]]</span>
-                [[#if archetype]]
+                [[#if archetype.avg_dps]]
                   <span class="expected">[[Math.round(archetype.avg_dps)]]</span>
                 [[/if]]
               </td>
               [[#if actual_boss]]
-                <td style="[[#if archetype]][[bar(actual_boss.dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual_boss.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps)]][[/if]]">
+                <td style="[[#if archetype.avg_dps_boss]][[bar(actual_boss.dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual_boss.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps)]][[/if]]">
                   <span>[[actual_boss ? actual_boss.dps : 0]]</span>
-                  [[#if archetype]]
+                  [[#if archetype.avg_dps_boss]]
                     <span class="expected">[[Math.round(archetype.avg_dps_boss)]]</span>
                   [[/if]]
                 </td>
               [[else]]
                 <td>0</td>
               [[/if]]
-              <td style="[[#if archetype]][[bar(received.dps, archetype.avg_dps_received, archetype.min_dps_received, archetype.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[/if]]">
+              <td style="[[#if archetype.avg_dps_received]][[bar(received.dps, archetype.avg_dps_received, archetype.min_dps_received, archetype.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[else]][[bar1(received.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps_received)]][[/if]]">
+                <code>[[received.dps]]/[[encounter.phases[page.phase].individual.max_dps_received]]</code>
                 <span>[[received ? received.dps : 0]]</span>
-                [[#if archetype]]
+                [[#if archetype.avg_dps_received]]
                   <span class="expected">[[Math.round(archetype.avg_dps_received)]]</span>
                 [[/if]]
               </td>
-              <td style="[[#if archetype]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
+              <td style="[[#if archetype.avg_seaweed]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
                 <span>[[actual ? actual.seaweed : 0]]%</span>
-                [[#if archetype]]
+                [[#if archetype.avg_seaweed]]
                   <span class="expected">[[archetype.avg_seaweed.toPrecision(3)]]%</span>
                 [[/if]]
               </td>
-              <td style="[[#if archetype]][[bar(actual ? actual.scholar : 0, archetype.avg_scholar, archetype.min_scholar, archetype.max_scholar, 100)]][[else]][[bar1(actual ? actual.scholar : 0, 100)]][[/if]]">
+              <td style="[[#if archetype.avg_scholar]][[bar(actual ? actual.scholar : 0, archetype.avg_scholar, archetype.min_scholar, archetype.max_scholar, 100)]][[else]][[bar1(actual ? actual.scholar : 0, 100)]][[/if]]">
                 <span>[[actual ? actual.scholar : 0]]%</span>
-                [[#if archetype]]
+                [[#if archetype.avg_scholar]]
                   <span class="expected">[[archetype.avg_scholar.toPrecision(3)]]%</span>
                 [[/if]]
               </td>

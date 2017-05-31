@@ -104,9 +104,10 @@ def encounter(request, id=None, json=None):
     area_stats = json_loads(encounter.area.stats)
     phases = dump['Category']['combat']['Phase'].keys()
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    keyfunc = lambda member: member['party']
+    partyfunc = lambda member: member['party']
+    namefunc = lambda member: member['name']
     parties = { party: {
-                    "members": list(members),
+                    "members": sorted(members, key=namefunc),
                     "phases": {
                         phase: {
                             "actual": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All'],
@@ -115,7 +116,7 @@ def encounter(request, id=None, json=None):
                             "buffs": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All'],
                         } for phase in phases
                     }
-                } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
+                } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
     for party_no, party in parties.items():
         for member in party['members']:
             if member['account'] in own_account_names:
