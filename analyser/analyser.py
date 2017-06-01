@@ -206,7 +206,7 @@ BOSS_ARRAY = [
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
-        Phase("Phase 3", True)
+        Phase("Phase 3", True, phase_end_health=1)
     ]),
     Boss('Deimos', [0x4302]),
 ]
@@ -360,7 +360,9 @@ class Analyser:
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        success = not final_boss_events[final_boss_events.state_change == parser.StateChange.CHANGE_DEAD].empty
+        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD) |
+        (final_boss_events.state_change == parser.StateChange.DESPAWN)].empty
+
         encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
