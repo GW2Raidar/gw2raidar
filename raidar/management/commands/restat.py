@@ -188,9 +188,10 @@ class Command(BaseCommand):
                 calculate_average(group_totals, 'dps_received')
                 calculate_average(group_totals, 'seaweed')
                 calculate_average(group_totals, 'scholar')
-                buffs_by_party = group_totals['buffs']
-                for buff in buffs:
-                    calculate_average(buffs_by_party, buff, group_totals['count'])
+                if 'count' in group_totals:
+                    buffs_by_party = group_totals['buffs']
+                    for buff in buffs:
+                        calculate_average(buffs_by_party, buff, group_totals['count'])
 
                 for character_id, totals_by_build in totals_in_phase['build'].items():
                     for elite, totals_by_elite in totals_by_build.items():
@@ -207,7 +208,8 @@ class Command(BaseCommand):
                                     calculate_average(buffs_by_archetype, buff, totals_by_archetype['count'])
                                 del totals_by_archetype['count']
 
-                del group_totals['count']
+                if 'count' in group_totals:
+                    del group_totals['count']
 
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
 
