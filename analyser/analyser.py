@@ -265,6 +265,7 @@ class Analyser:
         player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
         player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
         from_boss_events = events[events.src_instid.isin(self.boss_instids)]
+        self.boss_instids = list(from_boss_events.groupby('src_instid').first().sort_values('time').index)
         to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
         from_final_boss_events = events[events.src_instid == self.boss_instids[-1]]
 
