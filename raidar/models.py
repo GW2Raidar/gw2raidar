@@ -117,7 +117,7 @@ class Encounter(models.Model):
     started_at_half = models.IntegerField(editable=False)
 
     def __str__(self):
-        return '%s (%s)' % (self.area.name, self.started_at)
+        return '%s (%s, #%s)' % (self.area.name, self.uploaded_by.username, self.id)
 
     def save(self, *args, **kwargs):
         self.started_at_full = round(self.started_at / START_RESOLUTION) * START_RESOLUTION

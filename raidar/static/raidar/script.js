@@ -84,23 +84,25 @@
     expStroke: new Colour("#8080ff").css(),
     expFill: new Colour("#8080ff", 0.5).css(),
   };
-  const scaleColour = (val, avg, min, max) => {
+  const scaleColour = (val, avg, min, max, flip) => {
+    let good = barcss.good;
+    let bad = barcss.bad;
+    if (flip) [good, bad] = [bad, good]
     if (val == avg) {
       return barcss.average;
     } else if (val < avg) {
-      return barcss.bad.blend(barcss.average, 1 - (avg - val) / (avg - min));
+      return bad.blend(barcss.average, 1 - (avg - val) / (avg - min));
     } else {
-      return barcss.good.blend(barcss.average, 1 - (val - avg) / (max - avg));
+      return good.blend(barcss.average, 1 - (val - avg) / (max - avg));
     }
   }
   helpers.bar = (actual, average, min, max, top, flip) => {
     if (min > actual) min = actual;
     if (max < actual) max = actual;
-    if (flip) [min, max] = [max, min];
     top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;
-    let colour = scaleColour(actual, average, min, max);
+    let colour = scaleColour(actual, average, min, max, flip);
     let stroke = colour.css();
     let fill = colour.lighten(0.5).css();
     let svg = `

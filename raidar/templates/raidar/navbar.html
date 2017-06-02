@@ -2,8 +2,9 @@
   <div class="uk-navbar-left">
     <ul class="uk-navbar-nav">
       [[#if username]]
-      <li class="[[page.name=='encounters' && 'uk-active']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
-        <li class="[[page.name=='profile' && 'uk-active']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
+        <li class="[[page.name=='about' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'about'})">About</a></li>
+        <li class="[[page.name=='encounters' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
+        <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
       [[/if]]
     </ul>
   </div>
@@ -13,12 +14,12 @@
         [[#if is_staff]]
           <li><a href="{% url 'admin:index' %}">Admin</a>
         [[/if]]
-        <li class="[[page.name=='account' && 'uk-active']]"><a href="#" on-click="@this.page('account')">Account</a></li>
+        <li class="[[page.name=='account' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('account')">Account</a></li>
         <li><a href="#" on-click="auth_logout">Logout</a></li>
       [[else]]
-        <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login')">Login</a></li>
-        <li class="[[page.name=='register' && 'uk-active']]"><a href="#" on-click="@this.page('register')">Register</a></li>
-        <li class="[[page.name=='reset_pw' && 'uk-active']]"><a href="#" on-click="@this.page('reset_pw')">Reset Password</a></li>
+        <li class="[[page.name=='login' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('login')">Login</a></li>
+        <li class="[[page.name=='register' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('register')">Register</a></li>
+        <li class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('reset_pw')">Reset Password</a></li>
       [[/if]]
     </ul>
   </div>

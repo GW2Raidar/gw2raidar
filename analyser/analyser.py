@@ -206,7 +206,7 @@ BOSS_ARRAY = [
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
-        Phase("Phase 3", True)
+        Phase("Phase 3", True, phase_end_health=1)
     ]),
     Boss('Deimos', [0x4302]),
 ]
@@ -265,6 +265,7 @@ class Analyser:
         player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
         player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
         from_boss_events = events[events.src_instid.isin(self.boss_instids)]
+        self.boss_instids = list(from_boss_events.groupby('src_instid').first().sort_values('time').index)
         to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
         from_final_boss_events = events[events.src_instid == self.boss_instids[-1]]
 
@@ -360,7 +361,9 @@ class Analyser:
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        success = not final_boss_events[final_boss_events.state_change == parser.StateChange.CHANGE_DEAD].empty
+        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD) |
+        (final_boss_events.state_change == parser.StateChange.DESPAWN)].empty
+
         encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
