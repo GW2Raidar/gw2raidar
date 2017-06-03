@@ -49,7 +49,11 @@ BUFF_TYPES = [
         BuffType('Soothing Mist', 'soothing_mist', StackType.DURATION, 1),
 
         # Necro
-        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1)
+        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1),
+    
+        # Thief
+        BuffType('Lotus Training', 'lotus_training', StackType.DURATION, 1),
+        BuffType('Lead Attacks', 'lead_attacks', StackType.INTENSITY, 15)
     ]
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }
