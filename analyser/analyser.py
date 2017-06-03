@@ -347,6 +347,7 @@ class Analyser:
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
         encounter_end = events.time.max()
+        down_events = self.assemble_down_events(player_src_events, players)
 
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
         
@@ -357,6 +358,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_src_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_down_data, down_events)
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
@@ -366,15 +368,55 @@ class Analyser:
 
         # saved as a JSON dump
         self.data = collector.all_data
+        
+    def assemble_down_events(self, events, players):
+        player_only_events = events[events.src_instid.isin(self.player_instids)]
+        # Get Up/Down/Death events
+        down_events = player_only_events[(player_only_events['state_change'] == parser.StateChange.CHANGE_DOWN)
+                                         |(player_only_events['state_change'] == parser.StateChange.CHANGE_DEAD)
+                                         |(player_only_events['state_change'] == parser.StateChange.CHANGE_UP)]
+
+        # Produce down state 
+        raw_data = np.array([np.arange(0, dtype=int)] * 4, dtype=int).T
+
+        for player in list(players.index):
+            data = np.array([np.arange(0)] * 3).T
+            relevent_events = down_events[down_events['src_instid'] == player]
+            down = False
+            start_time = 0
+            for event in relevent_events.itertuples():
+                if (not down) & (event.state_change == parser.StateChange.CHANGE_DOWN):
+                    start_time = event.time
+                    down = True
+                elif down & (event.state_change == parser.StateChange.CHANGE_UP):
+                    data = np.append(data, [[start_time, event.time - start_time, 1]], axis=0)
+                    down = False
+                elif down & (event.state_change == parser.StateChange.CHANGE_DEAD):
+                    data = np.append(data, [[start_time, event.time - start_time, 0]], axis=0)
+                    down = False
+
+            data = np.c_[[player] * data.shape[0], data]
+            raw_data = np.r_[raw_data, data]
+
+        return pd.DataFrame(columns = ['player', 'time', 'duration', 'recovered'], data = raw_data)
 
     # Note: While this is just broken into areas with comments for now, we may want
     # a more concrete split in future
 
     # section: Agent stats (player/boss
     # subsection: player events
+    def collect_player_down_data(self, collector, events):
+        self.split_by_player_groups(collector, self.collect_player_down_data_by_phase, events, 'player')  
+        
+    def collect_player_down_data_by_phase(self, collector, events):
+        self.split_duration_event_by_phase(collector, self.collect_down_data, events)  
+        
     def collect_player_combat_events(self, collector, events):
         player_only_events = events[events.src_instid.isin(self.player_instids)]
         self.split_by_player_groups(collector, self.collect_combat_events_by_phase, player_only_events, 'src_instid')  
+        
+    def collect_down_data(self, collector, events):
+        collector.add_data('down_time', events['duration'].sum())
         
     def collect_combat_events_by_phase(self, collector, events):
         self.split_by_phase(collector, self.collect_combat_events, events)  
@@ -385,7 +427,40 @@ class Analyser:
         collector.add_data('deaths', death_events, int)
         collector.add_data('downs', down_events, int)
         
-    
+    def split_duration_event_by_phase(self, collector, method, events):
+        def collect_phase(name, phase_events):
+            duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
+            if not duration > 0.001:
+                duration = 0
+            collector.set_context_value(ContextType.DURATION, duration)
+            collector.with_key(Group.PHASE, name).run(method, phase_events)
+
+        collect_phase("All", events)
+        if self.debug:
+            collect_phase("None", events[0:0])
+
+        #Yes, this lists each phase individually even if there is only one
+        #That's for consistency for things like:
+        #Some things happen outside a phase.
+        #Some fights have multiple phases, but you only get to phase one
+        #Still want to list it as phase 1
+        for i in range(0,len(self.phases)):
+            phase = self.phases[i]
+            start = phase[0]
+            end = phase[1]
+            
+            before_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > start)].copy()
+            main_phase = events[(events['time'] >= start) & (events['time'] + events['duration'] <= end)]
+            after_phase = events[(events['time'] < end) & (events['time'] + events['duration'] > end)]
+
+            before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
+            before_phase = before_phase.assign(time = start)
+
+            after_phase = after_phase.assign(duration = end)
+            after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
+
+            collect_phase(phase[0], before_phase.append(main_phase).append(after_phase))
+            
     # subsection: boss stats
     def collect_individual_boss_key_events(self, collector, events):
         #all_state_changes = events[events.state_change != parser.StateChange.NORMAL]
