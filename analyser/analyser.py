@@ -463,8 +463,10 @@ class Analyser:
     def collect_combat_events(self, collector, events):
         death_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DEAD])
         down_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DOWN])
+        disconnect_events = len(events[events['state_change'] == parser.StateChange.DESPAWN])
         collector.add_data('deaths', death_events, int)
         collector.add_data('downs', down_events, int)
+        collector.add_data('disconnects', disconnect_events, int)
         
     def split_duration_event_by_phase(self, collector, method, events):
         def collect_phase(name, phase_events):
