@@ -100,21 +100,28 @@ def encounter(request, id=None, json=None):
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
         user=request.user)]
+
     dump = json_loads(encounter.dump)
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
+    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
+    if not allowed:
+        return _error('Not allowed')
+
     area_stats = json_loads(encounter.area.stats)
     phases = dump['Category']['combat']['Phase'].keys()
-    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    keyfunc = lambda member: member['party']
+    partyfunc = lambda member: member['party']
+    namefunc = lambda member: member['name']
     parties = { party: {
-                    "members": list(members),
+                    "members": sorted(members, key=namefunc),
                     "phases": {
                         phase: {
                             "actual": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All'],
                             "actual_boss": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss'],
+                            "received": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All'],
                             "buffs": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All'],
                         } for phase in phases
                     }
-                } for party, members in groupby(sorted(members, key=keyfunc), keyfunc) }
+                } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
     for party_no, party in parties.items():
         for member in party['members']:
             if member['account'] in own_account_names:
@@ -140,6 +147,7 @@ def encounter(request, id=None, json=None):
                     'individual': _safe_get(lambda: area_stats[phase]['individual']),
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
+                    'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
                 } for phase in phases
             },

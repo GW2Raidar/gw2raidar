@@ -206,7 +206,7 @@ BOSS_ARRAY = [
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
-        Phase("Phase 3", True)
+        Phase("Phase 3", True, phase_end_health=1)
     ]),
     Boss('Deimos', [0x4302]),
 ]
@@ -341,13 +341,15 @@ class Analyser:
         players, bosses, final_bosses = self.preprocess_agents(agents, collector)
         self.preprocess_skills(skills, collector)
         player_src_events, player_dst_events, boss_events, final_boss_events = self.preprocess_events(events)
+        player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
         encounter_end = events.time.max()
-        down_events = self.assemble_down_events(player_src_events, players)
+        down_events = self.assemble_down_data(player_only_events, players, encounter_end)
+        dead_events = self.assemble_dead_data(player_only_events, players, encounter_end)
 
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
         
@@ -357,8 +359,9 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_src_events)
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_down_data, down_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration('down_time'), down_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration('dead_time'), dead_events)
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
@@ -369,12 +372,11 @@ class Analyser:
         # saved as a JSON dump
         self.data = collector.all_data
         
-    def assemble_down_events(self, events, players):
-        player_only_events = events[events.src_instid.isin(self.player_instids)]
+    def assemble_down_data(self, events, players, encounter_end):
         # Get Up/Down/Death events
-        down_events = player_only_events[(player_only_events['state_change'] == parser.StateChange.CHANGE_DOWN)
-                                         |(player_only_events['state_change'] == parser.StateChange.CHANGE_DEAD)
-                                         |(player_only_events['state_change'] == parser.StateChange.CHANGE_UP)]
+        down_events = events[(events['state_change'] == parser.StateChange.CHANGE_DOWN)
+                             |(events['state_change'] == parser.StateChange.CHANGE_DEAD)
+                             |(events['state_change'] == parser.StateChange.CHANGE_UP)]
 
         # Produce down state 
         raw_data = np.array([np.arange(0, dtype=int)] * 4, dtype=int).T
@@ -394,38 +396,77 @@ class Analyser:
                 elif down & (event.state_change == parser.StateChange.CHANGE_DEAD):
                     data = np.append(data, [[start_time, event.time - start_time, 0]], axis=0)
                     down = False
+            
+            if down:
+                np.append = np.append(data, [[start_time, encounter_end, encounter_end - start_time, 1]], axis=0)
 
             data = np.c_[[player] * data.shape[0], data]
             raw_data = np.r_[raw_data, data]
 
         return pd.DataFrame(columns = ['player', 'time', 'duration', 'recovered'], data = raw_data)
+    
+    def assemble_dead_data(self, events, players, encounter_end):
+        # Get Up/Death events
+        down_events = events[(events['state_change'] == parser.StateChange.CHANGE_DEAD)
+                             |(events['state_change'] == parser.StateChange.CHANGE_UP)]
+
+        # Produce dead state 
+        raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
+
+        for player in list(players.index):
+            data = np.array([np.arange(0)] * 2).T
+            relevent_events = down_events[down_events['src_instid'] == player]
+            dead = False
+            start_time = 0
+            for event in relevent_events.itertuples():
+                if (not dead) & (event.state_change == parser.StateChange.CHANGE_DEAD):
+                    start_time = event.time
+                    dead = True
+                elif dead & (event.state_change == parser.StateChange.CHANGE_UP):
+                    data = np.append(data, [[start_time, event.time - start_time]], axis=0)
+                    dead = False
+            
+            if dead:
+                data = np.append(data, [[start_time, encounter_end - start_time]], axis=0)
+
+            data = np.c_[[player] * data.shape[0], data]
+            raw_data = np.r_[raw_data, data]
+
+        return pd.DataFrame(columns = ['player', 'time', 'duration'], data = raw_data)
 
     # Note: While this is just broken into areas with comments for now, we may want
     # a more concrete split in future
 
     # section: Agent stats (player/boss
     # subsection: player events
-    def collect_player_down_data(self, collector, events):
-        self.split_by_player_groups(collector, self.collect_player_down_data_by_phase, events, 'player')  
+    def collect_player_state_duration(self, tag):
+        def collect_player_state_duration_inner(collector, events):
+            self.split_by_player_groups(collector, self.collect_player_state_duration_by_phase(tag), events, 'player')  
+        return collect_player_state_duration_inner
         
-    def collect_player_down_data_by_phase(self, collector, events):
-        self.split_duration_event_by_phase(collector, self.collect_down_data, events)  
+    def collect_player_state_duration_by_phase(self, tag):
+        def collect_player_state_duration_by_phase_inner(collector, events):
+            self.split_duration_event_by_phase(collector, self.collect_state_duration(tag), events)  
+        return collect_player_state_duration_by_phase_inner
         
+    def collect_state_duration(self, tag):
+        def inner_collect_state_duration(collector, events):
+            collector.add_data(tag, events['duration'].sum())
+        return inner_collect_state_duration
+    
     def collect_player_combat_events(self, collector, events):
-        player_only_events = events[events.src_instid.isin(self.player_instids)]
-        self.split_by_player_groups(collector, self.collect_combat_events_by_phase, player_only_events, 'src_instid')  
-        
-    def collect_down_data(self, collector, events):
-        collector.add_data('down_time', events['duration'].sum())
-        
+        self.split_by_player_groups(collector, self.collect_combat_events_by_phase, events, 'src_instid')  
+    
     def collect_combat_events_by_phase(self, collector, events):
         self.split_by_phase(collector, self.collect_combat_events, events)  
         
     def collect_combat_events(self, collector, events):
         death_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DEAD])
         down_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DOWN])
+        disconnect_events = len(events[events['state_change'] == parser.StateChange.DESPAWN])
         collector.add_data('deaths', death_events, int)
         collector.add_data('downs', down_events, int)
+        collector.add_data('disconnects', disconnect_events, int)
         
     def split_duration_event_by_phase(self, collector, method, events):
         def collect_phase(name, phase_events):
@@ -446,20 +487,23 @@ class Analyser:
         #Still want to list it as phase 1
         for i in range(0,len(self.phases)):
             phase = self.phases[i]
-            start = phase[0]
-            end = phase[1]
+            start = phase[1]
+            end = phase[2]
             
-            before_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > start)].copy()
-            main_phase = events[(events['time'] >= start) & (events['time'] + events['duration'] <= end)]
-            after_phase = events[(events['time'] < end) & (events['time'] + events['duration'] > end)]
+            if len(events) > 0:
+                before_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > start)].copy()
+                main_phase = events[(events['time'] >= start) & (events['time'] + events['duration'] <= end)]
+                after_phase = events[(events['time'] < end) & (events['time'] + events['duration'] > end)]
 
-            before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
-            before_phase = before_phase.assign(time = start)
+                before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
+                before_phase = before_phase.assign(time = start)
 
-            after_phase = after_phase.assign(duration = end)
-            after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
+                after_phase = after_phase.assign(duration = end)
+                after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
 
-            collect_phase(phase[0], before_phase.append(main_phase).append(after_phase))
+                collect_phase(phase[0], before_phase.append(main_phase).append(after_phase))
+            else:
+                collect_phase(phase[0], events)
             
     # subsection: boss stats
     def collect_individual_boss_key_events(self, collector, events):

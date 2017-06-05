@@ -21,7 +21,7 @@
         </tr>
         [[#each members]]
           <tr>
-            <td class="[[self && 'uk-text-primary']]">
+            <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
               <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
               <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
               [[name]]
@@ -120,16 +120,16 @@
           </tr>
           [[#each members]]
             <tr>
-              <td class="[[self && 'uk-text-primary']]">
+              <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
                 <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
                 <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
                 [[name]]
               </td>
               [[#each data.boons]]
                 [[#if phases[page.phase]]]
-                  <td style="[[#if phases[page.phase].archetype]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
+                <td style="[[#if phases[page.phase].archetype.buffs['avg_' + boon]]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
                     <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                    [[#if phases[page.phase].archetype]]
+                    [[#if phases[page.phase].archetype.buffs['avg_' + boon]]]
                       <span class="expected">[[phases[page.phase].archetype.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
                     [[/if]]
                   </td>
