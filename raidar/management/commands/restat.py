@@ -83,7 +83,7 @@ class Command(BaseCommand):
                 squad_stats_in_phase = stats_in_phase['Subgroup']['*All']
                 stats_in_phase_to_all = squad_stats_in_phase['Metrics']['damage']['To']['*All']
                 stats_in_phase_to_boss = squad_stats_in_phase['Metrics']['damage']['To']['*Boss']
-                stats_in_phase_received = _safe_get(lambda: squad_stats_in_phase['Metrics']['damage']['From']['*All'], { 'dps': 0 }) # XXX Old data
+                stats_in_phase_received = _safe_get(lambda: squad_stats_in_phase['Metrics']['damage']['From']['*All'], { 'dps': 0, 'total': 0 }) # XXX Old data
                 stats_in_phase_buffs = squad_stats_in_phase['Metrics']['buffs']['From']['*All']
                 totals_in_phase = get_or_create(totals_in_area, phase)
                 group_totals = get_or_create(totals_in_phase, 'group')
@@ -98,6 +98,7 @@ class Command(BaseCommand):
                     get_or_create_then_increment(group_totals, 'dps', stats_in_phase_to_all['dps'])
                     get_or_create_then_increment(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
                     get_or_create_then_increment(group_totals, 'dps_received', stats_in_phase_received['dps'])
+                    get_or_create_then_increment(group_totals, 'total_received', stats_in_phase_received['total'])
                     get_or_create_then_increment(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
                     get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
 
@@ -111,6 +112,7 @@ class Command(BaseCommand):
                 find_bounds(group_totals, 'dps', stats_in_phase_to_all['dps'])
                 find_bounds(group_totals, 'dps_boss', stats_in_phase_to_boss['dps'])
                 find_bounds(group_totals, 'dps_received', stats_in_phase_received['dps'])
+                find_bounds(group_totals, 'total_received', stats_in_phase_received['total'])
                 find_bounds(group_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
                 find_bounds(group_totals, 'scholar', stats_in_phase_to_all['scholar'])
 
@@ -148,8 +150,12 @@ class Command(BaseCommand):
                         stats_in_phase_from_all = player_stats['Metrics']['damage']['From']['*All']
                         if encounter.success:
                             get_or_create_then_increment(totals_by_archetype, 'dps_received', stats_in_phase_from_all['dps'])
+                            get_or_create_then_increment(totals_by_archetype, 'total_received', stats_in_phase_from_all['total'])
                         find_bounds(totals_by_archetype, 'dps_received', stats_in_phase_from_all['dps'])
                         find_bounds(individual_totals, 'dps_received', stats_in_phase_from_all['dps'])
+
+                        find_bounds(totals_by_archetype, 'total_received', stats_in_phase_from_all['total'])
+                        find_bounds(individual_totals, 'total_received', stats_in_phase_from_all['total'])
                     except KeyError:
                         pass
 
@@ -186,6 +192,7 @@ class Command(BaseCommand):
                 calculate_average(group_totals, 'dps')
                 calculate_average(group_totals, 'dps_boss')
                 calculate_average(group_totals, 'dps_received')
+                calculate_average(group_totals, 'total_received')
                 calculate_average(group_totals, 'seaweed')
                 calculate_average(group_totals, 'scholar')
                 if 'count' in group_totals:
@@ -199,6 +206,7 @@ class Command(BaseCommand):
                             calculate_average(totals_by_archetype, 'dps')
                             calculate_average(totals_by_archetype, 'dps_boss')
                             calculate_average(totals_by_archetype, 'dps_received')
+                            calculate_average(totals_by_archetype, 'total_received')
                             calculate_average(totals_by_archetype, 'seaweed')
                             calculate_average(totals_by_archetype, 'scholar')
 
