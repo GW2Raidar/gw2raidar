@@ -26,6 +26,12 @@ class StateChange(IntEnum):
     HEALTH_UPDATE = 8
     LOG_START = 9
     LOG_END = 10
+    WEAPON_SWAP = 11
+    MAX_HEALTH_UPDATE = 12
+    POINT_OF_VIEW = 13
+    LANGUAGE = 14
+    GW_BUILD = 15
+    SHARD_ID = 16
 
 #Change to another data type - it's not really an enum?
 class AgentType(IntEnum):
@@ -162,6 +168,10 @@ class Encounter:
     def _read_events(self, file):
         events_string = file.read()
         self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_DTYPE))
+        for name in ['iss_offset','iss_offset_target','iss_bd_offset',
+                    'iss_bd_offset_target','iss_alt_offset','iss_alt_offset_target',
+                    'skar','skar_aly','skar_use_alt','result_local','ident_local']:
+            del self.events[name]
 
         self.log_started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
@@ -171,6 +181,8 @@ class Encounter:
         dst_agent_map = self.events[['dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
         agent_map = pd.concat([src_agent_map, dst_agent_map])
         agent_map = agent_map[agent_map.inst_id != 0].drop_duplicates().set_index('addr')
+
+        #self.addr_agents = self.agents.set_index('addr')
         # deal with duplicate inst_id for different addrs
         self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
 

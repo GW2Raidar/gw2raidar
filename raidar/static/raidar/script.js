@@ -589,9 +589,7 @@
   let uploadProgressDone = (file, data) => {
     if (data.error) {
       error(file.name + ': ' + data.error);
-
-      r.get('upload')[file.name] = 4;
-      r.update('upload');
+      uploadProgressFail(file);
     } else {
       let encounters = r.get('encounters');
       let fileNames = Object.keys(data);
@@ -603,6 +601,12 @@
       r.get('upload')[file.name] = 3;
       r.update('upload');
     }
+  }
+
+  let uploadProgressFail = file => {
+    console.log("FAIL", file);
+    r.get('upload')[file.name] = 4;
+    r.update('upload');
   }
 
   let makeXHR = file => {
@@ -644,7 +648,8 @@
           processData: false,
           xhr: makeXHR.bind(null, file),
         })
-        .done(uploadProgressDone.bind(null, file));
+        .done(uploadProgressDone.bind(null, file))
+        .fail(uploadProgressFail.bind(null, file));
       });
       evt.preventDefault();
     });
