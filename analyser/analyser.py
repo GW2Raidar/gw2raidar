@@ -491,9 +491,14 @@ class Analyser:
             end = phase[2]
             
             if len(events) > 0:
-                before_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > start)].copy()
+                across_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > end)]
+        
+                #HACK: review why copy?
+                before_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > start) & (events['time'] + events['duration'] <= end)].copy()
                 main_phase = events[(events['time'] >= start) & (events['time'] + events['duration'] <= end)]
-                after_phase = events[(events['time'] < end) & (events['time'] + events['duration'] > end)]
+                after_phase = events[(events['time'] >= start) & (events['time'] < end) & (events['time'] + events['duration'] > end)]
+
+                across_phase = across_phase.assign(time = start, duration = end - start)
 
                 before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
                 before_phase = before_phase.assign(time = start)
@@ -501,7 +506,7 @@ class Analyser:
                 after_phase = after_phase.assign(duration = end)
                 after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
 
-                collect_phase(phase[0], before_phase.append(main_phase).append(after_phase))
+                collect_phase(phase[0], across_phase.append(before_phase).append(main_phase).append(after_phase))
             else:
                 collect_phase(phase[0], events)
             
@@ -709,17 +714,21 @@ class Analyser:
             collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
 
     def _split_buff_by_phase(self, diff_data, start, end):
+        across_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > end)]
+        
         #HACK: review why copy?
-        before_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > start)].copy()
+        before_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > start) & (diff_data['time'] + diff_data['duration'] <= end)].copy()
         main_phase = diff_data[(diff_data['time'] >= start) & (diff_data['time'] + diff_data['duration'] <= end)]
-        after_phase = diff_data[(diff_data['time'] < end) & (diff_data['time'] + diff_data['duration'] > end)]
+        after_phase = diff_data[(diff_data['time'] >= start) & (diff_data['time'] < end) & (diff_data['time'] + diff_data['duration'] > end)]
 
+        across_phase = across_phase.assign(time = start, duration = end - start, stripped = 0)
+        
         before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
         before_phase = before_phase.assign(time = start, stripped = 0)
 
         after_phase = after_phase.assign(duration = end)
         after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
-        return before_phase.append(main_phase).append(after_phase)
+        return across_phase.append(before_phase).append(main_phase).append(after_phase)
 
     def collect_buff(self, collector, diff_data):
         phase_data = self._split_buff_by_phase(diff_data, self.start_time, self.end_time)
