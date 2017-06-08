@@ -96,7 +96,6 @@ class Phase:
         if self.phase_end_health is not None:
             relevant_health_updates = health_updates[(health_updates.time >= current_time) &
                                                      (health_updates.dst_agent >= self.phase_end_health * 100)]
-            print_frame(relevant_health_updates)
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
