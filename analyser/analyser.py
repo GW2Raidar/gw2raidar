@@ -370,6 +370,8 @@ class Analyser:
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('start', start_timestamp, int)
+        encounter_collector.add_data('start_tick', start_time, int)
+        encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)
                                         | (final_boss_events.state_change == parser.StateChange.DESPAWN)].empty
@@ -378,9 +380,9 @@ class Analyser:
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:
             phase_collector = encounter_collector.with_key(Group.PHASE, phase[0])
-            phase_collector.add_data('start', phase[1])
-            phase_collector.add_data('end', phase[2])
-            phase_collector.add_data('duration', phase[2] - phase[1])
+            phase_collector.add_data('start_tick', phase[1], int)
+            phase_collector.add_data('end_tick', phase[2], int)
+            phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
 
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.key_npc_ids and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
