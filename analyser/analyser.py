@@ -374,6 +374,12 @@ class Analyser:
         success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)
                                         | (final_boss_events.state_change == parser.StateChange.DESPAWN)].empty
 
+
+        encounter_collector.add_data('phases', [name for name,start,end in self.phases])
+        for phase in self.phases:
+            phase_collector = encounter_collector.with_key(Group.PHASE, phase[0])
+            phase_collector.add_data('duration', phase[2] - phase[1])
+
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.key_npc_ids and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
