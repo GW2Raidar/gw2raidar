@@ -41,7 +41,7 @@ def calculate_average(hash, prop, count=None):
         hash['avg_' + prop] = hash[prop] / (count or hash['count'])
         del hash[prop]
 
-def check_running():
+def check_running_or_unnecesary():
     # http://stackoverflow.com/questions/10978869
     flags = os.O_CREAT | os.O_EXCL | os.O_WRONLY
     permissions = 0o644
@@ -53,9 +53,18 @@ def check_running():
         else:
             raise
     else:
-        with os.fdopen(file_handle, 'w') as f:
-            f.write(str(os.getpid()))
-        return False
+        try:
+            last_restat_at = os.path.getmtime(PIDFILE + ".last")
+        except FileNotFoundError:
+            pass # last file being missing is okay
+        else:
+            new = Encounter.objects.filter(uploaded_at__gte=last_restat_at).count()
+            if new > 0:
+                with os.fdopen(file_handle, 'w') as f:
+                    f.write(str(os.getpid()))
+                return False
+            else:
+                return True
 
 def _safe_get(func, default=0):
     try:
@@ -224,9 +233,9 @@ class Command(BaseCommand):
         return totals
 
     def handle(self, *args, **options):
-        if check_running():
-            exit()
         try:
+            if check_running_or_unnecesary():
+                exit()
             start = time()
             totals = self.process(*args, **options)
             end = time()
@@ -238,4 +247,4 @@ class Command(BaseCommand):
             print()
             print("Completed in %ss" % (end - start))
         finally:
-            os.remove(PIDFILE)
+            os.rename(PIDFILE, PIDFILE + ".last")
