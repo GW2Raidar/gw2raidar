@@ -96,8 +96,7 @@ class Phase:
         if self.phase_end_health is not None:
             relevant_health_updates = health_updates[(health_updates.time >= current_time) &
                                                      (health_updates.dst_agent >= self.phase_end_health * 100)]
-
-            if relevant_health_updates['dst_agent'].min() > (self.phase_end_health + 1) * 100:
+            if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
             print("{0}: Detected health below {1} at time {2}".format(self.name, self.phase_end_health, current_time))
@@ -105,9 +104,13 @@ class Phase:
         if self.phase_end_damage_stop is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
-            if relevant_gaps.empty:
+            if not relevant_gaps.empty:
+                end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+            elif int(damage_gaps.time.iloc[-1]) >= current_time:
+                end_time = current_time = int(damage_gaps.time.iloc[-1])
+            else:
                 return None
-            end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+
             print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, current_time))
 
         if self.phase_end_damage_start is not None:
@@ -201,7 +204,7 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health=1)
     ]),
     Boss('Deimos', [0x4302], key_npc_ids=[17126], phases = [
-        Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 3000),
+        Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
     ]),
 ]
@@ -705,6 +708,7 @@ class Analyser:
         collector.add_data('fifty', events['is_fifty'].mean(), percentage)
         collector.add_data('scholar', events['is_ninety'].mean(), percentage)
         collector.add_data('seaweed', events['is_moving'].mean(), percentage)
+        collector.add_data('flanking', events['is_flanking'].mean(), percentage)
 
     def aggregate_basic_damage_stats(self, collector, events):
         collector.add_data('total', events['damage'].sum(), int)
