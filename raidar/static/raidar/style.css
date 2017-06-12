@@ -68,7 +68,6 @@ table.row-header {
   height: 0;
   width: 0;
   background: #ffffff;
-  pointer-events: none;
 }
 
 table td {

@@ -100,6 +100,7 @@ class Command(BaseCommand):
         }
         queryset = Encounter.objects.all()
         buffs = set()
+        main_stats = ['dps', 'dps_boss', 'dps_received', 'seaweed', 'scholar']
         for encounter in queryset_iterator(queryset):
             totals_in_area = get_or_create(totals['area'], encounter.area_id)
             data = json_loads(encounter.dump)
@@ -152,13 +153,28 @@ class Command(BaseCommand):
                         continue
                     player_stats = stats_in_phase['Player'][participation.character.name]
 
+                    totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
+                    elite = data['Category']['status']['Player'][participation.character.name]['elite']
+                    totals_by_elite = get_or_create(totals_by_profession, elite)
+                    totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
+
                     try:
                         # XXX what if DAMAGE TO *ALL is not there? (hopefully fix in analyser)
                         stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
-                        totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
-                        elite = data['Category']['status']['Player'][participation.character.name]['elite']
-                        totals_by_elite = get_or_create(totals_by_profession, elite)
-                        totals_by_archetype = get_or_create(totals_by_elite, participation.archetype)
+
+                        if encounter.success:
+                            get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
+                            get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
+                            get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
+
+                        find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
+                        find_bounds(individual_totals, 'dps', stats_in_phase_to_all['dps'])
+
+                        find_bounds(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
+                        find_bounds(individual_totals, 'seaweed', stats_in_phase_to_all['seaweed'])
+
+                        find_bounds(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
+                        find_bounds(individual_totals, 'scholar', stats_in_phase_to_all['scholar'])
                     except KeyError:
                         pass
 
@@ -226,6 +242,8 @@ class Command(BaseCommand):
                 buffs_by_party = group_totals['buffs']
                 for buff in buffs:
                     calculate_average(buffs_by_party, buff)
+                for stat in main_stats:
+                    calculate_average(group_totals, stat)
 
                 for character_id, totals_by_build in totals_in_phase['build'].items():
                     for elite, totals_by_elite in totals_by_build.items():
@@ -237,6 +255,8 @@ class Command(BaseCommand):
                             calculate_average(totals_by_archetype, 'seaweed')
                             calculate_average(totals_by_archetype, 'scholar')
                             calculate_average(totals_by_archetype, 'flanking')
+                            for stat in main_stats:
+                                calculate_average(totals_by_archetype, stat)
 
                             buffs_by_archetype = totals_by_archetype['buffs']
                             for buff in buffs:
