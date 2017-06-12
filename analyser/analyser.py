@@ -705,7 +705,13 @@ class Analyser:
     #Section: buff stats
     def collect_incoming_buffs(self, collector, buff_data):
         source_collector = collector.with_key(Group.SOURCE, "*All");
-        self.collect_buffs_by_target(source_collector, buff_data)
+        phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
+        collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, phase_data)
+
+        for i in range(0, len(self.phases)):
+            phase = self.phases[i]
+            phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
     
     def collect_buffs_by_target(self, collector, buff_data):
         self.split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player')        
@@ -735,15 +741,6 @@ class Analyser:
         return across_phase.append(before_phase).append(main_phase).append(after_phase)
 
     def collect_buff(self, collector, diff_data):
-        phase_data = self._split_buff_by_phase(diff_data, self.start_time, self.end_time)
-        collector.with_key(Group.PHASE, "All").run(self.collect_phase_buff, phase_data)
-
-        for i in range(0, len(self.phases)):
-            phase = self.phases[i]
-            phase_data = self._split_buff_by_phase(diff_data, phase[1], phase[2])
-            collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_phase_buff, phase_data)
-
-    def collect_phase_buff(self, collector, diff_data):
         total_time = diff_data['duration'].sum()
         if total_time == 0:
             mean = 0
