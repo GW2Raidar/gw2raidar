@@ -28,11 +28,11 @@ from zipfile import ZipFile
 
 
 
-def _safe_get(f):
+def _safe_get(f, default=None):
     try:
         return f()
     except KeyError:
-        return None
+        return default
 
 def _error(msg, **kwargs):
     kwargs['error'] = str(msg)
@@ -108,7 +108,7 @@ def encounter(request, id=None, json=None):
         return _error('Not allowed')
 
     area_stats = json_loads(encounter.area.stats)
-    phases = dump['Category']['combat']['Phase'].keys()
+    phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
     partyfunc = lambda member: member['party']
     namefunc = lambda member: member['name']
     parties = { party: {
@@ -135,12 +135,14 @@ def encounter(request, id=None, json=None):
                     'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
+
     data = {
         "encounter": {
             "name": encounter.area.name,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
             "success": encounter.success,
+            "phase_order": phases,
             "phases": {
                 phase: {
                     'group': _safe_get(lambda: area_stats[phase]['group']),
