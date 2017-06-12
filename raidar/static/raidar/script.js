@@ -97,6 +97,8 @@
     }
   }
   helpers.bar = (actual, average, min, max, top, flip) => {
+    if (!average) return helpers.bar1(actual, top);
+
     if (min > actual) min = actual;
     if (max < actual) max = actual;
     top = Math.max(top || max, actual);

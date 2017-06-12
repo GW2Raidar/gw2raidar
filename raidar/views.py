@@ -209,10 +209,10 @@ def register(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'register' })
 
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    email = request.POST.get('email')
-    api_key = request.POST.get('api_key')
+    username = request.POST.get('username').strip()
+    password = request.POST.get('password').strip()
+    email = request.POST.get('email').strip()
+    api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
 
     try:
@@ -382,7 +382,7 @@ def change_password(request):
 @login_required
 @require_POST
 def add_api_key(request):
-    api_key = request.POST.get('api_key')
+    api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
 
     try:
