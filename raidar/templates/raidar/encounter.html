@@ -1,13 +1,22 @@
-<h2 class="uk-padding-small uk-clearfix">
-    <div class="uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
-    [[encounter.name]]
-  </div>
-  <div class="uk-float-right">
-    <span class="uk-float-left">[[formatDate(encounter.started_at)]]</span>
-    &nbsp;
-    <span class="uk-float-right">&#91;[[formatTime(encounter.duration)]]&#93;</span>
-  </div>
-</h2>
+<div class="uk-clearfix uk-padding-small">
+  [[#with encounter]]
+    <h2 class="uk-padding-small uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
+      [[name]]
+    </h2>
+    <div class="uk-float-right uk-text-right uk-float-right">
+      <h3 class="uk-margin-remove">
+        <span>[[formatDate(started_at)]]</span>
+        &#32;
+        <span>&#91;[[formatTime(duration)]]&#93;</span>
+      </h3>
+      <div>
+        <span class="ignore">Uploaded as</span> [[filename]]
+        <span class="ignore">by</span> [[uploaded_by]]
+        <span class="ignore">at</span> [[formatDate(uploaded_at)]]
+      </div>
+    </div>
+  [[/with]]
+</div>
 
 <nav class="uk-navbar-container navbar-secondary" uk-navbar>
   <div class="uk-navbar-left">

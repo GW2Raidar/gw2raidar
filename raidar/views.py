@@ -141,6 +141,9 @@ def encounter(request, id=None, json=None):
     data = {
         "encounter": {
             "name": encounter.area.name,
+            "filename": encounter.filename,
+            "uploaded_at": encounter.uploaded_at,
+            "uploaded_by": encounter.uploaded_by.username,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
             "success": encounter.success,
