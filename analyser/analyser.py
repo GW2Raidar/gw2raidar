@@ -355,6 +355,7 @@ class Analyser:
         start_time = start_event['time'][0]
         encounter_end = events.time.max()
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
+        self.state_events = state_events
 
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
         
@@ -407,7 +408,7 @@ class Analyser:
                             |(events['state_change'] == parser.StateChange.CHANGE_DEAD)
                             |(events['state_change'] == parser.StateChange.CHANGE_UP)
                             |(events['state_change'] == parser.StateChange.DESPAWN)
-                            |(events['state_change'] == parser.StateChange.SPAWN)]
+                            |(events['state_change'] == parser.StateChange.SPAWN)].sort_values(by='time')
 
         # Produce down state 
         raw_data = np.array([np.arange(0, dtype=int)] * 5, dtype=int).T
@@ -422,7 +423,6 @@ class Analyser:
                 
                 if state == parser.StateChange.CHANGE_DOWN:
                     data = np.append(data, [[start_time, parser.StateChange.CHANGE_DOWN, event.time - start_time, (event.state_change == parser.StateChange.CHANGE_UP)]], axis=0)
-                    print
                 elif state == parser.StateChange.CHANGE_DEAD:
                     data = np.append(data, [[start_time, parser.StateChange.CHANGE_DEAD, event.time - start_time, 0]], axis=0)
                 elif state == parser.StateChange.DESPAWN:
@@ -706,12 +706,12 @@ class Analyser:
     def collect_incoming_buffs(self, collector, buff_data):
         source_collector = collector.with_key(Group.SOURCE, "*All");
         phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
-        collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, phase_data)
+        source_collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, phase_data)
 
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
             phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
-            collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
+            source_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
     
     def collect_buffs_by_target(self, collector, buff_data):
         self.split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player')        
