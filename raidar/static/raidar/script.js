@@ -68,8 +68,8 @@
       return new Colour(...rgba);
     }
     lighten(p) {
-      let rgba = ['r', 'g', 'b', 'a'].map(c => 255 - p * (255 - this[c]));
-      return new Colour(...rgba);
+      let rgb = ['r', 'g', 'b'].map(c => 255 - p * (255 - this[c]));
+      return new Colour(...rgb, this.a);
     }
     css() {
       return `rgba(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)}, ${this.a})`;
@@ -80,6 +80,10 @@
     average: new Colour("#cccc80"),
     good: new Colour("#80ff80"),
     bad: new Colour("#ff8080"),
+    live: new Colour("#e0ffe0"),
+    down: new Colour("#ffffe0"),
+    dead: new Colour("#ffe0e0"),
+    disconnect: new Colour("#e0e0e0"),
     single: new Colour("#999999"),
     expStroke: new Colour("#8080ff").css(),
     expFill: new Colour("#8080ff", 0.5).css(),
@@ -127,6 +131,37 @@
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
+  helpers.barSurvival = (events, duration, numPlayers) => {
+    switch (typeof numPlayers) {
+      case "undefined":
+        numPlayers = 1; break;
+      case "object":
+        numPlayers = Object.values(numPlayers).reduce((a, e) => a + e.members.length, 0);
+    }
+    let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
+    let down_perc = (events.down_time || 0) * 100 / 1000 / numPlayers / duration;
+    let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
+    let live_perc = 100 - (down_perc + dead_perc + disconnect_perc);
+    let rects = [
+      [live_perc, barcss.live],
+      [down_perc, barcss.down],
+      [dead_perc, barcss.dead],
+      [disconnect_perc, barcss.disconnect]
+    ];
+    let rectSvg = [], x = 0;
+    rects.forEach(([value, colour]) => {
+      if (value) {
+        rectSvg.push(`<rect x='${x}%' y='20%' height='70%' width='${value}%' fill='${colour.css()}'/>`);
+        x += value;
+      }
+    });
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+${rectSvg.join("\n")}
+</svg>
+    `.replace(/\n\s*/g, "");
+    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+  }
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initData = {

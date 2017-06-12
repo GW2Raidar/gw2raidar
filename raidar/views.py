@@ -119,6 +119,7 @@ def encounter(request, id=None, json=None):
                             "actual_boss": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss']),
                             "received": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All']),
                             "buffs": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All']),
+                            "events": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['events']),
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
@@ -130,8 +131,9 @@ def encounter(request, id=None, json=None):
                 phase: {
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
-                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
+                    'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['events']),
                     'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
@@ -145,12 +147,14 @@ def encounter(request, id=None, json=None):
             "phase_order": phases,
             "phases": {
                 phase: {
+                    'duration': encounter.duration if phase == "All" else _safe_get(lambda: dump['Category']['encounter']['Phase'][phase]['duration']),
                     'group': _safe_get(lambda: area_stats[phase]['group']),
                     'individual': _safe_get(lambda: area_stats[phase]['individual']),
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
+                    'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['events']),
                 } for phase in phases
             },
             "parties": parties,
