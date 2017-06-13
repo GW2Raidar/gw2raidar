@@ -57,3 +57,6 @@ EMAIL_PORT = 1025
 
 # Google Analytics
 # GA_PROPERTY_ID = 'UA-XXXXX-Y'
+
+# Save uploaded files
+# UPLOAD_DIR = "uploads"
