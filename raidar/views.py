@@ -9,7 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.utils import timezone
@@ -21,6 +21,8 @@ from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
+from os import makedirs, sep as dirsep
+from os.path import join as path_join, isfile
 from re import match
 from time import time
 from zipfile import ZipFile
@@ -89,6 +91,26 @@ def _html_response(request, page, data={}):
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
+
+@require_GET
+def download(request, id=None):
+    encounter = Encounter.objects.get(pk=id)
+    own_account_names = [account.name for account in Account.objects.filter(
+        characters__participations__encounter_id=encounter.id,
+        user=request.user)]
+    dump = json_loads(encounter.dump)
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
+    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
+    if not allowed:
+        raise Http404("Not allowed")
+
+    path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
+    if isfile(path):
+        response = HttpResponse(open(path, 'rb'), content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % encounter.filename
+        return response
+    else:
+        raise Http404("Not allowed")
 
 @require_GET
 def index(request, page={ 'name': 'encounters', 'no': 1 }):
@@ -163,6 +185,10 @@ def encounter(request, id=None, json=None):
             "parties": parties,
         }
     }
+    if hasattr(settings, 'UPLOAD_DIR'):
+        path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
+        if isfile(path):
+            data['encounter']['downloadable'] = True
 
     if json:
         return JsonResponse(data)
@@ -281,6 +307,18 @@ def upload(request):
     # so make adjustments to find out its name and only provide one result
 
     for filename, file in request.FILES.items():
+        if hasattr(settings, 'UPLOAD_DIR'):
+            dir = path_join(settings.UPLOAD_DIR, request.user.username.replace(dirsep, '_'))
+            makedirs(path_join(dir), exist_ok=True)
+            diskname = path_join(dir, filename)
+            with open(diskname, 'wb') as diskfile:
+                while True:
+                    buf = file.read(16384)
+                    if len(buf) == 0:
+                        break
+                    diskfile.write(buf)
+            file = open(diskname, 'rb')
+
         zipfile = None
         if filename.endswith('.evtc.zip'):
             zipfile = ZipFile(file)
@@ -297,6 +335,7 @@ def upload(request):
 
         if zipfile:
             zipfile.close()
+        file.close()
 
         area = Area.objects.get(id=evtc_encounter.area_id)
         if not area:

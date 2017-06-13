@@ -10,7 +10,12 @@
         <span>&#91;[[formatTime(duration)]]&#93;</span>
       </h3>
       <div>
-        <span class="ignore">Uploaded as</span> [[filename]]
+        <span class="ignore">Uploaded as</span>
+        [[#if downloadable]]
+          <a href="{% url 'download' %}[[page.no]]">[[filename]]</a>
+        [[else]]
+          [[filename]]
+        [[/if]]
         <span class="ignore">by</span> [[uploaded_by]]
         <span class="ignore">at</span> [[formatDate(uploaded_at)]]
       </div>
