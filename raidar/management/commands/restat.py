@@ -166,9 +166,10 @@ class Command(BaseCommand):
                             stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
 
                             if encounter.success:
-                                get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all['dps'])
-                                get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all['seaweed'])
-                                get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all['scholar'])
+                                get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all)
+                                get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all)
+                                get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all)
+                                get_or_create_then_increment(totals_by_archetype, 'flanking', stats_in_phase_to_all)
 
                             find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all)
                             find_bounds(individual_totals, 'dps', stats_in_phase_to_all)
@@ -178,6 +179,9 @@ class Command(BaseCommand):
 
                             find_bounds(totals_by_archetype, 'scholar', stats_in_phase_to_all)
                             find_bounds(individual_totals, 'scholar', stats_in_phase_to_all)
+
+                            find_bounds(totals_by_archetype, 'flanking', stats_in_phase_to_all)
+                            find_bounds(individual_totals, 'flanking', stats_in_phase_to_all)
                         except KeyError:
                             pass
 
@@ -204,24 +208,6 @@ class Command(BaseCommand):
                             find_bounds(individual_totals, 'total_received', stats_in_phase_from_all, 'total')
                         except KeyError:
                             pass
-
-                        if encounter.success:
-                            get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all)
-                            get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all)
-                            get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all)
-                            get_or_create_then_increment(totals_by_archetype, 'flanking', stats_in_phase_to_all)
-
-                        find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all)
-                        find_bounds(individual_totals, 'dps', stats_in_phase_to_all)
-
-                        find_bounds(totals_by_archetype, 'seaweed', stats_in_phase_to_all)
-                        find_bounds(individual_totals, 'seaweed', stats_in_phase_to_all)
-
-                        find_bounds(totals_by_archetype, 'scholar', stats_in_phase_to_all)
-                        find_bounds(individual_totals, 'scholar', stats_in_phase_to_all)
-
-                        find_bounds(totals_by_archetype, 'flanking', stats_in_phase_to_all)
-                        find_bounds(individual_totals, 'flanking', stats_in_phase_to_all)
 
                         buffs_by_archetype = get_or_create(totals_by_archetype, 'buffs')
                         for buff, value in player_stats['Metrics']['buffs']['From']['*All'].items():
