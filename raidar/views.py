@@ -94,6 +94,9 @@ def _html_response(request, page, data={}):
 
 @require_GET
 def download(request, id=None):
+    if not hasattr(settings, 'UPLOAD_DIR'):
+        return Http404("Not allowed")
+
     encounter = Encounter.objects.get(pk=id)
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
