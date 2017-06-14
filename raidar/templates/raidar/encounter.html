@@ -26,14 +26,14 @@
 <nav class="uk-navbar-container navbar-secondary" uk-navbar>
   <div class="uk-navbar-left">
     <ul class="uk-navbar-nav">
-      <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
-      <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
+      <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
+      <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
     </ul>
   </div>
   <div class="uk-navbar-right">
     <ul class="uk-navbar-nav">
       [[#each encounter.phase_order]]
-      <li class="[[page.phase == phaseName && 'uk-active']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+      <li class="[[page.phase == phaseName ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
       [[/each]]
     </ul>
   </div>
@@ -42,8 +42,8 @@
 <div class="uk-overflow-auto">
 </div>
 
-[[#if page.tab == 'combat_stats']]
+[[#if persistent_page.tab == 'combat_stats']]
   {% include 'raidar/encounter_combat_data.html' %}
-[[elseif page.tab == 'boon_uptime']]
+[[elseif persistent_page.tab == 'boon_uptime']]
   {% include 'raidar/encounter_boon_uptime.html' %}
 [[/if]]

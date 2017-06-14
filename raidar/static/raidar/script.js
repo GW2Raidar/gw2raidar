@@ -169,6 +169,7 @@ ${rectSvg.join("\n")}
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
+    persistent_page: { tab: 'combat_stats' },
     encounters: [],
     encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
@@ -223,7 +224,6 @@ ${rectSvg.join("\n")}
     encounter: page => {
       r.set({
         loading: true,
-        "page.tab": 'combat_stats',
         "page.phase": 'All',
       });
       $.get({
