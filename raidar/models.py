@@ -135,10 +135,10 @@ class Encounter(models.Model):
     def get_conflict_encounter(other):
         try:
             return Encounter.objects.get(
-                area_id=other.area_id,
-                account_hash=other.account_hash,
                 Q(started_at_full=other.started_at_full) |
-                Q(started_at_half=other.started_at_half)
+                Q(started_at_half=other.started_at_half),
+                area_id=other.area_id,
+                account_hash=other.account_hash
             )
         except Encounter.DoesNotExist:
             return None
