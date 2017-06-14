@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
@@ -129,6 +130,19 @@ class Encounter(models.Model):
         conc = ':'.join(sorted(account_names))
         hash_object = md5(conc.encode())
         return hash_object.hexdigest()
+
+    @staticmethod
+    def get_conflict_encounter(other):
+        try:
+            return Encounter.objects.get(
+                area_id=other.area_id,
+                account_hash=other.account_hash,
+                Q(started_at_full=other.started_at_full) |
+                Q(started_at_half=other.started_at_half)
+            )
+        except Encounter.DoesNotExist:
+            return None
+        
 
     class Meta:
         index_together = ('area', 'started_at')
