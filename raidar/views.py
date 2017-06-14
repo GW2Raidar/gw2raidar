@@ -407,7 +407,7 @@ def upload(request):
 
 @require_GET
 def named(request, name, no):
-    return index(request, { 'name': name, 'no': no })
+    return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
 
 @login_required
 @require_POST
