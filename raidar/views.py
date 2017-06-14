@@ -26,6 +26,7 @@ from os.path import join as path_join, isfile
 from re import match
 from time import time
 from zipfile import ZipFile
+import logging
 
 
 
@@ -82,6 +83,7 @@ def _login_successful(request, user):
 
 
 def _html_response(request, page, data={}):
+    assert False
     response = _userprops(request)
     response.update(data)
     response['ga_property_id'] = settings.GA_PROPERTY_ID
@@ -395,11 +397,9 @@ def upload(request):
                         }
                     )
         except IntegrityError as e:
+            conflict_encounter = Encounter.get_conflict_encounter(encounter)
             # DEBUG
-            logger = logging.getLogger(__name__)
-            logger.error(e)
-            print(e, file=sys.stderr)
-            return _error("Conflict with an uploaded encounter")
+            return _error("Conflict with an uploaded encounter #{conflict_encounter.id}")
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:
