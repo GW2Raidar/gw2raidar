@@ -396,9 +396,7 @@ def upload(request):
                         }
                     )
         except IntegrityError as e:
-            conflict_encounter = Encounter.get_conflict_encounter(encounter)
-            # DEBUG
-            return _error("Conflict with an uploaded encounter #{conflict_encounter.id}")
+            return _error("Conflict with an uploaded encounter")
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:

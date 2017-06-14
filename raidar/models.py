@@ -131,18 +131,6 @@ class Encounter(models.Model):
         hash_object = md5(conc.encode())
         return hash_object.hexdigest()
 
-    @staticmethod
-    def get_conflict_encounter(other):
-        try:
-            return Encounter.objects.get(
-                Q(started_at_full=other.started_at_full) |
-                Q(started_at_half=other.started_at_half),
-                area_id=other.area_id,
-                account_hash=other.account_hash
-            )
-        except Encounter.DoesNotExist:
-            return None
-        
 
     class Meta:
         index_together = ('area', 'started_at')
