@@ -33,7 +33,7 @@
   <div class="uk-navbar-right">
     <ul class="uk-navbar-nav">
       [[#each encounter.phase_order]]
-      <li class="[[page.phase == phaseName ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == phaseName ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
       [[/each]]
     </ul>
   </div>
