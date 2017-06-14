@@ -83,7 +83,6 @@ def _login_successful(request, user):
 
 
 def _html_response(request, page, data={}):
-    assert False
     response = _userprops(request)
     response.update(data)
     response['ga_property_id'] = settings.GA_PROPERTY_ID
