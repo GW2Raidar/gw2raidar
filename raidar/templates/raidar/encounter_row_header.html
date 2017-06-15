@@ -9,7 +9,7 @@
         <div>
           Squad
         </div>
-        <div uk-dropdown="delay-hide: 200">
+        <div uk-dropdown="pos: right-center; delay-hide: 0">
           [[#with encounter.phases[page.phase].events]]
             Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
             Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
@@ -24,7 +24,7 @@
           <div>
             Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])
           </div>
-          <div uk-dropdown="delay-hide: 200">
+          <div uk-dropdown="pos: right-center; delay-hide: 0">
             [[#with phases[page.phase].events]]
               Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
               Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
@@ -48,7 +48,7 @@
               <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
               [[name]]
             </div>
-            <div uk-dropdown="delay-hide: 200">
+            <div uk-dropdown="pos: right-center; delay-hide: 0">
               <strong>[[account]]</strong><br>
               [[#with phases[page.phase].events]]
                 Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
