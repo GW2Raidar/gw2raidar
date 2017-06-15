@@ -357,17 +357,20 @@ class Analyser:
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
+        self.gather_boss_specific_stats(agents, events, bosses, collector)        
+        
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
         
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(            self.collect_outgoing_damage, player_src_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration, state_events)
 
+        
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('evtc_version', encounter.version)
@@ -399,10 +402,31 @@ class Analyser:
 
         encounter_collector.add_data('success', success, bool)
         print(success)
-
+        
         # saved as a JSON dump
         self.data = collector.all_data
         
+    def gather_boss_specific_stats(self, agents, events, bosses, collector):
+        if len(bosses[bosses.name == 'Vale Guardian']) != 0:
+            self.gather_vg_stats(agents, events, collector)
+   
+    def gather_vg_stats(self, agents, events, collector):
+        bvg = agents[agents.name.str.startswith('Blue Guardian')].name
+        relevent_events = events[(events.skillid == 31413) & (events.src_instid.isin(bvg.index)) & ((events.is_buffremove == 1) | (events.is_buffremove == 0))]
+        
+        time = 0
+        start_time = 0
+        buff_up = False
+        for event in relevent_events.itertuples():
+            if buff_up == False & (event.is_buffremove == 0):
+                buff_up = True
+                start_time = event.time
+            elif buff_up == True & (event.is_buffremove == 1):
+                buff_up = False
+                time += event.time - start_time
+        
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Blue Guardian Invulnerability Time', time, int)
+    
     def assemble_state_data(self, events, players, encounter_end):
         # Get Up/Down/Death events
         down_events = events[(events['state_change'] == parser.StateChange.CHANGE_DOWN)
