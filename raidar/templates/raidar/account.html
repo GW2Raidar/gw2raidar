@@ -25,10 +25,27 @@
 
   <form class="uk-grid uk-grid-small" on-submit="add_api_key">
     <div class="uk-width-3-4">
-      <input class="uk-input" placeholder="Enter new GW2 API key" value="[[account.api_key]]"/>
+      <input class="uk-input" placeholder="Enter GW2 API key to link another account" value="[[account.api_key]]"/>
     </div>
     <div class="uk-width-1-4">
       <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[account.api_key.match(/^\s*[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{20}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}\s*$/) == null]]" on-click="add_api_key">Save</button>
     </div>
   </form>
 </div>
+
+<table class="uk-padding uk-table">
+  <tr>
+    <th>Linked account</th>
+    <th>API key</th>
+  </tr>
+  [[#each accounts]]
+    <tr>
+      <td>[[name]]</td>
+      <td>[[api_key]]</td>
+    </tr>
+  [[/each]]
+</table>
+
+<p>
+Note that GW2 Raidar only requires the keys to authenticate your ownership of a GW2 account. Therefore, you only need the default "account" permission. While registered (and valid), the API key is also protecting your account from being linked by anyone else (in case another of your API keys happens to leak from some other site, and someone tries to use it to link your GW2 account to their GW2R account).
+</p>

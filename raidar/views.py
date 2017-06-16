@@ -23,7 +23,7 @@ from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
 from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile
-from re import match
+from re import match, sub
 from time import time
 from zipfile import ZipFile
 import logging
@@ -46,7 +46,15 @@ def _userprops(request):
     if request.user:
         return {
                 'username': request.user.username,
-                'is_staff': request.user.is_staff
+                'is_staff': request.user.is_staff,
+                'accounts': [{
+                        "name": account.name,
+                        "api_key": account.api_key[:8] +
+                                   sub(r"[0-9a-fA-F]", "X", account.api_key[8:-12]) +
+                                   account.api_key[-12:]
+                                   if account.api_key != "" else "",
+                    }
+                    for account in request.user.accounts.all()],
             }
     else:
         return {}
