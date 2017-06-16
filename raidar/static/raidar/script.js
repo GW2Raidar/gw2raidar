@@ -573,10 +573,11 @@ ${rectSvg.join("\n")}
       return false;
     },
     add_api_key: function addAPIKey(evt) {
+      let api_key = r.get('account.api_key');
       $.post({
         url: 'add_api_key.json',
         data: {
-          api_key: r.get('account.api_key'),
+          api_key: api_key,
         },
       }).done(response => {
         if (response.error) {
@@ -584,6 +585,18 @@ ${rectSvg.join("\n")}
         } else {
           success(`API key for ${response.account_name} added`);
           r.set('account.api_key', '');
+          let accounts = r.get('accounts');
+          let account = accounts.find(account => account.name == response.account_name);
+          let len = api_key.length;
+          api_key = api_key.substring(0, 8) +
+                    api_key.substring(8, len - 12).replace(/[0-9a-zA-Z]/g, 'X') +
+                    api_key.substring(len - 12);
+          if (account) {
+            account.api_key = api_key;
+          } else {
+            accounts.push({ name: response.account_name, api_key: api_key });
+          }
+          r.update('accounts');
         }
       });
       return false;
