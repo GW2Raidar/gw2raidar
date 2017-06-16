@@ -1,25 +1,39 @@
-<h2 class="uk-padding-small uk-clearfix">
-    <div class="uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
-    [[encounter.name]]
-  </div>
-  <div class="uk-float-right">
-    <span class="uk-float-left">[[formatDate(encounter.started_at)]]</span>
-    &nbsp;
-    <span class="uk-float-right">&#91;[[formatTime(encounter.duration)]]&#93;</span>
-  </div>
-</h2>
+<div class="uk-clearfix uk-padding-small">
+  [[#with encounter]]
+    <h2 class="uk-padding-small uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
+      [[name]]
+    </h2>
+    <div class="uk-float-right uk-text-right uk-float-right">
+      <h3 class="uk-margin-remove">
+        <span>[[formatDate(started_at)]]</span>
+        &#32;
+        <span>&#91;[[formatTime(duration)]]&#93;</span>
+      </h3>
+      <div>
+        <span class="ignore">Uploaded as</span>
+        [[#if downloadable]]
+          <a href="{% url 'download' %}[[page.no]]">[[filename]]</a>
+        [[else]]
+          [[filename]]
+        [[/if]]
+        <span class="ignore">by</span> [[uploaded_by]]
+        <span class="ignore">at</span> [[formatDate(uploaded_at)]]
+      </div>
+    </div>
+  [[/with]]
+</div>
 
 <nav class="uk-navbar-container navbar-secondary" uk-navbar>
   <div class="uk-navbar-left">
     <ul class="uk-navbar-nav">
-      <li class="[[page.tab == 'combat_stats' && 'uk-active']]"><a on-click="@this.set('page.tab', 'combat_stats')">Combat Stats</a></li>
-      <li class="[[page.tab == 'boon_uptime' && 'uk-active']]"><a on-click="@this.set('page.tab', 'boon_uptime')">Boon Uptime</a></li>
+      <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
+      <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
     </ul>
   </div>
   <div class="uk-navbar-right">
     <ul class="uk-navbar-nav">
-      [[#each encounter.phases:phaseName]]
-      <li class="[[page.phase == phaseName && 'uk-active']]"><a on-click="@this.set('page.phase', phaseName)">[[phaseName]]</a></li>
+      [[#each encounter.phase_order]]
+      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == phaseName ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
       [[/each]]
     </ul>
   </div>
@@ -28,8 +42,8 @@
 <div class="uk-overflow-auto">
 </div>
 
-[[#if page.tab == 'combat_stats']]
+[[#if persistent_page.tab == 'combat_stats']]
   {% include 'raidar/encounter_combat_data.html' %}
-[[elseif page.tab == 'boon_uptime']]
+[[elseif persistent_page.tab == 'boon_uptime']]
   {% include 'raidar/encounter_boon_uptime.html' %}
 [[/if]]

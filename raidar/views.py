@@ -9,7 +9,7 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
 from django.db import transaction
 from django.db.utils import IntegrityError
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse, Http404
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.utils import timezone
@@ -21,18 +21,21 @@ from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
-from re import match
+from os import makedirs, sep as dirsep
+from os.path import join as path_join, isfile
+from re import match, sub
 from time import time
 from zipfile import ZipFile
+import logging
 
 
 
 
-def _safe_get(f):
+def _safe_get(f, default=None):
     try:
         return f()
     except KeyError:
-        return None
+        return default
 
 def _error(msg, **kwargs):
     kwargs['error'] = str(msg)
@@ -43,7 +46,15 @@ def _userprops(request):
     if request.user:
         return {
                 'username': request.user.username,
-                'is_staff': request.user.is_staff
+                'is_staff': request.user.is_staff,
+                'accounts': [{
+                        "name": account.name,
+                        "api_key": account.api_key[:8] +
+                                   sub(r"[0-9a-fA-F]", "X", account.api_key[8:-12]) +
+                                   account.api_key[-12:]
+                                   if account.api_key != "" else "",
+                    }
+                    for account in request.user.accounts.all()],
             }
     else:
         return {}
@@ -91,6 +102,29 @@ def _html_response(request, page, data={}):
         })
 
 @require_GET
+def download(request, id=None):
+    if not hasattr(settings, 'UPLOAD_DIR'):
+        return Http404("Not allowed")
+
+    encounter = Encounter.objects.get(pk=id)
+    own_account_names = [account.name for account in Account.objects.filter(
+        characters__participations__encounter_id=encounter.id,
+        user=request.user)]
+    dump = json_loads(encounter.dump)
+    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
+    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
+    if not allowed:
+        raise Http404("Not allowed")
+
+    path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
+    if isfile(path):
+        response = HttpResponse(open(path, 'rb'), content_type='application/vnd.ms-excel')
+        response['Content-Disposition'] = 'attachment; filename="%s"' % encounter.filename
+        return response
+    else:
+        raise Http404("Not allowed")
+
+@require_GET
 def index(request, page={ 'name': 'encounters', 'no': 1 }):
     return _html_response(request, page)
 
@@ -108,17 +142,18 @@ def encounter(request, id=None, json=None):
         return _error('Not allowed')
 
     area_stats = json_loads(encounter.area.stats)
-    phases = dump['Category']['combat']['Phase'].keys()
+    phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
     partyfunc = lambda member: member['party']
     namefunc = lambda member: member['name']
     parties = { party: {
                     "members": sorted(members, key=namefunc),
                     "phases": {
                         phase: {
-                            "actual": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All'],
-                            "actual_boss": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss'],
-                            "received": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All'],
-                            "buffs": dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All'],
+                            "actual": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All']),
+                            "actual_boss": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss']),
+                            "received": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All']),
+                            "buffs": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All']),
+                            "events": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['events']),
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
@@ -130,30 +165,42 @@ def encounter(request, id=None, json=None):
                 phase: {
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
-                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
+                    'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['events']),
                     'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
+
     data = {
         "encounter": {
             "name": encounter.area.name,
+            "filename": encounter.filename,
+            "uploaded_at": encounter.uploaded_at,
+            "uploaded_by": encounter.uploaded_by.username,
             "started_at": encounter.started_at,
             "duration": encounter.duration,
             "success": encounter.success,
+            "phase_order": phases,
             "phases": {
                 phase: {
+                    'duration': encounter.duration if phase == "All" else _safe_get(lambda: dump['Category']['encounter']['Phase'][phase]['duration']),
                     'group': _safe_get(lambda: area_stats[phase]['group']),
                     'individual': _safe_get(lambda: area_stats[phase]['individual']),
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
+                    'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['events']),
                 } for phase in phases
             },
             "parties": parties,
         }
     }
+    if hasattr(settings, 'UPLOAD_DIR'):
+        path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
+        if isfile(path):
+            data['encounter']['downloadable'] = True
 
     if json:
         return JsonResponse(data)
@@ -209,10 +256,10 @@ def register(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'register' })
 
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    email = request.POST.get('email')
-    api_key = request.POST.get('api_key')
+    username = request.POST.get('username').strip()
+    password = request.POST.get('password').strip()
+    email = request.POST.get('email').strip()
+    api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
 
     try:
@@ -272,6 +319,18 @@ def upload(request):
     # so make adjustments to find out its name and only provide one result
 
     for filename, file in request.FILES.items():
+        if hasattr(settings, 'UPLOAD_DIR'):
+            dir = path_join(settings.UPLOAD_DIR, request.user.username.replace(dirsep, '_'))
+            makedirs(path_join(dir), exist_ok=True)
+            diskname = path_join(dir, filename)
+            with open(diskname, 'wb') as diskfile:
+                while True:
+                    buf = file.read(16384)
+                    if len(buf) == 0:
+                        break
+                    diskfile.write(buf)
+            file = open(diskname, 'rb')
+
         zipfile = None
         if filename.endswith('.evtc.zip'):
             zipfile = ZipFile(file)
@@ -288,6 +347,7 @@ def upload(request):
 
         if zipfile:
             zipfile.close()
+        file.close()
 
         area = Area.objects.get(id=evtc_encounter.area_id)
         if not area:
@@ -344,10 +404,6 @@ def upload(request):
                         }
                     )
         except IntegrityError as e:
-            # DEBUG
-            logger = logging.getLogger(__name__)
-            logger.error(e)
-            print(e, file=sys.stderr)
             return _error("Conflict with an uploaded encounter")
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
@@ -359,7 +415,7 @@ def upload(request):
 
 @require_GET
 def named(request, name, no):
-    return index(request, { 'name': name, 'no': no })
+    return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
 
 @login_required
 @require_POST
@@ -382,7 +438,7 @@ def change_password(request):
 @login_required
 @require_POST
 def add_api_key(request):
-    api_key = request.POST.get('api_key')
+    api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
 
     try:

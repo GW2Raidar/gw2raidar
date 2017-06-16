@@ -1,4 +1,5 @@
 from django.db import models
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
@@ -29,7 +30,7 @@ class Account(models.Model):
             r'-'.join(r'[0-9A-F]{%d}' % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r'$',
             re.IGNORECASE)
 
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='accounts')
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='accounts')
     name = models.CharField(max_length=64, unique=True, validators=[RegexValidator(ACCOUNT_NAME_RE)])
     api_key = models.CharField('API key', max_length=72, blank=True, validators=[RegexValidator(API_KEY_RE)])
 
@@ -117,7 +118,7 @@ class Encounter(models.Model):
     started_at_half = models.IntegerField(editable=False)
 
     def __str__(self):
-        return '%s (%s, #%s)' % (self.area.name, self.uploaded_by.username, self.id)
+        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
 
     def save(self, *args, **kwargs):
         self.started_at_full = round(self.started_at / START_RESOLUTION) * START_RESOLUTION
@@ -129,6 +130,7 @@ class Encounter(models.Model):
         conc = ':'.join(sorted(account_names))
         hash_object = md5(conc.encode())
         return hash_object.hexdigest()
+
 
     class Meta:
         index_together = ('area', 'started_at')
