@@ -11,7 +11,8 @@ from sys import exit
 import timeit
 
 class Skills:
-    BLUE_PYLON_POWER = 31413;
+    BLUE_PYLON_POWER = 31413
+    BULLET_STORM = 31793
 
 class Group:
     CATEGORY = "Category"
@@ -377,8 +378,8 @@ class Analyser:
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
-        self.gather_boss_specific_stats(agents, events, bosses, collector)
-
+        self.gather_boss_specific_stats(agents, players, events, bosses, collector)
+        
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
         
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
@@ -424,11 +425,22 @@ class Analyser:
         # saved as a JSON dump
         self.data = collector.all_data
         
-    def gather_boss_specific_stats(self, agents, events, bosses, collector):
+    def gather_boss_specific_stats(self, agents, players, events, bosses, collector):
         if len(bosses[bosses.name == 'Vale Guardian']) != 0:
-            self.gather_vg_stats(agents, events, collector)
+            self.gather_vg_stats(agents, players, events, collector)
 
-    def gather_vg_stats(self, agents, events, collector):
+    def gather_vg_stats(self, agents, players, events, collector):
+        self.vg_blue_guardian_invul(agents, events, collector)
+        self.vg_bullets_eaten(agents, players, events, collector)
+
+    def vg_bullets_eaten(self, agent, players, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_bullets_eaten(collector, events):
+            collector.add_data('Bullets Eaten', len(events), int)
+        relevent_events = events[(events.skillid == Skills.BULLET_STORM) & events.dst_instid.isin(players.index)]
+        self.split_by_player_groups(subcollector, count_bullets_eaten, relevent_events, 'dst_instid')
+
+    def vg_blue_guardian_invul(self, agents, events, collector):
         relevent_events = events[(events.skillid == Skills.BLUE_PYLON_POWER) & ((events.is_buffremove == 1) | (events.is_buffremove == 0))]
         
         time = 0
@@ -443,6 +455,8 @@ class Analyser:
                 time += event.time - start_time
 
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Blue Guardian Invulnerability Time', time, int)
+
+
 
     def assemble_state_data(self, events, players, encounter_end):
         # Get Up/Down/Death events
