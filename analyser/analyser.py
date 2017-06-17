@@ -13,6 +13,7 @@ import timeit
 class Skills:
     BLUE_PYLON_POWER = 31413
     BULLET_STORM = 31793
+    UNSTABLE_MAGIC_SPIKE = 31392
 
 class Group:
     CATEGORY = "Category"
@@ -432,6 +433,15 @@ class Analyser:
     def gather_vg_stats(self, agents, players, events, collector):
         self.vg_blue_guardian_invul(agents, events, collector)
         self.vg_bullets_eaten(agents, players, events, collector)
+        self.vg_teleports(agents, players, events, collector)
+
+    def vg_teleports(self, agent, players, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_teleports(collector, events):
+            collector.add_data('Teleports', len(events), int)
+
+        relevent_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(players.index) & (events.value > 0)]
+        self.split_by_player_groups(subcollector, count_teleports, relevent_events, 'dst_instid')
 
     def vg_bullets_eaten(self, agent, players, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
