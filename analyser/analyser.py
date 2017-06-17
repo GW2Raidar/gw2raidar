@@ -5,27 +5,12 @@ import numpy as np
 from functools import reduce
 from .collector import *
 from .buffs import *
+from .splits import *
+from .bossmetrics import *
 
 # DEBUG
 from sys import exit
 import timeit
-
-class Skills:
-    BLUE_PYLON_POWER = 31413
-    BULLET_STORM = 31793
-    UNSTABLE_MAGIC_SPIKE = 31392
-
-class Group:
-    CATEGORY = "Category"
-    PLAYER = "Player"
-    BOSS = "Boss"
-    PHASE = "Phase"
-    DESTINATION = "To"
-    SOURCE = "From"
-    SKILL = "Skill"
-    SUBGROUP = "Subgroup"
-    BUFF = "Buff"
-    METRICS = "Metrics"
 
 class LogType(IntEnum):
     UNKNOWN = 0
@@ -44,15 +29,6 @@ class Archetype(IntEnum):
 class Elite(IntEnum):
     CORE = 0
     HEART_OF_THORNS = 1
-
-class ContextType:
-    DURATION = "Duration"
-    TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION = "Total Damage"
-    TOTAL_DAMAGE_TO_DESTINATION = "Target Damage"
-    SKILL_NAME = "Skill Name"
-    AGENT_NAME = "Agent Name"
-    PROFESSION_NAME = "Profession Name"
-    BUFF_TYPE = "Buff"
 
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
@@ -361,9 +337,8 @@ class Analyser:
         encounter_end = events.time.max()
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
-
-        self.gather_boss_specific_stats(agents, players, events, bosses, collector)        
-        
+  
+        BossMetricAnalyser(agents, self.subgroups, self.players, bosses).gather_boss_specific_stats(events, collector) 
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
         
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
@@ -409,49 +384,7 @@ class Analyser:
         print(success)
         
         # saved as a JSON dump
-        self.data = collector.all_data
-        
-    def gather_boss_specific_stats(self, agents, players, events, bosses, collector):
-        if len(bosses[bosses.name == 'Vale Guardian']) != 0:
-            self.gather_vg_stats(agents, players, events, collector)
-   
-    def gather_vg_stats(self, agents, players, events, collector):
-        self.vg_blue_guardian_invul(agents, events, collector)
-        self.vg_bullets_eaten(agents, players, events, collector)
-        self.vg_teleports(agents, players, events, collector)
-        
-    def vg_teleports(self, agent, players, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_teleports(collector, events):
-            collector.add_data('Teleports', len(events), int)
-        
-        relevent_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(players.index) & (events.value > 0)]
-        self.split_by_player_groups(subcollector, count_teleports, relevent_events, 'dst_instid')
-        
-    def vg_bullets_eaten(self, agent, players, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_bullets_eaten(collector, events):
-            collector.add_data('Bullets Eaten', len(events), int)
-        relevent_events = events[(events.skillid == Skills.BULLET_STORM) & events.dst_instid.isin(players.index)]
-        self.split_by_player_groups(subcollector, count_bullets_eaten, relevent_events, 'dst_instid')
-
-    def vg_blue_guardian_invul(self, agents, events, collector):
-        relevent_events = events[(events.skillid == Skills.BLUE_PYLON_POWER) & ((events.is_buffremove == 1) | (events.is_buffremove == 0))]
-        
-        time = 0
-        start_time = 0
-        buff_up = False
-        for event in relevent_events.itertuples():
-            if buff_up == False & (event.is_buffremove == 0):
-                buff_up = True
-                start_time = event.time
-            elif buff_up == True & (event.is_buffremove == 1):
-                buff_up = False
-                time += event.time - start_time
-        
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Blue Guardian Invulnerability Time', time, int)
-        
-        
+        self.data = collector.all_data   
     
     def assemble_state_data(self, events, players, encounter_end):
         # Get Up/Down/Death events
@@ -499,10 +432,10 @@ class Analyser:
     # section: Agent stats (player/boss
     # subsection: player events
     def collect_player_state_duration(self, collector, events):
-        self.split_by_player_groups(collector, self.collect_player_state_duration_by_phase, events, 'player')  
+        split_by_player_groups(collector, self.collect_player_state_duration_by_phase, events, 'player', self.subgroups, self.players)  
         
     def collect_player_state_duration_by_phase(self, collector, events):
-        self.split_duration_event_by_phase(collector, self.collect_state_duration, events)  
+        split_duration_event_by_phase(collector, self.collect_state_duration, events, self.phases)  
         
     def collect_state_duration(self, collector, events):
         collector.add_data('down_time', events[events['state'] == parser.StateChange.CHANGE_DOWN]['duration'].sum())
@@ -510,10 +443,10 @@ class Analyser:
         collector.add_data('disconnect_time', events[events['state'] == parser.StateChange.DESPAWN]['duration'].sum())
     
     def collect_player_combat_events(self, collector, events):
-        self.split_by_player_groups(collector, self.collect_combat_events_by_phase, events, 'src_instid')  
+        split_by_player_groups(collector, self.collect_combat_events_by_phase, events, 'src_instid', self.subgroups, self.players)  
     
     def collect_combat_events_by_phase(self, collector, events):
-        self.split_by_phase(collector, self.collect_combat_events, events)  
+        split_by_phase(collector, self.collect_combat_events, events, self.phases)  
         
     def collect_combat_events(self, collector, events):
         death_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DEAD])
@@ -521,49 +454,7 @@ class Analyser:
         disconnect_events = len(events[events['state_change'] == parser.StateChange.DESPAWN])
         collector.add_data('deaths', death_events, int)
         collector.add_data('downs', down_events, int)
-        collector.add_data('disconnects', disconnect_events, int)
-        
-    def split_duration_event_by_phase(self, collector, method, events):
-        def collect_phase(name, phase_events):
-            duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
-            if not duration > 0.001:
-                duration = 0
-            collector.set_context_value(ContextType.DURATION, duration)
-            collector.with_key(Group.PHASE, name).run(method, phase_events)
-
-        collect_phase("All", events)
-        if self.debug:
-            collect_phase("None", events[0:0])
-
-        #Yes, this lists each phase individually even if there is only one
-        #That's for consistency for things like:
-        #Some things happen outside a phase.
-        #Some fights have multiple phases, but you only get to phase one
-        #Still want to list it as phase 1
-        for i in range(0,len(self.phases)):
-            phase = self.phases[i]
-            start = phase[1]
-            end = phase[2]
-            
-            if len(events) > 0:
-                across_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > end)]
-        
-                #HACK: review why copy?
-                before_phase = events[(events['time'] < start) & (events['time'] + events['duration'] > start) & (events['time'] + events['duration'] <= end)].copy()
-                main_phase = events[(events['time'] >= start) & (events['time'] + events['duration'] <= end)]
-                after_phase = events[(events['time'] >= start) & (events['time'] < end) & (events['time'] + events['duration'] > end)]
-
-                across_phase = across_phase.assign(time = start, duration = end - start)
-
-                before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
-                before_phase = before_phase.assign(time = start)
-
-                after_phase = after_phase.assign(duration = end)
-                after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
-
-                collect_phase(phase[0], across_phase.append(before_phase).append(main_phase).append(after_phase))
-            else:
-                collect_phase(phase[0], events)
+        collector.add_data('disconnects', disconnect_events, int)   
             
     # subsection: boss stats
     def collect_individual_boss_key_events(self, collector, events):
@@ -574,7 +465,7 @@ class Analyser:
 
     def collect_boss_key_events(self, collector, events):
         boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
-        self.split_by_boss(collector,
+        split_by_boss(collector,
                            self.collect_individual_boss_key_events,
                            boss_events,
                            'ult_src_instid',
@@ -603,7 +494,7 @@ class Analyser:
     def collect_player_key_events(self, collector, events):
         # player archetypes
         player_only_events = events[events.src_instid.isin(self.player_instids)]
-        self.split_by_player(collector, self.collect_individual_player_key_events, player_only_events, 'src_instid')
+        split_by_player(collector, self.collect_individual_player_key_events, player_only_events, 'src_instid', self.players)
 
     def collect_individual_player_key_events(self, collector, events):
         # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
@@ -612,81 +503,18 @@ class Analyser:
         collector.add_data("EnterCombat", enter_combat_time, int)
         collector.add_data("Death", death_time, int)
 
-    #Split definitions
-    def split_by_phase(self, collector, method, events):
-        def collect_phase(name, phase_events):
-            duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
-            if not duration > 0.001:
-                duration = 0
-            collector.set_context_value(ContextType.DURATION, duration)
-            collector.with_key(Group.PHASE, name).run(method, phase_events)
-
-        collect_phase("All", events)
-        if self.debug:
-            collect_phase("None", events[0:0])
-
-        #Yes, this lists each phase individually even if there is only one
-        #That's for consistency for things like:
-        #Some things happen outside a phase.
-        #Some fights have multiple phases, but you only get to phase one
-        #Still want to list it as phase 1
-        for i in range(0,len(self.phases)):
-            phase = self.phases[i]
-            phase_events = events[(events.time >= phase[1]) & (events.time <= phase[2])]
-            collect_phase(phase[0], phase_events)
-
-    def split_by_player_groups(self, collector, method, events, player_column):
-        collector.with_key(Group.SUBGROUP, "*All").run(method, events)
-        if self.debug:
-            collector.with_key(Group.SUBGROUP, "*None").run(method, events[0:0])
-        for subgroup in self.subgroups:
-            subgroup_players = self.subgroups[subgroup]
-            subgroup_events = events[events[player_column].isin(subgroup_players)]
-            collector.with_key(Group.SUBGROUP, "{0}".format(subgroup)).run(
-                method, subgroup_events)
-        self.split_by_player(collector, method, events, player_column)
-
-    def split_by_player(self, collector, method, events, player_column):
-        for character in self.players.groupby('name').groups.items():
-            characters = self.players[self.players['name'] == character[0]]
-            collector.with_key(Group.PLAYER, character[0]).run(method,events[events[player_column].isin(characters.index)]) 
-
-    def split_by_agent(self, collector, method, events, group, enemy_column):
-        boss_events = events[events[enemy_column].isin(self.boss_instids)]
-        player_events = events[events[enemy_column].isin(self.player_instids)]
-
-        non_add_instids = self.boss_instids
-        add_events = events[events[enemy_column].isin(non_add_instids) != True]
-
-        collector.with_key(group, "*All").run(method, events)
-        collector.with_key(group, "*Boss").run(method, boss_events)
-        collector.with_key(group, "*Players").run(method, player_events)
-        collector.with_key(group, "*Adds").run(method, add_events)
-        if self.debug:
-            collector.with_key(group, "*None").run(method, events[0:0])
-        if len(self.boss_instids) > 1:
-            self.split_by_boss(collector, method, boss_events, enemy_column, group)
-
-    def split_by_boss(self, collector, method, events, enemy_column, group):
-        collector.group(method, events,
-                (enemy_column, group, mapped_to(ContextType.AGENT_NAME)))
-
-    def split_by_skill(self, collector, method, events):
-        collector.group(method, events,
-                        ('skillid', Group.SKILL, mapped_to(ContextType.SKILL_NAME)))
-
     #section: Outgoing damage stats filtering
     def collect_outgoing_damage(self, collector, player_events):
         damage_events = filter_damage_events(player_events)
-        self.split_by_phase(collector, self.collect_phase_damage, damage_events)
+        split_by_phase(collector, self.collect_phase_damage, damage_events, self.phases)
 
     def collect_phase_damage(self, collector, damage_events):
         collector.with_key(Group.DESTINATION, "*All").run(self.collect_skill_data, damage_events)
-        self.split_by_agent(collector,
+        split_by_agent(collector,
                             self.collect_destination_damage,
                             damage_events,
                             Group.DESTINATION,
-                            'dst_instid')
+                            'dst_instid', self.boss_instids, self.player_instids)
 
 
 
@@ -695,40 +523,40 @@ class Analyser:
                                     damage_events['damage'].sum())
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     damage_events['damage'].sum())
-        self.split_by_player_groups(collector,
+        split_by_player_groups(collector,
                                     self.aggregate_overall_damage_stats,
                                     damage_events,
-                                    'ult_src_instid')
+                                    'ult_src_instid', self.subgroups, self.players)
 
     def collect_skill_data(self, collector, damage_events):
-        self.split_by_player(collector,
+        split_by_player(collector,
                              self.collect_player_skill_damage,
                              damage_events,
-                             'ult_src_instid')
+                             'ult_src_instid', self.players)
 
     def collect_player_skill_damage(self, collector, events):
         power_events = events[events.type == LogType.POWER]
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     events['damage'].sum())
-        self.split_by_skill(collector, self.aggregate_power_damage_stats, power_events)
-        self.split_by_skill(collector, self.aggregate_basic_damage_stats, events)
+        split_by_skill(collector, self.aggregate_power_damage_stats, power_events)
+        split_by_skill(collector, self.aggregate_basic_damage_stats, events)
 
     #subsection incoming damage stat filtering
     def collect_incoming_damage(self, collector, player_events):
         damage_events = filter_damage_events(player_events)
-        self.split_by_phase(collector, self.collect_phase_incoming_damage, damage_events)
+        split_by_phase(collector, self.collect_phase_incoming_damage, damage_events, self.phases)
 
     def collect_phase_incoming_damage(self, collector, damage_events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     damage_events['damage'].sum())
         source_collector =  collector.with_key(Group.SOURCE, "*All")
-        self.split_by_player_groups(source_collector, self.aggregate_basic_damage_stats, damage_events, 'dst_instid')
-        self.split_by_player_groups(source_collector, self.collect_player_incoming_skill_damage, damage_events, 'dst_instid')
+        split_by_player_groups(source_collector, self.aggregate_basic_damage_stats, damage_events, 'dst_instid', self.subgroups, self.players)
+        split_by_player_groups(source_collector, self.collect_player_incoming_skill_damage, damage_events, 'dst_instid', self.subgroups, self.players)
 
     def collect_player_incoming_skill_damage(self, collector, events):
         collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
                                     events['damage'].sum())
-        self.split_by_skill(collector, self.aggregate_basic_damage_stats, events)
+        split_by_skill(collector, self.aggregate_basic_damage_stats, events)
 
     #subsection: Aggregating damage
     def aggregate_overall_damage_stats(self, collector, events):
@@ -765,7 +593,7 @@ class Analyser:
             source_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
     
     def collect_buffs_by_target(self, collector, buff_data):
-        self.split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player')        
+        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player', self.subgroups, self.players)        
 
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
