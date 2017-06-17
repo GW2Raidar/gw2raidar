@@ -10,6 +10,9 @@ from .buffs import *
 from sys import exit
 import timeit
 
+class Skills:
+    BLUE_PYLON_POWER = 31413;
+
 class Group:
     CATEGORY = "Category"
     PLAYER = "Player"
@@ -411,8 +414,7 @@ class Analyser:
             self.gather_vg_stats(agents, events, collector)
    
     def gather_vg_stats(self, agents, events, collector):
-        bvg = agents[agents.name.str.startswith('Blue Guardian')].name
-        relevent_events = events[(events.skillid == 31413) & (events.src_instid.isin(bvg.index)) & ((events.is_buffremove == 1) | (events.is_buffremove == 0))]
+        relevent_events = events[(events.skillid == Skills.BLUE_PYLON_POWER) & ((events.is_buffremove == 1) | (events.is_buffremove == 0))]
         
         time = 0
         start_time = 0
