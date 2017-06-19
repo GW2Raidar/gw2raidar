@@ -35,6 +35,7 @@ class Archetype(IntEnum):
     CONDI = 2
     TANK = 3
     HEAL = 4
+    SUPPORT = 5
 
 class Elite(IntEnum):
     CORE = 0
@@ -534,9 +535,8 @@ class Analyser:
     def collect_player_status(self, collector, players):
         # player archetypes
         players = players.assign(archetype=Archetype.POWER)
-        players.loc[players.condition >= 7, 'archetype'] = Archetype.CONDI
-        players.loc[players.toughness >= 7, 'archetype'] = Archetype.TANK
-        players.loc[players.healing >= 7, 'archetype'] = Archetype.HEAL
+        players.loc[players.condition >= 5, 'archetype'] = Archetype.CONDI
+        players.loc[(players.toughness >= 5) | (players.healing >= 5), 'archetype'] = Archetype.SUPPORT
         collector.group(self.collect_individual_player_status, players, ('name', Group.PLAYER))
 
     def collect_individual_player_status(self, collector, player):
