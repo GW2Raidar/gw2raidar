@@ -171,9 +171,15 @@ ${rectSvg.join("\n")}
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
-    encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
+    settings: {
+      encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
+    },
     upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
   };
+  let storedSettingsJSON = localStorage.getItem('settings');
+  if (storedSettingsJSON) {
+    Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
+  }
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
     { boon: 'fury' },
@@ -279,7 +285,7 @@ ${rectSvg.join("\n")}
       },
       encountersFiltered: function encountersFiltered() {
         let encounters = this.get('encounters') || [];
-        let filters = this.get('encounterSort.filter');
+        let filters = this.get('settings.encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
         const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
         if (filters.success !== null) {
@@ -388,6 +394,10 @@ ${rectSvg.join("\n")}
     page: setPage,
   });
 
+  r.observe('settings', (newValue, oldValue, keyPath) => {
+    localStorage.setItem('settings', JSON.stringify(newValue));
+  });
+
   // history, pushState
   function setPage(page) {
     if (typeof page == "string") {
@@ -431,8 +441,8 @@ ${rectSvg.join("\n")}
   }
 
   function sortEncounters() {
-    let currentProp = r.get('encounterSort.prop');
-    let currentDir = r.get('encounterSort.dir');
+    let currentProp = r.get('settings.encounterSort.prop');
+    let currentDir = r.get('settings.encounterSort.dir');
     r.get('encounters').sort((currentDir == 'up' ? ascSort : descSort)(currentProp));
     r.update('encounters');
   }
@@ -602,27 +612,29 @@ ${rectSvg.join("\n")}
       return false;
     },
     sort_encounters: function sortEncountersChange(evt) {
-      let currentProp = r.get('encounterSort.prop');
-      let currentDir = r.get('encounterSort.dir');
-      let [clickedProp, clickedDir] = evt.node.getAttribute('data-sort').split(':');
+      let currentProp = r.get('settings.encounterSort.prop');
+      let currentDir = r.get('settings.encounterSort.dir');
+      let newSort = $(evt.node).closest('th').data('sort');
+      let [clickedProp, clickedDir] = newSort.split(':');
       if (clickedProp == currentProp) {
         currentDir = currentDir == 'up' ? 'down' : 'up';
-        r.set('encounterSort.dir', currentDir);
+        r.set('settings.encounterSort.dir', currentDir);
       } else {
         currentProp = clickedProp;
         currentDir = clickedDir;
-        r.set('encounterSort.prop', clickedProp);
-        r.set('encounterSort.dir', clickedDir);
+        r.set('settings.encounterSort.prop', clickedProp);
+        r.set('settings.encounterSort.dir', clickedDir);
       }
       sortEncounters();
+      return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
-      r.toggle('encounterSort.filters');
+      r.toggle('settings.encounterSort.filters');
       return false;
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
-      r.set('encounterSort.filter.success', JSON.parse(evt.node.value));
-      console.log(r.get('encounterSort.filter.success'));
+      r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
+      console.log(r.get('settings.encounterSort.filter.success'));
       return false;
     },
   });
