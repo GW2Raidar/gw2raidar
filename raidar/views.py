@@ -29,6 +29,7 @@ from zipfile import ZipFile
 import logging
 
 
+logger = logging.getLogger(__name__)
 
 
 def _safe_get(f, default=None):
@@ -377,35 +378,50 @@ def upload(request):
         # uniqueness (along with some fuzzing to started_at)
         status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
         account_names = [player['account'] for player in status_for.values()]
-        try:
-            with transaction.atomic():
-                encounter, _ = Encounter.objects.update_or_create(
-                    area=area, started_at=started_at, account_names=account_names,
-                    defaults = {
-                        'filename': filename,
-                        'uploaded_at': time(),
-                        'uploaded_by': request.user,
-                        'duration': duration,
-                        'success': success,
-                        'dump': json_dumps(dump),
-                    }
+        with transaction.atomic():
+            started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
+            account_hash = Encounter.calculate_account_hash(account_names)
+            try:
+                encounter = Encounter.objects.get(
+                    Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
+                    area=area, account_hash=account_hash
+                )
+                encounter.filename = filename
+                encounter.uploaded_at = time()
+                encounter.uploaded_by = request.user
+                encounter.duration = duration
+                encounter.success = success
+                encounter.dump = json_dumps(dump)
+                encounter.started_at = started_at
+                encounter.started_at_full = started_at_full
+                encounter.started_at_half = started_at_half
+                encounter.save()
+            except Encounter.DoesNotExist:
+                encounter = Encounter.objects.create(
+                    filename=filename, uploaded_at=time(), uploaded_by=request.user,
+                    duration=duration, success=success, dump=json_dumps(dump),
+                    area=area, started_at=started_at,
+                    started_at_full=started_at_full, started_at_half=started_at_half,
+                    account_hash=account_hash
                 )
 
-                for name, player in status_for.items():
-                    account, _ = Account.objects.get_or_create(
-                        name=player['account'])
-                    character, _ = Character.objects.get_or_create(
-                        name=name, account=account, profession=player['profession'])
-                    participation, _ = Participation.objects.update_or_create(
-                        character=character, encounter=encounter,
-                        defaults = {
-                            'archetype': player['archetype'],
-                            'party': player['party'],
-                            'elite': player['elite']
-                        }
-                    )
-        except IntegrityError as e:
-            return _error("Conflict with an uploaded encounter")
+            for name, player in status_for.items():
+                account, _ = Account.objects.get_or_create(
+                    name=player['account'])
+                character, _ = Character.objects.get_or_create(
+                    name=name, account=account,
+                    defaults={
+                        'profession': player['profession']
+                    }
+                )
+                participation, _ = Participation.objects.update_or_create(
+                    character=character, encounter=encounter,
+                    defaults={
+                        'archetype': player['archetype'],
+                        'party': player['party'],
+                        'elite': player['elite']
+                    }
+                )
 
         own_participation = encounter.participations.filter(character__account__user=request.user).first()
         if own_participation:
