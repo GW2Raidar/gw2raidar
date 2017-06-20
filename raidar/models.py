@@ -91,18 +91,7 @@ class Character(models.Model):
         ordering = ('name',)
 
 
-class EncounterManager(models.Manager):
-    # hash account names at construction
-    # (do they need to ever be updated? I don't think so)
-    def update_or_create(self, *args, **kwargs):
-        account_names = kwargs.pop('account_names', False)
-        if account_names:
-            kwargs['account_hash'] = Encounter.calculate_account_hash(account_names)
-        return super(EncounterManager, self).update_or_create(*args, **kwargs)
-
 class Encounter(models.Model):
-    objects = EncounterManager()
-
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
     success = models.BooleanField()
@@ -121,8 +110,7 @@ class Encounter(models.Model):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
 
     def save(self, *args, **kwargs):
-        self.started_at_full = round(self.started_at / START_RESOLUTION) * START_RESOLUTION
-        self.started_at_half = round((self.started_at + START_RESOLUTION / 2) / START_RESOLUTION) * START_RESOLUTION
+        self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
 
     @staticmethod
@@ -130,6 +118,12 @@ class Encounter(models.Model):
         conc = ':'.join(sorted(account_names))
         hash_object = md5(conc.encode())
         return hash_object.hexdigest()
+
+    @staticmethod
+    def calculate_start_guards(started_at):
+        started_at_full = round(started_at / START_RESOLUTION) * START_RESOLUTION
+        started_at_half = round((started_at + START_RESOLUTION / 2) / START_RESOLUTION) * START_RESOLUTION
+        return (started_at_full, started_at_half)
 
 
     class Meta:
