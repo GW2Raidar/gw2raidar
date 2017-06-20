@@ -45,6 +45,7 @@ def _error(msg, **kwargs):
 
 def _userprops(request):
     if request.user:
+        accounts = request.user.accounts.all() if request.user.is_authenticated else []
         return {
                 'username': request.user.username,
                 'is_staff': request.user.is_staff,
@@ -55,7 +56,7 @@ def _userprops(request):
                                    account.api_key[-12:]
                                    if account.api_key != "" else "",
                     }
-                    for account in request.user.accounts.all()],
+                    for account in accounts],
             }
     else:
         return {}
