@@ -370,6 +370,7 @@ class Analyser:
 
 
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
+        encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)

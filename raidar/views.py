@@ -176,6 +176,7 @@ def encounter(request, id=None, json=None):
 
     data = {
         "encounter": {
+            "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,
