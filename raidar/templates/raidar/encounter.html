@@ -12,7 +12,7 @@
       <div>
         <span class="ignore">Uploaded as</span>
         [[#if downloadable]]
-          <a href="{% url 'download' %}[[page.no]]">[[filename]]</a>
+          <a href="{% url 'download' %}[[page.no]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
         [[else]]
           [[filename]]
         [[/if]]
