@@ -11,6 +11,7 @@ class Skills:
     BULLET_STORM = 31793
     UNSTABLE_MAGIC_SPIKE = 31392
     SPECTRAL_IMPACT = 31875
+    GHASTLY_PRISON = 31623
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -63,6 +64,7 @@ class BossMetricAnalyser:
         
     def gather_gorse_stats(self, events, collector):
         self.gorse_spectral_impact(events, collector)
+        self.gorse_ghastly_prison(events, collector)
         
     def gorse_spectral_impact(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
@@ -72,4 +74,12 @@ class BossMetricAnalyser:
             split_by_player_groups(collector, count_spectral_impacts, relevent_events, 'dst_instid', self.subgroups, self.players)
         relevent_events = events[(events.skillid == Skills.SPECTRAL_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         split_by_phase(subcollector, count_spectral_impacts_by_player_group, events, self.phases)
+        
+    def gorse_ghastly_prison(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_ghastly_prison(collector, events):
+            collector.add_data('Ghastly Imprisonments', len(events), int)
+        
+        relevent_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
+        split_by_player_groups(subcollector, count_ghastly_prison, relevent_events, 'dst_instid', self.subgroups, self.players)
         
