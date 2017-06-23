@@ -12,6 +12,7 @@ class Skills:
     UNSTABLE_MAGIC_SPIKE = 31392
     SPECTRAL_IMPACT = 31875
     GHASTLY_PRISON = 31623
+    HEAVY_BOMB_EXPLODE = 31596
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -26,6 +27,8 @@ class BossMetricAnalyser:
             self.gather_vg_stats(events, collector)
         elif len(self.bosses[self.bosses.name == 'Gorseval the Multifarious']) != 0:
             self.gather_gorse_stats(events, collector)
+        elif len(self.bosses[self.bosses.name == 'Sabetha the Saboteur']) != 0:
+            self.gather_sab_stats(events, collector)
    
     def gather_vg_stats(self, events, collector):
         self.vg_blue_guardian_invul(events, collector)
@@ -83,3 +86,9 @@ class BossMetricAnalyser:
         relevent_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
         split_by_player_groups(subcollector, count_ghastly_prison, relevent_events, 'dst_instid', self.subgroups, self.players)
         
+    def gather_sab_stats(self, events, collector):
+        self.sab_missed_bombs(events, collector)
+        
+    def sab_missed_bombs(self, events, collector):
+        heavy_bomb_explosions = len(events[(events.skillid == Skills.HEAVY_BOMB_EXPLODE) & (events.is_buffremove == 1)])
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Heavy Bombs Undefused', heavy_bomb_explosions, int)
