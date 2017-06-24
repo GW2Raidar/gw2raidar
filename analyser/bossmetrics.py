@@ -15,6 +15,7 @@ class Skills:
     HEAVY_BOMB_EXPLODE = 31596
     TANTRUM = 34479
     BLEEDING = 736
+    VOLATILE_POISON = 34387
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -101,6 +102,7 @@ class BossMetricAnalyser:
         self.sloth_undodged_rocks(events, collector)
         self.sloth_spores_received(events, collector)
         self.sloth_spores_blocked(events, collector)
+        self.sloth_volatile_poison(events, collector)
         
     def sloth_undodged_rocks(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
@@ -122,3 +124,10 @@ class BossMetricAnalyser:
             collector.add_data('Spores Blocked', len(events) / 5, int)
         relevent_events = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value == 0) & (events.is_buffremove == 0)]
         split_by_player_groups(subcollector, count_spores_eaten, relevent_events, 'dst_instid', self.subgroups, self.players)
+        
+    def sloth_volatile_poison(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_volatile_poison(collector, events):
+            collector.add_data('Volatile Poison Carrier', len(events), int)
+        relevent_events = events[(events.skillid == Skills.VOLATILE_POISON) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        split_by_player_groups(subcollector, count_volatile_poison, relevent_events, 'dst_instid', self.subgroups, self.players)
