@@ -14,6 +14,7 @@ class Skills:
     GHASTLY_PRISON = 31623
     HEAVY_BOMB_EXPLODE = 31596
     TANTRUM = 34479
+    BLEEDING = 736
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -98,6 +99,8 @@ class BossMetricAnalyser:
         
     def gather_sloth_stats(self, events, collector):
         self.sloth_undodged_rocks(events, collector)
+        self.sloth_spores_received(events, collector)
+        self.sloth_spores_blocked(events, collector)
         
     def sloth_undodged_rocks(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
@@ -105,3 +108,17 @@ class BossMetricAnalyser:
             collector.add_data('Tantrum Knockdowns', len(events), int)
         relevent_events = events[(events.skillid == Skills.TANTRUM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         split_by_player_groups(subcollector, count_rocks, relevent_events, 'dst_instid', self.subgroups, self.players)
+        
+    def sloth_spores_received(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_spores_eaten(collector, events):
+            collector.add_data('Spores Received', len(events) / 5, int)
+        relevent_events = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value > 0) & (events.is_buffremove == 0)]
+        split_by_player_groups(subcollector, count_spores_eaten, relevent_events, 'dst_instid', self.subgroups, self.players)
+        
+    def sloth_spores_blocked(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_spores_eaten(collector, events):
+            collector.add_data('Spores Blocked', len(events) / 5, int)
+        relevent_events = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value == 0) & (events.is_buffremove == 0)]
+        split_by_player_groups(subcollector, count_spores_eaten, relevent_events, 'dst_instid', self.subgroups, self.players)
