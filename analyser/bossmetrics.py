@@ -16,6 +16,7 @@ class Skills:
     TANTRUM = 34479
     BLEEDING = 736
     VOLATILE_POISON = 34387
+    UNBALANCED = 34367
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -34,6 +35,8 @@ class BossMetricAnalyser:
             self.gather_sab_stats(events, collector)
         elif len(self.bosses[self.bosses.name == 'Slothasor']) != 0:
             self.gather_sloth_stats(events, collector)
+        elif len(self.bosses[self.bosses.name == 'Matthias Gabrel']) != 0:
+            self.gather_matt_stats(events, collector)
    
     def gather_vg_stats(self, events, collector):
         self.vg_blue_guardian_invul(events, collector)
@@ -131,3 +134,13 @@ class BossMetricAnalyser:
             collector.add_data('Volatile Poison Carrier', len(events), int)
         relevent_events = events[(events.skillid == Skills.VOLATILE_POISON) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         split_by_player_groups(subcollector, count_volatile_poison, relevent_events, 'dst_instid', self.subgroups, self.players)
+        
+    def gather_matt_stats(self, events, collector):
+        self.matt_unbalanced(events, collector)
+    
+    def matt_unbalanced(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_unbalanced(collector, events):
+            collector.add_data('Moved While Unbalanced', len(events), int)
+        relevent_events = events[(events.skillid == Skills.UNBALANCED) & events.dst_instid.isin(self.players.index) & (events.buff == 0)]
+        split_by_player_groups(subcollector, count_unbalanced, relevent_events, 'dst_instid', self.subgroups, self.players)
