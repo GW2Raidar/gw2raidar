@@ -70,12 +70,13 @@ def assign_event_types(events):
     return events
 
 class Boss:
-    def __init__(self, name, boss_ids, sub_boss_ids=None, key_npc_ids = None, phases=None):
+    def __init__(self, name, boss_ids, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False):
         self.name = name
         self.boss_ids = boss_ids
         self.sub_boss_ids = [] if sub_boss_ids is None else sub_boss_ids
         self.phases = [] if phases is None else phases
         self.key_npc_ids = [] if key_npc_ids is None else key_npc_ids
+        self.despawns_instead_of_dying = despawns_instead_of_dying
 
 class Phase:
     def __init__(self, name, important,
@@ -190,7 +191,7 @@ BOSS_ARRAY = [
         Phase("Split 3", False, phase_end_damage_start = 30000),
         Phase("Burn 3", True)
     ]),
-    Boss('Xera', [0x3F76, 0x3F9E], phases = [
+    Boss('Xera', [0x3F76, 0x3F9E], despawns_instead_of_dying = True, phases = [
         Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),
@@ -204,7 +205,7 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True, phase_end_health=1)
     ]),
-    Boss('Deimos', [0x4302], key_npc_ids=[17126], phases = [
+    Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
     ]),
@@ -343,6 +344,7 @@ class Analyser:
         #set up data structures
         events = encounter.events
         agents = encounter.agents
+        print_frame(agents)
         skills = encounter.skills
         players, bosses, final_bosses = self.preprocess_agents(agents, collector)
         self.preprocess_skills(skills, collector)
@@ -376,8 +378,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)
-                                        | (final_boss_events.state_change == parser.StateChange.DESPAWN)].empty
+        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty
 
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
@@ -388,7 +389,7 @@ class Analyser:
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
 
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
-        if self.boss_info.key_npc_ids and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
+        if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
             key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
             if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
