@@ -18,6 +18,7 @@ class Skills:
     BURNING = 737
     VOLATILE_POISON = 34387
     UNBALANCED = 34367
+    CORRUPTION = 34416
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -139,6 +140,7 @@ class BossMetricAnalyser:
     def gather_matt_stats(self, events, collector):
         self.matt_unbalanced(events, collector)
         self.matt_burning_received(events, collector)
+        self.matt_chosen_for_corruption(events, collector)
     
     def matt_unbalanced(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
@@ -155,3 +157,10 @@ class BossMetricAnalyser:
             split_by_player_groups(collector, count_burning_received, events, 'dst_instid', self.subgroups, self.players)
         relevent_events = events[(events.skillid == Skills.BURNING) & events.dst_instid.isin(self.players.index) & events.src_instid.isin(self.bosses.index) & (events.value > 0) & (events.buff == 1) & (events.is_buffremove == 0)]
         split_by_phase(subcollector, count_burning_received_by_player_group, relevent_events, self.phases)
+        
+    def matt_chosen_for_corruption(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count_corrupted(collector, events):
+            collector.add_data('Corrupted', len(events), int)
+        relevent_events = events[(events.skillid == Skills.CORRUPTION) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        split_by_player_groups(subcollector, count_corrupted, relevent_events, 'dst_instid', self.subgroups, self.players)
