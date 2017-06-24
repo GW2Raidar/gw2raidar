@@ -70,13 +70,14 @@ def assign_event_types(events):
     return events
 
 class Boss:
-    def __init__(self, name, boss_ids, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False):
+    def __init__(self, name, boss_ids, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = True):
         self.name = name
         self.boss_ids = boss_ids
         self.sub_boss_ids = [] if sub_boss_ids is None else sub_boss_ids
         self.phases = [] if phases is None else phases
         self.key_npc_ids = [] if key_npc_ids is None else key_npc_ids
         self.despawns_instead_of_dying = despawns_instead_of_dying
+        self.has_structure_boss = has_structure_boss
 
 class Phase:
     def __init__(self, name, important,
@@ -205,7 +206,7 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True, phase_end_health=1)
     ]),
-    Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, phases = [
+    Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
     ]),
@@ -246,20 +247,34 @@ def filter_damage_events(events):
 def print_frame(df, *mods):
     dfc = df.copy()
     for name,new_name,func in mods:
-        dfc[new_name] = dfc[name].apply(func)
+        dfc[new_name] = (dfc.index if name == 'index' else dfc[name]).apply(func)
     with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.height', 100000, 'display.width', 100000):
         print(dfc)
 
 class Analyser:
-    def preprocess_agents(self, agents, collector):
+    def preprocess_agents(self, agents, collector, events):
+        #Add hit count column
+        agents_that_get_hit_a_lot = events[(events.type == LogType.POWER)
+                                & (events.value > 0)][
+            ['dst_instid']].groupby('dst_instid').size().rename('hit_count')
+        agents = agents.join(agents_that_get_hit_a_lot)
+        agents.hit_count.fillna(0, inplace=True)
+        print_frame(agents[agents.prof < 0])
+
+        #identify specific ones we care about
         players = agents[agents.party != 0]
-        bosses = agents[agents.prof.isin(self.boss_info.boss_ids)]
+        bosses = agents[(agents.prof.isin(self.boss_info.boss_ids)) |
+                        (self.boss_info.has_structure_boss
+                         & (agents.prof < 0)
+                         & (agents.hit_count >= 100))]
         final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
 
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
         self.player_instids = players.index.values
         self.boss_instids = bosses.index.values
+
+        print(self.boss_instids)
         self.final_boss_instids = final_bosses.index.values
         collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
         return players, bosses, final_bosses
@@ -268,8 +283,8 @@ class Analyser:
         #experimental phase calculations
         events['ult_src_instid'] = events.src_master_instid.where(
             events.src_master_instid != 0, events.src_instid)
-        events = assign_event_types(events)
         player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
+
         player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
         from_boss_events = events[events.src_instid.isin(self.boss_instids)]
         to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
@@ -342,11 +357,10 @@ class Analyser:
                                     ])
 
         #set up data structures
-        events = encounter.events
+        events = assign_event_types(encounter.events)
         agents = encounter.agents
-        print_frame(agents)
         skills = encounter.skills
-        players, bosses, final_bosses = self.preprocess_agents(agents, collector)
+        players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
         self.preprocess_skills(skills, collector)
         self.players = players
         player_src_events, player_dst_events, boss_events, final_boss_events = self.preprocess_events(events)
