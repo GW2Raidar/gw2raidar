@@ -22,6 +22,7 @@ class Skills:
     SURRENDER = 34413
     BLOOD_FUELED = 34422
     SACRIFICE = 34442
+    UNSTABLE_BLOOD_MAGIC = 34450
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -147,6 +148,7 @@ class BossMetricAnalyser:
         self.matt_surrender(events, collector)
         self.matt_blood_fueled(events, collector)
         self.matt_sacrificed(events, collector)
+        self.matt_unstable_blood_magic(events, collector)
     
     def matt_unbalanced(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
@@ -194,4 +196,12 @@ class BossMetricAnalyser:
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
         def count(collector, events):
             collector.add_data('Sacrificed', len(events), int)
+        split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
+        
+    def matt_unstable_blood_magic(self, events, collector):
+        relevent_events = events[(events.skillid == Skills.UNSTABLE_BLOOD_MAGIC) & (events.buff == 1) & (events.is_buffremove == 0)]
+        
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count(collector, events):
+            collector.add_data('Well of the Profane Carrier', len(events), int)
         split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
