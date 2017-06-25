@@ -19,6 +19,7 @@ class Skills:
     VOLATILE_POISON = 34387
     UNBALANCED = 34367
     CORRUPTION = 34416
+    SURRENDER = 34413
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -141,6 +142,7 @@ class BossMetricAnalyser:
         self.matt_unbalanced(events, collector)
         self.matt_burning_received(events, collector)
         self.matt_chosen_for_corruption(events, collector)
+        self.matt_surrender(events, collector)
     
     def matt_unbalanced(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
@@ -148,6 +150,13 @@ class BossMetricAnalyser:
             collector.add_data('Moved While Unbalanced', len(events), int)
         relevent_events = events[(events.skillid == Skills.UNBALANCED) & events.dst_instid.isin(self.players.index) & (events.buff == 0)]
         split_by_player_groups(subcollector, count_unbalanced, relevent_events, 'dst_instid', self.subgroups, self.players)
+        
+    def matt_surrender(self, events, collector):
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count(collector, events):
+            collector.add_data('Surrender', len(events), int)
+        relevent_events = events[(events.skillid == Skills.SURRENDER) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        split_by_player_groups(subcollector, count, relevent_events, 'dst_instid', self.subgroups, self.players)
         
     def matt_burning_received(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
