@@ -21,6 +21,7 @@ class Skills:
     CORRUPTION = 34416
     SURRENDER = 34413
     BLOOD_FUELED = 34422
+    SACRIFICE = 34442
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -145,6 +146,7 @@ class BossMetricAnalyser:
         self.matt_chosen_for_corruption(events, collector)
         self.matt_surrender(events, collector)
         self.matt_blood_fueled(events, collector)
+        self.matt_sacrificed(events, collector)
     
     def matt_unbalanced(self, events, collector):
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
@@ -184,4 +186,12 @@ class BossMetricAnalyser:
         subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
         def count(collector, events):
             collector.add_data('Shards Absorbed', len(events), int)
+        split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
+        
+    def matt_sacrificed(self, events, collector):
+        relevent_events = events[(events.skillid == Skills.SACRIFICE) & (events.buff == 1) & (events.is_buffremove == 0)]
+        
+        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
+        def count(collector, events):
+            collector.add_data('Sacrificed', len(events), int)
         split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
