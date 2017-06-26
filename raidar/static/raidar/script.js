@@ -629,7 +629,11 @@ ${rectSvg.join("\n")}
       return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
+      let filters = r.get('settings.encounterSort.filters');
       r.toggle('settings.encounterSort.filters');
+      if (filters) {
+        r.set('settings.encounterSort.filter.*', null);
+      }
       return false;
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
