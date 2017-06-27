@@ -70,7 +70,7 @@ def assign_event_types(events):
     return events
 
 class Boss:
-    def __init__(self, name, boss_ids, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = True):
+    def __init__(self, name, boss_ids, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False):
         self.name = name
         self.boss_ids = boss_ids
         self.sub_boss_ids = [] if sub_boss_ids is None else sub_boss_ids
@@ -259,7 +259,6 @@ class Analyser:
             ['dst_instid']].groupby('dst_instid').size().rename('hit_count')
         agents = agents.join(agents_that_get_hit_a_lot)
         agents.hit_count.fillna(0, inplace=True)
-        print_frame(agents[agents.prof < 0])
 
         #identify specific ones we care about
         players = agents[agents.party != 0]
@@ -294,9 +293,10 @@ class Analyser:
         boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
         boss_power_events = boss_power_events.assign(delta = deltas)
-
+        print_frame(boss_power_events[boss_power_events.delta >= 1000])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
+        print_frame(health_updates)
 
         #construct frame of all boss skill activations
         boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
