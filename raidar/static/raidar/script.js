@@ -683,9 +683,9 @@ ${rectSvg.join("\n")}
     if (uploading && !previousIsFinished) return;
 
     let entry = r.get('upload').find(entry => !("success" in entry));
+    uploading = entry;
     if (!entry) return;
 
-    uploading = entry;
     let form = new FormData();
     form.append(entry.name, entry.file);
     return $.ajax({
