@@ -639,13 +639,14 @@ ${rectSvg.join("\n")}
 
   let uploadProgressHandler = (entry, evt) => {
     let progress = Math.round(100 * evt.loaded / evt.total);
-    if (evt.loaded == evt.total) {
-      entry.progress = progress;
-      r.update('upload');
-    }
+    //if (evt.loaded == evt.total) {
+    //}
+    entry.progress = progress;
+    r.update('upload');
   }
   let uploadProgressDone = (entry, data) => {
     if (data.error) {
+      entry.error = data.error;
       error(entry.name + ': ' + data.error);
       uploadProgressFail(entry);
     } else {

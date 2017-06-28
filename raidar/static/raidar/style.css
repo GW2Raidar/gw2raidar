@@ -80,3 +80,7 @@ table td {
 input[type="date"] {
   max-width: 160px;
 }
+
+.link {
+  cursor: pointer;
+}
