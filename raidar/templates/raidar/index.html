@@ -79,6 +79,10 @@
 
               TODO profile - all GW2 accounts, characters with stats
 
+            [[elseif page.name == "uploads"]]
+
+              {% include 'raidar/uploads.html' %}
+
             [[elseif page.name == "account"]]
 
               {% include 'raidar/account.html' %}
@@ -157,25 +161,6 @@
         </div>
 
         <footer class="uk-heading uk-padding-small uk-light uk-background-secondary">
-          <div class="uk-float-right states">
-            [[#each {1: "Uploading", 2: "Analysing", 3: "Uploaded", 4: "Rejected"}:state]]
-              [[#if uploadsByState[state]]]
-                <span class="uk-badge [[.toLowerCase()]]">
-                  [[uploadsByState[state].length]]
-                </span>
-                <div uk-drop="pos: top-right">
-                  <dl class="uk-card uk-card-body uk-card-default">
-                    <dt>[[.]]:</dt>
-                    <dd>
-                      [[#each uploadsByState[state]]]
-                        [[.]]<br>
-                      [[/each]]
-                    </dd>
-                  </dl>
-                </div>
-              [[/if]]
-            [[/each]]
-          </div>
           Footer
         </footer>
       </div>

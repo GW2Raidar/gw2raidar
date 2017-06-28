@@ -1,0 +1,18 @@
+<table class="uk-table uk-table-striped">
+  <thead>
+    <tr>
+      <th class="uk-width-auto">
+        File
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    [[#each upload]]
+      <tr>
+        <td class="[[success === true ? 'uk-text-success' : success === false ? 'uk-text-danger' : '']]" [[#if success]]on-click="@this.page({ name: 'encounter', no: encounterId })"[[/if]]>
+          [[name]]
+        </td>
+      </tr>
+    [[/each]]
+  </tbody>
+</table>

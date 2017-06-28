@@ -293,10 +293,10 @@ class Analyser:
         boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
         boss_power_events = boss_power_events.assign(delta = deltas)
-        print_frame(boss_power_events[boss_power_events.delta >= 1000])
+        #print_frame(boss_power_events[boss_power_events.delta >= 1000])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
-        print_frame(health_updates)
+        #print_frame(health_updates)
 
         #construct frame of all boss skill activations
         boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
@@ -414,7 +414,6 @@ class Analyser:
                     success = True
 
         encounter_collector.add_data('success', success, bool)
-        print(success)
 
         # saved as a JSON dump
         self.data = collector.all_data
