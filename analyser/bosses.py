@@ -143,7 +143,7 @@ BOSS_ARRAY = [
     ], metrics = [
         Metric('Moved While Unbalanced', MetricType.COUNT),
         Metric('Surrender', MetricType.COUNT),
-        Metric('Burning Stacks Recieved', MetricType.COUNT, True, True),
+        Metric('Burning Stacks Received', MetricType.COUNT, True, True),
         Metric('Corrupted', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Matthias Shards Returned', MetricType.COUNT, False),
         Metric('Shards Absorbed', MetricType.COUNT, True, False, DesiredValue.NONE),
