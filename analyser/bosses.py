@@ -94,7 +94,8 @@ BOSS_ARRAY = [
         Phase("Phase 3", True)
     ], metrics = [
         Metric('Unmitigated Spectral Impacts', MetricType.COUNT, True, True),
-        Metric('Ghastly Imprisonments', MetricType.COUNT)
+        Metric('Ghastly Imprisonments', MetricType.COUNT),
+        Metric('Spectral Darkness', MetricType.TIME)
     ]),
     Boss('Sabetha', [0x3C0F], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),

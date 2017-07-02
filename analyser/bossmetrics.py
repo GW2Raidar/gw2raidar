@@ -12,6 +12,7 @@ class Skills:
     UNSTABLE_MAGIC_SPIKE = 31392
     SPECTRAL_IMPACT = 31875
     GHASTLY_PRISON = 31623
+    SPECTRAL_DARKNESS = 31498
     HEAVY_BOMB_EXPLODE = 31596
     TANTRUM = 34479
     BLEEDING = 736
@@ -34,6 +35,34 @@ class BossMetricAnalyser:
         
     def standard_count(events):
         return len(events);
+    
+    def generate_player_buff_times(self, events, players, skillid):
+        # Get Up/Down/Death events
+        events = events[(events.skillid == skillid) & (events.buff == 1)].sort_values(by='time')
+
+        raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
+        for player in list(players.index):
+            data = np.array([np.arange(0)] * 2).T
+            player_events = events[((events['dst_instid'] == player)&(events.is_buffremove == 0))|
+                                   ((events['src_instid'] == player)&(events.is_buffremove == 1))]
+            
+            active = False
+            start_time = 0
+            for event in player_events.itertuples():
+                if event.is_buffremove == 0 and active == False:
+                    active = True
+                    start_time = event.time
+                elif event.is_buffremove == 1 and active == True:
+                    active = False
+                    data = np.append(data, [[start_time, event.time - start_time]], axis=0)
+            
+            if active == True:
+                data = np.append(data, [[start_time, encounter_end - start_time]], axis=0)
+
+            data = np.c_[[player] * data.shape[0], data]
+            raw_data = np.r_[raw_data, data]
+
+        return pd.DataFrame(columns = ['player', 'time', 'duration'], data = raw_data)    
 
     def gather_count_stat(self, name, collector, by_player, by_phase, events, calculation = standard_count):
         def count_by_phase(collector, events, func):
@@ -56,6 +85,7 @@ class BossMetricAnalyser:
             count(collector, events)
     
     def gather_boss_specific_stats(self, events, collector):
+        self.end_time = events.time.max()
         metric_collector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
         if len(self.bosses[self.bosses.name == 'Vale Guardian']) != 0:
             self.gather_vg_stats(events, metric_collector)
@@ -95,7 +125,15 @@ class BossMetricAnalyser:
         imprisonment_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
         self.gather_count_stat('Unmitigated Spectral Impacts', collector, True, True, spectral_impact_events)
         self.gather_count_stat('Ghastly Imprisonments', collector, True, False, imprisonment_events)
+        self.gorse_spectral_darkness_time('Spectral Darkness', collector, events)
 
+    def gorse_spectral_darkness_time(self, name, collector, events):
+        times = self.generate_player_buff_times(events, self.players, Skills.SPECTRAL_DARKNESS)
+        collector = collector.with_key(Group.PHASE, "All")
+        def count(collector, times):
+            collector.add_data(name, times['duration'].sum(), int)
+        split_by_player_groups(collector, count, times, 'player', self.subgroups, self.players) 
+        
     def gather_sab_stats(self, events, collector):
         bomb_explosion_events = events[(events.skillid == Skills.HEAVY_BOMB_EXPLODE) & (events.is_buffremove == 1)]
         self.gather_count_stat('Heavy Bombs Undefused', collector, False, False, bomb_explosion_events)    
