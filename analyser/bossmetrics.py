@@ -12,6 +12,7 @@ class Skills:
     UNSTABLE_MAGIC_SPIKE = 31392
     SPECTRAL_IMPACT = 31875
     GHASTLY_PRISON = 31623
+    SPECTRAL_DARKNESS = 31498
     HEAVY_BOMB_EXPLODE = 31596
     TANTRUM = 34479
     BLEEDING = 736
@@ -23,6 +24,7 @@ class Skills:
     BLOOD_FUELED = 34422
     SACRIFICE = 34442
     UNSTABLE_BLOOD_MAGIC = 34450
+    DERANGEMENT = 34965
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -31,38 +33,81 @@ class BossMetricAnalyser:
         self.players = players
         self.bosses = bosses
         self.phases = phases
-    
+
+    def standard_count(events):
+        return len(events);
+
+    def generate_player_buff_times(self, events, players, skillid):
+        # Get Up/Down/Death events
+        events = events[(events.skillid == skillid) & (events.buff == 1)].sort_values(by='time')
+
+        raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
+        for player in list(players.index):
+            data = np.array([np.arange(0)] * 2).T
+            player_events = events[((events['dst_instid'] == player)&(events.is_buffremove == 0))|
+                                   ((events['src_instid'] == player)&(events.is_buffremove == 1))]
+
+            active = False
+            start_time = 0
+            for event in player_events.itertuples():
+                if event.is_buffremove == 0 and active == False:
+                    active = True
+                    start_time = event.time
+                elif event.is_buffremove == 1 and active == True:
+                    active = False
+                    data = np.append(data, [[start_time, event.time - start_time]], axis=0)
+
+            if active == True:
+                data = np.append(data, [[start_time, encounter_end - start_time]], axis=0)
+
+            data = np.c_[[player] * data.shape[0], data]
+            raw_data = np.r_[raw_data, data]
+
+        return pd.DataFrame(columns = ['player', 'time', 'duration'], data = raw_data)
+
+    def gather_count_stat(self, name, collector, by_player, by_phase, events, calculation = standard_count):
+        def count_by_phase(collector, events, func):
+            split_by_phase(collector, func, events, self.phases)
+        def count_by_player(collector, events):
+            split_by_player_groups(collector, count, events, 'dst_instid', self.subgroups, self.players)
+        def count(collector, events):
+            collector.add_data(name, calculation(events), int)
+
+        if by_phase and by_player:
+            count_by_phase(collector, events, count_by_player)
+        elif by_phase:
+            collector = collector.with_key(Group.SUBGROUP, "*All")
+            count_by_phase(collector, events, count)
+        elif by_player:
+            collector = collector.with_key(Group.PHASE, "All")
+            count_by_player(collector, events)
+        else:
+            collector = collector.with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All")
+            count(collector, events)
+
     def gather_boss_specific_stats(self, events, collector):
+        self.end_time = events.time.max()
+        self.start_time = events.time.min()
+        metric_collector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
         if len(self.bosses[self.bosses.name == 'Vale Guardian']) != 0:
-            self.gather_vg_stats(events, collector)
+            self.gather_vg_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Gorseval the Multifarious']) != 0:
-            self.gather_gorse_stats(events, collector)
+            self.gather_gorse_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Sabetha the Saboteur']) != 0:
-            self.gather_sab_stats(events, collector)
+            self.gather_sab_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Slothasor']) != 0:
-            self.gather_sloth_stats(events, collector)
+            self.gather_sloth_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Matthias Gabrel']) != 0:
-            self.gather_matt_stats(events, collector)
-   
+            self.gather_matt_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Xera']) != 0:
+            self.gather_xera_stats(events, metric_collector)
+
     def gather_vg_stats(self, events, collector):
+        teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        bullet_storm_events = events[(events.skillid == Skills.BULLET_STORM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        self.gather_count_stat('Teleports', collector, True, False, teleport_events)
+        self.gather_count_stat('Bullets Eaten', collector, True, False, bullet_storm_events)
         self.vg_blue_guardian_invul(events, collector)
-        self.vg_bullets_eaten(events, collector)
-        self.vg_teleports(events, collector)
-        
-    def vg_teleports(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_teleports(collector, events):
-            collector.add_data('Teleports', len(events), int)
-        
-        relevent_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        split_by_player_groups(subcollector, count_teleports, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def vg_bullets_eaten(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_bullets_eaten(collector, events):
-            collector.add_data('Bullets Eaten', len(events), int)
-        relevent_events = events[(events.skillid == Skills.BULLET_STORM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        split_by_player_groups(subcollector, count_bullets_eaten, relevent_events, 'dst_instid', self.subgroups, self.players)
 
     def vg_blue_guardian_invul(self, events, collector):
         relevent_events = events[(events.skillid == Skills.BLUE_PYLON_POWER) & ((events.is_buffremove == 1) | (events.is_buffremove == 0))]
@@ -76,132 +121,90 @@ class BossMetricAnalyser:
             elif buff_up == True & (event.is_buffremove == 1):
                 buff_up = False
                 time += event.time - start_time
-        
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Blue Guardian Invulnerability Time', time, int)
-        
+
+        collector.with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Blue Guardian Invulnerability Time', time, int)
+
     def gather_gorse_stats(self, events, collector):
-        self.gorse_spectral_impact(events, collector)
-        self.gorse_ghastly_prison(events, collector)
-        
-    def gorse_spectral_impact(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
-        def count_spectral_impacts_by_player_group(collector, events):
-            def count_spectral_impacts(collector, events):
-                collector.add_data('Unmitigated Spectral Impacts', len(events), int)
-            split_by_player_groups(collector, count_spectral_impacts, events, 'dst_instid', self.subgroups, self.players)
-        relevent_events = events[(events.skillid == Skills.SPECTRAL_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        split_by_phase(subcollector, count_spectral_impacts_by_player_group, relevent_events, self.phases)
-        
-    def gorse_ghastly_prison(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_ghastly_prison(collector, events):
-            collector.add_data('Ghastly Imprisonments', len(events), int)
-        
-        relevent_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
-        split_by_player_groups(subcollector, count_ghastly_prison, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
+        spectral_impact_events = events[(events.skillid == Skills.SPECTRAL_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        imprisonment_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
+        self.gather_count_stat('Unmitigated Spectral Impacts', collector, True, True, spectral_impact_events)
+        self.gather_count_stat('Ghastly Imprisonments', collector, True, False, imprisonment_events)
+        self.gorse_spectral_darkness_time('Spectral Darkness', collector, events)
+
+    def gorse_spectral_darkness_time(self, name, collector, events):
+        times = self.generate_player_buff_times(events, self.players, Skills.SPECTRAL_DARKNESS)
+        collector = collector.with_key(Group.PHASE, "All")
+        def count(collector, times):
+            collector.add_data(name, times['duration'].sum(), int)
+        split_by_player_groups(collector, count, times, 'player', self.subgroups, self.players)
+
     def gather_sab_stats(self, events, collector):
-        self.sab_missed_bombs(events, collector)
-        
-    def sab_missed_bombs(self, events, collector):
-        heavy_bomb_explosions = len(events[(events.skillid == Skills.HEAVY_BOMB_EXPLODE) & (events.is_buffremove == 1)])
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Heavy Bombs Undefused', heavy_bomb_explosions, int)
-        
+        bomb_explosion_events = events[(events.skillid == Skills.HEAVY_BOMB_EXPLODE) & (events.is_buffremove == 1)]
+        self.gather_count_stat('Heavy Bombs Undefused', collector, False, False, bomb_explosion_events)
+
     def gather_sloth_stats(self, events, collector):
-        self.sloth_undodged_rocks(events, collector)
-        self.sloth_spores_received(events, collector)
-        self.sloth_spores_blocked(events, collector)
-        self.sloth_volatile_poison(events, collector)
-        
-    def sloth_undodged_rocks(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_rocks(collector, events):
-            collector.add_data('Tantrum Knockdowns', len(events), int)
-        relevent_events = events[(events.skillid == Skills.TANTRUM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        split_by_player_groups(subcollector, count_rocks, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def sloth_spores_received(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_spores_eaten(collector, events):
-            collector.add_data('Spores Received', len(events) / 5, int)
-        relevent_events = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value > 0) & (events.is_buffremove == 0)]
-        split_by_player_groups(subcollector, count_spores_eaten, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def sloth_spores_blocked(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_spores_eaten(collector, events):
-            collector.add_data('Spores Blocked', len(events) / 5, int)
-        relevent_events = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value == 0) & (events.is_buffremove == 0)]
-        split_by_player_groups(subcollector, count_spores_eaten, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def sloth_volatile_poison(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_volatile_poison(collector, events):
-            collector.add_data('Volatile Poison Carrier', len(events), int)
-        relevent_events = events[(events.skillid == Skills.VOLATILE_POISON) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        split_by_player_groups(subcollector, count_volatile_poison, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
+        tantrum_hits = events[(events.skillid == Skills.TANTRUM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        spores_received = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value > 0) & (events.is_buffremove == 0)]
+        spores_blocked = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value == 0) & (events.is_buffremove == 0)]
+        volatile_poison = events[(events.skillid == Skills.VOLATILE_POISON) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        self.gather_count_stat('Tantrum Knockdowns', collector, True, False, tantrum_hits)
+        self.gather_count_stat('Spores Received', collector, True, False, spores_received, lambda e: len(e) / 5)
+        self.gather_count_stat('Spores Blocked', collector, True, False, spores_blocked, lambda e: len(e) / 5)
+        self.gather_count_stat('Volatile Poison Carrier', collector, True, False, volatile_poison)
+
     def gather_matt_stats(self, events, collector):
-        self.matt_unbalanced(events, collector)
-        self.matt_burning_received(events, collector)
-        self.matt_chosen_for_corruption(events, collector)
-        self.matt_surrender(events, collector)
-        self.matt_blood_fueled(events, collector)
-        self.matt_sacrificed(events, collector)
-        self.matt_unstable_blood_magic(events, collector)
-    
-    def matt_unbalanced(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_unbalanced(collector, events):
-            collector.add_data('Moved While Unbalanced', len(events), int)
-        relevent_events = events[(events.skillid == Skills.UNBALANCED) & events.dst_instid.isin(self.players.index) & (events.buff == 0)]
-        split_by_player_groups(subcollector, count_unbalanced, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def matt_surrender(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count(collector, events):
-            collector.add_data('Surrender', len(events), int)
-        relevent_events = events[(events.skillid == Skills.SURRENDER) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        split_by_player_groups(subcollector, count, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def matt_burning_received(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
-        def count_burning_received_by_player_group(collector, events):
-            def count_burning_received(collector, events):
-                collector.add_data('Burning Stacks Recieved', len(events), int)
-            split_by_player_groups(collector, count_burning_received, events, 'dst_instid', self.subgroups, self.players)
-        relevent_events = events[(events.skillid == Skills.BURNING) & events.dst_instid.isin(self.players.index) & events.src_instid.isin(self.bosses.index) & (events.value > 0) & (events.buff == 1) & (events.is_buffremove == 0)]
-        split_by_phase(subcollector, count_burning_received_by_player_group, relevent_events, self.phases)
-        
-    def matt_chosen_for_corruption(self, events, collector):
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count_corrupted(collector, events):
-            collector.add_data('Corrupted', len(events), int)
-        relevent_events = events[(events.skillid == Skills.CORRUPTION) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        split_by_player_groups(subcollector, count_corrupted, relevent_events, 'dst_instid', self.subgroups, self.players)
-        
-    def matt_blood_fueled(self, events, collector):
-        relevent_events = events[(events.skillid == Skills.BLOOD_FUELED) & (events.buff == 1) & (events.is_buffremove == 0)]
-        absorbed_by_matt = len(relevent_events[relevent_events.dst_instid.isin(self.bosses.index)])
-        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All").with_key(Group.SUBGROUP, "*All").add_data('Matthias Shards Returned', absorbed_by_matt, int)
-        
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count(collector, events):
-            collector.add_data('Shards Absorbed', len(events), int)
-        split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
-        
-    def matt_sacrificed(self, events, collector):
-        relevent_events = events[(events.skillid == Skills.SACRIFICE) & (events.buff == 1) & (events.is_buffremove == 0)]
-        
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count(collector, events):
-            collector.add_data('Sacrificed', len(events), int)
-        split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
-        
-    def matt_unstable_blood_magic(self, events, collector):
-        relevent_events = events[(events.skillid == Skills.UNSTABLE_BLOOD_MAGIC) & (events.buff == 1) & (events.is_buffremove == 0)]
-        
-        subcollector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics").with_key(Group.PHASE, "All")
-        def count(collector, events):
-            collector.add_data('Well of the Profane Carrier', len(events), int)
-        split_by_player_groups(subcollector, count, relevent_events[relevent_events.dst_instid.isin(self.players.index)], 'dst_instid', self.subgroups, self.players)
+        unbalanced_events = events[(events.skillid == Skills.UNBALANCED) & events.dst_instid.isin(self.players.index) & (events.buff == 0)]
+        surrender_events = events[(events.skillid == Skills.SURRENDER) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        burning_events = events[(events.skillid == Skills.BURNING) & events.dst_instid.isin(self.players.index) & events.src_instid.isin(self.bosses.index) & (events.value > 0) & (events.buff == 1) & (events.is_buffremove == 0)]
+        corrupted_events = events[(events.skillid == Skills.CORRUPTION) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        blood_fueled_events = events[(events.skillid == Skills.BLOOD_FUELED) & (events.buff == 1) & (events.is_buffremove == 0)]
+        sacrifice_events = events[(events.skillid == Skills.SACRIFICE) & (events.buff == 1) & (events.is_buffremove == 0)]
+        profane_events = events[(events.skillid == Skills.UNSTABLE_BLOOD_MAGIC) & (events.buff == 1) & (events.is_buffremove == 0)]
+
+        self.gather_count_stat('Moved While Unbalanced', collector, True, False, unbalanced_events)
+        self.gather_count_stat('Surrender', collector, True, False, surrender_events)
+        self.gather_count_stat('Burning Stacks Received', collector, True, True, burning_events)
+        self.gather_count_stat('Corrupted', collector, True, False, corrupted_events)
+        self.gather_count_stat('Matthias Shards Returned', collector, False, False,
+                               blood_fueled_events[blood_fueled_events.dst_instid.isin(self.bosses.index)])
+        self.gather_count_stat('Shards Absorbed', collector, True, False,
+                               blood_fueled_events[blood_fueled_events.dst_instid.isin(self.players.index)])
+        self.gather_count_stat('Sacrificed', collector, True, False, sacrifice_events)
+        self.gather_count_stat('Well of the Profane Carrier', collector, True, False, profane_events)
+
+    def gather_xera_stats(self, events, collector):
+        derangement_events = events[(events.skillid == Skills.DERANGEMENT) & (events.buff == 1) & ((events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0))|(events.src_instid.isin(self.players.index) & (events.is_buffremove == 1)))]
+        self.gather_count_stat('Derangement', collector, True, False, derangement_events[derangement_events.is_buffremove == 0])
+        #self.xera_derangement_max_stacks('Peak Derangement', collector, derangement_events)
+
+
+    def xera_derangement_max_stacks(self, name, collector, events):
+        events = events.sort_values(by='time')
+
+        raw_data = np.array([np.arange(0, dtype=int)] * 2, dtype=int).T
+        for player in list(self.players.index):
+            player_events = events[((events['dst_instid'] == player)&(events.is_buffremove == 0))|
+                                   ((events['src_instid'] == player)&(events.is_buffremove == 1))]
+
+            max_stacks = 0
+            stacks = 0
+            for event in player_events.itertuples():
+                if event.is_buffremove == 0:
+                    stacks = stacks + 1
+                elif event.is_buffremove == 1:
+                    print(str(event.time - self.start_time) + " - " + str(stacks))
+                    if stacks > max_stacks:
+                        max_stacks = stacks
+                    stacks = max(stacks - 8, 0)
+
+            print(stacks)
+            if stacks > max_stacks:
+                max_stacks = stacks
+            raw_data = np.append(raw_data, [[player, max_stacks]], axis=0)
+
+        data = pd.DataFrame(columns = ['player', 'max_stacks'], data = raw_data)
+
+        collector = collector.with_key(Group.PHASE, "All")
+        def max_stacks(collector, data):
+            collector.add_data(name, data['max_stacks'].max(), int)
+        split_by_player_groups(collector, max_stacks, data, 'player', self.subgroups, self.players)
