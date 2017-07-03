@@ -1,0 +1,58 @@
+{% load staticfiles %}
+<div class="table-container">
+  {% include 'raidar/encounter_row_header.html' %}
+
+  <div class="uk-overflow-auto">
+    <table class="uk-table stats">
+      <tbody>
+        <tr>
+          <th>Totals</th>
+          [[#each encounter.boss_metrics]]
+            <th width="100">[[name]]</th>
+          [[/each]]
+        </tr>
+        <tr>
+          <td>Squad</td>
+          [[#each encounter.boss_metrics]]
+            <td>[[encounter.phases[page.phase].mechanics[name]]]</td>
+          [[/each]]
+        </tr>
+        [[#each encounter.parties:partyNo]]
+          [[#with { party: . }]]
+            <tr>
+              <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
+              [[#each encounter.boss_metrics]]
+                <td>[[party.phases[page.phase].mechanics[name]]]</td>
+              [[/each]]
+            </tr>
+          [[/with]]
+        [[/each]]
+      </tbody>
+
+      [[#each encounter.parties:partyNo]]
+        <tbody>
+          <tr>
+            <th>Party [[partyNo]]</th>
+            [[#each encounter.boss_metrics]]
+              <th width="100">[[name]]</th>
+            [[/each]]
+          </tr>
+          [[#each members]]
+            [[#with { member: . }]]
+              <tr>
+                <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
+                  <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+                  <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+                  [[name]]
+                </td>
+                [[#each encounter.boss_metrics]]
+                  <td>[[member.phases[page.phase].mechanics[name]]]</td>
+                [[/each]]
+              </tr>
+            [[/with]]
+          [[/each]]
+        </tbody>
+      [[/each]]
+    </table>
+  </div>
+</div>

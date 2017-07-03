@@ -28,6 +28,7 @@
     <ul class="uk-navbar-nav">
       <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
       <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
+      <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
     </ul>
   </div>
   <div class="uk-navbar-right">
@@ -46,4 +47,6 @@
   {% include 'raidar/encounter_combat_data.html' %}
 [[elseif persistent_page.tab == 'boon_uptime']]
   {% include 'raidar/encounter_boon_uptime.html' %}
+[[elseif persistent_page.tab == 'boss_metrics']]
+  {% include 'raidar/encounter_boss_metrics.html' %}
 [[/if]]

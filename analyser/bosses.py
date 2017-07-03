@@ -1,9 +1,9 @@
 from enum import IntEnum
 
 class DesiredValue(IntEnum):
+    LOW = -1
     NONE = 0
     HIGH = 1
-    LOW = 2
 
 class MetricType(IntEnum):
     TIME = 0
@@ -16,6 +16,9 @@ class Metric:
         self.desired = desired
         self.split_by_player = split_by_player
         self.split_by_phase = split_by_phase
+
+    def __repr__(self):
+        return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
     def __init__(self, name, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False):
