@@ -317,116 +317,119 @@ def logout(request):
 @login_required
 @require_POST
 def upload(request):
-    result = {}
-    # TODO this should really only be one file
-    # so make adjustments to find out its name and only provide one result
+    if (len(request.FILES) != 1):
+        return _error("Only single file uploads are allowed")
 
-    for filename, file in request.FILES.items():
-        if hasattr(settings, 'UPLOAD_DIR'):
-            dir = path_join(settings.UPLOAD_DIR, request.user.username.replace(dirsep, '_'))
-            makedirs(path_join(dir), exist_ok=True)
-            diskname = path_join(dir, filename)
-            with open(diskname, 'wb') as diskfile:
-                while True:
-                    buf = file.read(16384)
-                    if len(buf) == 0:
-                        break
-                    diskfile.write(buf)
-            file = open(diskname, 'rb')
+    filename = next(iter(request.FILES))
+    file = request.FILES[filename]
+    uploaded_at = time()
 
-        zipfile = None
-        if filename.endswith('.evtc.zip'):
-            zipfile = ZipFile(file)
-            contents = zipfile.infolist()
-            if len(contents) == 1:
-                file = zipfile.open(contents[0].filename)
-            else:
-                return _error('Only single-file ZIP archives are allowed')
+    if hasattr(settings, 'UPLOAD_DIR'):
+        dir = path_join(settings.UPLOAD_DIR, request.user.username.replace(dirsep, '_'))
+        makedirs(path_join(dir), exist_ok=True)
+        diskname = path_join(dir, filename)
+        with open(diskname, 'wb') as diskfile:
+            while True:
+                buf = file.read(16384)
+                if len(buf) == 0:
+                    break
+                diskfile.write(buf)
+        file = open(diskname, 'rb')
 
-        try:
-            evtc_encounter = EvtcEncounter(file)
-        except EvtcParseException as e:
-            return _error(e)
+    zipfile = None
+    if filename.endswith('.evtc.zip'):
+        zipfile = ZipFile(file)
+        contents = zipfile.infolist()
+        if len(contents) == 1:
+            file = zipfile.open(contents[0].filename)
+        else:
+            return _error('Only single-file ZIP archives are allowed')
 
-        if zipfile:
-            zipfile.close()
-        file.close()
+    try:
+        evtc_encounter = EvtcEncounter(file)
+    except EvtcParseException as e:
+        return _error(e)
 
-        area = Area.objects.get(id=evtc_encounter.area_id)
-        if not area:
-            return _error('Unknown area')
+    if zipfile:
+        zipfile.close()
+    file.close()
 
-        try:
-            analyser = Analyser(evtc_encounter)
-        except EvtcAnalysisException as e:
-            return _error(e)
+    area = Area.objects.get(id=evtc_encounter.area_id)
+    if not area:
+        return _error('Unknown area')
 
-        dump = analyser.data
+    try:
+        analyser = Analyser(evtc_encounter)
+    except EvtcAnalysisException as e:
+        return _error(e)
 
-        # XXX
+    dump = analyser.data
 
-        started_at = dump['Category']['encounter']['start']
-        duration = dump['Category']['encounter']['duration']
-        success = dump['Category']['encounter']['success']
+    # XXX
 
-        if duration < 60:
-            return _error('Encounter shorter than 60s')
+    started_at = dump['Category']['encounter']['start']
+    duration = dump['Category']['encounter']['duration']
+    success = dump['Category']['encounter']['success']
 
+    if duration < 60:
+        return _error('Encounter shorter than 60s')
+
+    status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
+    account_names = [player['account'] for player in status_for.values()]
+    with transaction.atomic():
         # heuristics to see if the encounter is a re-upload:
         # a character can only be in one raid at a time
         # account_names are being hashed, and the triplet
         # (area, account_hash, started_at) is being checked for
         # uniqueness (along with some fuzzing to started_at)
-        status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
-        account_names = [player['account'] for player in status_for.values()]
-        with transaction.atomic():
-            started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
-            account_hash = Encounter.calculate_account_hash(account_names)
-            try:
-                encounter = Encounter.objects.get(
-                    Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
-                    area=area, account_hash=account_hash
-                )
-                encounter.filename = filename
-                encounter.uploaded_at = time()
-                encounter.uploaded_by = request.user
-                encounter.duration = duration
-                encounter.success = success
-                encounter.dump = json_dumps(dump)
-                encounter.started_at = started_at
-                encounter.started_at_full = started_at_full
-                encounter.started_at_half = started_at_half
-                encounter.save()
-            except Encounter.DoesNotExist:
-                encounter = Encounter.objects.create(
-                    filename=filename, uploaded_at=time(), uploaded_by=request.user,
-                    duration=duration, success=success, dump=json_dumps(dump),
-                    area=area, started_at=started_at,
-                    started_at_full=started_at_full, started_at_half=started_at_half,
-                    account_hash=account_hash
-                )
+        started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
+        account_hash = Encounter.calculate_account_hash(account_names)
+        try:
+            encounter = Encounter.objects.get(
+                Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
+                area=area, account_hash=account_hash
+            )
+            encounter.filename = filename
+            encounter.uploaded_at = uploaded_at
+            encounter.uploaded_by = request.user
+            encounter.duration = duration
+            encounter.success = success
+            encounter.dump = json_dumps(dump)
+            encounter.started_at = started_at
+            encounter.started_at_full = started_at_full
+            encounter.started_at_half = started_at_half
+            encounter.save()
+        except Encounter.DoesNotExist:
+            encounter = Encounter.objects.create(
+                filename=filename, uploaded_at=time(), uploaded_by=request.user,
+                duration=duration, success=success, dump=json_dumps(dump),
+                area=area, started_at=started_at,
+                started_at_full=started_at_full, started_at_half=started_at_half,
+                account_hash=account_hash
+            )
 
-            for name, player in status_for.items():
-                account, _ = Account.objects.get_or_create(
-                    name=player['account'])
-                character, _ = Character.objects.get_or_create(
-                    name=name, account=account,
-                    defaults={
-                        'profession': player['profession']
-                    }
-                )
-                participation, _ = Participation.objects.update_or_create(
-                    character=character, encounter=encounter,
-                    defaults={
-                        'archetype': player['archetype'],
-                        'party': player['party'],
-                        'elite': player['elite']
-                    }
-                )
+        for name, player in status_for.items():
+            account, _ = Account.objects.get_or_create(
+                name=player['account'])
+            character, _ = Character.objects.get_or_create(
+                name=name, account=account,
+                defaults={
+                    'profession': player['profession']
+                }
+            )
+            participation, _ = Participation.objects.update_or_create(
+                character=character, encounter=encounter,
+                defaults={
+                    'archetype': player['archetype'],
+                    'party': player['party'],
+                    'elite': player['elite']
+                }
+            )
 
-        own_participation = encounter.participations.filter(character__account__user=request.user).first()
-        if own_participation:
-            result[filename] = _participation_data(own_participation)
+    result = { 'id': encounter.id }
+    own_participation = encounter.participations.filter(character__account__user=request.user).first()
+    if own_participation:
+        result['encounter'] = _participation_data(own_participation)
 
     return JsonResponse(result)
 

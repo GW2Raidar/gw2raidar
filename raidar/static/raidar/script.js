@@ -174,7 +174,7 @@ ${rectSvg.join("\n")}
     settings: {
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
-    upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
+    upload: [],
   };
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
@@ -379,14 +379,6 @@ ${rectSvg.join("\n")}
         if (maxPage < totalPages && totalPages != 1) pages.push({t: totalPages, a: totalPages == page});
         pages.push({t: ">", c: 'uk-pagination-next', d: totalPages == page, n: page + 1});
         return pages;
-      },
-      uploadsByState: function uploadsByState() {
-        let states = this.get('upload');
-        let files = { 1: [], 2: [], 3: [], 4: [] };
-        Object.keys(states).forEach(fileName => {
-          files[states[fileName]].push(fileName);
-        });
-        return files;
       },
     },
     delimiters: ['[[', ']]'],
@@ -629,7 +621,11 @@ ${rectSvg.join("\n")}
       return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
+      let filters = r.get('settings.encounterSort.filters');
       r.toggle('settings.encounterSort.filters');
+      if (filters) {
+        r.set('settings.encounterSort.filter.*', null);
+      }
       return false;
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
@@ -641,41 +637,69 @@ ${rectSvg.join("\n")}
 
 
 
-  let uploadProgressHandler = (file, evt) => {
-    // let progress = Math.round(100 * evt.loaded / evt.total);
-    if (evt.loaded == evt.total) {
-      r.get('upload')[file.name] = 2;
-      r.update('upload');
-    }
-  }
-  let uploadProgressDone = (file, data) => {
-    if (data.error) {
-      error(file.name + ': ' + data.error);
-      uploadProgressFail(file);
-    } else {
-      let encounters = r.get('encounters');
-      let fileNames = Object.keys(data);
-      let newKeys = fileNames.map(file => data[file].id)
-      encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
-      fileNames.forEach(file => encounters.push(data[file]));
-      updateRactiveFromResponse({ encounters: encounters });
-
-      r.get('upload')[file.name] = 3;
-      r.update('upload');
-    }
-  }
-
-  let uploadProgressFail = file => {
-    console.log("FAIL", file);
-    r.get('upload')[file.name] = 4;
+  let uploadProgressHandler = (entry, evt) => {
+    let progress = Math.round(100 * evt.loaded / evt.total);
+    //if (evt.loaded == evt.total) {
+    //}
+    entry.progress = progress;
     r.update('upload');
   }
+  let uploadProgressDone = (entry, data) => {
+    if (data.error) {
+      entry.error = data.error;
+      error(entry.name + ': ' + data.error);
+      uploadProgressFail(entry);
+    } else {
+      if (data.encounter) {
+        let encounters = r.get('encounters');
+        encounters = encounters.filter(encounter => encounter.id != data.id)
+        encounters.push(data.encounter);
+        updateRactiveFromResponse({ encounters: encounters });
+      }
 
-  let makeXHR = file => {
+      entry.encounterId = data.id;
+      entry.success = true;
+      delete entry.file;
+      r.update('upload');
+      startUpload(true);
+    }
+  }
+
+  let uploadProgressFail = entry => {
+    entry.success = false;
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
+  }
+
+  let makeXHR = entry => {
     let req = $.ajaxSettings.xhr();
-    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, file), false);
+    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, entry), false);
     return req;
   }
+
+  let uploading = null;
+  function startUpload(previousIsFinished) {
+    if (uploading && !previousIsFinished) return;
+
+    let entry = r.get('upload').find(entry => !("success" in entry));
+    uploading = entry;
+    if (!entry) return;
+
+    let form = new FormData();
+    form.append(entry.name, entry.file);
+    return $.ajax({
+      url: 'upload.json',
+      data: form,
+      type: 'POST',
+      contentType: false,
+      processData: false,
+      xhr: makeXHR.bind(null, entry),
+    })
+    .done(uploadProgressDone.bind(null, entry))
+    .fail(uploadProgressFail.bind(null, entry));
+  }
+
 
   $(document)
     .on('dragstart dragover dragenter', evt => {
@@ -696,23 +720,9 @@ ${rectSvg.join("\n")}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-
-        r.get('upload')[file.name] = 1;
-        r.update('upload');
-
-        let form = new FormData();
-        form.append(file.name, file);
-        return $.ajax({
-          url: 'upload.json',
-          data: form,
-          type: 'POST',
-          contentType: false,
-          processData: false,
-          xhr: makeXHR.bind(null, file),
-        })
-        .done(uploadProgressDone.bind(null, file))
-        .fail(uploadProgressFail.bind(null, file));
+        r.push('upload', { name: file.name, file: file }).then(() => startUpload());
       });
+      setPage('uploads');
       evt.preventDefault();
     });
 

@@ -141,6 +141,7 @@ class Participation(models.Model):
             (int(Archetype.CONDI), "Condi"),
             (int(Archetype.TANK), "Tank"),
             (int(Archetype.HEAL), "Heal"),
+            (int(Archetype.SUPPORT), "Support"),
         )
 
     ELITE_CHOICES = (
