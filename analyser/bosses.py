@@ -169,6 +169,8 @@ BOSS_ARRAY = [
         Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),
+    ], metrics = [
+        Metric('Derangement', MetricType.COUNT)
     ]),
     Boss('Cairn', [0x432A]),
     Boss('Mursaat Overseer', [0x4314]),

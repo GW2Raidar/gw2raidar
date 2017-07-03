@@ -24,6 +24,7 @@ class Skills:
     BLOOD_FUELED = 34422
     SACRIFICE = 34442
     UNSTABLE_BLOOD_MAGIC = 34450
+    DERANGEMENT = 34965
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -86,6 +87,7 @@ class BossMetricAnalyser:
     
     def gather_boss_specific_stats(self, events, collector):
         self.end_time = events.time.max()
+        self.start_time = events.time.min()
         metric_collector = collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics")
         if len(self.bosses[self.bosses.name == 'Vale Guardian']) != 0:
             self.gather_vg_stats(events, metric_collector)
@@ -97,6 +99,8 @@ class BossMetricAnalyser:
             self.gather_sloth_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Matthias Gabrel']) != 0:
             self.gather_matt_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Xera']) != 0:
+            self.gather_xera_stats(events, metric_collector)
            
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
@@ -168,3 +172,39 @@ class BossMetricAnalyser:
         self.gather_count_stat('Sacrificed', collector, True, False, sacrifice_events)
         self.gather_count_stat('Well of the Profane Carrier', collector, True, False, profane_events)
     
+    def gather_xera_stats(self, events, collector):
+        derangement_events = events[(events.skillid == Skills.DERANGEMENT) & (events.buff == 1) & ((events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0))|(events.src_instid.isin(self.players.index) & (events.is_buffremove == 1)))]
+        self.gather_count_stat('Derangement', collector, True, False, derangement_events[derangement_events.is_buffremove == 0])
+        #self.xera_derangement_max_stacks('Peak Derangement', collector, derangement_events)
+        
+        
+    def xera_derangement_max_stacks(self, name, collector, events):
+        events = events.sort_values(by='time')
+
+        raw_data = np.array([np.arange(0, dtype=int)] * 2, dtype=int).T
+        for player in list(self.players.index):
+            player_events = events[((events['dst_instid'] == player)&(events.is_buffremove == 0))|
+                                   ((events['src_instid'] == player)&(events.is_buffremove == 1))]
+            
+            max_stacks = 0
+            stacks = 0
+            for event in player_events.itertuples():
+                if event.is_buffremove == 0:
+                    stacks = stacks + 1
+                elif event.is_buffremove == 1:
+                    print(str(event.time - self.start_time) + " - " + str(stacks))
+                    if stacks > max_stacks:
+                        max_stacks = stacks
+                    stacks = max(stacks - 8, 0)
+            
+            print(stacks)
+            if stacks > max_stacks:
+                max_stacks = stacks
+            raw_data = np.append(raw_data, [[player, max_stacks]], axis=0)
+
+        data = pd.DataFrame(columns = ['player', 'max_stacks'], data = raw_data)    
+    
+        collector = collector.with_key(Group.PHASE, "All")
+        def max_stacks(collector, data):
+            collector.add_data(name, data['max_stacks'].max(), int)
+        split_by_player_groups(collector, max_stacks, data, 'player', self.subgroups, self.players) 
