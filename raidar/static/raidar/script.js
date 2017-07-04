@@ -31,7 +31,7 @@
 
   let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
-    if (timestamp) {
+    if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
       return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
     } else {
@@ -39,18 +39,38 @@
     }
   };
   helpers.formatTime = duration => {
-    if (duration) {
+    if (duration !== undefined) {
       let seconds = Math.trunc(duration);
       let minutes = Math.trunc(seconds / 60);
       let usec = Math.trunc((duration - seconds) * 1000);
       seconds -= minutes * 60
       if (usec < 10) usec = "00" + usec;
       else if (usec < 100) usec = "0" + usec;
-      return minutes + ":" + f0X(seconds) + "." + usec;
+      if (minutes) return minutes + ":" + f0X(seconds) + "." + usec;
+      return seconds + "." + usec;
     } else {
       return '';
     }
   };
+  helpers.tagForMechanic = (context, metricData) => {
+    let metrics, ok, actualPhase;
+    try {
+      actualPhase = r.get('page.phase');
+      let phase = metricData.split_by_phase ? actualPhase : 'All';
+      metrics = context.phases[phase].mechanics;
+      ok = metrics && metricData.name in metrics;
+    } catch (e) {
+      ok = false;
+    }
+    if (!ok) return "<td/>";
+
+    let ignore = (actualPhase == 'All' || metricData.split_by_phase) ? '' : 'class="ignore"';
+    let value = metrics[metricData.name];
+    if (metricData.data_type == 0) {
+      value = "[" + helpers.formatTime(value / 1000) + "]";
+    }
+    return `<td ${ignore}>${value}</td>`;
+  }
   class Colour {
     constructor(r, g, b, a) {
       if (typeof(r) == 'string') {

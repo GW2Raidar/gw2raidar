@@ -8,13 +8,13 @@
         <tr>
           <th>Totals</th>
           [[#each encounter.boss_metrics]]
-            <th width="100">[[name]]</th>
+            <th uk-tooltip title="[[name]]" width="100">[[short_name]]</th>
           [[/each]]
         </tr>
         <tr>
           <td>Squad</td>
           [[#each encounter.boss_metrics]]
-            <td>[[encounter.phases[page.phase].mechanics[name]]]</td>
+            [[[tagForMechanic(encounter, .)]]]
           [[/each]]
         </tr>
         [[#each encounter.parties:partyNo]]
@@ -22,7 +22,7 @@
             <tr>
               <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
               [[#each encounter.boss_metrics]]
-                <td>[[party.phases[page.phase].mechanics[name]]]</td>
+                [[[tagForMechanic(party, .)]]]
               [[/each]]
             </tr>
           [[/with]]
@@ -34,7 +34,7 @@
           <tr>
             <th>Party [[partyNo]]</th>
             [[#each encounter.boss_metrics]]
-              <th width="100">[[name]]</th>
+              <th uk-tooltip title="[[name]]" width="100">[[short_name]]</th>
             [[/each]]
           </tr>
           [[#each members]]
@@ -46,7 +46,7 @@
                   [[name]]
                 </td>
                 [[#each encounter.boss_metrics]]
-                  <td>[[member.phases[page.phase].mechanics[name]]]</td>
+                  [[[tagForMechanic(member, .)]]]
                 [[/each]]
               </tr>
             [[/with]]
