@@ -8,7 +8,7 @@
         <tr>
           <th>Totals</th>
           [[#each encounter.boss_metrics]]
-            <th uk-tooltip title="[[name]]" width="100">[[short_name]]</th>
+            <th uk-tooltip title="[[long_name]]" width="100">[[short_name]]</th>
           [[/each]]
         </tr>
         <tr>
@@ -34,7 +34,7 @@
           <tr>
             <th>Party [[partyNo]]</th>
             [[#each encounter.boss_metrics]]
-              <th uk-tooltip title="[[name]]" width="100">[[short_name]]</th>
+              <th uk-tooltip title="[[long_name]]" width="100">[[short_name]]</th>
             [[/each]]
           </tr>
           [[#each members]]
