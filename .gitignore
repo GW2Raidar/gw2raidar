@@ -20,3 +20,6 @@
 
 # result of `python3 manage.py collectstatic --noinput`
 /static
+
+# secret stuff
+/credentials

@@ -26,11 +26,23 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
       integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
       crossorigin="anonymous"></script>
-    <!-- <link href="{% static 'raidar/style.css' %}" rel="stylesheet"> -->
+    <link href="https://fonts.googleapis.com/css?family=Raleway|Raleway:bold" rel="stylesheet">
+    <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
       window.raidar_data = {{ userprops|safe }};
+
+      if (window.raidar_data.ga_property_id) {
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+        ga('create', window.raidar_data.ga_property_id, 'auto');
+        ga('send', 'pageview');
+      }
     </script>
+
 
     <script id="template" type="text/ractive">
       <div class="uk-container uk-height-viewport uk-flex uk-flex-column">
@@ -41,84 +53,22 @@
           </div>
         </header>
 
-        {# Navbar #}
-        <nav class="uk-navbar uk-navbar-container">
-          <div class="uk-navbar-left">
-            <ul class="uk-navbar-nav">
-              [[#if username]]
-                <li class="[[page.name=='encounters' && 'uk-active']]"><a href="#" on-click="@this.page('encounters')">Encounters</a></li>
-                <li class="[[page.name=='profile' && 'uk-active']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
-              [[/if]]
-            </ul>
-          </div>
-          <div class="uk-navbar-right">
-            <ul class="uk-navbar-nav">
-              [[#if username]]
-                [[#if is_staff]]
-                  <li><a href="{% url 'admin:index' %}">Admin</a>
-                [[/if]]
-                <li class="[[page.name=='account' && 'uk-active']]"><a href="#">Account</a></li>
-                <li><a href="#" on-click="auth_logout">Logout</a></li>
-              [[else]]
-                <li class="[[page.name=='login' && 'uk-active']]"><a href="#" on-click="@this.page('login', 'login_username')">Login</a></li>
-                <li class="[[page.name=='register' && 'uk-active']]"><a href="#" on-click="@this.page('register', 'register_username')">Register</a></li>
-                <li class="[[page.name=='reset_pw' && 'uk-active']]"><a href="#" on-click="@this.page('reset_pw', 'reset_pw_email')">Reset Password</a></li>
-              [[/if]]
-            </ul>
-          </div>
-        </nav>
+        {% include 'raidar/navbar.html' %}
 
         {# content #}
         <div class="uk-flex-1">
           [[#if username]]
 
-            [[#if page.name == "encounters"]]
+            [[#if loading]]
+
+            <center class="uk-margin-large-top">
+              <div uk-spinner></div>
+            </center>
+
+            [[elseif page.name == "encounters"]]
 
               [[#if encounters.length]]
-
-                <table class="uk-table uk-table-striped">
-                  <thead>
-                    <tr>
-                      <th class="uk-width-1-5">Area</th>
-                      <th class="uk-width-1-5">Started at</th>
-                      <th class="uk-width-1-5">Character</th>
-                      <th class="uk-width-1-5">Account</th>
-                      <th class="uk-width-1-5">Archetype</th>
-                    </tr>
-                  </thead>
-                  [[#each encounterSlice]]
-                    <tr>
-                      <td>
-                        [[area]]
-                      </td>
-                      <td>
-                        [[formatDate(started_at)]]
-                      </td>
-                      <td>
-                        [[character]]
-                      </td>
-                      <td>
-                        [[account]]
-                      </td>
-                      <td>
-                        [[data.archetypes[archetype]]]
-                        [[data.professions[profession]]]
-                      </td>
-                    </tr>
-                  [[/each]]
-                </table>
-
-                <hr class="uk-divider-icon">
-                <ul class="uk-pagination uk-flex-center">
-                  [[#each encounterPages]]
-                    [[#if a || d]]
-                      <li class="[[a ? 'uk-active' : 'uk-disabled']]"><span class="[[c]]">[[t]]</span></li>
-                    [[else]]
-                      <li><a href="#" class="[[c]]" data-page="[[n || t]]" on-click="page_no">[[t]]</a></li>
-                    [[/if]]
-                  [[/each]]
-                </ul>
-
+                {% include 'raidar/encounters.html' %}
               [[else]]
                 <p>
                   Drag and drop evtc files to this window to upload.
@@ -129,13 +79,21 @@
 
               TODO profile - all GW2 accounts, characters with stats
 
+            [[elseif page.name == "uploads"]]
+
+              {% include 'raidar/uploads.html' %}
+
             [[elseif page.name == "account"]]
 
-              TODO account settings (set own API keys etc)
+              {% include 'raidar/account.html' %}
+
+            [[elseif page.name == "about"]]
+
+              {% include 'raidar/about.html' %}
 
             [[elseif page.name == "encounter"]]
 
-              TODO encounter details
+              {% include 'raidar/encounter.html' %}
 
             [[/if]]
 
@@ -183,17 +141,19 @@
 
             [[elseif page.name == "reset_pw"]]
 
-              TODO
+              <form class="uk-form-stacked uk-padding-large uk-text-center">
+                <div class="uk-margin">
+                  <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email">
+                </div>
+                <div class="uk-margin">
+                  <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw" disabled="[[authBad]]">Reset password</button><br>
+                </div>
+              </form>
 
             [[else]]
 
-              <p>
-                Please log in to start using GW2 Raidar.
-              </p>
-              <h2>
-                About GW2 Raidar
-              </h2>
-              {% lorem 3 p %}
+              TODO
+              {#% include 'raidar/intro.html' %#}
 
             [[/if]]
 

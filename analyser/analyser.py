@@ -3,294 +3,501 @@ from evtcparser import *
 import pandas as pd
 import numpy as np
 from functools import reduce
+from .collector import *
+from .buffs import *
+from .splits import *
+from .bossmetrics import *
+from .bosses import *
 
 # DEBUG
 from sys import exit
-
-
-class BasicMetric:
-    def __init__(self, data):
-        self.data = data
-
-    def __iter__(self):
-        return iter(self.data.items())
-
-class StructuredMetric:
-    def __iter__(self):
-        return filter(lambda a: a[0][0] != '_', vars(self).items())
-
-class SkillDamageMetric(BasicMetric):
-    def add_damage(self, skill_name, damage):
-        self.data[skill_name] = self.data.get(skill_name, 0) + damage
-
-class TeamDPSMetric(StructuredMetric):
-    def __init__(self, player_dps):
-        self.player_dps = player_dps
-        self.total_damage = sum(map(lambda a: a.total_damage, player_dps.values()))
-        self.total_condi = sum(map(lambda a: a.total_condi, player_dps.values()))
-        self.total_power = sum(map(lambda a: a.total_power, player_dps.values()))
-        self.dps = sum(map(lambda a: a.dps, player_dps.values()))
-        self.dps_condi = sum(map(lambda a: a.dps_condi, player_dps.values()))
-        self.dps_power = sum(map(lambda a: a.dps_power, player_dps.values()))
-
-class PlayerDPSMetric(StructuredMetric):
-    def __init__(self):
-        self.total_damage = 0
-        self.total_condi = 0
-        self.total_power = 0
-        self.total_skill_damage = SkillDamageMetric({})
-
-        self._hits = 0
-        self._crits = 0
-
-        self.dps = None
-        self.dps_condi = None
-        self.dps_power = None
-        self.crit_rate = None
-
-    def value(self):
-        return self.dps
-
-    def add_damage(self, skill_name, target_inst_id, damage, is_condi, is_crit):
-        self.total_damage += damage
-        self.total_skill_damage.add_damage(skill_name, damage)
-        if is_condi:
-            self.total_condi += damage
-        else:
-            self.total_power += damage
-            self._hits += 1
-            if is_crit:
-                self._crits += 1
-
-    def end(self, time):
-        self.dps = self.total_damage / time
-        self.dps_condi = self.total_condi / time
-        self.dps_power = self.total_power / time
-        self.dps = self.total_damage / time
-
-        if self._hits > 0:
-            self.crit_rate = self._crits / self._hits
+import timeit
 
 class LogType(IntEnum):
     UNKNOWN = 0
     POWER = 1
     CONDI = 2
-    BUFF = 3
+    APPLY = 3
+    ACTIVATION = 4
+    STATUSREMOVE = 5
+
+class Archetype(IntEnum):
+    POWER = 1
+    CONDI = 2
+    TANK = 3
     HEAL = 4
+    SUPPORT = 5
 
+class Elite(IntEnum):
+    CORE = 0
+    HEART_OF_THORNS = 1
 
-class Boss:
-    def __init__(self, name, profs, invuln=None):
-        self.name = name
-        self.profs = profs
-        self.invuln = invuln
+def per_second(f):
+    return portion_of(f, ContextType.DURATION)
 
+def assign_event_types(events):
+    events['type'] = np.where(
+        events['is_activation'] != parser.Activation.NONE, LogType.ACTIVATION,
+            # non-activation events
+            np.where(events['is_buffremove'] != 0, LogType.STATUSREMOVE,
 
-EVENT_TYPES = {
-        (True,  True,  True): 'condi',
-        (True,  True, False): 'buff',
-        (True,  False,  True): '?', #'weird_condi',
-        (True,  False, False): '??', #'weird_buff',
-        (False, True,  True): '???', #'normal_uncondi',
-        (False, True, False): 'skill', #'normal_unbuff',
-        (False, False,  True): 'log_start', #'weird_uncondi',
-        (False, False, False): 'state_change', #'weird_unbuff',
-    }
+            # non-statusremove events
+            np.where(events['buff'] == 0, LogType.POWER,
 
-BOSS_ARRAY = [
-        Boss('Vale Guardian', [0x3C4E], invuln=20000),
-        Boss('Gorseval', [0x3C45], invuln=30000),
-        Boss('Sabetha', [0x3C0F], invuln=25000),
-        Boss('Slothasor', [0x3EFB], invuln=7000),
-        Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD]),
-        Boss('Matthias', [0x3EF3]),
-        Boss('Keep Construct', [0x3F6B]),
-        Boss('Xera', [0x3F76, 0x3F9E], invuln=60000),
-        Boss('Cairn', [0x432A]),
-        Boss('Mursaat Overseer', [0x4314]),
-        Boss('Samarog', [0x4324], invuln=20000),
-        Boss('Deimos', [0x4302]),
-    ]
-BOSSES = { boss.profs[0]: boss for boss in BOSS_ARRAY }
+            # buff events
+            np.where(events['buff_dmg'] != 0, LogType.CONDI,
+            LogType.APPLY))))
+
+    #print(events.groupby('type').count())
+    return events
+
+class EvtcAnalysisException(BaseException):
+    pass
+
+def only_entry(frame):
+    return frame.iloc[0] if not frame.empty else None
+
+def unique_names(dictionary):
+    unique = dict()
+    existing_names = set()
+    for key in dictionary:
+        base_name = dictionary[key]
+        name = base_name
+        index = 1
+        while name in existing_names:
+            index += 1
+            name = "{0}-{1}".format(base_name, index)
+        unique[key] = name
+        existing_names.add(name)
+    return unique
+
+def create_mapping(df, column):
+    return unique_names(df.to_dict()[column])
+
+def filter_damage_events(events):
+    damage_events = events[(events.type == LogType.POWER) |(events.type == LogType.CONDI)]
+    damage_events = damage_events.assign(damage =
+                                         np.where(damage_events.type == LogType.POWER,
+                                                  damage_events['value'],
+                                                  damage_events['buff_dmg']))
+    return damage_events[damage_events.damage > 0]
+
+def print_frame(df, *mods):
+    dfc = df.copy()
+    for name,new_name,func in mods:
+        dfc[new_name] = (dfc.index if name == 'index' else dfc[name]).apply(func)
+    with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.height', 100000, 'display.width', 100000):
+        print(dfc)
 
 class Analyser:
-    def __init__(self, encounter):
-        self.encounter = encounter
+    def preprocess_agents(self, agents, collector, events):
+        #Add hit count column
+        agents_that_get_hit_a_lot = events[(events.type == LogType.POWER)
+                                & (events.value > 0)][
+            ['dst_instid']].groupby('dst_instid').size().rename('hit_count')
+        agents = agents.join(agents_that_get_hit_a_lot)
+        agents.hit_count.fillna(0, inplace=True)
 
-        # ultimate source (e.g. if necro minion attacks, the necro himself)
-        events = encounter.events
-        agents = encounter.agents
-
-        events['ult_src_instid'] = events.src_master_instid.where(events.src_master_instid != 0, events.src_instid)
-
-        # awareness is defined as interval between first skill use
-        # and last skill use, on (dst) or by (src) an agent
-        # (e.g. casting a spell on VG makes it aware;
-        # being hit by VG's teleport also makes it aware)
-        aware_as_src = events.groupby('ult_src_instid')['time']
-        aware_as_dst = events.groupby('dst_instid')['time'] # XXX necessary to also include minions for destination awareness detection?
-        first_aware_as_src = aware_as_src.first()
-        last_aware_as_src = aware_as_src.last()
-        first_aware_as_dst = aware_as_dst.first()
-        last_aware_as_dst = aware_as_dst.last()
-        first_aware = pd.DataFrame([first_aware_as_src, first_aware_as_dst]).min().astype(np.uint64)
-        last_aware = pd.DataFrame([last_aware_as_src, last_aware_as_dst]).max().astype(np.uint64)
-        agents = agents.assign(first_aware=first_aware, last_aware=last_aware)
-
-        # get all the bosses; the encounter starts when any boss
-        # is first aware, and ends when the last boss awareness ends
-        boss = BOSSES[encounter.area_id]
-        boss_agents = agents[agents.prof.isin(boss.profs)]
-        encounter_start = boss_agents.first_aware.min()
-        encounter_end = boss_agents.last_aware.max()
-
-        # player archetypes
-        agents['archetype'] = 0
-        agents.loc[agents.party != 0, 'archetype'] = 1     # POWER
-        agents.loc[agents.condition >= 7, 'archetype'] = 2  # CONDI
-        agents.loc[agents.toughness >= 7, 'archetype'] = 3  # TANK
-        agents.loc[agents.healing >= 7, 'archetype'] = 4    # HEAL
-
-        # get player events (players are the only agents in a party)
+        #identify specific ones we care about
         players = agents[agents.party != 0]
-        # TODO for speed we can convert join into restriction
-        # (join gives more context for debugging)
-        # For most of the metrics, we only care about the events
-        # originating from players, that happen during the encounter;
-        # then slice those player events based on DeltaConnected's
-        # description into different sets.
-        player_events = events.join(players[['name', 'account']], how='right', on='ult_src_instid').sort_values(by='time')
-        player_events = player_events[player_events.time.between(encounter_start, encounter_end)]
+        bosses = agents[(agents.prof.isin(self.boss_info.boss_ids)) |
+                        (self.boss_info.has_structure_boss
+                         & (agents.prof < 0)
+                         & (agents.hit_count >= 100))]
+        final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
 
-        # most of the events below need to not be state change events, even
-        # though DeltaConnected does not mention it
-        not_state_change_events = player_events[player_events.state_change == parser.StateChange.NORMAL]
+        #set up important preprocessed data
+        self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
+        self.player_instids = players.index.values
+        self.boss_instids = bosses.index.values
 
-        # DeltaConnected:
-        # > on cbtitem.is_activation == cancel_fire or cancel_cancel, value will be the ms duration of the approximate channel.
-        cancel_fire_events = not_state_change_events[not_state_change_events.is_activation == parser.Activation.CANCEL_FIRE]
-        cancel_cancel_events = not_state_change_events[not_state_change_events.is_activation == parser.Activation.CANCEL_CANCEL]
-        not_cancel_events = not_state_change_events[not_state_change_events.is_activation < parser.Activation.CANCEL_FIRE]
+        print(self.boss_instids)
+        self.final_boss_instids = final_bosses.index.values
+        collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
+        return players, bosses, final_bosses
 
-        # DeltaConnected:
-        # > on cbtitem.is_buffremove, value will be the duration removed (negative) equal to the sum of all stacks.
-        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove != 0]
-        not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
+    def preprocess_events(self, events):
+        #experimental phase calculations
+        events['ult_src_instid'] = events.src_master_instid.where(
+            events.src_master_instid != 0, events.src_instid)
+        player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
 
-        # DeltaConnected:
-        # > if they are all 0, it will be a buff application (!cbtitem.is_buffremove && cbtitem.is_buff) or physical hit (!cbtitem.is_buff).
-        status_events = not_statusremove_events[not_statusremove_events.buff != 0]
+        player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
+        from_boss_events = events[events.src_instid.isin(self.boss_instids)]
+        to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
+        from_final_boss_events = from_boss_events[from_boss_events.src_instid.isin(self.final_boss_instids)]
 
-        # DeltaConnected:
-        # > on physical, cbtitem.value will be the damage done (positive).
-        # > on physical, cbtitem.result will be the result of the attack.
-        hit_events = not_statusremove_events[not_statusremove_events.buff == 0]
+        #construct frame of all power damage to boss, including deltas since last hit.
+        boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
+        deltas = boss_power_events.time - boss_power_events.time.shift(1)
+        boss_power_events = boss_power_events.assign(delta = deltas)
+        #print_frame(boss_power_events[boss_power_events.delta >= 1000])
+        #construct frame of all health updates from the boss
+        health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
+        #print_frame(health_updates)
 
-        # DeltaConnected:
-        # > on buff && !cbtitem.buff_dmg, cbtitem.value will be the millisecond duration.
-        # > on buff && !cbtitem.buff_dmg, cbtitem.overstack_value will be the current smallest stack duration in ms if over the buff's stack cap.
-        apply_events = status_events[status_events.value != 0]
+        #construct frame of all boss skill activations
+        boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
+        def process_end_condition(end_condition, phase_end):
+            pass
 
-        # DeltaConnected:
-        # > on buff && !cbtitem.value, cbtitem.buff_dmg will be the approximate damage done by the buff.
-        condi_events = status_events[status_events.value == 0]
+        #Determine phases...
+        self.start_time = events.time.min()
+        self.end_time = events.time.max()
+        current_time = self.start_time
+        phase_starts = []
+        phase_ends = []
+        phase_names = []
+        for phase in self.boss_info.phases:
+            phase_names.append(phase.name)
+            phase_starts.append(current_time)
+            phase_end = phase.find_end_time(current_time,
+                                            boss_power_events,
+                                            health_updates,
+                                            boss_skill_activations)
+            if phase_end is None:
+                break
+            phase_ends.append(phase_end)
+            current_time = phase_end
+        phase_ends.append( self.end_time)
 
-        # find out large periods when no boss is being hit by players' skills
-        # (phase times)
-        gap_events = None
-        time = encounter_end - encounter_start
-        if boss.invuln:
-            hit_gap_duration = hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner')['time'].diff()
-            gap_events = hit_events[['time']].assign(hit_gap_duration=hit_gap_duration)
-            gap_events = gap_events[gap_events.hit_gap_duration > boss.invuln]
-            gap_events['start'] = (gap_events.time - gap_events.hit_gap_duration).astype(np.uint64)
-            time -= gap_events['hit_gap_duration'].sum()
+        def print_phase(phase):
+            print("{0}: {1} - {2} ({3})".format(phase[0],
+                                                phase[1] - self.start_time,
+                                                phase[2] - self.start_time,
+                                                phase[2] - phase[1]))
 
-        # get only events that happened while the boss was not invulnerable
-        def non_gap(events):
-            if gap_events is None or gap_events.empty:
-                return events
-            else:
-                in_gap = reduce(lambda x, y: x | y, [events.time.between(gap.start, gap.time) for gap in gap_events.itertuples()])
-                return events[-in_gap]
+        all_phases = list(zip(phase_names, phase_starts, phase_ends))
+        print("Autodetected phases:")
+        list(map(print_phase, all_phases))
+        self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
+        print("Important phases:")
+        list(map(print_phase, self.phases))
 
-        # damage sums
-        direct_damage_to_boss_events = non_gap(hit_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
-        condi_damage_to_boss_events = non_gap(condi_events.join(boss_agents['prof'], on='dst_instid', rsuffix='_dst', how='inner'))
+        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events
 
-        direct_damage_to_boss_events_by_player = direct_damage_to_boss_events.groupby('ult_src_instid')
-        condi_damage_to_boss_events_by_player = condi_damage_to_boss_events.groupby('ult_src_instid')
+    def preprocess_skills(self, skills, collector):
+        collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
 
-        condi_damage_by_player = non_gap(condi_events).groupby('ult_src_instid')['buff_dmg'].sum()
-        direct_damage_by_player = non_gap(hit_events).groupby('ult_src_instid')['value'].sum()
-        condi_damage_by_player_to_boss = condi_damage_to_boss_events_by_player['buff_dmg'].sum()
-        direct_damage_by_player_to_boss = direct_damage_to_boss_events_by_player['value'].sum()
+    def __init__(self, encounter):
+        self.debug = False
+        self.boss_info = BOSSES[encounter.area_id]
+        collector = Collector.root([Group.CATEGORY,
+                                    Group.PHASE,
+                                    Group.PLAYER,
+                                    Group.SUBGROUP,
+                                    Group.METRICS,
+                                    Group.SOURCE,
+                                    Group.DESTINATION,
+                                    Group.SKILL,
+                                    Group.BUFF,
 
-        # hit percentage while under special condition
-        direct_damage_to_boss_count = direct_damage_to_boss_events_by_player['value'].count()
+                                    ])
 
-        flanking_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_flanking != 0].groupby('ult_src_instid')['value'].count()
-        flanking = flanking_hits_by_player_to_boss_count / direct_damage_to_boss_count
+        #set up data structures
+        events = assign_event_types(encounter.events)
+        agents = encounter.agents
+        skills = encounter.skills
+        players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
+        self.preprocess_skills(skills, collector)
+        self.players = players
+        player_src_events, player_dst_events, boss_events, final_boss_events = self.preprocess_events(events)
+        player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
 
-        ninety_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_ninety != 0].groupby('ult_src_instid')['value'].count()
-        ninety = ninety_hits_by_player_to_boss_count / direct_damage_to_boss_count
-
-        moving_hits_by_player_to_boss_count = direct_damage_to_boss_events[direct_damage_to_boss_events.is_moving != 0].groupby('ult_src_instid')['value'].count()
-        moving = moving_hits_by_player_to_boss_count / direct_damage_to_boss_count
-
-        # identify the timestamp that represents the start of the log, and the
-        # tick ('time') that is equivalent to it
+        #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'][0]
         start_time = start_event['time'][0]
+        encounter_end = events.time.max()
+        state_events = self.assemble_state_data(player_only_events, players, encounter_end)
+        self.state_events = state_events
 
-        # boons (status application events from players targetting players)
-        # because boons linger, we can't use non_gap(apply_events)
-        # TODO ignore gaps for totals later
-        # because this is dipping into Python, we want only the necessary data
-        boon_events = (apply_events[apply_events.dst_instid.isin(players.index)]
-                [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
-        player_or_none = list(players.index) + [0]
-        boonremove_events = (statusremove_events[statusremove_events.dst_instid.isin(player_or_none)]
-                [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
-        boon_update_events = pd.concat([boon_events, boonremove_events]).sort_values('time')
-        for event in boon_update_events.itertuples():
-            pass # TODO
+        BossMetricAnalyser(agents, self.subgroups, self.players, bosses, self.phases).gather_boss_specific_stats(events, collector)
+        buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
+
+        collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
+        collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
+        collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration, state_events)
 
 
-        # export analysis results
 
-        # per player
-        self.players = players.assign(
-                condi = condi_damage_by_player,
-                direct = direct_damage_by_player,
-                condi_dps = condi_damage_by_player / time * 1000,
-                direct_dps = direct_damage_by_player / time * 1000,
-                condi_boss = condi_damage_by_player_to_boss,
-                direct_boss = direct_damage_by_player_to_boss,
-                condi_boss_dps = condi_damage_by_player_to_boss / time * 1000,
-                direct_boss_dps = direct_damage_by_player_to_boss / time * 1000,
-                flanking = flanking,
-                ninety = ninety,
-                moving = moving,
-            )
+        encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
+        encounter_collector.add_data('evtc_version', encounter.version)
+        encounter_collector.add_data('start', start_timestamp, int)
+        encounter_collector.add_data('start_tick', start_time, int)
+        encounter_collector.add_data('end_tick', encounter_end, int)
+        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
+        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty
 
-        # per party
-        self.party = {
-                'direct': direct_damage_by_player.sum(),
-                'condi': condi_damage_by_player.sum(),
-                'direct_boss': direct_damage_by_player_to_boss.sum(),
-                'condi_boss': condi_damage_by_player_to_boss.sum(),
-            }
 
-        # not player-related
-        self.info = {
-                'name': boss.name,
-                'start': int(start_timestamp),
-                'end': int(start_timestamp + int((encounter_end - start_time) / 1000)),
-            }
+        encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
+        for phase in self.phases:
+            phase_collector = encounter_collector.with_key(Group.PHASE, phase[0])
+            phase_collector.add_data('start_tick', phase[1], int)
+            phase_collector.add_data('end_tick', phase[2], int)
+            phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
+
+        #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
+        if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
+            end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
+            key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
+            if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
+                dead_players = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
+                                                 (player_src_events.state_change.isin(end_state_changes))].src_instid.unique()
+                surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))
+                if surviving_players:
+                    success = True
+
+        encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
-        self.data = {
-                # TODO
-            }
+        self.data = collector.all_data
+
+    def assemble_state_data(self, events, players, encounter_end):
+        # Get Up/Down/Death events
+        down_events = events[(events['state_change'] == parser.StateChange.CHANGE_DOWN)
+                            |(events['state_change'] == parser.StateChange.CHANGE_DEAD)
+                            |(events['state_change'] == parser.StateChange.CHANGE_UP)
+                            |(events['state_change'] == parser.StateChange.DESPAWN)
+                            |(events['state_change'] == parser.StateChange.SPAWN)].sort_values(by='time')
+
+        # Produce down state
+        raw_data = np.array([np.arange(0, dtype=int)] * 5, dtype=int).T
+
+        for player in list(players.index):
+            data = np.array([np.arange(0)] * 4).T
+            relevent_events = down_events[down_events['src_instid'] == player]
+
+            state = parser.StateChange.CHANGE_UP
+            start_time = 0
+            for event in relevent_events.itertuples():
+
+                if state == parser.StateChange.CHANGE_DOWN:
+                    data = np.append(data, [[start_time, parser.StateChange.CHANGE_DOWN, event.time - start_time, (event.state_change == parser.StateChange.CHANGE_UP)]], axis=0)
+                elif state == parser.StateChange.CHANGE_DEAD:
+                    data = np.append(data, [[start_time, parser.StateChange.CHANGE_DEAD, event.time - start_time, 0]], axis=0)
+                elif state == parser.StateChange.DESPAWN:
+                    data = np.append(data, [[start_time, parser.StateChange.DESPAWN, event.time - start_time, 0]], axis=0)
+
+                if event.state_change == parser.StateChange.SPAWN:
+                    state = parser.StateChange.CHANGE_DEAD
+                else:
+                    state = event.state_change;
+                start_time = event.time
+
+            if state != parser.StateChange.CHANGE_UP:
+                data = np.append(data, [[start_time, state, encounter_end - start_time, 1]], axis=0)
+
+            data = np.c_[[player] * data.shape[0], data]
+            raw_data = np.r_[raw_data, data]
+
+        return pd.DataFrame(columns = ['player', 'time', 'state', 'duration', 'recovered'], data = raw_data)
+
+    # Note: While this is just broken into areas with comments for now, we may want
+    # a more concrete split in future
+
+    # section: Agent stats (player/boss
+    # subsection: player events
+    def collect_player_state_duration(self, collector, events):
+        split_by_player_groups(collector, self.collect_player_state_duration_by_phase, events, 'player', self.subgroups, self.players)
+
+    def collect_player_state_duration_by_phase(self, collector, events):
+        split_duration_event_by_phase(collector, self.collect_state_duration, events, self.phases)
+
+    def collect_state_duration(self, collector, events):
+        collector.add_data('down_time', events[events['state'] == parser.StateChange.CHANGE_DOWN]['duration'].sum())
+        collector.add_data('dead_time', events[events['state'] == parser.StateChange.CHANGE_DEAD]['duration'].sum())
+        collector.add_data('disconnect_time', events[events['state'] == parser.StateChange.DESPAWN]['duration'].sum())
+
+    def collect_player_combat_events(self, collector, events):
+        split_by_player_groups(collector, self.collect_combat_events_by_phase, events, 'src_instid', self.subgroups, self.players)
+
+    def collect_combat_events_by_phase(self, collector, events):
+        split_by_phase(collector, self.collect_combat_events, events, self.phases)
+
+    def collect_combat_events(self, collector, events):
+        death_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DEAD])
+        down_events = len(events[events['state_change'] == parser.StateChange.CHANGE_DOWN])
+        disconnect_events = len(events[events['state_change'] == parser.StateChange.DESPAWN])
+        collector.add_data('deaths', death_events, int)
+        collector.add_data('downs', down_events, int)
+        collector.add_data('disconnects', disconnect_events, int)
+
+    # subsection: boss stats
+    def collect_individual_boss_key_events(self, collector, events):
+        enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
+        death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
+        collector.add_data("EnterCombat", enter_combat_time, int)
+        collector.add_data("Death", death_time, int)
+
+    def collect_boss_key_events(self, collector, events):
+        boss_events = events[events.ult_src_instid.isin(self.boss_instids)]
+        split_by_boss(collector,
+                           self.collect_individual_boss_key_events,
+                           boss_events,
+                           'ult_src_instid',
+                           Group.BOSS)
+
+    #subsection: player stats
+    def collect_player_status(self, collector, players):
+        # player archetypes
+        players = players.assign(archetype=Archetype.POWER)
+        players.loc[players.condition >= 5, 'archetype'] = Archetype.CONDI
+        players.loc[(players.toughness >= 5) | (players.healing >= 5), 'archetype'] = Archetype.SUPPORT
+        collector.group(self.collect_individual_player_status, players, ('name', Group.PLAYER))
+
+    def collect_individual_player_status(self, collector, player):
+        only_entry = player.iloc[0]
+        collector.add_data('profession', only_entry['prof'], parser.AgentType)
+        collector.add_data('elite', only_entry['elite'], Elite)
+        collector.add_data('toughness', only_entry['toughness'], int)
+        collector.add_data('healing', only_entry['healing'], int)
+        collector.add_data('condition', only_entry['condition'], int)
+        collector.add_data('archetype', only_entry['archetype'], Archetype)
+        collector.add_data('party', only_entry['party'], int)
+        collector.add_data('account', only_entry['account'], str)
+
+    def collect_player_key_events(self, collector, events):
+        # player archetypes
+        player_only_events = events[events.src_instid.isin(self.player_instids)]
+        split_by_player(collector, self.collect_individual_player_key_events, player_only_events, 'src_instid', self.players)
+
+    def collect_individual_player_key_events(self, collector, events):
+        # collector.add_data('profession_name', parser.AgentType(only_entry['prof']).name, str)
+        enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
+        death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
+        collector.add_data("EnterCombat", enter_combat_time, int)
+        collector.add_data("Death", death_time, int)
+
+    #section: Outgoing damage stats filtering
+    def collect_outgoing_damage(self, collector, player_events):
+        damage_events = filter_damage_events(player_events)
+        split_by_phase(collector, self.collect_phase_damage, damage_events, self.phases)
+
+    def collect_phase_damage(self, collector, damage_events):
+        collector.with_key(Group.DESTINATION, "*All").run(self.collect_skill_data, damage_events)
+        split_by_agent(collector,
+                            self.collect_destination_damage,
+                            damage_events,
+                            Group.DESTINATION,
+                            'dst_instid', self.boss_instids, self.player_instids)
+
+
+
+    def collect_destination_damage(self, collector, damage_events):
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_TO_DESTINATION,
+                                    damage_events['damage'].sum())
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                    damage_events['damage'].sum())
+        split_by_player_groups(collector,
+                                    self.aggregate_overall_damage_stats,
+                                    damage_events,
+                                    'ult_src_instid', self.subgroups, self.players)
+
+    def collect_skill_data(self, collector, damage_events):
+        split_by_player(collector,
+                             self.collect_player_skill_damage,
+                             damage_events,
+                             'ult_src_instid', self.players)
+
+    def collect_player_skill_damage(self, collector, events):
+        power_events = events[events.type == LogType.POWER]
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                    events['damage'].sum())
+        split_by_skill(collector, self.aggregate_power_damage_stats, power_events)
+        split_by_skill(collector, self.aggregate_basic_damage_stats, events)
+
+    #subsection incoming damage stat filtering
+    def collect_incoming_damage(self, collector, player_events):
+        damage_events = filter_damage_events(player_events)
+        split_by_phase(collector, self.collect_phase_incoming_damage, damage_events, self.phases)
+
+    def collect_phase_incoming_damage(self, collector, damage_events):
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                    damage_events['damage'].sum())
+        source_collector =  collector.with_key(Group.SOURCE, "*All")
+        split_by_player_groups(source_collector, self.aggregate_basic_damage_stats, damage_events, 'dst_instid', self.subgroups, self.players)
+        split_by_player_groups(source_collector, self.collect_player_incoming_skill_damage, damage_events, 'dst_instid', self.subgroups, self.players)
+
+    def collect_player_incoming_skill_damage(self, collector, events):
+        collector.set_context_value(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION,
+                                    events['damage'].sum())
+        split_by_skill(collector, self.aggregate_basic_damage_stats, events)
+
+    #subsection: Aggregating damage
+    def aggregate_overall_damage_stats(self, collector, events):
+        power_events = events[events.type == LogType.POWER]
+        condi_events = events[events.type == LogType.CONDI]
+        self.aggregate_power_damage_stats(collector, power_events)
+        self.aggregate_basic_damage_stats(collector, events)
+        collector.add_data('power', power_events['damage'].sum(), int)
+        collector.add_data('condi', condi_events['damage'].sum(), int)
+        collector.add_data('power_dps', power_events['damage'].sum(), per_second(int))
+        collector.add_data('condi_dps', condi_events['damage'].sum(), per_second(int))
+
+    def aggregate_power_damage_stats(self, collector, events):
+        collector.add_data('fifty', events['is_fifty'].mean(), percentage)
+        collector.add_data('scholar', events['is_ninety'].mean(), percentage)
+        collector.add_data('seaweed', events['is_moving'].mean(), percentage)
+        collector.add_data('flanking', events['is_flanking'].mean(), percentage)
+
+    def aggregate_basic_damage_stats(self, collector, events):
+        collector.add_data('total', events['damage'].sum(), int)
+        collector.add_data('dps', events['damage'].sum(), per_second(int))
+        collector.add_data('percentage', events['damage'].sum(),
+                           percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
+
+    #Section: buff stats
+    def collect_incoming_buffs(self, collector, buff_data):
+        source_collector = collector.with_key(Group.SOURCE, "*All");
+        phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
+        source_collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, phase_data)
+
+        for i in range(0, len(self.phases)):
+            phase = self.phases[i]
+            phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            source_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
+
+    def collect_buffs_by_target(self, collector, buff_data):
+        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player', self.subgroups, self.players)
+
+    def collect_buffs_by_type(self, collector, buff_data):
+        #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
+        for buff_type in BUFF_TYPES:
+            collector.set_context_value(ContextType.BUFF_TYPE, buff_type)
+            buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
+            collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
+
+    def _split_buff_by_phase(self, diff_data, start, end):
+        across_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > end)]
+
+        #HACK: review why copy?
+        before_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > start) & (diff_data['time'] + diff_data['duration'] <= end)].copy()
+        main_phase = diff_data[(diff_data['time'] >= start) & (diff_data['time'] + diff_data['duration'] <= end)]
+        after_phase = diff_data[(diff_data['time'] >= start) & (diff_data['time'] < end) & (diff_data['time'] + diff_data['duration'] > end)]
+
+        across_phase = across_phase.assign(time = start, duration = end - start, stripped = 0)
+
+        before_phase.loc[:, 'duration'] = before_phase['duration'] + before_phase['time'] - start
+        before_phase = before_phase.assign(time = start, stripped = 0)
+
+        after_phase = after_phase.assign(duration = end)
+        after_phase.loc[:, 'duration'] = after_phase['duration'] - after_phase['time']
+        return across_phase.append(before_phase).append(main_phase).append(after_phase)
+
+    def collect_buff(self, collector, diff_data):
+        total_time = diff_data['duration'].sum()
+        if total_time == 0:
+            mean = 0
+        else:
+            mean = (diff_data['duration'] * diff_data['stacks']).sum() / total_time
+        buff_type = collector.context_values[ContextType.BUFF_TYPE]
+        if buff_type.stacking == StackType.INTENSITY:
+            collector.add_data(None, mean)
+        else:
+            collector.add_data(None, mean, percentage)
