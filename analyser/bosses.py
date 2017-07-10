@@ -129,7 +129,8 @@ BOSS_ARRAY = [
         Metric('Tantrum Knockdowns', 'Tantrumed', MetricType.COUNT),
         Metric('Spores Received', 'Spored', MetricType.COUNT),
         Metric('Spores Blocked', 'Spore Blocks', MetricType.COUNT, True, False, DesiredValue.HIGH),
-        Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE)
+        Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
+        Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
     ]),
     Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD], phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
