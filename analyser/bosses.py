@@ -1,21 +1,26 @@
 from enum import IntEnum
 
 class DesiredValue(IntEnum):
+    LOW = -1
     NONE = 0
     HIGH = 1
-    LOW = 2
 
 class MetricType(IntEnum):
     TIME = 0
     COUNT = 1
 
 class Metric:
-    def __init__(self, name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
+    def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
         self.name = name
+        self.short_name = short_name
+        self.long_name = name # TODO
         self.data_type = data_type
         self.desired = desired
         self.split_by_player = split_by_player
         self.split_by_phase = split_by_phase
+
+    def __repr__(self):
+        return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
     def __init__(self, name, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False):
@@ -82,9 +87,9 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True)
     ], metrics = [
-        Metric('Blue Guardian Invulnerability Time', MetricType.TIME, False),
-        Metric('Bullets Eaten', MetricType.COUNT),
-        Metric('Teleports', MetricType.COUNT)
+        Metric('Blue Guardian Invulnerability Time', 'Blue Invuln', MetricType.TIME, False),
+        Metric('Bullets Eaten', 'Bulleted', MetricType.COUNT),
+        Metric('Teleports', 'Teleported', MetricType.COUNT)
     ]),
     Boss('Gorseval', [0x3C45], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
@@ -93,9 +98,9 @@ BOSS_ARRAY = [
         Phase("Second souls", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True)
     ], metrics = [
-        Metric('Unmitigated Spectral Impacts', MetricType.COUNT, True, True),
-        Metric('Ghastly Imprisonments', MetricType.COUNT),
-        Metric('Spectral Darkness', MetricType.TIME)
+        Metric('Unmitigated Spectral Impacts', 'Slammed', MetricType.COUNT, True, True),
+        Metric('Ghastly Imprisonments', 'Imprisoned', MetricType.COUNT),
+        Metric('Spectral Darkness', 'Tainted', MetricType.TIME)
     ]),
     Boss('Sabetha', [0x3C0F], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),
@@ -106,7 +111,7 @@ BOSS_ARRAY = [
         Phase("Karde", False, phase_end_damage_start = 10000),
         Phase("Phase 4", True)
     ], metrics = [
-        Metric('Heavy Bombs Undefused', MetricType.COUNT, False)
+        Metric('Heavy Bombs Undefused', 'Heavy Bombs', MetricType.COUNT, False)
     ]),
     Boss('Slothasor', [0x3EFB], phases = [
         Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
@@ -121,10 +126,11 @@ BOSS_ARRAY = [
         Phase("Break 5", False, phase_end_damage_start = 1000),
         Phase("Phase 6", True)
     ], metrics = [
-        Metric('Tantrum Knockdowns', MetricType.COUNT),
-        Metric('Spores Received', MetricType.COUNT),
-        Metric('Spores Blocked', MetricType.COUNT, True, False, DesiredValue.HIGH),
-        Metric('Volatile Poison Carrier', MetricType.COUNT, True, False, DesiredValue.NONE)
+        Metric('Tantrum Knockdowns', 'Tantrumed', MetricType.COUNT),
+        Metric('Spores Received', 'Spored', MetricType.COUNT),
+        Metric('Spores Blocked', 'Spore Blocks', MetricType.COUNT, True, False, DesiredValue.HIGH),
+        Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
+        Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
     ]),
     Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD], phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
@@ -142,14 +148,14 @@ BOSS_ARRAY = [
         Phase("Rain", True, phase_end_health = 40),
         Phase("Abomination", True)
     ], metrics = [
-        Metric('Moved While Unbalanced', MetricType.COUNT),
-        Metric('Surrender', MetricType.COUNT),
-        Metric('Burning Stacks Received', MetricType.COUNT, True, True),
-        Metric('Corrupted', MetricType.COUNT, True, False, DesiredValue.NONE),
-        Metric('Matthias Shards Returned', MetricType.COUNT, False),
-        Metric('Shards Absorbed', MetricType.COUNT, True, False, DesiredValue.NONE),
-        Metric('Sacrificed', MetricType.COUNT, True, False, DesiredValue.NONE),
-        Metric('Well of the Profane Carrier', MetricType.COUNT, True, False, DesiredValue.NONE)
+        Metric('Moved While Unbalanced', 'Slipped', MetricType.COUNT),
+        Metric('Surrender', 'Surrendered', MetricType.COUNT),
+        Metric('Burning Stacks Received', 'Burned', MetricType.COUNT, True, True),
+        Metric('Corrupted', 'Corrupted', MetricType.COUNT, True, False, DesiredValue.NONE),
+        Metric('Matthias Shards Returned', 'Reflected', MetricType.COUNT, False),
+        Metric('Shards Absorbed', 'Absorbed', MetricType.COUNT, True, False, DesiredValue.NONE),
+        Metric('Sacrificed', 'Sacrificed', MetricType.COUNT, True, False, DesiredValue.NONE),
+        Metric('Well of the Profane Carrier', 'Welled', MetricType.COUNT, True, False, DesiredValue.NONE)
     ]),
     Boss('Keep Construct', [0x3F6B], phases = [
         # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
@@ -170,7 +176,7 @@ BOSS_ARRAY = [
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),
     ], metrics = [
-        Metric('Derangement', MetricType.COUNT)
+        Metric('Derangement', 'Deranged', MetricType.COUNT)
     ]),
     Boss('Cairn', [0x432A]),
     Boss('Mursaat Overseer', [0x4314]),

@@ -15,6 +15,7 @@ class Skills:
     SPECTRAL_DARKNESS = 31498
     HEAVY_BOMB_EXPLODE = 31596
     TANTRUM = 34479
+    TOXIC_CLOUD = 34565
     BLEEDING = 736
     BURNING = 737
     VOLATILE_POISON = 34387
@@ -147,10 +148,12 @@ class BossMetricAnalyser:
         spores_received = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value > 0) & (events.is_buffremove == 0)]
         spores_blocked = events[(events.skillid == Skills.BLEEDING) & events.dst_instid.isin(self.players.index) & (events.value == 0) & (events.is_buffremove == 0)]
         volatile_poison = events[(events.skillid == Skills.VOLATILE_POISON) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        toxic_cloud = events[(events.skillid == Skills.TOXIC_CLOUD) & events.dst_instid.isin(self.players.index) & (events.value == 0)]                                                                                                                                          
         self.gather_count_stat('Tantrum Knockdowns', collector, True, False, tantrum_hits)
         self.gather_count_stat('Spores Received', collector, True, False, spores_received, lambda e: len(e) / 5)
         self.gather_count_stat('Spores Blocked', collector, True, False, spores_blocked, lambda e: len(e) / 5)
         self.gather_count_stat('Volatile Poison Carrier', collector, True, False, volatile_poison)
+        self.gather_count_stat('Toxic Cloud Breathed', collector, True, False, toxic_cloud)                                                                                                                                           
 
     def gather_matt_stats(self, events, collector):
         unbalanced_events = events[(events.skillid == Skills.UNBALANCED) & events.dst_instid.isin(self.players.index) & (events.buff == 0)]
