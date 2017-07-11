@@ -13,6 +13,7 @@ class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
         self.name = name
         self.short_name = short_name
+        self.long_name = name # TODO
         self.data_type = data_type
         self.desired = desired
         self.split_by_player = split_by_player
@@ -110,7 +111,7 @@ BOSS_ARRAY = [
         Phase("Karde", False, phase_end_damage_start = 10000),
         Phase("Phase 4", True)
     ], metrics = [
-        Metric('Heavy Bombs Undefused', 'Blown Up', MetricType.COUNT, False)
+        Metric('Heavy Bombs Undefused', 'Heavy Bombs', MetricType.COUNT, False)
     ]),
     Boss('Slothasor', [0x3EFB], phases = [
         Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
@@ -128,7 +129,8 @@ BOSS_ARRAY = [
         Metric('Tantrum Knockdowns', 'Tantrumed', MetricType.COUNT),
         Metric('Spores Received', 'Spored', MetricType.COUNT),
         Metric('Spores Blocked', 'Spore Blocks', MetricType.COUNT, True, False, DesiredValue.HIGH),
-        Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE)
+        Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
+        Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
     ]),
     Boss('Bandit Trio', [0x3ED8, 0x3F09, 0x3EFD], phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
