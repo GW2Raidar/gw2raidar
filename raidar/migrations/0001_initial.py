@@ -85,15 +85,6 @@ class Migration(migrations.Migration):
                 ('encounter', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='participations', to='raidar.Encounter')),
             ],
         ),
-        migrations.CreateModel(
-            name='UserProfile',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('portrait_url', models.URLField(null=True)),
-                ('private', models.BooleanField(default=True)),
-                ('user', models.OneToOneField(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL)),
-            ],
-        ),
         migrations.AddField(
             model_name='encounter',
             name='characters',
