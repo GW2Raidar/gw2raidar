@@ -26,7 +26,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
       integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
       crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css?family=Raleway" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Raleway|Raleway:bold" rel="stylesheet">
     <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
@@ -79,42 +79,17 @@
 
               TODO profile - all GW2 accounts, characters with stats
 
+            [[elseif page.name == "uploads"]]
+
+              {% include 'raidar/uploads.html' %}
+
             [[elseif page.name == "account"]]
 
-              <div class="uk-padding">
-                <form class="uk-grid uk-grid-small" on-submit="change_password">
-                  <div class="uk-width-1-4">
-                    <input class="uk-input" type="password" placeholder="Old password" value="[[account.old_password]]"/>
-                  </div>
-                  <div class="uk-width-1-4">
-                    <input class="uk-input" type="password" placeholder="Change password" value="[[account.password]]"/>
-                  </div>
-                  <div class="uk-width-1-4">
-                    <input class="uk-input" type="password" placeholder="Confirm password" value="[[account.password2]]"/>
-                  </div>
-                  <div class="uk-width-1-4">
-                    <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[changePassBad]]">Save</button>
-                  </div>
-                </form>
+              {% include 'raidar/account.html' %}
 
-                <form class="uk-grid uk-grid-small" on-submit="change_email">
-                  <div class="uk-width-3-4">
-                    <input class="uk-input" type="email" placeholder="Change email address" value="[[account.email]]"/>
-                  </div>
-                  <div class="uk-width-1-4">
-                    <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[account.email.match(/^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/) == null]]">Save</button>
-                  </div>
-                </form>
+            [[elseif page.name == "about"]]
 
-                <form class="uk-grid uk-grid-small" on-submit="add_api_key">
-                  <div class="uk-width-3-4">
-                    <input class="uk-input" placeholder="Enter new GW2 API key" value="[[account.api_key]]"/>
-                  </div>
-                  <div class="uk-width-1-4">
-                    <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[account.api_key.match(/^[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{20}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}$/) == null]]" on-click="add_api_key">Save</button>
-                  </div>
-                </form>
-              </div>
+              {% include 'raidar/about.html' %}
 
             [[elseif page.name == "encounter"]]
 
@@ -166,7 +141,14 @@
 
             [[elseif page.name == "reset_pw"]]
 
-              TODO
+              <form class="uk-form-stacked uk-padding-large uk-text-center">
+                <div class="uk-margin">
+                  <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email">
+                </div>
+                <div class="uk-margin">
+                  <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw" disabled="[[authBad]]">Reset password</button><br>
+                </div>
+              </form>
 
             [[else]]
 
@@ -179,25 +161,6 @@
         </div>
 
         <footer class="uk-heading uk-padding-small uk-light uk-background-secondary">
-          <div class="uk-float-right states">
-            [[#each {1: "Uploading", 2: "Analysing", 3: "Uploaded", 4: "Rejected"}:state]]
-              [[#if uploadsByState[state]]]
-                <span class="uk-badge [[.toLowerCase()]]">
-                  [[uploadsByState[state].length]]
-                </span>
-                <div uk-drop="pos: top-right">
-                  <dl class="uk-card uk-card-body uk-card-default">
-                    <dt>[[.]]:</dt>
-                    <dd>
-                      [[#each uploadsByState[state]]]
-                        [[.]]<br>
-                      [[/each]]
-                    </dd>
-                  </dl>
-                </div>
-              [[/if]]
-            [[/each]]
-          </div>
           Footer
         </footer>
       </div>

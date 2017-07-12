@@ -49,7 +49,11 @@ BUFF_TYPES = [
         BuffType('Soothing Mist', 'soothing_mist', StackType.DURATION, 1),
 
         # Necro
-        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1)
+        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1),
+    
+        # Thief
+        BuffType('Lotus Training', 'lotus_training', StackType.DURATION, 1),
+        BuffType('Lead Attacks', 'lead_attacks', StackType.INTENSITY, 15)
     ]
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }
@@ -58,25 +62,24 @@ class BuffTrackIntensity:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type
         self.stack_end_times = []
-        self.start_time = encounter_start
-        self.data = np.array([np.arange(1)] * 4).T
-        self.current_time = 0
+        self.data = np.array([np.arange(0)] * 4).T
+        self.data = np.append(self.data, [[encounter_start, 0, 0, 0]], axis=0)
+        self.current_time = encounter_start
 
     def add_event(self, event):
-        event_time = int(event.time)
-        if event_time != self.current_time:
-            self.simulate_to_time(event_time)
+        if event.time != self.current_time:
+            self.simulate_to_time(event.time)
 
         if event.is_buffremove:
             if len(self.stack_end_times) > 0:
                 self.stack_end_times = []
-                self.record_event(event_time, 0, 1)
+                self.record_event(event.time, 0, 1)
         elif len(self.stack_end_times) < self.buff_type.capacity:
-            self.stack_end_times += [event_time + event.value]
+            self.stack_end_times += [event.time + event.value]
             self.stack_end_times.sort()
-            self.record_event(event_time, len(self.stack_end_times), 0)
-        elif (self.stack_end_times[0] < event_time + event.value):
-            self.stack_end_times[0] = event_time + event.value
+            self.record_event(event.time, len(self.stack_end_times), 0)
+        elif (self.stack_end_times[0] < event.time + event.value):
+            self.stack_end_times[0] = event.time + event.value
             self.stack_end_times.sort()
 
     def simulate_to_time(self, new_time):
@@ -103,22 +106,21 @@ class BuffTrackDuration:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type
         self.stack_durations = np.array([np.arange(0)]).T
-        self.start_time = encounter_start
-        self.data = np.array([np.arange(1)] * 4).T
-        self.current_time = 0
+        self.data = np.array([np.arange(0)] * 4).T
+        self.data = np.append(self.data, [[encounter_start, 0, 0, 0]], axis=0)
+        self.current_time = encounter_start
 
     def add_event(self, event):
-        event_time = int(event.time)
-        if event_time != self.current_time:
-            self.simulate(event_time - self.current_time)
+        if event.time != self.current_time:
+            self.simulate(event.time - self.current_time)
 
         if event.is_buffremove:
             if self.stack_durations.size > 0:
                 self.stack_durations = np.array([np.arange(0)]).T
-                self.record_event(event_time, 0, 1)
+                self.record_event(event.time, 0, 1)
         elif self.stack_durations.size < self.buff_type.capacity:
             if self.stack_durations.size == 0:
-                self.record_event(event_time, 1, 0)
+                self.record_event(event.time, 1, 0)
             self.stack_durations = np.append(self.stack_durations, [event.value])
             self.stack_durations.sort()
         elif (self.stack_durations[0] < event.value):
@@ -128,12 +130,13 @@ class BuffTrackDuration:
     def simulate(self, delta_time):
         remaining_delta = delta_time
         while self.stack_durations.size > 0 and self.stack_durations[0] <= remaining_delta:
+            self.current_time += self.stack_durations[0]
             if self.stack_durations.size == 1:
-                self.record_event(int(self.stack_durations[0] + self.current_time), 0, 0)
+                self.record_event(self.current_time, 0, 0)
             remaining_delta -= self.stack_durations[0]
             self.stack_durations = np.delete(self.stack_durations, 0)
 
-        self.current_time += delta_time
+        self.current_time += remaining_delta
         if self.stack_durations.size > 0:
             self.stack_durations[0] -= remaining_delta
 
@@ -161,12 +164,12 @@ class BuffPreprocessor:
         # Extract out the buff events
         not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
         status_events = not_statusremove_events[not_statusremove_events.buff != 0]
-        apply_events = status_events[status_events.value != 0]
+        apply_events = status_events[(status_events.value != 0)]
         buff_events = (apply_events[apply_events.dst_instid.isin(players.index)]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
 
         # Extract out buff removal events
-        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove != 0]
+        statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
         buffremove_events = (statusremove_events[statusremove_events.dst_instid.isin(list(players.index))]
                 [['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']])
 
@@ -176,18 +179,22 @@ class BuffPreprocessor:
         # Add in skill ids for ease of processing
         buff_update_events = buff_update_events.join(skills, how='inner', on='skillid').sort_values(by='time');
 
+        buff_update_events[['time', 'value']] = buff_update_events[['time', 'value']].apply(pd.to_numeric)
+        
         raw_buff_data = np.array([]).reshape(0,6)
         for buff_type in BUFF_TYPES: 
             buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
             for player in list(players.index):
+                agent_start_time = self.get_time(player_events[player_events['src_instid'] == player], parser.StateChange.SPAWN, start_time)
+                agent_end_time = self.get_time(player_events[player_events['src_instid'] == player], parser.StateChange.DESPAWN, end_time)
                 if (buff_type.stacking == StackType.INTENSITY):
-                    bufftrack = BuffTrackIntensity(BUFFS[buff_type.name], start_time, end_time)
+                    bufftrack = BuffTrackIntensity(BUFFS[buff_type.name], agent_start_time, agent_end_time)
                 else:
-                    bufftrack = BuffTrackDuration(BUFFS[buff_type.name], start_time, end_time)
+                    bufftrack = BuffTrackDuration(BUFFS[buff_type.name], agent_start_time, agent_end_time)
                 relevent_events = buff_events[buff_events['dst_instid'] == player]
                 for event in relevent_events.itertuples():
                     bufftrack.add_event(event)
-                bufftrack.end_track(end_time)
+                bufftrack.end_track(agent_end_time)
 
                 track_data = bufftrack.data
                 track_data = np.c_[[buff_type.code] * track_data.shape[0], [player] * track_data.shape[0], track_data]
@@ -196,3 +203,10 @@ class BuffPreprocessor:
         buff_data = pd.DataFrame(columns = ['buff', 'player', 'time', 'stacks', 'stripped', 'duration'], data = raw_buff_data)
         buff_data[['player', 'time', 'stacks', 'duration']] = buff_data[['player', 'time', 'stacks', 'duration']].apply(pd.to_numeric)
         return buff_data;
+    
+    def get_time(self, player_events, state, start_time):
+        event = player_events[player_events['state_change'] == state]
+        if len(event) > 0:
+            return event.iloc[0]['time']
+        return start_time
+        

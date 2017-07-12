@@ -6,6 +6,7 @@ from evtcparser import *
 from analyser import *
 from enum import IntEnum
 import json
+from zipfile import ZipFile
 
 def is_basic_value(node):
     try:
@@ -47,10 +48,24 @@ def main():
     filename = sys.argv[1]
 
     print("Parsing {0}".format(filename))
+
+    zipfile = None
+
     with open(sys.argv[1], mode='rb') as file:
+
+        if filename.endswith('.evtc.zip'):
+            zipfile = ZipFile(file)
+            contents = zipfile.infolist()
+            if len(contents) == 1:
+                file = zipfile.open(contents[0].filename)
+            else:
+                print('Only single-file ZIP archives are allowed', file=sys.stderr)
+                sys.exit(1)
+
         start = time.clock()
         e = parser.Encounter(file)
         print("Parsing took {0} seconds".format(time.clock() - start))
+        print("Evtc version {0}".format(e.version))
 
         start = time.clock()
         a = analyser.Analyser(e)

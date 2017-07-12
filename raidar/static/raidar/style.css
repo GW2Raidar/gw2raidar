@@ -25,6 +25,9 @@
   color: #999999;
   font-size: 70%;
 }
+.ignore {
+  color: #bbbbbb;
+}
 .uk-h1, .uk-h2, .uk-h3, .uk-h4, .uk-h5, .uk-h6, h1, h2, h3, h4, h5, h6,
 body
 {
@@ -68,7 +71,6 @@ table.row-header {
   height: 0;
   width: 0;
   background: #ffffff;
-  pointer-events: none;
 }
 
 table td {
@@ -77,4 +79,8 @@ table td {
 
 input[type="date"] {
   max-width: 160px;
+}
+
+.link {
+  cursor: pointer;
 }

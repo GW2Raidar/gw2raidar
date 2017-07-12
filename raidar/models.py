@@ -1,5 +1,6 @@
 from django.db import models
 from django.db.models.signals import post_save
+from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
@@ -45,7 +46,7 @@ class Account(models.Model):
             r'-'.join(r'[0-9A-F]{%d}' % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r'$',
             re.IGNORECASE)
 
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.CASCADE, related_name='accounts')
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='accounts')
     name = models.CharField(max_length=64, unique=True, validators=[RegexValidator(ACCOUNT_NAME_RE)])
     api_key = models.CharField('API key', max_length=72, blank=True, validators=[RegexValidator(API_KEY_RE)])
 
@@ -106,18 +107,7 @@ class Character(models.Model):
         ordering = ('name',)
 
 
-class EncounterManager(models.Manager):
-    # hash account names at construction
-    # (do they need to ever be updated? I don't think so)
-    def update_or_create(self, *args, **kwargs):
-        account_names = kwargs.pop('account_names', False)
-        if account_names:
-            kwargs['account_hash'] = Encounter.calculate_account_hash(account_names)
-        return super(EncounterManager, self).update_or_create(*args, **kwargs)
-
 class Encounter(models.Model):
-    objects = EncounterManager()
-
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
     success = models.BooleanField()
@@ -133,11 +123,10 @@ class Encounter(models.Model):
     started_at_half = models.IntegerField(editable=False)
 
     def __str__(self):
-        return '%s (%s)' % (self.area.name, self.started_at)
+        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
 
     def save(self, *args, **kwargs):
-        self.started_at_full = round(self.started_at / START_RESOLUTION) * START_RESOLUTION
-        self.started_at_half = round((self.started_at + START_RESOLUTION / 2) / START_RESOLUTION) * START_RESOLUTION
+        self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
 
     @staticmethod
@@ -145,6 +134,13 @@ class Encounter(models.Model):
         conc = ':'.join(sorted(account_names))
         hash_object = md5(conc.encode())
         return hash_object.hexdigest()
+
+    @staticmethod
+    def calculate_start_guards(started_at):
+        started_at_full = round(started_at / START_RESOLUTION) * START_RESOLUTION
+        started_at_half = round((started_at + START_RESOLUTION / 2) / START_RESOLUTION) * START_RESOLUTION
+        return (started_at_full, started_at_half)
+
 
     class Meta:
         index_together = ('area', 'started_at')
@@ -157,15 +153,16 @@ class Encounter(models.Model):
 
 class Participation(models.Model):
     ARCHETYPE_CHOICES = (
-            (Archetype.POWER, "Power"),
-            (Archetype.CONDI, "Condi"),
-            (Archetype.TANK, "Tank"),
-            (Archetype.HEAL, "Heal"),
+            (int(Archetype.POWER), "Power"),
+            (int(Archetype.CONDI), "Condi"),
+            (int(Archetype.TANK), "Tank"),
+            (int(Archetype.HEAL), "Heal"),
+            (int(Archetype.SUPPORT), "Support"),
         )
 
     ELITE_CHOICES = (
-            (Elite.CORE, "Core"),
-            (Elite.HEART_OF_THORNS, "Heart of Thorns"),
+            (int(Elite.CORE), "Core"),
+            (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
