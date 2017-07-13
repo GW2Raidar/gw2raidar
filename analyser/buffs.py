@@ -185,13 +185,21 @@ class BuffPreprocessor:
         for buff_type in BUFF_TYPES: 
             buff_events = buff_update_events[buff_update_events['name'] == buff_type.name]
             for player in list(players.index):
+                relevent_events = buff_events[buff_events['dst_instid'] == player]
+                
                 agent_start_time = self.get_time(player_events[player_events['src_instid'] == player], parser.StateChange.SPAWN, start_time)
                 agent_end_time = self.get_time(player_events[player_events['src_instid'] == player], parser.StateChange.DESPAWN, end_time)
+                if len(relevent_events) > 0:
+                    if relevent_events.time.min() < agent_start_time:
+                        agent_start_time = start_time
+                    if relevent_events.time.max() > agent_end_time:
+                        agent_end_time = end_time
+                    
                 if (buff_type.stacking == StackType.INTENSITY):
                     bufftrack = BuffTrackIntensity(BUFFS[buff_type.name], agent_start_time, agent_end_time)
                 else:
                     bufftrack = BuffTrackDuration(BUFFS[buff_type.name], agent_start_time, agent_end_time)
-                relevent_events = buff_events[buff_events['dst_instid'] == player]
+                
                 for event in relevent_events.itertuples():
                     bufftrack.add_event(event)
                 bufftrack.end_track(agent_end_time)
