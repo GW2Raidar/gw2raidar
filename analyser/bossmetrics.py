@@ -27,6 +27,9 @@ class Skills:
     UNSTABLE_BLOOD_MAGIC = 34450
     DERANGEMENT = 34965
     DISPLACEMENT = 38113
+    METEOR_SWARM = 38313
+    SHARED_AGONY = 38049
+    SPATIAL_MANIPULATION = {37611, 37642, 37673, 38074, 38302}
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -216,4 +219,10 @@ class BossMetricAnalyser:
     
     def gather_cairn_stats(self, events, collector):
         displacement_events = events[(events.skillid == Skills.DISPLACEMENT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        meteor_swarm_events = events[(events.skillid == Skills.METEOR_SWARM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        spatial_manipulation_events = events[(events.skillid.isin(Skills.SPATIAL_MANIPULATION)) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        shared_agony_events = events[(events.skillid == Skills.SHARED_AGONY) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)] 
         self.gather_count_stat('Displacement', collector, True, False, displacement_events)
+        self.gather_count_stat('Meteor Swarm', collector, True, False, meteor_swarm_events)
+        self.gather_count_stat('Spatial Manipulation', collector, True, False, spatial_manipulation_events)
+        self.gather_count_stat('Shared Agony', collector, True, False, shared_agony_events)

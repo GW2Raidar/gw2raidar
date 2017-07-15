@@ -179,7 +179,10 @@ BOSS_ARRAY = [
         Metric('Derangement', 'Deranged', MetricType.COUNT)
     ]),
     Boss('Cairn', [0x432A], metrics = [
-        Metric('Displacement', 'Teleported', MetricType.COUNT)
+        Metric('Displacement', 'Teleported', MetricType.COUNT),
+        Metric('Meteor Swarm', 'Shard Hits', MetricType.COUNT),
+        Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
+        Metric('Shared Agony', 'Agony', MetricType.COUNT)
     ]),
     Boss('Mursaat Overseer', [0x4314]),
     Boss('Samarog', [0x4324], phases = [
