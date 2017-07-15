@@ -177,7 +177,7 @@ class BuffPreprocessor:
         buff_update_events = pd.concat([buff_events, buffremove_events]).sort_values('time')
 
         # Add in skill ids for ease of processing
-        buff_update_events = buff_update_events.join(skills, how='inner', on='skillid').sort_values(by='time');
+        buff_update_events = buff_update_events.join(skills, how='inner', on='skillid').sort_values(by='time')
 
         buff_update_events[['time', 'value']] = buff_update_events[['time', 'value']].apply(pd.to_numeric)
         
