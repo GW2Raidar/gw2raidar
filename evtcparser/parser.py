@@ -202,8 +202,6 @@ class Encounter:
         #self.addr_agents = self.agents.set_index('addr')
         # deal with duplicate inst_id for different addrs
         self.agents = pd.merge(left=self.agents,right=agent_map[['addr', 'new_id']].rename(columns={'new_id' : 'inst_id'}), how='left')
-        del self.events['src_agent']
-        del self.events['dst_agent']
         del self.events['old_src_master_instid']
         del self.agents['addr']
 
