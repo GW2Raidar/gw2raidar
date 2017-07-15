@@ -177,14 +177,35 @@ class Encounter:
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
     def _add_inst_id_to_agents(self):
-        src_agent_map = self.events[['src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
-        dst_agent_map = self.events[['dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
-        agent_map = pd.concat([src_agent_map, dst_agent_map])
-        agent_map = agent_map[agent_map.inst_id != 0].drop_duplicates().set_index('addr')
+        src_agent_map = self.events[['time', 'src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
+        dst_agent_map = self.events[['time', 'dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
 
+        agent_map = pd.concat([src_agent_map, dst_agent_map])
+        agent_map = agent_map[agent_map.inst_id != 0]
+        agent_map = agent_map.sort_values(by='time')
+        agent_map = agent_map.groupby(['addr']).first()
+        agent_map = agent_map.sort_values(by='time')
+        agent_map.insert(0, 'new_id', range(1, 1 + len(agent_map)))
+        agent_map = agent_map.reset_index()
+        
+        del self.events['src_instid']
+        del self.events['dst_instid']
+        self.events = pd.merge(left=self.events,right=agent_map[['addr', 'new_id']].rename(columns={'addr' : 'src_agent', 'new_id' : 'src_instid'}), how='left', left_on='src_agent', right_on='src_agent')
+        self.events = pd.merge(left=self.events,right=agent_map[['addr', 'new_id']].rename(columns={'addr' : 'dst_agent', 'new_id' : 'dst_instid'}), how='left')
+        instid_map = agent_map.groupby(['inst_id']).first()
+        instid_map = instid_map.reset_index()
+        self.events = self.events.rename(columns={'src_master_instid' : 'old_src_master_instid'})
+        self.events = pd.merge(left=self.events,right=instid_map[['inst_id', 'new_id']].rename(columns={'inst_id' : 'old_src_master_instid', 'new_id' : 'src_master_instid'}), how='left') 
+        self.events.fillna(0, inplace=True)
+        self.events[['src_instid', 'dst_instid','src_master_instid']] = self.events[['src_instid', 'dst_instid','src_master_instid']].astype(np.int64)
+        
         #self.addr_agents = self.agents.set_index('addr')
         # deal with duplicate inst_id for different addrs
-        self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
+        self.agents = pd.merge(left=self.agents,right=agent_map[['addr', 'new_id']].rename(columns={'new_id' : 'inst_id'}), how='left')
+        del self.events['src_agent']
+        del self.events['dst_agent']
+        del self.events['old_src_master_instid']
+        del self.agents['addr']
 
     def __init__(self, file):
         try:
