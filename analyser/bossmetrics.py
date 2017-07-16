@@ -26,6 +26,10 @@ class Skills:
     SACRIFICE = 34442
     UNSTABLE_BLOOD_MAGIC = 34450
     DERANGEMENT = 34965
+    DISPLACEMENT = 38113
+    METEOR_SWARM = 38313
+    SHARED_AGONY = 38049
+    SPATIAL_MANIPULATION = {37611, 37642, 37673, 38074, 38302}
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -102,6 +106,8 @@ class BossMetricAnalyser:
             self.gather_matt_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Xera']) != 0:
             self.gather_xera_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Cairn the Indomitable']) != 0:
+            self.gather_cairn_stats(events, metric_collector)
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
@@ -153,7 +159,7 @@ class BossMetricAnalyser:
         self.gather_count_stat('Spores Received', collector, True, False, spores_received, lambda e: len(e) / 5)
         self.gather_count_stat('Spores Blocked', collector, True, False, spores_blocked, lambda e: len(e) / 5)
         self.gather_count_stat('Volatile Poison Carrier', collector, True, False, volatile_poison)
-        self.gather_count_stat('Toxic Cloud Breathed', collector, True, False, toxic_cloud)                                                                                                                                           
+        self.gather_count_stat('Toxic Cloud Breathed', collector, True, False, toxic_cloud)                             
 
     def gather_matt_stats(self, events, collector):
         unbalanced_events = events[(events.skillid == Skills.UNBALANCED) & events.dst_instid.isin(self.players.index) & (events.buff == 0)]
@@ -179,7 +185,6 @@ class BossMetricAnalyser:
         derangement_events = events[(events.skillid == Skills.DERANGEMENT) & (events.buff == 1) & ((events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0))|(events.src_instid.isin(self.players.index) & (events.is_buffremove == 1)))]
         self.gather_count_stat('Derangement', collector, True, False, derangement_events[derangement_events.is_buffremove == 0])
         #self.xera_derangement_max_stacks('Peak Derangement', collector, derangement_events)
-
 
     def xera_derangement_max_stacks(self, name, collector, events):
         events = events.sort_values(by='time')
@@ -211,3 +216,13 @@ class BossMetricAnalyser:
         def max_stacks(collector, data):
             collector.add_data(name, data['max_stacks'].max(), int)
         split_by_player_groups(collector, max_stacks, data, 'player', self.subgroups, self.players)
+    
+    def gather_cairn_stats(self, events, collector):
+        displacement_events = events[(events.skillid == Skills.DISPLACEMENT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        meteor_swarm_events = events[(events.skillid == Skills.METEOR_SWARM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        spatial_manipulation_events = events[(events.skillid.isin(Skills.SPATIAL_MANIPULATION)) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        shared_agony_events = events[(events.skillid == Skills.SHARED_AGONY) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)] 
+        self.gather_count_stat('Displacement', collector, True, False, displacement_events)
+        self.gather_count_stat('Meteor Swarm', collector, True, False, meteor_swarm_events)
+        self.gather_count_stat('Spatial Manipulation', collector, True, False, spatial_manipulation_events)
+        self.gather_count_stat('Shared Agony', collector, True, False, shared_agony_events)
