@@ -356,6 +356,8 @@ class Analyser:
                                     
                                     ])
 
+        #print_frame(encounter.duplicate_id_agents)
+
         #set up data structures
         events = assign_event_types(encounter.events)
         agents = encounter.agents
@@ -710,6 +712,7 @@ class Analyser:
         collector.add_data('scholar', events['is_ninety'].mean(), percentage)
         collector.add_data('seaweed', events['is_moving'].mean(), percentage)
         collector.add_data('flanking', events['is_flanking'].mean(), percentage)
+        collector.add_data('crit', (events.result == parser.Result.CRIT).mean(), percentage)
 
     def aggregate_basic_damage_stats(self, collector, events):
         collector.add_data('total', events['damage'].sum(), int)
