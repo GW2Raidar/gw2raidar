@@ -194,6 +194,8 @@ class Analyser:
 
                                     ])
 
+        #print_frame(encounter.duplicate_id_agents)
+
         #set up data structures
         events = assign_event_types(encounter.events)
         agents = encounter.agents
@@ -284,9 +286,7 @@ class Analyser:
                 elif state == parser.StateChange.DESPAWN:
                     data = np.append(data, [[start_time, parser.StateChange.DESPAWN, event.time - start_time, 0]], axis=0)
 
-                if event.state_change == parser.StateChange.SPAWN:
-                    state = parser.StateChange.CHANGE_DEAD
-                else:
+                if event.state_change != parser.StateChange.SPAWN:
                     state = event.state_change;
                 start_time = event.time
 
@@ -445,6 +445,7 @@ class Analyser:
         collector.add_data('scholar', events['is_ninety'].mean(), percentage)
         collector.add_data('seaweed', events['is_moving'].mean(), percentage)
         collector.add_data('flanking', events['is_flanking'].mean(), percentage)
+        collector.add_data('crit', (events.result == parser.Result.CRIT).mean(), percentage)
 
     def aggregate_basic_damage_stats(self, collector, events):
         collector.add_data('total', events['damage'].sum(), int)
