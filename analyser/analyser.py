@@ -284,9 +284,7 @@ class Analyser:
                 elif state == parser.StateChange.DESPAWN:
                     data = np.append(data, [[start_time, parser.StateChange.DESPAWN, event.time - start_time, 0]], axis=0)
 
-                if event.state_change == parser.StateChange.SPAWN:
-                    state = parser.StateChange.CHANGE_DEAD
-                else:
+                if event.state_change != parser.StateChange.SPAWN:
                     state = event.state_change;
                 start_time = event.time
 
