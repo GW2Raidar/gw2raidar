@@ -30,6 +30,10 @@ class Skills:
     METEOR_SWARM = 38313
     SHARED_AGONY = 38049
     SPATIAL_MANIPULATION = {37611, 37642, 37673, 38074, 38302}
+    PROTECT = 37813
+    CLAIM = 37779
+    DISPEL = 37697
+    SOLDIERS_AURA = 37677
 
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -108,6 +112,8 @@ class BossMetricAnalyser:
             self.gather_xera_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Cairn the Indomitable']) != 0:
             self.gather_cairn_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Mursaat Overseer']) != 0:
+            self.gather_mursaat_overseer_stats(events, metric_collector)
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
@@ -226,3 +232,17 @@ class BossMetricAnalyser:
         self.gather_count_stat('Meteor Swarm', collector, True, False, meteor_swarm_events)
         self.gather_count_stat('Spatial Manipulation', collector, True, False, spatial_manipulation_events)
         self.gather_count_stat('Shared Agony', collector, True, False, shared_agony_events)
+
+        
+    def gather_mursaat_overseer_stats(self, events, collector):
+        protect_events = events[(events.skillid == Skills.PROTECT) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        claim_events = events[(events.skillid == Skills.CLAIM) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        soldiers_aura_events = events[(events.skillid == Skills.SOLDIERS_AURA) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        soldiers = events[(events.skillid == Skills.SOLDIERS_AURA)].groupby('src_instid').first()
+        
+        self.gather_count_stat('Protect', collector, True, False, protect_events)
+        self.gather_count_stat('Claim', collector, True, False, claim_events)
+        self.gather_count_stat('Dispel', collector, True, False, dispel_events)
+        self.gather_count_stat('Soldiers', collector, False, False, soldiers)
+        self.gather_count_stat('Soldier\'s Aura', collector, True, False, soldiers_aura_events)
