@@ -9,7 +9,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('raidar', '0009_add_first_era'),
+        ('raidar', '0006_add_first_era'),
     ]
 
     operations = [

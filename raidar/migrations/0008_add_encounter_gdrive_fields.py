@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('raidar', '0010_encounter_era'),
+        ('raidar', '0007_encounter_era'),
     ]
 
     operations = [

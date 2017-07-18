@@ -370,7 +370,7 @@ def upload(request):
     if not area:
         return _error('Unknown area')
 
-    era = Era.objects.latest('started_at')
+    era = Era.by_time(started_at)
 
     # XXX
 
@@ -384,9 +384,6 @@ def upload(request):
     status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
     account_names = [player['account'] for player in status_for.values()]
 
-    # TODO when arc implements it, get guid from analyser, with time as backup
-    guid = "ts-%013x" % int(time() * 1000000)
-
     with transaction.atomic():
         # heuristics to see if the encounter is a re-upload:
         # a character can only be in one raid at a time
@@ -398,7 +395,7 @@ def upload(request):
         try:
             encounter = Encounter.objects.get(
                 Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
-                area=area, account_hash=account_hash, guid=guid
+                area=area, account_hash=account_hash
             )
             encounter.era = era
             encounter.filename = filename
@@ -415,9 +412,9 @@ def upload(request):
             encounter = Encounter.objects.create(
                 filename=filename, uploaded_at=time(), uploaded_by=request.user,
                 duration=duration, success=success, dump=json_dumps(dump),
-                area=area, started_at=started_at,
+                area=area, era=era, started_at=started_at,
                 started_at_full=started_at_full, started_at_half=started_at_half,
-                account_hash=account_hash, era=era, guid=guid
+                account_hash=account_hash
             )
 
         for name, player in status_for.items():

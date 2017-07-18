@@ -18,7 +18,7 @@ def _forwards_func(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('raidar', '0008_era'),
+        ('raidar', '0005_era'),
     ]
 
     operations = [

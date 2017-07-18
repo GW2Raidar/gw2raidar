@@ -116,6 +116,10 @@ class Era(models.Model):
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
 
+    @staticmethod
+    def by_time(started_at):
+        return Era.objects.filter(started_at__lte=started_at).latest('started_at')
+
 
 class Encounter(models.Model):
     started_at = models.IntegerField(db_index=True)
@@ -132,8 +136,6 @@ class Encounter(models.Model):
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
-    # real fix for uniqueness
-    guid = models.CharField(max_length=16, editable=False, unique=True)
     # Google Drive
     gdrive_id = models.CharField(max_length=255, editable=False, null=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True)

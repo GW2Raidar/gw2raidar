@@ -13,7 +13,7 @@ def gen_user_profile(apps, schema_editor):
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('raidar', '0011_add_encounter_gdrive_fields'),
+        ('raidar', '0008_add_encounter_gdrive_fields'),
     ]
 
     operations = [
