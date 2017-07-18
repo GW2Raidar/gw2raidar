@@ -102,7 +102,7 @@ class Command(BaseCommand):
         }
         queryset = Encounter.objects.all()
         buffs = set()
-        main_stats = ['dps', 'dps_boss', 'dps_received', 'seaweed', 'scholar']
+        main_stats = ['dps', 'dps_boss', 'dps_received', 'crit', 'seaweed', 'scholar']
         for encounter in queryset_iterator(queryset):
             try:
                 totals_in_area = get_or_create(totals['area'], encounter.area_id)
@@ -130,6 +130,7 @@ class Command(BaseCommand):
                         get_or_create_then_increment(group_totals, 'dps_boss', stats_in_phase_to_boss, 'dps')
                         get_or_create_then_increment(group_totals, 'dps_received', stats_in_phase_received, 'dps')
                         get_or_create_then_increment(group_totals, 'total_received', stats_in_phase_received, 'total')
+                        get_or_create_then_increment(group_totals, 'crit', stats_in_phase_to_all)
                         get_or_create_then_increment(group_totals, 'seaweed', stats_in_phase_to_all)
                         get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all)
                         get_or_create_then_increment(group_totals, 'flanking', stats_in_phase_to_all)
@@ -143,6 +144,7 @@ class Command(BaseCommand):
                     find_bounds(group_totals, 'dps_boss', stats_in_phase_to_boss, 'dps')
                     find_bounds(group_totals, 'dps_received', stats_in_phase_received, 'dps')
                     find_bounds(group_totals, 'total_received', stats_in_phase_received, 'total')
+                    find_bounds(group_totals, 'crit', stats_in_phase_to_all)
                     find_bounds(group_totals, 'seaweed', stats_in_phase_to_all)
                     find_bounds(group_totals, 'scholar', stats_in_phase_to_all)
                     find_bounds(group_totals, 'flanking', stats_in_phase_to_all)
@@ -167,12 +169,16 @@ class Command(BaseCommand):
 
                             if encounter.success:
                                 get_or_create_then_increment(totals_by_archetype, 'dps', stats_in_phase_to_all)
+                                get_or_create_then_increment(totals_by_archetype, 'crit', stats_in_phase_to_all)
                                 get_or_create_then_increment(totals_by_archetype, 'seaweed', stats_in_phase_to_all)
                                 get_or_create_then_increment(totals_by_archetype, 'scholar', stats_in_phase_to_all)
                                 get_or_create_then_increment(totals_by_archetype, 'flanking', stats_in_phase_to_all)
 
                             find_bounds(totals_by_archetype, 'dps', stats_in_phase_to_all)
                             find_bounds(individual_totals, 'dps', stats_in_phase_to_all)
+
+                            find_bounds(totals_by_archetype, 'crit', stats_in_phase_to_all)
+                            find_bounds(individual_totals, 'crit', stats_in_phase_to_all)
 
                             find_bounds(totals_by_archetype, 'seaweed', stats_in_phase_to_all)
                             find_bounds(individual_totals, 'seaweed', stats_in_phase_to_all)
@@ -228,6 +234,7 @@ class Command(BaseCommand):
                 calculate_average(group_totals, 'dps_boss')
                 calculate_average(group_totals, 'dps_received')
                 calculate_average(group_totals, 'total_received')
+                calculate_average(group_totals, 'crit')
                 calculate_average(group_totals, 'seaweed')
                 calculate_average(group_totals, 'scholar')
                 calculate_average(group_totals, 'flanking')
@@ -244,6 +251,7 @@ class Command(BaseCommand):
                             calculate_average(totals_by_archetype, 'dps_boss')
                             calculate_average(totals_by_archetype, 'dps_received')
                             calculate_average(totals_by_archetype, 'total_received')
+                            calculate_average(totals_by_archetype, 'crit')
                             calculate_average(totals_by_archetype, 'seaweed')
                             calculate_average(totals_by_archetype, 'scholar')
                             calculate_average(totals_by_archetype, 'flanking')
