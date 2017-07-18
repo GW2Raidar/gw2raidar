@@ -11,6 +11,7 @@
           <th>DPS to Boss</th>
           <th>DPS Received</th>
           <th>Dmg Received</th>
+          <th>Crit</th>
           <th>Seaweed</th>
           <th>Scholar</th>
           <th>Flanking</th>
@@ -56,6 +57,12 @@
               <td></td>
             [[/with]]
             [[#with actual]]
+              <td style="[[#if group && group.avg_crit]][[bar(crit, group.avg_crit, group.min_crit, group.max_crit, 100)]][[else]][[bar1(crit, 100)]][[/if]]">
+                <span>[[crit]]%</span>
+                [[#if group && group.avg_crit]]
+                <span class="expected">[[group.avg_crit.toPrecision(3)]]%</span>
+                [[/if]]
+              </td>
               <td style="[[#if group && group.avg_seaweed]][[bar(seaweed, group.avg_seaweed, group.min_seaweed, group.max_seaweed, 100)]][[else]][[bar1(seaweed, 100)]][[/if]]">
                 <span>[[seaweed]]%</span>
                 [[#if group && group.avg_seaweed]]
@@ -105,6 +112,9 @@
                 <td></td>
               [[/with]]
               [[#with actual]]
+                <td style="[[bar1(crit, 100)]]">
+                  <span>[[crit]]%</span>
+                </td>
                 <td style="[[bar1(seaweed, 100)]]">
                   <span>[[seaweed]]%</span>
                 </td>
@@ -127,6 +137,7 @@
             <th>DPS To Boss</th>
             <th>DPS Received</th>
             <th>Dmg Received</th>
+            <th>Crit</th>
             <th>Seaweed</th>
             <th>Scholar</th>
             <th>Flanking</th>
@@ -177,6 +188,12 @@
                   <td>0</td>
                 [[/with]]
                 [[#with actual]]
+                  <td style="[[#if archetype.avg_crit]][[bar(actual ? actual.crit : 0, archetype.avg_crit, archetype.min_crit, archetype.max_crit, 100)]][[else]][[bar1(actual ? actual.crit : 0, 100)]][[/if]]">
+                    <span>[[crit]]%</span>
+                    [[#if archetype.avg_crit]]
+                      <span class="expected">[[archetype.avg_crit.toPrecision(3)]]%</span>
+                    [[/if]]
+                  </td>
                   <td style="[[#if archetype.avg_seaweed]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
                     <span>[[seaweed]]%</span>
                     [[#if archetype.avg_seaweed]]
