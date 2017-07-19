@@ -5,6 +5,7 @@ from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
 from analyser.analyser import Archetype, Elite
+from json import loads as json_loads, dumps as json_dumps
 import re
 
 
@@ -119,6 +120,50 @@ class Era(models.Model):
     @staticmethod
     def by_time(started_at):
         return Era.objects.filter(started_at__lte=started_at).latest('started_at')
+
+
+class Upload(models.Model):
+    filename = models.CharField(max_length=255)
+    uploaded_at = models.IntegerField(db_index=True)
+    uploaded_by = models.ForeignKey(User, related_name='unprocessed_uploads')
+
+    def __str__(self):
+        return '%s (%s)' % (self.filename, self.uploaded_by.username)
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+
+class Variable(models.Model):
+    key = models.CharField(max_length=255, primary_key=True)
+    value = models.TextField(null=True)
+
+    def __str__(self):
+        return '%s=%s' % (self.key, self.val)
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+    def get(name):
+        return Variable.objects.get(key=name).val
+
+    def set(name, value):
+        Variable.objects.update_or_create(key=name, defaults={'val': value})
 
 
 class Encounter(models.Model):
