@@ -24,7 +24,6 @@ from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile, dirname
 from re import match, sub
 from time import time
-from zipfile import ZipFile
 import logging
 
 

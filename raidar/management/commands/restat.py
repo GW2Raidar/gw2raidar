@@ -13,6 +13,7 @@ from time import time
 from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
 from gw2raidar import settings
+from zipfile import ZipFile
 from os.path import join as path_join
 from os import sep as dirsep
 
@@ -205,6 +206,7 @@ class Command(BaseCommand):
                 analyser = Analyser(evtc_encounter)
 
                 dump = analyser.data
+                uploader = upload.uploaded_by
 
                 started_at = dump['Category']['encounter']['start']
                 duration = dump['Category']['encounter']['duration']
@@ -279,6 +281,16 @@ class Command(BaseCommand):
                                 "encounter_id": encounter.id,
                                 "encounter": participation.data(),
                             })
+                            if account.user_id == uploader.id:
+                                uploader = None
+
+                if uploader:
+                    Notification.objects.create(user=uploader, val={
+                        "type": "upload",
+                        "upload_id": upload.id,
+                        "filename": upload.filename,
+                        "encounter_id": encounter.id,
+                    })
 
                 if gdrive_service:
                     media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
