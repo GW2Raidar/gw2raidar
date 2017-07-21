@@ -8,7 +8,6 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
-from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.middleware.csrf import get_token
@@ -22,7 +21,7 @@ from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
 from os import makedirs, sep as dirsep
-from os.path import join as path_join, isfile
+from os.path import join as path_join, isfile, dirname
 from re import match, sub
 from time import time
 from zipfile import ZipFile
@@ -61,25 +60,10 @@ def _userprops(request):
     else:
         return {}
 
-def _participation_data(participation):
-    return {
-            'id': participation.encounter.id,
-            'area': participation.encounter.area.name,
-            'started_at': participation.encounter.started_at,
-            'duration': participation.encounter.duration,
-            'character': participation.character.name,
-            'account': participation.character.account.name,
-            'profession': participation.character.profession,
-            'archetype': participation.archetype,
-            'elite': participation.elite,
-            'uploaded_at': participation.encounter.uploaded_at,
-            'success': participation.encounter.success,
-        }
-
 
 def _encounter_data(request):
     participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
-    return [_participation_data(participation) for participation in participations]
+    return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
     auth_login(request, user)
@@ -204,6 +188,9 @@ def encounter(request, id=None, json=None):
             "parties": parties,
         }
     }
+    if encounter.gdrive_url:
+        data['encounter']['evtc_url'] = encounter.gdrive_url;
+    # XXX relic TODO remove once we fully cross to GDrive?
     if hasattr(settings, 'UPLOAD_DIR'):
         path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
         if isfile(path):
@@ -328,14 +315,12 @@ def upload(request):
     file = request.FILES[filename]
     uploaded_at = time()
 
-    if hasattr(settings, 'UPLOAD_DIR'):
-        upload_dir = settings.UPLOAD_DIR
-    else:
-        upload_dir = 'uploads'
+    upload, _ = Upload.objects.update_or_create(
+            filename=filename, uploaded_by=request.user,
+            defaults={ "uploaded_at": time() })
 
-    dir = path_join(upload_dir, request.user.username.replace(dirsep, '_'))
-    makedirs(path_join(dir), exist_ok=True)
-    diskname = path_join(dir, filename)
+    diskname = upload.diskname()
+    makedirs(dirname(diskname), exist_ok=True)
     with open(diskname, 'wb') as diskfile:
         while True:
             buf = file.read(16384)
@@ -343,17 +328,21 @@ def upload(request):
                 break
             diskfile.write(buf)
 
-    upload = Upload.objects.create(
-            filename=filename,
-            uploaded_by=request.user,
-            uploaded_at=time())
-
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
 
 @require_GET
 def named(request, name, no):
     return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
+
+@login_required
+@require_POST
+def poll(request):
+    notifications = Notification.objects.filter(user=request.user)
+    result = [notification.val for notification in notifications]
+    for notification in notifications:
+        notification.delete()
+    return JsonResponse({ "notifications": result })
 
 @login_required
 @require_POST

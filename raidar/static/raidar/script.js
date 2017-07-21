@@ -667,23 +667,33 @@ ${rectSvg.join("\n")}
   let uploadProgressDone = (entry, data) => {
     if (data.error) {
       entry.error = data.error;
-      error(entry.name + ': ' + data.error);
       uploadProgressFail(entry);
     } else {
-      if (data.encounter) {
-        let encounters = r.get('encounters');
-        encounters = encounters.filter(encounter => encounter.id != data.id)
-        encounters.push(data.encounter);
-        updateRactiveFromResponse({ encounters: encounters });
-      }
-
-      entry.encounterId = data.id;
-      entry.success = true;
-      delete entry.file;
-      r.update('upload');
-      startUpload(true);
+      entry.upload_id = data.upload_id;
     }
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
   }
+
+    // if (data.error) {
+    //   entry.error = data.error;
+    //   error(entry.name + ': ' + data.error);
+    //   uploadProgressFail(entry);
+    // } else {
+    //   if (data.encounter) {
+    //     let encounters = r.get('encounters');
+    //     encounters = encounters.filter(encounter => encounter.id != data.id)
+    //     encounters.push(data.encounter);
+    //     updateRactiveFromResponse({ encounters: encounters });
+    //   }
+
+    //   entry.encounterId = data.id;
+    //   entry.success = true;
+    //   delete entry.file;
+    //   r.update('upload');
+    //   startUpload(true);
+    // }
 
   let uploadProgressFail = entry => {
     entry.success = false;
@@ -702,7 +712,7 @@ ${rectSvg.join("\n")}
   function startUpload(previousIsFinished) {
     if (uploading && !previousIsFinished) return;
 
-    let entry = r.get('upload').find(entry => !("success" in entry));
+    let entry = r.get('upload').find(entry => entry.progress != 100);
     uploading = entry;
     if (!entry) return;
 
@@ -719,6 +729,40 @@ ${rectSvg.join("\n")}
     .done(uploadProgressDone.bind(null, entry))
     .fail(uploadProgressFail.bind(null, entry));
   }
+
+  const notificationHandlers = {
+    upload: notification => {
+      let uploads = r.get('upload')
+      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      if (entry) {
+        entry.success = true;
+        entry.encounterId = notification.encounter_id;
+        r.update('upload');
+
+        let encounters = r.get('encounters');
+        encounters = encounters.filter(encounter => encounter.id != notification.encounter_id)
+        encounters.push(notification.encounter);
+        updateRactiveFromResponse({ encounters: encounters });
+      }
+    },
+  };
+
+  function handleNotification(notification) {
+    let handler = notificationHandlers[notification.type];
+    handler(notification);
+  }
+
+  function pollNotifications() {
+    $.ajax({
+      url: 'poll.json',
+      type: 'POST',
+    }).done(data => {
+      data.notifications.forEach(handleNotification);
+    }).then(() => {
+      setTimeout(pollNotifications, 10000);
+    });
+  };
+  pollNotifications();
 
 
   $(document)

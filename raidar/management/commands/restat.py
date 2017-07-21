@@ -179,18 +179,14 @@ class Command(BaseCommand):
                 print("Completed in %ss" % (end - start))
 
     def analyse_uploads(self, last_run, *args, **options):
-        print("Analysis")
         if hasattr(settings, 'UPLOAD_DIR'):
             upload_dir = settings.UPLOAD_DIR
         else:
             upload_dir = 'uploads'
 
         new_uploads = Upload.objects.filter(uploaded_at__gte=last_run)
-        print("Uploads", new_uploads)
         for upload in new_uploads:
-            print("Upload", upload)
-            dir = path_join(upload_dir, upload.uploaded_by.username.replace(dirsep, '_'))
-            diskname = path_join(dir, upload.filename)
+            diskname = upload.diskname()
             zipfile = None
             file = None
 
@@ -277,21 +273,20 @@ class Command(BaseCommand):
                         )
                         if account.user:
                             Notification.objects.create(user=account.user, val={
-                                "upload": {
-                                    "filename": upload.filename,
-                                    "id": encounter.id,
-                                },
+                                "type": "upload",
+                                "upload_id": upload.id,
+                                "filename": upload.filename,
+                                "encounter_id": encounter.id,
+                                "encounter": participation.data(),
                             })
 
                 if gdrive_service:
-                    print("Gdrive")
                     media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
                     if encounter.gdrive_id:
                         result = gdrive_service.files().update(
                                 fileId=encounter.gdrive_id,
                                 media_body=media,
                             ).execute()
-                        print(result)
                     else:
                         metadata = {
                                 'name': upload.filename,
@@ -304,22 +299,21 @@ class Command(BaseCommand):
                         encounter.gdrive_id = gdrive_file['id']
                         encounter.gdrive_url = gdrive_file['webContentLink']
                         encounter.save()
-                    #print("Gdrive done:", gdrive_file)
-                print("DONE")
 
             except (EvtcParseException, EvtcAnalysisException) as e:
-                print("Except")
-                Notification.objects.create(user=upload.uploaded_by, val={"file": upload.filename, "error": e})
+                Notification.objects.create(user=upload.uploaded_by, val={
+                    "type": "upload_error",
+                    "file": upload.filename,
+                    "error": e
+                })
 
             finally:
-                print("Finally")
                 if zipfile:
                     zipfile.close()
 
                 if file:
                     file.close()
 
-                os.remove(diskname)
                 upload.delete()
 
 

@@ -1,16 +1,39 @@
 from django.db import models
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
 from analyser.analyser import Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
+from gw2raidar import settings
+from os.path import join as path_join
+import os
 import re
 
 
 # unique to 30-60s precision
 START_RESOLUTION = 60
+
+
+
+# XXX TODO Move to a separate module, does not really belong here
+gdrive_service = None
+if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+    try:
+        from oauth2client.service_account import ServiceAccountCredentials
+        from httplib2 import Http
+        from apiclient import discovery
+        from googleapiclient.http import MediaFileUpload
+
+        scopes = ['https://www.googleapis.com/auth/drive.file']
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+                settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+        http_auth = credentials.authorize(Http())
+        gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+    except ImportError:
+        # No Google Drive support
+        pass
 
 
 
@@ -130,6 +153,19 @@ class Upload(models.Model):
     def __str__(self):
         return '%s (%s)' % (self.filename, self.uploaded_by.username)
 
+    def diskname(self):
+        if hasattr(settings, 'UPLOAD_DIR'):
+            upload_dir = settings.UPLOAD_DIR
+        else:
+            upload_dir = 'uploads'
+        dir = path_join(upload_dir, self.uploaded_by.username.replace(os.sep, '_'))
+        return path_join(dir, self.filename)
+
+def _delete_upload_file(sender, instance, using, **kwargs):
+    os.remove(instance.diskname())
+
+post_delete.connect(_delete_upload_file, sender=Upload)
+
 
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
@@ -213,6 +249,13 @@ class Encounter(models.Model):
             ('area', 'account_hash', 'started_at_half'),
         )
 
+def _delete_gdrive_file(sender, instance, using, **kwargs):
+    if gdrive_service and instance.gdrive_id:
+        gdrive_service.files().delete(
+                fileId=instance.gdrive_id).execute()
+
+post_delete.connect(_delete_gdrive_file, sender=Encounter)
+
 
 class Participation(models.Model):
     ARCHETYPE_CHOICES = (
@@ -236,6 +279,21 @@ class Participation(models.Model):
 
     def __str__(self):
         return '%s in %s' % (self.character, self.encounter)
+
+    def data(self):
+        return {
+                'id': self.encounter.id,
+                'area': self.encounter.area.name,
+                'started_at': self.encounter.started_at,
+                'duration': self.encounter.duration,
+                'character': self.character.name,
+                'account': self.character.account.name,
+                'profession': self.character.profession,
+                'archetype': self.archetype,
+                'elite': self.elite,
+                'uploaded_at': self.encounter.uploaded_at,
+                'success': self.encounter.success,
+            }
 
     class Meta:
         unique_together = ('encounter', 'character')
