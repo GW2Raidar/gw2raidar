@@ -34,6 +34,7 @@ class Skills:
     CLAIM = 37779
     DISPEL = 37697
     SOLDIERS_AURA = 37677
+    ENEMY_TILE = 38184
     
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -251,9 +252,11 @@ class BossMetricAnalyser:
         dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         soldiers_aura_events = events[(events.skillid == Skills.SOLDIERS_AURA) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         soldiers = events[(events.skillid == Skills.SOLDIERS_AURA)].groupby('src_instid').first()
+        enemy_tile_events = events[(events.skillid == Skills.ENEMY_TILE) & events.dst_instid.isin(self.players.index)]
         
         self.gather_count_stat('Protect', collector, True, False, protect_events)
         self.gather_count_stat('Claim', collector, True, False, claim_events)
         self.gather_count_stat('Dispel', collector, True, False, dispel_events)
         self.gather_count_stat('Soldiers', collector, False, False, soldiers)
         self.gather_count_stat('Soldier\'s Aura', collector, True, False, soldiers_aura_events)
+        self.gather_count_stat('Enemy Tile', collector, True, False, enemy_tile_events)
