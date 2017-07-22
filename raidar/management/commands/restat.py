@@ -104,6 +104,9 @@ def necessary(force=False):
 class RestatException(Exception):
     pass
 
+def get_and_add(hash, prop, n):
+    get_or_create(hash, prop, float)
+    hash[prop] += n
 
 def get_or_create(hash, prop, type=dict):
     if prop not in hash:
@@ -391,6 +394,29 @@ class Command(BaseCommand):
                         if (participation.character.name not in stats_in_phase['Player']):
                             continue
                         player_stats = stats_in_phase['Player'][participation.character.name]
+
+                        try:
+                            totals_for_player = get_or_create(totals['character'], participation.account)
+                            player_encounters = get_or_create(totals_for_player, 'encounter')
+                            player_this_encounter = get_or_create(player_encounters, encounter.area_id)
+                            player_archetypes = get_or_create(totals_for_player, 'archetype')
+                            player_this_archetype = get_or_create(player_archetypes, participation.archetype)
+                            player_professions = get_or_create(totals_for_player, 'profession')
+                            player_this_profession = get_or_create(player_professions, participation.character.profession)
+                            player_this_build = get_or_create(player_this_archetype, 'profession')
+                            get_and_add(totals_for_player, 'count', 1)
+
+                            get_and_add(player_this_encounter, 'count', 1)
+                            get_and_add(player_this_encounter, 'success_count', 1 if encounter.success else 0)
+
+                            get_and_add(player_this_archetype, 'count', 1)
+                            get_and_add(player_this_profession, 'count', 1)
+
+                            get_and_add(player_this_build, 'count', 1)
+                            stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
+                            find_bounds(player_this_build, 'dps', stats_in_phase_to_all)
+                        except:
+                            print("Toeofdoom's amazing code threw an exception, well done.")
 
                         totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
                         elite = data['Category']['status']['Player'][participation.character.name]['elite']
