@@ -34,7 +34,7 @@ class Skills:
     CLAIM = 37779
     DISPEL = 37697
     SOLDIERS_AURA = 37677
-
+    
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
         self.agents = agents
@@ -45,6 +45,14 @@ class BossMetricAnalyser:
 
     def standard_count(events):
         return len(events);
+    
+    def combine_by_time_range_and_instid(self, events, time_range, inst_id = 'dst_instid'):
+        events = events.sort_values(by=[inst_id, 'time'])
+        deltas = abs(events.time - events.time.shift(1)) + (abs(events[inst_id] - events[inst_id].shift(1)) * 10000000)
+        deltas.fillna(10000000, inplace=True)
+        events = events.assign(deltas = deltas)
+        events = events[events.deltas > time_range]
+        return events
 
     def generate_player_buff_times(self, events, players, skillid):
         # Get Up/Down/Death events
@@ -140,6 +148,7 @@ class BossMetricAnalyser:
     def gather_gorse_stats(self, events, collector):
         spectral_impact_events = events[(events.skillid == Skills.SPECTRAL_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         imprisonment_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
+        imprisonment_events = self.combine_by_time_range_and_instid(imprisonment_events, 1000)
         self.gather_count_stat('Unmitigated Spectral Impacts', collector, True, True, spectral_impact_events)
         self.gather_count_stat('Ghastly Imprisonments', collector, True, False, imprisonment_events)
         self.gorse_spectral_darkness_time('Spectral Darkness', collector, events)
@@ -226,11 +235,7 @@ class BossMetricAnalyser:
     def gather_cairn_stats(self, events, collector):
         displacement_events = events[(events.skillid == Skills.DISPLACEMENT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         meteor_swarm_events = events[(events.skillid == Skills.METEOR_SWARM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        meteor_swarm_events = meteor_swarm_events.sort_values(by=['dst_instid','time'])
-        meteor_swarm_event_deltas = abs(meteor_swarm_events.time - meteor_swarm_events.time.shift(1)) + (abs(meteor_swarm_events.dst_instid - meteor_swarm_events.dst_instid.shift(1)) * 10000)
-        meteor_swarm_event_deltas.fillna(10000, inplace=True)
-        meteor_swarm_events = meteor_swarm_events.assign(time_deltas = meteor_swarm_event_deltas)
-        meteor_swarm_events = meteor_swarm_events[meteor_swarm_events.time_deltas > 1500]        
+        meteor_swarm_events = self.combine_by_time_range_and_instid(meteor_swarm_events, 1000, 'dst_instid')
         
         spatial_manipulation_events = events[(events.skillid.isin(Skills.SPATIAL_MANIPULATION)) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         shared_agony_events = events[(events.skillid == Skills.SHARED_AGONY) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)] 
