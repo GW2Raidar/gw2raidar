@@ -34,7 +34,8 @@ class Skills:
     CLAIM = 37779
     DISPEL = 37697
     SOLDIERS_AURA = 37677
-
+    ENEMY_TILE = 38184
+    
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
         self.agents = agents
@@ -45,6 +46,14 @@ class BossMetricAnalyser:
 
     def standard_count(events):
         return len(events);
+    
+    def combine_by_time_range_and_instid(self, events, time_range, inst_id = 'dst_instid'):
+        events = events.sort_values(by=[inst_id, 'time'])
+        deltas = abs(events.time - events.time.shift(1)) + (abs(events[inst_id] - events[inst_id].shift(1)) * 10000000)
+        deltas.fillna(10000000, inplace=True)
+        events = events.assign(deltas = deltas)
+        events = events[events.deltas > time_range]
+        return events
 
     def generate_player_buff_times(self, events, players, skillid):
         # Get Up/Down/Death events
@@ -140,6 +149,7 @@ class BossMetricAnalyser:
     def gather_gorse_stats(self, events, collector):
         spectral_impact_events = events[(events.skillid == Skills.SPECTRAL_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         imprisonment_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
+        imprisonment_events = self.combine_by_time_range_and_instid(imprisonment_events, 1000)
         self.gather_count_stat('Unmitigated Spectral Impacts', collector, True, True, spectral_impact_events)
         self.gather_count_stat('Ghastly Imprisonments', collector, True, False, imprisonment_events)
         self.gorse_spectral_darkness_time('Spectral Darkness', collector, events)
@@ -226,6 +236,8 @@ class BossMetricAnalyser:
     def gather_cairn_stats(self, events, collector):
         displacement_events = events[(events.skillid == Skills.DISPLACEMENT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         meteor_swarm_events = events[(events.skillid == Skills.METEOR_SWARM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        meteor_swarm_events = self.combine_by_time_range_and_instid(meteor_swarm_events, 1000, 'dst_instid')
+        
         spatial_manipulation_events = events[(events.skillid.isin(Skills.SPATIAL_MANIPULATION)) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         shared_agony_events = events[(events.skillid == Skills.SHARED_AGONY) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)] 
         self.gather_count_stat('Displacement', collector, True, False, displacement_events)
@@ -240,9 +252,11 @@ class BossMetricAnalyser:
         dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         soldiers_aura_events = events[(events.skillid == Skills.SOLDIERS_AURA) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         soldiers = events[(events.skillid == Skills.SOLDIERS_AURA)].groupby('src_instid').first()
+        enemy_tile_events = events[(events.skillid == Skills.ENEMY_TILE) & events.dst_instid.isin(self.players.index)]
         
         self.gather_count_stat('Protect', collector, True, False, protect_events)
         self.gather_count_stat('Claim', collector, True, False, claim_events)
         self.gather_count_stat('Dispel', collector, True, False, dispel_events)
         self.gather_count_stat('Soldiers', collector, False, False, soldiers)
         self.gather_count_stat('Soldier\'s Aura', collector, True, False, soldiers_aura_events)
+        self.gather_count_stat('Enemy Tile', collector, True, False, enemy_tile_events)
