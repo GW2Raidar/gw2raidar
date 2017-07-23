@@ -732,7 +732,7 @@ ${rectSvg.join("\n")}
 
   const notificationHandlers = {
     upload: notification => {
-      let uploads = r.get('upload')
+      let uploads = r.get('upload');
       let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
       if (entry) {
         entry.success = true;
@@ -745,10 +745,23 @@ ${rectSvg.join("\n")}
         updateRactiveFromResponse({ encounters: encounters });
       }
     },
+    upload_error: notification => {
+      let uploads = r.get('upload');
+      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      if (entry) {
+        entry.success = false;
+        entry.error = notification.error;
+        r.update('upload');
+      }
+    },
   };
 
   function handleNotification(notification) {
     let handler = notificationHandlers[notification.type];
+    if (!handler) { // sanity check
+      console.error("No handler for notification type " + notification.type);
+      return;
+    }
     handler(notification);
   }
 

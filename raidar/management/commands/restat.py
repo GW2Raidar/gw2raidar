@@ -281,7 +281,7 @@ class Command(BaseCommand):
                                 "encounter_id": encounter.id,
                                 "encounter": participation.data(),
                             })
-                            if account.user_id == uploader.id:
+                            if uploader and uploader.id == account.user_id:
                                 uploader = None
 
                 if uploader:
@@ -315,8 +315,9 @@ class Command(BaseCommand):
             except (EvtcParseException, EvtcAnalysisException) as e:
                 Notification.objects.create(user=upload.uploaded_by, val={
                     "type": "upload_error",
-                    "file": upload.filename,
-                    "error": e
+                    "filename": upload.filename,
+                    "upload_id": upload.id,
+                    "error": str(e),
                 })
 
             finally:
