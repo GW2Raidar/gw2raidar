@@ -12,6 +12,7 @@ urlpatterns = [
     url(r'register.json', views.register, name = "register"),
     url(r'reset_pw.json', views.reset_pw, name = "reset_pw"),
     url(r'upload.json', views.upload, name = "upload"),
+    url(r'poll.json', views.poll, name = "poll"),
     url(r'change_email.json', views.change_email, name = "change_email"),
     url(r'change_password.json', views.change_password, name = "change_password"),
     url(r'add_api_key', views.add_api_key, name = "add_api_key"),
