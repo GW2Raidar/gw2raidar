@@ -209,6 +209,7 @@ class BuffPreprocessor:
                 raw_buff_data = np.r_[raw_buff_data, track_data]
 
         buff_data = pd.DataFrame(columns = ['buff', 'player', 'time', 'stacks', 'stripped', 'duration'], data = raw_buff_data)
+        buff_data.fillna(0, inplace=True)
         buff_data[['player', 'time', 'stacks', 'duration']] = buff_data[['player', 'time', 'stacks', 'duration']].apply(pd.to_numeric)
         return buff_data;
     
