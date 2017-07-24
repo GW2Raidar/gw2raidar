@@ -189,7 +189,8 @@ BOSS_ARRAY = [
         Metric('Claim', 'Claim', MetricType.COUNT),
         Metric('Dispel', 'Dispel', MetricType.COUNT),
         Metric('Soldiers', 'Soldiers', MetricType.COUNT, False),
-        Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT)
+        Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
+        Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
     ]),
     Boss('Samarog', [0x4324], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),

@@ -1,15 +1,56 @@
 from django.db import models
+from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
 from analyser.analyser import Archetype, Elite
+from json import loads as json_loads, dumps as json_dumps
+from gw2raidar import settings
+from os.path import join as path_join
+import os
 import re
 
 
 # unique to 30-60s precision
 START_RESOLUTION = 60
 
+
+
+# XXX TODO Move to a separate module, does not really belong here
+gdrive_service = None
+if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+    try:
+        from oauth2client.service_account import ServiceAccountCredentials
+        from httplib2 import Http
+        from apiclient import discovery
+        from googleapiclient.http import MediaFileUpload
+
+        scopes = ['https://www.googleapis.com/auth/drive.file']
+        credentials = ServiceAccountCredentials.from_json_keyfile_name(
+                settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+        http_auth = credentials.authorize(Http())
+        gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+    except ImportError:
+        # No Google Drive support
+        pass
+
+
+
+class UserProfile(models.Model):
+    portrait_url = models.URLField(null=True)
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
+    stats = models.TextField(editable=False, default="{}")
+    last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
+
+    def __str__(self):
+        return self.user.username
+
+def _create_user_profile(sender, instance, created, **kwargs):
+    if created:
+        UserProfile.objects.create(user=instance)
+
+post_save.connect(_create_user_profile, sender=User)
 
 
 class Area(models.Model):
@@ -91,6 +132,76 @@ class Character(models.Model):
         ordering = ('name',)
 
 
+class Era(models.Model):
+    started_at = models.IntegerField(db_index=True)
+    name = models.CharField(max_length=255, null=True)
+    description = models.TextField(null=True)
+
+    def __str__(self):
+        return "%s (#%d)" % (self.name or "<unnamed>", self.id)
+
+    @staticmethod
+    def by_time(started_at):
+        return Era.objects.filter(started_at__lte=started_at).latest('started_at')
+
+
+class Upload(models.Model):
+    filename = models.CharField(max_length=255)
+    uploaded_at = models.IntegerField(db_index=True)
+    uploaded_by = models.ForeignKey(User, related_name='unprocessed_uploads')
+
+    def __str__(self):
+        return '%s (%s)' % (self.filename, self.uploaded_by.username)
+
+    def diskname(self):
+        if hasattr(settings, 'UPLOAD_DIR'):
+            upload_dir = settings.UPLOAD_DIR
+        else:
+            upload_dir = 'uploads'
+        dir = path_join(upload_dir, self.uploaded_by.username.replace(os.sep, '_'))
+        return path_join(dir, self.filename)
+
+def _delete_upload_file(sender, instance, using, **kwargs):
+    os.remove(instance.diskname())
+
+post_delete.connect(_delete_upload_file, sender=Upload)
+
+
+class Notification(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+
+class Variable(models.Model):
+    key = models.CharField(max_length=255, primary_key=True)
+    value = models.TextField(null=True)
+
+    def __str__(self):
+        return '%s=%s' % (self.key, self.val)
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+    def get(name):
+        return Variable.objects.get(key=name).val
+
+    def set(name, value):
+        Variable.objects.update_or_create(key=name, defaults={'val': value})
+
+
 class Encounter(models.Model):
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
@@ -99,12 +210,16 @@ class Encounter(models.Model):
     uploaded_at = models.IntegerField(db_index=True)
     uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
+    era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
     dump = models.TextField(editable=False)
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
+    # Google Drive
+    gdrive_id = models.CharField(max_length=255, editable=False, null=True)
+    gdrive_url = models.CharField(max_length=255, editable=False, null=True)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -134,6 +249,13 @@ class Encounter(models.Model):
             ('area', 'account_hash', 'started_at_half'),
         )
 
+def _delete_gdrive_file(sender, instance, using, **kwargs):
+    if gdrive_service and instance.gdrive_id:
+        gdrive_service.files().delete(
+                fileId=instance.gdrive_id).execute()
+
+post_delete.connect(_delete_gdrive_file, sender=Encounter)
+
 
 class Participation(models.Model):
     ARCHETYPE_CHOICES = (
@@ -157,6 +279,21 @@ class Participation(models.Model):
 
     def __str__(self):
         return '%s in %s' % (self.character, self.encounter)
+
+    def data(self):
+        return {
+                'id': self.encounter.id,
+                'area': self.encounter.area.name,
+                'started_at': self.encounter.started_at,
+                'duration': self.encounter.duration,
+                'character': self.character.name,
+                'account': self.character.account.name,
+                'profession': self.character.profession,
+                'archetype': self.archetype,
+                'elite': self.elite,
+                'uploaded_at': self.encounter.uploaded_at,
+                'success': self.encounter.success,
+            }
 
     class Meta:
         unique_together = ('encounter', 'character')
