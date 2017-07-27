@@ -712,7 +712,7 @@ ${rectSvg.join("\n")}
   function startUpload(previousIsFinished) {
     if (uploading && !previousIsFinished) return;
 
-    let entry = r.get('upload').find(entry => entry.progress != 100);
+    let entry = r.get('upload').find(entry => !("progress" in entry));
     uploading = entry;
     if (!entry) return;
 
@@ -738,12 +738,24 @@ ${rectSvg.join("\n")}
         entry.success = true;
         entry.encounterId = notification.encounter_id;
         r.update('upload');
-
-        let encounters = r.get('encounters');
-        encounters = encounters.filter(encounter => encounter.id != notification.encounter_id)
-        encounters.push(notification.encounter);
-        updateRactiveFromResponse({ encounters: encounters });
+      } else {
+        entry = {
+          name: notification.filename,
+          progress: 100,
+          upload_id: notification.upload_id,
+          uploaded_by: notification.uploaded_by,
+          success: true,
+          encounterId: notification.encounter_id,
+        };
+        r.push('upload', entry);
       }
+
+      let encounters = r.get('encounters');
+      encounters = encounters.filter(encounter => encounter.id != notification.encounter_id)
+      if (notification.encounter) {
+        encounters.push(notification.encounter);
+      }
+      updateRactiveFromResponse({ encounters: encounters });
     },
     upload_error: notification => {
       let uploads = r.get('upload');
@@ -797,7 +809,20 @@ ${rectSvg.join("\n")}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-        r.push('upload', { name: file.name, file: file }).then(() => startUpload());
+        let entry = r.get('upload').find(entry => entry.name == file.name);
+        if (entry) {
+          delete entry.success;
+          delete entry.progress;
+          entry.file = file;
+          r.update('upload');
+        } else {
+          r.push('upload', {
+            name: file.name,
+            file: file,
+            uploaded_by: r.get('username'),
+          });
+        }
+        startUpload();
       });
       setPage('uploads');
       evt.preventDefault();

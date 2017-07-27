@@ -158,11 +158,17 @@ class Upload(models.Model):
             upload_dir = settings.UPLOAD_DIR
         else:
             upload_dir = 'uploads'
-        dir = path_join(upload_dir, self.uploaded_by.username.replace(os.sep, '_'))
-        return path_join(dir, self.filename)
+        ext = '.' + '.'.join(self.filename.split('.')[1:])
+        return path_join(upload_dir, str(self.id) + ext)
+
+    class Meta:
+        unique_together = ('filename', 'uploaded_by')
 
 def _delete_upload_file(sender, instance, using, **kwargs):
-    os.remove(instance.diskname())
+    try:
+        os.remove(instance.diskname())
+    except FileNotFoundError:
+        pass
 
 post_delete.connect(_delete_upload_file, sender=Upload)
 
