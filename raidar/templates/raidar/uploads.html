@@ -14,7 +14,7 @@
   </thead>
   <tbody>
     [[#each upload]]
-      <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterId })"[[/if]]>
+      <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterUrlId })"[[/if]]>
         <td class="[[success === true ? 'uk-text-success' : success === false ? 'uk-text-danger' : '']]">
           [[name]]
         </td>

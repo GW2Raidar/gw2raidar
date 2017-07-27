@@ -114,17 +114,14 @@ def index(request, page={ 'name': 'encounters', 'no': 1 }):
     return _html_response(request, page)
 
 @require_GET
-def encounter(request, id=None, json=None):
-    encounter = Encounter.objects.select_related('area').get(pk=id)
+def encounter(request, url_id=None, json=None):
+    encounter = Encounter.objects.select_related('area').get(url_id=url_id)
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
-        user=request.user)]
+        user=request.user)] if request.user.is_authenticated else []
 
     dump = json_loads(encounter.dump)
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
-    if not allowed:
-        return _error('Not allowed')
 
     area_stats = json_loads(encounter.area.stats)
     phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
@@ -198,7 +195,7 @@ def encounter(request, id=None, json=None):
     if json:
         return JsonResponse(data)
     else:
-        return _html_response(request, { "name": "encounter", "no": str(id) }, data)
+        return _html_response(request, { "name": "encounter", "no": encounter.url_id }, data)
 
 
 @require_GET

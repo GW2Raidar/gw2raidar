@@ -187,6 +187,7 @@ class Command(BaseCommand):
                                 "uploaded_by": upload.uploaded_by.username,
                                 "filename": upload.filename,
                                 "encounter_id": encounter.id,
+                                "encounter_url_id": encounter.url_id,
                                 "encounter": participation.data(),
                             })
                             if account.user_id == uploader.id:
@@ -199,6 +200,7 @@ class Command(BaseCommand):
                         "uploaded_by": upload.uploaded_by.username,
                         "filename": upload.filename,
                         "encounter_id": encounter.id,
+                        "encounter_url_id": encounter.url_id,
                     })
 
                 if gdrive_service:
