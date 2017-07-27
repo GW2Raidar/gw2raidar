@@ -8,6 +8,8 @@ from analyser.analyser import Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
 from gw2raidar import settings
 from os.path import join as path_join
+from functools import lru_cache
+import random
 import os
 import re
 
@@ -208,7 +210,17 @@ class Variable(models.Model):
         Variable.objects.update_or_create(key=name, defaults={'val': value})
 
 
+@lru_cache(maxsize=1)
+def _dictionary():
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    with open(os.path.join(location, "words.txt")) as f:
+        return [l.strip() for l in f.readlines()]
+
+def _generate_url_id(size=5):
+    return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
+
 class Encounter(models.Model):
+    url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id)
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
     success = models.BooleanField()
@@ -289,6 +301,7 @@ class Participation(models.Model):
     def data(self):
         return {
                 'id': self.encounter.id,
+                'url_id': self.encounter.url_id,
                 'area': self.encounter.area.name,
                 'started_at': self.encounter.started_at,
                 'duration': self.encounter.duration,

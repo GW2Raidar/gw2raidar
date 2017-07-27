@@ -650,7 +650,6 @@ ${rectSvg.join("\n")}
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
-      console.log(r.get('settings.encounterSort.filter.success'));
       return false;
     },
   });
@@ -737,6 +736,7 @@ ${rectSvg.join("\n")}
       if (entry) {
         entry.success = true;
         entry.encounterId = notification.encounter_id;
+        entry.encounterUrlId = notification.encounter_url_id;
         r.update('upload');
       } else {
         entry = {
