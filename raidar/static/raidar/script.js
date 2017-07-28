@@ -196,6 +196,7 @@ ${rectSvg.join("\n")}
     },
     upload: [],
   };
+  let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
@@ -731,23 +732,21 @@ ${rectSvg.join("\n")}
 
   const notificationHandlers = {
     upload: notification => {
-      let uploads = r.get('upload');
-      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let newEntry = {
+        name: notification.filename,
+        progress: 100,
+        upload_id: notification.upload_id,
+        uploaded_by: notification.uploaded_by,
+        success: true,
+        encounterId: notification.encounter_id,
+      };
       if (entry) {
-        entry.success = true;
-        entry.encounterId = notification.encounter_id;
-        entry.encounterUrlId = notification.encounter_url_id;
+        Object.assign(entry, newEntry);
         r.update('upload');
       } else {
-        entry = {
-          name: notification.filename,
-          progress: 100,
-          upload_id: notification.upload_id,
-          uploaded_by: notification.uploaded_by,
-          success: true,
-          encounterId: notification.encounter_id,
-        };
-        r.push('upload', entry);
+        r.push('upload', newEntry);
       }
 
       let encounters = r.get('encounters');
@@ -778,10 +777,17 @@ ${rectSvg.join("\n")}
   }
 
   function pollNotifications() {
-    $.ajax({
+    let options = {
       url: 'poll.json',
       type: 'POST',
-    }).done(data => {
+    }
+    if (lastNotificationId) {
+      options.data = { last_id: lastNotificationId };
+    }
+    $.ajax(options).done(data => {
+      if (data.last_id) {
+        lastNotificationId = data.last_id;
+      }
       data.notifications.forEach(handleNotification);
     }).then(() => {
       setTimeout(pollNotifications, 10000);

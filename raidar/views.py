@@ -82,6 +82,9 @@ def _html_response(request, page, data={}):
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
+    last_notification = request.user.notifications.latest('id')
+    if last_notification:
+        response['last_notification_id'] = last_notification.id
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
@@ -335,10 +338,13 @@ def named(request, name, no):
 @require_POST
 def poll(request):
     notifications = Notification.objects.filter(user=request.user)
-    result = [notification.val for notification in notifications]
-    for notification in notifications:
-        notification.delete()
-    return JsonResponse({ "notifications": result })
+    last_id = request.POST.get('last_id')
+    if last_id:
+        notifications = notifications.filter(id__gt=last_id)
+    result = { "notifications": [notification.val for notification in notifications] }
+    if notifications:
+        result['last_id'] = notifications.last().id
+    return JsonResponse(result)
 
 @login_required
 @require_POST
