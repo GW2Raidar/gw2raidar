@@ -9,6 +9,7 @@ from json import loads as json_loads, dumps as json_dumps
 from gw2raidar import settings
 from os.path import join as path_join
 from functools import lru_cache
+from time import time
 import random
 import os
 import re
@@ -178,6 +179,7 @@ post_delete.connect(_delete_upload_file, sender=Upload)
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     value = models.TextField(default="{}")
+    created_at = models.IntegerField(db_index=True, default=time)
 
     @property
     def val(self):
