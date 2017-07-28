@@ -1,73 +1,62 @@
 {% load staticfiles %}
 <div class="table-container">
-  <table class="uk-table stats row-header">
-    <tbody>
-      <tr>
-        <th>Buffs</th>
-      </tr>
-      <tr>
-        <td>Squad</td>
-      </tr>
-      [[#each encounter.parties:partyNo]]
-        <tr>
-          <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-        </tr>
-      [[/each]]
-    </tbody>
-    [[#each encounter.parties:partyNo]]
-      <tbody>
-        <tr>
-          <th>Party [[partyNo]]</th>
-        </tr>
-        [[#each members]]
-          <tr>
-            <td class="[[self && 'uk-text-primary']]">
-              <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
-              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
-              [[name]]
-            </td>
-          </tr>
-        [[/each]]
-      </tbody>
-    [[/each]]
-  </table>
+  {% include 'raidar/encounter_row_header.html' %}
 
   <div class="uk-overflow-auto">
     <table class="uk-table stats">
       <tbody>
         <tr>
-          <th>Party [[partyNo]]</th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Might.png' %}" title="Might" alt="Might"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Fury.png' %}" title="Fury" alt="Fury"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Quickness.png' %}" title="Quickness" alt="Quickness"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Alacrity.png' %}" title="Alacrity" alt="Alacrity"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Protection.png' %}" title="Protection" alt="Protection"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Spotter.png' %}" title="Spotter" alt="Spotter"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Glyph_of_Empowerment.png' %}" title="Glyph of Empowerment" alt="Glyph of Empowerment"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Grace_of_the_Land.png' %}" title="Grace of the Land" alt="Grace of the Land"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Frost_Spirit.png' %}" title="Frost Spirit" alt="Frost Spirit"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Sun_Spirit.png' %}" title="Sun Spirit" alt="Sun Spirit"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Stone_Spirit.png' %}" title="Stone Spirit" alt="Stone Spirit"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Storm_Spirit.png' %}" title="Storm Spirit" alt="Storm Spirit"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Empower_Allies.png' %}" title="Empower Allies" alt="Empower Allies"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Strength.png' %}" title="Banner of Strength" alt="Banner of Strength"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Discipline.png' %}" title="Banner of Discipline" alt="Banner of Discipline"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Tactics.png' %}" title="Banner of Tactics" alt="Banner of Tactics"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Defense.png' %}" title="Banner of Defense" alt="Banner of Defense"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Assassin\'s_Presence.png' %}" title="Assassin's Presence" alt="Assassin's Presence"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Facet_of_Nature.png' %}" title="Naturalistic Resonance" alt="Naturalistic Resonance"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Pinpoint_Distribution.png' %}" title="Pinpoint Distribution" alt="Pinpoint Distribution"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Soothing_Mist.png' %}" title="Soothing Mist" alt="Soothing Mist"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Vampiric_Presence.png' %}" title="Vampiric Presence" alt="Vampiric Presence"/></th>
+          <th>Totals</th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Might.png' %}" uk-tooltip title="Might" alt="Might"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Fury.png' %}" uk-tooltip title="Fury" alt="Fury"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Quickness.png' %}" uk-tooltip title="Quickness" alt="Quickness"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Alacrity.png' %}" uk-tooltip title="Alacrity" alt="Alacrity"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Protection.png' %}" uk-tooltip title="Protection" alt="Protection"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Spotter.png' %}" uk-tooltip title="Spotter" alt="Spotter"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Glyph_of_Empowerment.png' %}" uk-tooltip title="Glyph of Empowerment" alt="Glyph of Empowerment"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Grace_of_the_Land.png' %}" uk-tooltip title="Grace of the Land" alt="Grace of the Land"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Frost_Spirit.png' %}" uk-tooltip title="Frost Spirit" alt="Frost Spirit"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Sun_Spirit.png' %}" uk-tooltip title="Sun Spirit" alt="Sun Spirit"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Stone_Spirit.png' %}" uk-tooltip title="Stone Spirit" alt="Stone Spirit"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Storm_Spirit.png' %}" uk-tooltip title="Storm Spirit" alt="Storm Spirit"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Empower_Allies.png' %}" uk-tooltip title="Empower Allies" alt="Empower Allies"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Strength.png' %}" uk-tooltip title="Banner of Strength" alt="Banner of Strength"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Discipline.png' %}" uk-tooltip title="Banner of Discipline" alt="Banner of Discipline"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Tactics.png' %}" uk-tooltip title="Banner of Tactics" alt="Banner of Tactics"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Defense.png' %}" uk-tooltip title="Banner of Defense" alt="Banner of Defense"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Assassin\'s_Presence.png' %}" uk-tooltip title="Assassin's Presence" alt="Assassin's Presence"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Facet_of_Nature.png' %}" uk-tooltip title="Naturalistic Resonance" alt="Naturalistic Resonance"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Pinpoint_Distribution.png' %}" uk-tooltip title="Pinpoint Distribution" alt="Pinpoint Distribution"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Soothing_Mist.png' %}" uk-tooltip title="Soothing Mist" alt="Soothing Mist"/></th>
+          <th width="100"><img src="{% static 'raidar/img/buff/Vampiric_Presence.png' %}" uk-tooltip title="Vampiric Presence" alt="Vampiric Presence"/></th>
         </tr>
         <tr>
           <td>Squad</td>
-          {# TODO #}
+          [[#each data.boons]]
+            [[#if encounter.phases[page.phase]]]
+              <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].buffs[boon], encounter.phases[page.phase].group.buffs['avg_' + boon], encounter.phases[page.phase].group.buffs['min_' + boon], encounter.phases[page.phase].group.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(encounter.phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
+                <span>[[encounter.phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                [[#if encounter.phases[page.phase].group]]
+                  <span class="expected">[[encounter.phases[page.phase].group.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                [[/if]]
+              </td>
+            [[else]]
+              <td></td>
+            [[/if]]
+          [[/each]]
         </tr>
         [[#each encounter.parties:partyNo]]
           <tr>
             <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-            {# TODO #}
+            [[#each data.boons]]
+              [[#if phases[page.phase]]]
+                <td style="[[bar1(phases[page.phase].buffs[boon], stacks || 100)]]">
+                  <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                </td>
+              [[else]]
+                <td></td>
+              [[/if]]
+            [[/each]]
           </tr>
         [[/each]]
       </tbody>
@@ -76,41 +65,41 @@
         <tbody>
           <tr>
             <th>Party [[partyNo]]</th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Might.png' %}" title="Might" alt="Might"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Fury.png' %}" title="Fury" alt="Fury"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Quickness.png' %}" title="Quickness" alt="Quickness"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Alacrity.png' %}" title="Alacrity" alt="Alacrity"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Protection.png' %}" title="Protection" alt="Protection"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Spotter.png' %}" title="Spotter" alt="Spotter"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Glyph_of_Empowerment.png' %}" title="Glyph of Empowerment" alt="Glyph of Empowerment"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Grace_of_the_Land.png' %}" title="Grace of the Land" alt="Grace of the Land"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Frost_Spirit.png' %}" title="Frost Spirit" alt="Frost Spirit"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Sun_Spirit.png' %}" title="Sun Spirit" alt="Sun Spirit"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Stone_Spirit.png' %}" title="Stone Spirit" alt="Stone Spirit"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Storm_Spirit.png' %}" title="Storm Spirit" alt="Storm Spirit"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Empower_Allies.png' %}" title="Empower Allies" alt="Empower Allies"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Strength.png' %}" title="Banner of Strength" alt="Banner of Strength"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Discipline.png' %}" title="Banner of Discipline" alt="Banner of Discipline"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Tactics.png' %}" title="Banner of Tactics" alt="Banner of Tactics"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Defense.png' %}" title="Banner of Defense" alt="Banner of Defense"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Assassin\'s_Presence.png' %}" title="Assassin's Presence" alt="Assassin's Presence"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Facet_of_Nature.png' %}" title="Naturalistic Resonance" alt="Naturalistic Resonance"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Pinpoint_Distribution.png' %}" title="Pinpoint Distribution" alt="Pinpoint Distribution"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Soothing_Mist.png' %}" title="Soothing Mist" alt="Soothing Mist"/></th>
-            <th width="100"><img src="{% static 'raidar/img/buff/Vampiric_Presence.png' %}" title="Vampiric Presence" alt="Vampiric Presence"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Might.png' %}" uk-tooltip title="Might" alt="Might"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Fury.png' %}" uk-tooltip title="Fury" alt="Fury"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Quickness.png' %}" uk-tooltip title="Quickness" alt="Quickness"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Alacrity.png' %}" uk-tooltip title="Alacrity" alt="Alacrity"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Protection.png' %}" uk-tooltip title="Protection" alt="Protection"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Spotter.png' %}" uk-tooltip title="Spotter" alt="Spotter"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Glyph_of_Empowerment.png' %}" uk-tooltip title="Glyph of Empowerment" alt="Glyph of Empowerment"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Grace_of_the_Land.png' %}" uk-tooltip title="Grace of the Land" alt="Grace of the Land"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Frost_Spirit.png' %}" uk-tooltip title="Frost Spirit" alt="Frost Spirit"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Sun_Spirit.png' %}" uk-tooltip title="Sun Spirit" alt="Sun Spirit"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Stone_Spirit.png' %}" uk-tooltip title="Stone Spirit" alt="Stone Spirit"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Storm_Spirit.png' %}" uk-tooltip title="Storm Spirit" alt="Storm Spirit"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Empower_Allies.png' %}" uk-tooltip title="Empower Allies" alt="Empower Allies"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Strength.png' %}" uk-tooltip title="Banner of Strength" alt="Banner of Strength"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Discipline.png' %}" uk-tooltip title="Banner of Discipline" alt="Banner of Discipline"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Tactics.png' %}" uk-tooltip title="Banner of Tactics" alt="Banner of Tactics"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Banner_of_Defense.png' %}" uk-tooltip title="Banner of Defense" alt="Banner of Defense"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Assassin\'s_Presence.png' %}" uk-tooltip title="Assassin's Presence" alt="Assassin's Presence"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Facet_of_Nature.png' %}" uk-tooltip title="Naturalistic Resonance" alt="Naturalistic Resonance"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Pinpoint_Distribution.png' %}" uk-tooltip title="Pinpoint Distribution" alt="Pinpoint Distribution"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Soothing_Mist.png' %}" uk-tooltip title="Soothing Mist" alt="Soothing Mist"/></th>
+            <th width="100"><img src="{% static 'raidar/img/buff/Vampiric_Presence.png' %}" uk-tooltip title="Vampiric Presence" alt="Vampiric Presence"/></th>
           </tr>
           [[#each members]]
             <tr>
-              <td class="[[self && 'uk-text-primary']]">
+              <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
                 <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
                 <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
                 [[name]]
               </td>
               [[#each data.boons]]
                 [[#if phases[page.phase]]]
-                  <td style="[[#if phases[page.phase].archetype]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
+                <td style="[[#if phases[page.phase].archetype.buffs['avg_' + boon]]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
                     <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                    [[#if phases[page.phase].archetype]]
+                    [[#if phases[page.phase].archetype.buffs['avg_' + boon]]]
                       <span class="expected">[[phases[page.phase].archetype.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
                     [[/if]]
                   </td>

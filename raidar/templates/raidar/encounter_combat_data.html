@@ -1,123 +1,235 @@
 {% load staticfiles %}
-<div class="uk-overflow-auto table-container">
-  <table class="uk-table stats">
-    <tbody>
-      <tr>
-        <th>Totals</th>
-        <th>DPS</th>
-        <th>DPS to Boss</th>
-        <th>Seaweed</th>
-        <th>Scholar</th>
-      </tr>
-      <tr>
-        <td>Squad</td>
-        <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].group.avg_dps, encounter.phases[page.phase].group.min_dps, encounter.phases[page.phase].group.max_dps)]][[else]][[bar1(encounter.phases[page.phase].actual.dps, encounter.phases[page.phase].actual.dps)]][[/if]]">
-          <span>[[encounter.phases[page.phase].actual.dps]]</span>
-          [[#if encounter.phases[page.phase].group]]
-            <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps)]]</span>
-          [[/if]]
-        </td>
-        [[#if encounter.phases[page.phase].actual_boss]]
-          <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].group.avg_dps_boss, encounter.phases[page.phase].group.min_dps_boss, encounter.phases[page.phase].group.max_dps)]][[else]][[bar1(encounter.phases[page.phase].actual_boss.dps, encounter.phases[page.phase].actual.dps)]][[/if]]">
-            <span>[[encounter.phases[page.phase].actual_boss.dps]]</span>
-            [[#if encounter.phases[page.phase].group]]
-              <span class="expected">[[Math.round(encounter.phases[page.phase].group.avg_dps_boss)]]</span>
-            [[/if]]
-          </td>
-        [[else]]
-          <td></td>
-        [[/if]]
-        <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual.seaweed, encounter.phases[page.phase].group.avg_seaweed, encounter.phases[page.phase].group.min_seaweed, encounter.phases[page.phase].group.max_seaweed, 100)]][[else]][[bar1(encounter.phases[page.phase].actual.seaweed, 100)]][[/if]]">
-          <span>[[encounter.phases[page.phase].actual.seaweed]]%</span>
-          [[#if encounter.phases[page.phase].group]]
-            <span class="expected">[[encounter.phases[page.phase].group.avg_seaweed.toPrecision(3)]]%</span>
-          [[/if]]
-        </td>
-        <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].actual.scholar, encounter.phases[page.phase].group.avg_scholar, encounter.phases[page.phase].group.min_scholar, encounter.phases[page.phase].group.max_scholar, 100)]][[else]][[bar1(encounter.phases[page.phase].actual.scholar, 100)]][[/if]]">
-          <span>[[encounter.phases[page.phase].actual.scholar]]%</span>
-          [[#if encounter.phases[page.phase].group]]
-            <span class="expected">[[encounter.phases[page.phase].group.avg_scholar.toPrecision(3)]]%</span>
-          [[/if]]
-        </td>
-      </tr>
-      [[#each encounter.parties:partyNo]]
-        <tr>
-          <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
-          <td style="[[bar1(stats[page.phase].actual.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
-            <span>[[stats[page.phase].actual.dps]]</span>
-          </td>
-          [[#if stats[page.phase].actual_boss]]
-            <td style="[[bar1(stats[page.phase].actual_boss.dps, encounter.phases[page.phase].group ? encounter.phases[page.phase].group.max_dps : encounter.phases[page.phase].actual.dps)]]">
-              <span>[[stats[page.phase].actual_boss.dps]]</span>
-            </td>
-          [[else]]
-            <td></td>
-          [[/if]]
-          <td style="[[bar1(stats[page.phase].actual.seaweed, 100)]]">
-            <span>[[stats[page.phase].actual.seaweed]]%</span>
-          </td>
-          <td style="[[bar1(stats[page.phase].actual.scholar, 100)]]">
-            <span>[[stats[page.phase].actual.scholar]]%</span>
-          </td>
-        </tr>
-      [[/each]]
-    </tbody>
-    [[#each encounter.parties:partyNo]]
+<div class="table-container">
+  {% include 'raidar/encounter_row_header.html' %}
+
+  <div class="uk-overflow-auto">
+    <table class="uk-table stats">
       <tbody>
         <tr>
-          <th>Party [[partyNo]]</th>
+          <th>Totals</th>
           <th>DPS</th>
-          <th>DPS To Boss</th>
+          <th>DPS to Boss</th>
+          <th>DPS Received</th>
+          <th>Dmg Received</th>
+          <th>Crit</th>
           <th>Seaweed</th>
           <th>Scholar</th>
+          <th>Flanking</th>
         </tr>
-        [[#each members]]
-          <tr>
-            <td class="[[self && 'uk-text-primary']]">
-              <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
-              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
-              [[name]]
-            </td>
-            [[#with phases[page.phase]]]
-            [[#if .]]
-              <td style="[[#if archetype]][[bar(actual.dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, individual.max_dps)]][[else]][[bar1(actual ? actual.dps : 0, individual && individual.max_dps)]][[/if]]">
-                <span>[[actual ? actual.dps : 0]]</span>
-                [[#if archetype]]
-                  <span class="expected">[[Math.round(archetype.avg_dps)]]</span>
+        <tr>
+          [[#with encounter.phases[page.phase]]]
+            <td>Squad</td>
+            [[#with actual]]
+              <td style="[[#if group && group.avg_dps]][[bar(dps, group.avg_dps, group.min_dps, group.max_dps)]][[else]][[bar1(dps, dps)]][[/if]]">
+                <span>[[dps]]</span>
+                [[#if group && group.avg_dps]]
+                <span class="expected">[[Math.round(group.avg_dps)]]</span>
                 [[/if]]
               </td>
-              [[#if actual_boss]]
-                <td style="[[#if archetype]][[bar(actual_boss.dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(actual_boss.dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps)]][[/if]]">
-                  <span>[[actual_boss ? actual_boss.dps : 0]]</span>
-                  [[#if archetype]]
-                    <span class="expected">[[Math.round(archetype.avg_dps_boss)]]</span>
-                  [[/if]]
-                </td>
-              [[else]]
-                <td>0</td>
-              [[/if]]
-              <td style="[[#if archetype]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
-                <span>[[actual ? actual.seaweed : 0]]%</span>
-                [[#if archetype]]
-                  <span class="expected">[[archetype.avg_seaweed.toPrecision(3)]]%</span>
+            [[else]]
+              <td></td>
+            [[/with]]
+            [[#with actual_boss]]
+              <td style="[[#if group && group.avg_dps_boss]][[bar(dps, group.avg_dps_boss, group.min_dps_boss, group.max_dps)]][[else]][[bar1(dps, actual.dps)]][[/if]]">
+                <span>[[dps]]</span>
+                [[#if group && group.avg_dps_boss]]
+                <span class="expected">[[Math.round(group.avg_dps_boss)]]</span>
                 [[/if]]
               </td>
-              <td style="[[#if archetype]][[bar(actual ? actual.scholar : 0, archetype.avg_scholar, archetype.min_scholar, archetype.max_scholar, 100)]][[else]][[bar1(actual ? actual.scholar : 0, 100)]][[/if]]">
-                <span>[[actual ? actual.scholar : 0]]%</span>
-                [[#if archetype]]
-                  <span class="expected">[[archetype.avg_scholar.toPrecision(3)]]%</span>
+            [[else]]
+              <td></td>
+            [[/with]]
+            [[#with received]]
+              <td style="[[#if group && group.avg_dps_received]][[bar(dps, group.avg_dps_received, group.min_dps_received, group.max_dps_received, group.max_dps_received, true)]][[else]][[bar1(dps, dps)]][[/if]]">
+                <span>[[dps]]</span>
+                [[#if group && group.avg_dps_received]]
+                <span class="expected">[[Math.round(group.avg_dps_received)]]</span>
+                [[/if]]
+              </td>
+              <td style="[[#if group && group.avg_total_received]][[bar(total, group.avg_total_received, group.min_total_received, group.max_total_received, group.max_total_received, true)]][[else]][[bar1(total, total)]][[/if]]">
+                <span>[[total]]</span>
+                [[#if group && group.avg_total_received]]
+                <span class="expected">[[Math.round(group.avg_total_received)]]</span>
                 [[/if]]
               </td>
             [[else]]
               <td></td>
               <td></td>
-              <td></td>
-              <td></td>
-            [[/if]]
             [[/with]]
-          </tr>
+            [[#with actual]]
+              <td style="[[#if group && group.avg_crit]][[bar(crit, group.avg_crit, group.min_crit, group.max_crit, 100)]][[else]][[bar1(crit, 100)]][[/if]]">
+                <span>[[crit]]%</span>
+                [[#if group && group.avg_crit]]
+                <span class="expected">[[group.avg_crit.toPrecision(3)]]%</span>
+                [[/if]]
+              </td>
+              <td style="[[#if group && group.avg_seaweed]][[bar(seaweed, group.avg_seaweed, group.min_seaweed, group.max_seaweed, 100)]][[else]][[bar1(seaweed, 100)]][[/if]]">
+                <span>[[seaweed]]%</span>
+                [[#if group && group.avg_seaweed]]
+                <span class="expected">[[group.avg_seaweed.toPrecision(3)]]%</span>
+                [[/if]]
+              </td>
+              <td style="[[#if group && group.avg_scholar]][[bar(scholar, group.avg_scholar, group.min_scholar, group.max_scholar, 100)]][[else]][[bar1(scholar, 100)]][[/if]]">
+                <span>[[scholar]]%</span>
+                [[#if group && group.avg_scholar]]
+                <span class="expected">[[group.avg_scholar.toPrecision(3)]]%</span>
+                [[/if]]
+              </td>
+              <td style="[[#if group && group.avg_flanking]][[bar(flanking, group.avg_flanking, group.min_flanking, group.max_flanking, 100)]][[else]][[bar1(flanking, 100)]][[/if]]">
+                <span>[[flanking]]%</span>
+                [[#if group && group.avg_flanking]]
+                <span class="expected">[[group.avg_flanking.toPrecision(3)]]%</span>
+                [[/if]]
+              </td>
+            [[/with]]
+          [[/with]]
+        </tr>
+        [[#each encounter.parties:partyNo]]
+          [[#with phases[page.phase]]]
+            <tr>
+              <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
+              [[#with actual]]
+                <td style="[[bar1(dps, group ? group.max_dps : encounter.phases[page.phase].actual.dps)]]">
+                  <span>[[dps]]</span>
+                </td>
+              [[/with]]
+              [[#with actual_boss]]
+                <td style="[[bar1(dps, group ? group.max_dps : encounter.phases[page.phase].actual.dps)]]">
+                  <span>[[dps]]</span>
+                </td>
+              [[else]]
+                <td></td>
+              [[/with]]
+              [[#with received]]
+                <td style="[[bar1(dps, group ? group.max_dps_received : encounter.phases[page.phase].received.dps)]]">
+                  <span>[[dps]]</span>
+                </td>
+                <td style="[[bar1(total, group ? group.max_total_received : encounter.phases[page.phase].received.total)]]">
+                  <span>[[total]]</span>
+                </td>
+              [[else]]
+                <td></td>
+                <td></td>
+              [[/with]]
+              [[#with actual]]
+                <td style="[[bar1(crit, 100)]]">
+                  <span>[[crit]]%</span>
+                </td>
+                <td style="[[bar1(seaweed, 100)]]">
+                  <span>[[seaweed]]%</span>
+                </td>
+                <td style="[[bar1(scholar, 100)]]">
+                  <span>[[scholar]]%</span>
+                </td>
+                <td style="[[bar1(flanking, 100)]]">
+                  <span>[[flanking]]%</span>
+                </td>
+              [[/with]]
+            </tr>
+          [[/with]]
         [[/each]]
       </tbody>
-    [[/each]]
-  </table>
+      [[#each encounter.parties:partyNo]]
+        <tbody>
+          <tr>
+            <th>Party [[partyNo]]</th>
+            <th>DPS</th>
+            <th>DPS To Boss</th>
+            <th>DPS Received</th>
+            <th>Dmg Received</th>
+            <th>Crit</th>
+            <th>Seaweed</th>
+            <th>Scholar</th>
+            <th>Flanking</th>
+          </tr>
+          [[#each members]]
+            <tr>
+              <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
+                <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+                <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+                [[name]]
+              </td>
+              [[#with phases[page.phase]]]
+                [[#with actual]]
+                  <td style="[[#if archetype.avg_dps]][[bar(dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps || 0)]][[/if]]">
+                    <span>[[dps]]</span>
+                    [[#if archetype.avg_dps]]
+                      <span class="expected">[[Math.round(archetype.avg_dps)]]</span>
+                    [[/if]]
+                  </td>
+                [[else]]
+                  <td>0</td>
+                [[/with]]
+                [[#with actual_boss]]
+                  <td style="[[#if archetype.avg_dps_boss]][[bar(dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps || 0)]][[/if]]">
+                    <span>[[dps]]</span>
+                    [[#if archetype.avg_dps_boss]]
+                      <span class="expected">[[Math.round(archetype.avg_dps_boss)]]</span>
+                    [[/if]]
+                  </td>
+                [[else]]
+                  <td>0</td>
+                [[/with]]
+                [[#with received]]
+                  <td style="[[#if archetype.avg_dps_received]][[bar(dps, archetype.avg_dps_received, archetype.min_dps_received, archetype.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps_received || 0)]][[/if]]">
+                    <span>[[dps]]</span>
+                    [[#if archetype.avg_dps_received]]
+                      <span class="expected">[[Math.round(archetype.avg_dps_received)]]</span>
+                    [[/if]]
+                  </td>
+                  <td style="[[#if archetype.avg_total_received]][[bar(total, archetype.avg_total_received, archetype.min_total_received, archetype.max_total_received, encounter.phases[page.phase].individual.max_total_received, true)]][[else]][[bar1(total, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_total_received || 0)]][[/if]]">
+                    <span>[[total]]</span>
+                    [[#if archetype.avg_total_received]]
+                      <span class="expected">[[Math.round(archetype.avg_total_received)]]</span>
+                    [[/if]]
+                  </td>
+                [[else]]
+                  <td>0</td>
+                  <td>0</td>
+                [[/with]]
+                [[#with actual]]
+                  <td style="[[#if archetype.avg_crit]][[bar(actual ? actual.crit : 0, archetype.avg_crit, archetype.min_crit, archetype.max_crit, 100)]][[else]][[bar1(actual ? actual.crit : 0, 100)]][[/if]]">
+                    <span>[[crit]]%</span>
+                    [[#if archetype.avg_crit]]
+                      <span class="expected">[[archetype.avg_crit.toPrecision(3)]]%</span>
+                    [[/if]]
+                  </td>
+                  <td style="[[#if archetype.avg_seaweed]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
+                    <span>[[seaweed]]%</span>
+                    [[#if archetype.avg_seaweed]]
+                      <span class="expected">[[archetype.avg_seaweed.toPrecision(3)]]%</span>
+                    [[/if]]
+                  </td>
+                  <td style="[[#if archetype.avg_scholar]][[bar(scholar, archetype.avg_scholar, archetype.min_scholar, archetype.max_scholar, 100)]][[else]][[bar1(scholar, 100)]][[/if]]">
+                    <span>[[scholar]]%</span>
+                    [[#if archetype.avg_scholar]]
+                      <span class="expected">[[archetype.avg_scholar.toPrecision(3)]]%</span>
+                    [[/if]]
+                  </td>
+                  <td style="[[#if archetype.avg_flanking]][[bar(flanking, archetype.avg_flanking, archetype.min_flanking, archetype.max_flanking, 100)]][[else]][[bar1(flanking, 100)]][[/if]]">
+                    <span>[[flanking]]%</span>
+                    [[#if archetype.avg_flanking]]
+                      <span class="expected">[[archetype.avg_flanking.toPrecision(3)]]%</span>
+                    [[/if]]
+                  </td>
+                [[else]]
+                  <td>0</td>
+                  <td>0</td>
+                  <td>0</td>
+                [[/with]]
+              [[else]]
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+              [[/with]]
+            </tr>
+          [[/each]]
+        </tbody>
+      [[/each]]
+    </table>
+  </div>
 </div>

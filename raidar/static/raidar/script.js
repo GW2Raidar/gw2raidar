@@ -31,7 +31,7 @@
 
   let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
-    if (timestamp) {
+    if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
       return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
     } else {
@@ -39,18 +39,38 @@
     }
   };
   helpers.formatTime = duration => {
-    if (duration) {
+    if (duration !== undefined) {
       let seconds = Math.trunc(duration);
       let minutes = Math.trunc(seconds / 60);
       let usec = Math.trunc((duration - seconds) * 1000);
       seconds -= minutes * 60
       if (usec < 10) usec = "00" + usec;
       else if (usec < 100) usec = "0" + usec;
-      return minutes + ":" + f0X(seconds) + "." + usec;
+      if (minutes) return minutes + ":" + f0X(seconds) + "." + usec;
+      return seconds + "." + usec;
     } else {
       return '';
     }
   };
+  helpers.tagForMechanic = (context, metricData) => {
+    let metrics, ok, actualPhase;
+    try {
+      actualPhase = r.get('page.phase');
+      let phase = metricData.split_by_phase ? actualPhase : 'All';
+      metrics = context.phases[phase].mechanics;
+      ok = metrics && metricData.name in metrics;
+    } catch (e) {
+      ok = false;
+    }
+    if (!ok) return "<td/>";
+
+    let ignore = (actualPhase == 'All' || metricData.split_by_phase) ? '' : 'class="ignore"';
+    let value = metrics[metricData.name];
+    if (metricData.data_type == 0) {
+      value = "[" + helpers.formatTime(value / 1000) + "]";
+    }
+    return `<td ${ignore}>${value}</td>`;
+  }
   class Colour {
     constructor(r, g, b, a) {
       if (typeof(r) == 'string') {
@@ -68,8 +88,8 @@
       return new Colour(...rgba);
     }
     lighten(p) {
-      let rgba = ['r', 'g', 'b', 'a'].map(c => 255 - p * (255 - this[c]));
-      return new Colour(...rgba);
+      let rgb = ['r', 'g', 'b'].map(c => 255 - p * (255 - this[c]));
+      return new Colour(...rgb, this.a);
     }
     css() {
       return `rgba(${Math.round(this.r)}, ${Math.round(this.g)}, ${Math.round(this.b)}, ${this.a})`;
@@ -80,26 +100,35 @@
     average: new Colour("#cccc80"),
     good: new Colour("#80ff80"),
     bad: new Colour("#ff8080"),
+    live: new Colour("#e0ffe0"),
+    down: new Colour("#ffffe0"),
+    dead: new Colour("#ffe0e0"),
+    disconnect: new Colour("#e0e0e0"),
     single: new Colour("#999999"),
     expStroke: new Colour("#8080ff").css(),
     expFill: new Colour("#8080ff", 0.5).css(),
   };
-  const scaleColour = (val, avg, min, max) => {
+  const scaleColour = (val, avg, min, max, flip) => {
+    let good = barcss.good;
+    let bad = barcss.bad;
+    if (flip) [good, bad] = [bad, good]
     if (val == avg) {
       return barcss.average;
     } else if (val < avg) {
-      return barcss.bad.blend(barcss.average, 1 - (avg - val) / (avg - min));
+      return bad.blend(barcss.average, 1 - (avg - val) / (avg - min));
     } else {
-      return barcss.good.blend(barcss.average, 1 - (val - avg) / (max - avg));
+      return good.blend(barcss.average, 1 - (val - avg) / (max - avg));
     }
   }
-  helpers.bar = (actual, average, min, max, top) => {
+  helpers.bar = (actual, average, min, max, top, flip) => {
+    if (!average) return helpers.bar1(actual, top);
+
     if (min > actual) min = actual;
-    if (max < actual) max = actual
+    if (max < actual) max = actual;
     top = Math.max(top || max, actual);
     let avgPct = average * 100 / top;
     let actPct = actual * 100 / top;
-    let colour = scaleColour(actual, average, min, max);
+    let colour = scaleColour(actual, average, min, max, flip);
     let stroke = colour.css();
     let fill = colour.lighten(0.5).css();
     let svg = `
@@ -122,6 +151,37 @@
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
+  helpers.barSurvival = (events, duration, numPlayers) => {
+    switch (typeof numPlayers) {
+      case "undefined":
+        numPlayers = 1; break;
+      case "object":
+        numPlayers = Object.values(numPlayers).reduce((a, e) => a + e.members.length, 0);
+    }
+    let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
+    let down_perc = (events.down_time || 0) * 100 / 1000 / numPlayers / duration;
+    let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
+    let live_perc = 100 - (down_perc + dead_perc + disconnect_perc);
+    let rects = [
+      [live_perc, barcss.live],
+      [down_perc, barcss.down],
+      [dead_perc, barcss.dead],
+      [disconnect_perc, barcss.disconnect]
+    ];
+    let rectSvg = [], x = 0;
+    rects.forEach(([value, colour]) => {
+      if (value) {
+        rectSvg.push(`<rect x='${x}%' y='20%' height='70%' width='${value}%' fill='${colour.css()}'/>`);
+        x += value;
+      }
+    });
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+${rectSvg.join("\n")}
+</svg>
+    `.replace(/\n\s*/g, "");
+    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+  }
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initData = {
@@ -129,10 +189,17 @@
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
     page: window.raidar_data.username ? loggedInPage : { name: 'index' },
+    persistent_page: { tab: 'combat_stats' },
     encounters: [],
-    encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: {} },
-    upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
+    settings: {
+      encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
+    },
+    upload: [],
   };
+  let storedSettingsJSON = localStorage.getItem('settings');
+  if (storedSettingsJSON) {
+    Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
+  }
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
     { boon: 'fury' },
@@ -183,7 +250,6 @@
     encounter: page => {
       r.set({
         loading: true,
-        "page.tab": 'combat_stats',
         "page.phase": 'All',
       });
       $.get({
@@ -239,9 +305,12 @@
       },
       encountersFiltered: function encountersFiltered() {
         let encounters = this.get('encounters') || [];
-        let filters = this.get('encounterSort.filter');
+        let filters = this.get('settings.encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
         const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
+        if (filters.success !== null) {
+          encounters = encounters.filter(e => e.success === filters.success);
+        }
         if (filters.area) {
           let f = filters.area.toLowerCase();
           encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
@@ -331,18 +400,14 @@
         pages.push({t: ">", c: 'uk-pagination-next', d: totalPages == page, n: page + 1});
         return pages;
       },
-      uploadsByState: function uploadsByState() {
-        let states = this.get('upload');
-        let files = { 1: [], 2: [], 3: [], 4: [] };
-        Object.keys(states).forEach(fileName => {
-          files[states[fileName]].push(fileName);
-        });
-        return files;
-      },
     },
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
     page: setPage,
+  });
+
+  r.observe('settings', (newValue, oldValue, keyPath) => {
+    localStorage.setItem('settings', JSON.stringify(newValue));
   });
 
   // history, pushState
@@ -374,10 +439,12 @@
 
 
 
+  function notification(str, style) {
+    UIkit.notification(str, style);
+  }
+
   function error(str) {
-    UIkit.notification(str, {
-      status: 'danger',
-    });
+    notification(str, 'danger')
   }
   function success(str) {
     UIkit.notification(str, {
@@ -386,8 +453,8 @@
   }
 
   function sortEncounters() {
-    let currentProp = r.get('encounterSort.prop');
-    let currentDir = r.get('encounterSort.dir');
+    let currentProp = r.get('settings.encounterSort.prop');
+    let currentDir = r.get('settings.encounterSort.dir');
     r.get('encounters').sort((currentDir == 'up' ? ascSort : descSort)(currentProp));
     r.update('encounters');
   }
@@ -461,6 +528,20 @@
 
       return false;
     },
+    auth_reset_pw: function resetPw() {
+      let email = this.get('auth.input.email');
+
+      $.post({
+        url: 'reset_pw.json',
+        data: {
+          email: email,
+        },
+      }).done(() => {
+        notification('Sending now.', 'primary')
+      })
+
+      return false;
+    },
     auth_logout: function logout() {
       $.post({
         url: 'logout.json',
@@ -514,10 +595,11 @@
       return false;
     },
     add_api_key: function addAPIKey(evt) {
+      let api_key = r.get('account.api_key');
       $.post({
         url: 'add_api_key.json',
         data: {
-          api_key: r.get('account.api_key'),
+          api_key: api_key,
         },
       }).done(response => {
         if (response.error) {
@@ -525,64 +607,188 @@
         } else {
           success(`API key for ${response.account_name} added`);
           r.set('account.api_key', '');
+          let accounts = r.get('accounts');
+          let account = accounts.find(account => account.name == response.account_name);
+          let len = api_key.length;
+          api_key = api_key.substring(0, 8) +
+                    api_key.substring(8, len - 12).replace(/[0-9a-zA-Z]/g, 'X') +
+                    api_key.substring(len - 12);
+          if (account) {
+            account.api_key = api_key;
+          } else {
+            accounts.push({ name: response.account_name, api_key: api_key });
+          }
+          r.update('accounts');
         }
       });
       return false;
     },
     sort_encounters: function sortEncountersChange(evt) {
-      let currentProp = r.get('encounterSort.prop');
-      let currentDir = r.get('encounterSort.dir');
-      let [clickedProp, clickedDir] = evt.node.getAttribute('data-sort').split(':');
+      let currentProp = r.get('settings.encounterSort.prop');
+      let currentDir = r.get('settings.encounterSort.dir');
+      let newSort = $(evt.node).closest('th').data('sort');
+      let [clickedProp, clickedDir] = newSort.split(':');
       if (clickedProp == currentProp) {
         currentDir = currentDir == 'up' ? 'down' : 'up';
-        r.set('encounterSort.dir', currentDir);
+        r.set('settings.encounterSort.dir', currentDir);
       } else {
         currentProp = clickedProp;
         currentDir = clickedDir;
-        r.set('encounterSort.prop', clickedProp);
-        r.set('encounterSort.dir', clickedDir);
+        r.set('settings.encounterSort.prop', clickedProp);
+        r.set('settings.encounterSort.dir', clickedDir);
       }
       sortEncounters();
+      return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
-      r.toggle('encounterSort.filters');
+      let filters = r.get('settings.encounterSort.filters');
+      r.toggle('settings.encounterSort.filters');
+      if (filters) {
+        r.set('settings.encounterSort.filter.*', null);
+      }
+      return false;
+    },
+    encounter_filter_success: function encounterFilterSuccess(evt) {
+      r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
       return false;
     },
   });
 
 
 
-  let uploadProgressHandler = (file, evt) => {
-    // let progress = Math.round(100 * evt.loaded / evt.total);
-    if (evt.loaded == evt.total) {
-      r.get('upload')[file.name] = 2;
-      r.update('upload');
-    }
+  let uploadProgressHandler = (entry, evt) => {
+    let progress = Math.round(100 * evt.loaded / evt.total);
+    //if (evt.loaded == evt.total) {
+    //}
+    entry.progress = progress;
+    r.update('upload');
   }
-  let uploadProgressDone = (file, data) => {
+  let uploadProgressDone = (entry, data) => {
     if (data.error) {
-      error(file.name + ': ' + data.error);
-
-      r.get('upload')[file.name] = 4;
-      r.update('upload');
+      entry.error = data.error;
+      uploadProgressFail(entry);
     } else {
-      let encounters = r.get('encounters');
-      let fileNames = Object.keys(data);
-      let newKeys = fileNames.map(file => data[file].id)
-      encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
-      fileNames.forEach(file => encounters.push(data[file]));
-      updateRactiveFromResponse({ encounters: encounters });
-
-      r.get('upload')[file.name] = 3;
-      r.update('upload');
+      entry.upload_id = data.upload_id;
     }
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
   }
 
-  let makeXHR = file => {
+    // if (data.error) {
+    //   entry.error = data.error;
+    //   error(entry.name + ': ' + data.error);
+    //   uploadProgressFail(entry);
+    // } else {
+    //   if (data.encounter) {
+    //     let encounters = r.get('encounters');
+    //     encounters = encounters.filter(encounter => encounter.id != data.id)
+    //     encounters.push(data.encounter);
+    //     updateRactiveFromResponse({ encounters: encounters });
+    //   }
+
+    //   entry.encounterId = data.id;
+    //   entry.success = true;
+    //   delete entry.file;
+    //   r.update('upload');
+    //   startUpload(true);
+    // }
+
+  let uploadProgressFail = entry => {
+    entry.success = false;
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
+  }
+
+  let makeXHR = entry => {
     let req = $.ajaxSettings.xhr();
-    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, file), false);
+    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, entry), false);
     return req;
   }
+
+  let uploading = null;
+  function startUpload(previousIsFinished) {
+    if (uploading && !previousIsFinished) return;
+
+    let entry = r.get('upload').find(entry => !("progress" in entry));
+    uploading = entry;
+    if (!entry) return;
+
+    let form = new FormData();
+    form.append(entry.name, entry.file);
+    return $.ajax({
+      url: 'upload.json',
+      data: form,
+      type: 'POST',
+      contentType: false,
+      processData: false,
+      xhr: makeXHR.bind(null, entry),
+    })
+    .done(uploadProgressDone.bind(null, entry))
+    .fail(uploadProgressFail.bind(null, entry));
+  }
+
+  const notificationHandlers = {
+    upload: notification => {
+      let uploads = r.get('upload');
+      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      if (entry) {
+        entry.success = true;
+        entry.encounterId = notification.encounter_id;
+        entry.encounterUrlId = notification.encounter_url_id;
+        r.update('upload');
+      } else {
+        entry = {
+          name: notification.filename,
+          progress: 100,
+          upload_id: notification.upload_id,
+          uploaded_by: notification.uploaded_by,
+          success: true,
+          encounterId: notification.encounter_id,
+        };
+        r.push('upload', entry);
+      }
+
+      let encounters = r.get('encounters');
+      encounters = encounters.filter(encounter => encounter.id != notification.encounter_id)
+      if (notification.encounter) {
+        encounters.push(notification.encounter);
+      }
+      updateRactiveFromResponse({ encounters: encounters });
+    },
+    upload_error: notification => {
+      let uploads = r.get('upload');
+      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      if (entry) {
+        entry.success = false;
+        entry.error = notification.error;
+        r.update('upload');
+      }
+    },
+  };
+
+  function handleNotification(notification) {
+    let handler = notificationHandlers[notification.type];
+    if (!handler) { // sanity check
+      console.error("No handler for notification type " + notification.type);
+      return;
+    }
+    handler(notification);
+  }
+
+  function pollNotifications() {
+    $.ajax({
+      url: 'poll.json',
+      type: 'POST',
+    }).done(data => {
+      data.notifications.forEach(handleNotification);
+    }).then(() => {
+      setTimeout(pollNotifications, 10000);
+    });
+  };
+  pollNotifications();
+
 
   $(document)
     .on('dragstart dragover dragenter', evt => {
@@ -603,22 +809,22 @@
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-
-        r.get('upload')[file.name] = 1;
-        r.update('upload');
-
-        let form = new FormData();
-        form.append(file.name, file);
-        return $.ajax({
-          url: 'upload.json',
-          data: form,
-          type: 'POST',
-          contentType: false,
-          processData: false,
-          xhr: makeXHR.bind(null, file),
-        })
-        .done(uploadProgressDone.bind(null, file));
+        let entry = r.get('upload').find(entry => entry.name == file.name);
+        if (entry) {
+          delete entry.success;
+          delete entry.progress;
+          entry.file = file;
+          r.update('upload');
+        } else {
+          r.push('upload', {
+            name: file.name,
+            file: file,
+            uploaded_by: r.get('username'),
+          });
+        }
+        startUpload();
       });
+      setPage('uploads');
       evt.preventDefault();
     });
 

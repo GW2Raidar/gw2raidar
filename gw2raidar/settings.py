@@ -104,6 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = ('raidar.backends.EmailAuthBackend',)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -134,6 +136,9 @@ LOGOUT_REDIRECT_URL = 'index'
 
 # Google Analytics
 GA_PROPERTY_ID = None
+
+import os.path
+RESTAT_PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'log', 'restat.pid')
 
 
 # Local settings, not checked into the repository

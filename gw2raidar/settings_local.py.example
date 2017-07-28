@@ -57,3 +57,9 @@ EMAIL_PORT = 1025
 
 # Google Analytics
 # GA_PROPERTY_ID = 'UA-XXXXX-Y'
+
+# Save uploaded files (default: "uploads")
+# UPLOAD_DIR = "uploads"
+
+# Google Drive API Credentials JSON file
+# GOOGLE_CREDENTIAL_FILE = "credentials/GW2Raidar-XXXXXXXXXXXX.json"

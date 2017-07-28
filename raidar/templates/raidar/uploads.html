@@ -1,0 +1,53 @@
+<table class="uk-table uk-table-striped">
+  <thead>
+    <tr>
+      <th class="uk-width-1-4">
+        File
+      </th>
+      <th class="uk-width-1-4">
+        Uploader
+      </th>
+      <th class="uk-width-2-4">
+        Status
+      </th>
+    </tr>
+  </thead>
+  <tbody>
+    [[#each upload]]
+      <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterUrlId })"[[/if]]>
+        <td class="[[success === true ? 'uk-text-success' : success === false ? 'uk-text-danger' : '']]">
+          [[name]]
+        </td>
+        <td>
+          [[uploaded_by]]
+        </td>
+        <td>
+          [[#if success]]
+            Success
+          [[elseif success === false]]
+            [[error || "Error"]]
+          [[elseif progress]]
+            [[#if progress < 100]]
+              Uploading [[progress]]%
+            [[else]]
+              Analysing
+            [[/if]]
+          [[else]]
+            Queued
+          [[/if]]
+        </td>
+      </tr>
+    [[/each]]
+  </tbody>
+</table>
+
+<p>
+  To upload your logs, simply drag and drop them anywhere into GW2 Raidar.
+  GW2 Raidar supports both <code>.evtc</code> and <code>.evtc.zip</code> formats
+  from ARCDPS. While they're being uploaded, you can continue to browse around
+  the website. Click on any log file marked green to view the results.
+</p>
+
+<p><strong>
+  Note that refreshing or closing the page will cancel any pending uploads.
+</strong></p>
