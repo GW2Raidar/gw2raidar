@@ -82,12 +82,13 @@ def _html_response(request, page, data={}):
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
-    try:
-        last_notification = request.user.notifications.latest('id')
-        response['last_notification_id'] = last_notification.id
-    except Notification.DoesNotExist:
-        # it's okay
-        pass
+    if request.user.is_authenticated:
+        try:
+            last_notification = request.user.notifications.latest('id')
+            response['last_notification_id'] = last_notification.id
+        except Notification.DoesNotExist:
+            # it's okay
+            pass
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
