@@ -185,9 +185,9 @@ BOSS_ARRAY = [
         Metric('Shared Agony', 'Agony', MetricType.COUNT)
     ]),
     Boss('Mursaat Overseer', [0x4314], metrics = [
-        Metric('Protect', 'Protect', MetricType.COUNT),
-        Metric('Claim', 'Claim', MetricType.COUNT),
-        Metric('Dispel', 'Dispel', MetricType.COUNT),
+        Metric('Protect', 'Protector', MetricType.COUNT),
+        Metric('Claim', 'Claimer', MetricType.COUNT),
+        Metric('Dispel', 'Dispeller', MetricType.COUNT),
         Metric('Soldiers', 'Soldiers', MetricType.COUNT, False),
         Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)

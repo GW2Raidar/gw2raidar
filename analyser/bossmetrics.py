@@ -259,9 +259,9 @@ class BossMetricAnalyser:
 
         
     def gather_mursaat_overseer_stats(self, events, collector):
-        protect_events = events[(events.skillid == Skills.PROTECT) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        claim_events = events[(events.skillid == Skills.CLAIM) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        protect_events = events[(events.skillid == Skills.PROTECT) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 1)]
+        claim_events = events[(events.skillid == Skills.CLAIM) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 1)]
+        dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 1)]
         soldiers_aura_events = events[(events.skillid == Skills.SOLDIERS_AURA) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         soldiers = events[(events.skillid == Skills.SOLDIERS_AURA)].groupby('src_instid').first()
         enemy_tile_events = events[(events.skillid == Skills.ENEMY_TILE) & events.dst_instid.isin(self.players.index)]
