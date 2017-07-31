@@ -36,6 +36,15 @@ class Skills:
     SOLDIERS_AURA = 37677
     ENEMY_TILE = 38184
     SAMAROG_CLAW = 37843
+    SHOCKWAVE = 37996
+    PRISONER_SWEEP = 38168
+    CHARGE = 37797
+    ANGUISHED_BOLT = 38314
+    INEVITABLE_BETRAYL = 38260
+    #Spear of Revulsion
+    EFFIGY_PULSE = 37901
+    BLUDGEON = 38305
+    
     
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -266,5 +275,18 @@ class BossMetricAnalyser:
     
     def gather_samarog_stats(self, events, collector):
         claw_events = events[(events.skillid == Skills.SAMAROG_CLAW) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        shockwave_events = events[(events.skillid == Skills.SHOCKWAVE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        sweep_events = events[(events.skillid == Skills.PRISONER_SWEEP) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        charge_events = events[(events.skillid == Skills.CHARGE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        guldhem_stun_events = events[(events.skillid == Skills.ANGUISHED_BOLT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        inevitable_betrayl_events = events[(events.skillid == Skills.INEVITABLE_BETRAYL) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        bludgeon_events = events[(events.skillid == Skills.BLUDGEON) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        
         
         self.gather_count_stat('Claw', collector, True, True, claw_events)
+        self.gather_count_stat('Shockwave', collector, True, True, shockwave_events)
+        self.gather_count_stat('Prisoner Sweep', collector, True, True, sweep_events)
+        self.gather_count_stat('Charge', collector, True, False, charge_events)
+        self.gather_count_stat('Anguished Bolt', collector, True, False, guldhem_stun_events)
+        self.gather_count_stat('Inevitable Betrayl', collector, True, False, inevitable_betrayl_events)
+        self.gather_count_stat('Bludgeon', collector, True, False, bludgeon_events)
