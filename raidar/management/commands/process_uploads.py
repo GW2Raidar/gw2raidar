@@ -191,7 +191,7 @@ class Command(BaseCommand):
                                 "encounter_url_id": encounter.url_id,
                                 "encounter": participation.data(),
                             })
-                            if account.user_id == uploader.id:
+                            if uploader and account.user_id == uploader.id:
                                 uploader = None
 
                 if uploader:

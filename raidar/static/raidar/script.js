@@ -741,6 +741,7 @@ ${rectSvg.join("\n")}
         uploaded_by: notification.uploaded_by,
         success: true,
         encounterId: notification.encounter_id,
+        encounterUrlId: notification.encounter_url_id,
       };
       if (entry) {
         Object.assign(entry, newEntry);
