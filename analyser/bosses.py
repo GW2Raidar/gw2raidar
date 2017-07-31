@@ -198,6 +198,8 @@ BOSS_ARRAY = [
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True, phase_end_health=1)
+    ], metrics = [
+        Metric('Claw', 'Claw', MetricType.COUNT, True, True)
     ]),
     Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),

@@ -35,6 +35,7 @@ class Skills:
     DISPEL = 37697
     SOLDIERS_AURA = 37677
     ENEMY_TILE = 38184
+    SAMAROG_CLAW = 37843
     
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
@@ -123,6 +124,8 @@ class BossMetricAnalyser:
             self.gather_cairn_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Mursaat Overseer']) != 0:
             self.gather_mursaat_overseer_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Samarog']) != 0:
+            self.gather_samarog_stats(events, metric_collector)
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
@@ -260,3 +263,8 @@ class BossMetricAnalyser:
         self.gather_count_stat('Soldiers', collector, False, False, soldiers)
         self.gather_count_stat('Soldier\'s Aura', collector, True, False, soldiers_aura_events)
         self.gather_count_stat('Enemy Tile', collector, True, False, enemy_tile_events)
+    
+    def gather_samarog_stats(self, events, collector):
+        claw_events = events[(events.skillid == Skills.SAMAROG_CLAW) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        
+        self.gather_count_stat('Claw', collector, True, True, claw_events)
