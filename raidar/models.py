@@ -222,7 +222,7 @@ def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
 class Encounter(models.Model):
-    url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id)
+    url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
     success = models.BooleanField()

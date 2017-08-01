@@ -13,7 +13,7 @@
     <ul class="uk-navbar-nav">
       [[#if username]]
         [[#if is_staff]]
-          <li><a href="{% url 'admin:index' %}">Admin</a>
+          <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
         [[/if]]
         <li class="[[page.name=='account' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('account')">Account</a></li>
         <li><a href="#" on-click="auth_logout">Logout</a></li>
