@@ -42,7 +42,6 @@ def _error(msg, **kwargs):
 
 
 def _userprops(request):
-    if request.user:
         accounts = request.user.accounts.all() if request.user.is_authenticated else []
         return {
                 'username': request.user.username,
@@ -56,8 +55,6 @@ def _userprops(request):
                     }
                     for account in accounts],
             }
-    else:
-        return {}
 
 
 def _encounter_data(request):
@@ -166,6 +163,7 @@ def encounter(request, url_id=None, json=None):
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
+            "id": encounter.id,
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,
@@ -246,7 +244,6 @@ def reset_pw(request):
         }
         form.save(**opts)
         return JsonResponse({});
-
 
 
 def register(request):
