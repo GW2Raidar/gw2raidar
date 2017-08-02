@@ -127,7 +127,10 @@ def encounter(request, url_id=None, json=None):
     dump = json_loads(encounter.dump)
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
-    area_stats = json_loads(encounter.area.stats)
+    try:
+        area_stats = EraAreaStore.objects.get(era=encounter.era, area=encounter.area).val
+    except EraAreaStore.DoesNotExist:
+        area_stats = None
     phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
     partyfunc = lambda member: member['party']
     namefunc = lambda member: member['name']
