@@ -184,11 +184,16 @@ ${rectSvg.join("\n")}
   }
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
+  let initialPage = loggedInPage;
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
+  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+    initialPage = { name: 'login' };
+  }
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
-    page: window.raidar_data.username ? loggedInPage : { name: 'index' },
+    page: initialPage,
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
     settings: {
@@ -777,22 +782,27 @@ ${rectSvg.join("\n")}
     handler(notification);
   }
 
+  const POLL_TIME = 10000;
   function pollNotifications() {
-    let options = {
-      url: 'poll.json',
-      type: 'POST',
-    }
-    if (lastNotificationId) {
-      options.data = { last_id: lastNotificationId };
-    }
-    $.ajax(options).done(data => {
-      if (data.last_id) {
-        lastNotificationId = data.last_id;
+    if (r.get('username')) {
+      let options = {
+        url: 'poll.json',
+        type: 'POST',
       }
-      data.notifications.forEach(handleNotification);
-    }).then(() => {
-      setTimeout(pollNotifications, 10000);
-    });
+      if (lastNotificationId) {
+        options.data = { last_id: lastNotificationId };
+      }
+      $.ajax(options).done(data => {
+        if (data.last_id) {
+          lastNotificationId = data.last_id;
+        }
+        data.notifications.forEach(handleNotification);
+      }).then(() => {
+        setTimeout(pollNotifications, POLL_TIME);
+      });
+    } else {
+      setTimeout(pollNotifications, POLL_TIME);
+    }
   };
   pollNotifications();
 
