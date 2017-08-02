@@ -117,6 +117,16 @@ class Character(models.Model):
         (MESMER, 1): 'Chronomancer',
         (NECROMANCER, 1): 'Reaper',
         (REVENANT, 1): 'Herald',
+
+        (GUARDIAN, 2): 'Firebrand',
+        (WARRIOR, 2): 'Spellbreaker',
+        (ENGINEER, 2): 'Holosmith',
+        (RANGER, 2): 'Soulbeast',
+        (THIEF, 2): 'Deadeye',
+        (ELEMENTALIST, 2): 'Weaver',
+        (MESMER, 2): 'Mirage',
+        (NECROMANCER, 2): 'Scourge',
+        (REVENANT, 2): 'Renegade',
     })
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
@@ -287,6 +297,7 @@ class Participation(models.Model):
     ELITE_CHOICES = (
             (int(Elite.CORE), "Core"),
             (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
+            (int(Elite.PATH_OF_FIRE), "Path of Fire"),
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
