@@ -119,7 +119,13 @@ def index(request, page={ 'name': 'encounters', 'no': 1 }):
 
 @require_GET
 def encounter(request, url_id=None, json=None):
-    encounter = Encounter.objects.select_related('area').get(url_id=url_id)
+    try:
+        encounter = Encounter.objects.select_related('area').get(url_id=url_id)
+    except Encounter.DoesNotExist:
+        if json:
+            return _error("Encounter does not exist")
+        else:
+            raise Http404("Encounter does not exist")
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
