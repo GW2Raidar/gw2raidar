@@ -390,7 +390,7 @@ ${rectSvg.join("\n")}
       },
       encounterPages: function encounterPages() {
         let page = this.get('page.no') || 1;
-        let encounters = this.get('encounters') || [];
+        let encounters = this.get('encountersFiltered') || [];
         let totalPages = Math.ceil(encounters.length / PAGE_SIZE);
         let minPage = Math.max(2, page - PAGINATION_WINDOW);
         let maxPage = Math.min(totalPages - 1, page + PAGINATION_WINDOW);
