@@ -43,7 +43,6 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 class UserProfile(models.Model):
     portrait_url = models.URLField(null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
-    stats = models.TextField(editable=False, default="{}")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
 
     def __str__(self):
@@ -322,6 +321,20 @@ class Participation(models.Model):
 class EraAreaStore(models.Model):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+
+class EraUserStore(models.Model):
+    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
     value = models.TextField(default="{}")
 
     @property
