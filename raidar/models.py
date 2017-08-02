@@ -59,7 +59,6 @@ post_save.connect(_create_user_profile, sender=User)
 class Area(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)
-    stats = models.TextField(editable=False, default="{}")
 
     def __str__(self):
         return self.name
@@ -318,3 +317,17 @@ class Participation(models.Model):
 
     class Meta:
         unique_together = ('encounter', 'character')
+
+
+class EraAreaStore(models.Model):
+    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
+    area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
