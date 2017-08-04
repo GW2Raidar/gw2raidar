@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='participation',
             name='elite',
-            field=models.PositiveSmallIntegerField(choices=[(0, 'Core'), (1, 'Heart of Thorns'), (1, 'Path of Fire')], db_index=True),
+            field=models.PositiveSmallIntegerField(choices=[(0, 'Core'), (1, 'Heart of Thorns'), (2, 'Path of Fire')], db_index=True),
         ),
     ]

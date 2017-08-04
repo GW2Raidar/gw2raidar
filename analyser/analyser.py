@@ -31,7 +31,7 @@ class Archetype(IntEnum):
 class Elite(IntEnum):
     CORE = 0
     HEART_OF_THORNS = 1
-    PATH_OF_FIRE = 1
+    PATH_OF_FIRE = 2
 
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
