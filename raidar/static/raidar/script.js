@@ -2,7 +2,6 @@
 
 // Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
-
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
@@ -183,6 +182,8 @@ ${rectSvg.join("\n")}
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   }
 
+  const DEBUG = raidar_data.debug;
+  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
   const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
@@ -260,6 +261,14 @@ ${rectSvg.join("\n")}
       });
       $.get({
         url: 'encounter/' + page.no + '.json',
+      }).then(setData);
+    },
+    profile: page => {
+      r.set({
+        loading: true,
+      });
+      $.get({
+        url: 'profile.json',
       }).then(setData);
     },
   };
@@ -845,5 +854,5 @@ ${rectSvg.join("\n")}
       evt.preventDefault();
     });
 
-  window.r = r; // XXX DEBUG
+  if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();

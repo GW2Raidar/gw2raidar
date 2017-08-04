@@ -75,10 +75,15 @@ def _login_successful(request, user):
 def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
-    response['ga_property_id'] = settings.GA_PROPERTY_ID
+    try:
+        response['ga_property_id'] = settings.GA_PROPERTY_ID
+    except:
+        # No Google Analytics, it's fine
+        pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
+    response['debug'] = settings.DEBUG
     if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
@@ -113,9 +118,29 @@ def download(request, id=None):
     else:
         raise Http404("Not allowed")
 
+
 @require_GET
 def index(request, page={ 'name': 'encounters', 'no': 1 }):
     return _html_response(request, page)
+
+
+@require_GET
+def profile(request):
+    if not request.user.is_authenticated:
+        return _error("Not authenticated")
+
+    era = Era.objects.latest('started_at')
+    try:
+        profile = EraUserStore.objects.get(user=request.user, era=era)
+    except EraUserStore.DoesNotExist:
+        profile = {}
+
+    result = {
+            "profile": profile
+        }
+    return JsonResponse(result)
+
+
 
 @require_GET
 def encounter(request, url_id=None, json=None):
@@ -215,7 +240,7 @@ def encounter(request, url_id=None, json=None):
 @require_GET
 def initial(request):
     response = _userprops(request)
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         response['encounters'] = _encounter_data(request)
     return JsonResponse(response)
 
