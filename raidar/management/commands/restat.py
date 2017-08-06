@@ -376,20 +376,23 @@ class Command(BaseCommand):
                         player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
                         totals_for_player = navigate(totals['character'], participation.character.account)
                         player_summary = navigate(totals_for_player, 'summary')
-                        player_this_encounter = navigate(totals_for_player, 'encounter', encounter.area_id)
-                        player_this_archetype = navigate(totals_for_player, 'archetype', participation.archetype)
-                        player_this_profession = navigate(totals_for_player,
-                                                          'profession',
-                                                          participation.character.profession)
-                        player_this_build = navigate(player_this_archetype,
-                                                     'profession',
-                                                     participation.character.profession)
-                        player_archetype_encounter = navigate(player_this_archetype, 'encounter', encounter.area_id)
-                        player_build_encounter = navigate(player_this_build, 'encounter', encounter.area_id)
+
+                        def categorise(split_encounter, split_archetype, split_profession):
+                            return navigate(totals_for_player,
+                                            'encounter', encounter.area_id if split_encounter else 'All',
+                                            'archetype', participation.archetype if split_archetype else 'All',
+                                            'profession', participation.character.profession if split_profession else 'All')
+                        player_this_encounter = categorise(True, False, False)
+                        player_this_archetype = categorise(False, True, False)
+                        player_this_profession = categorise(False, False, True)
+                        player_this_build = categorise(False, True, True)
+                        player_archetype_encounter = categorise(True, True, False)
+                        player_build_encounter = categorise(True, True, True)
+
                         get_and_add(totals_for_player, 'count', 1)
 
                         get_and_add(player_this_encounter, 'count', 1)
-                        average_stat(player_this_encounter, 'success', 1 if encounter.success else 0)
+                        average_stat(player_this_encounter, 'success_percentage', 100 if encounter.success else 0)
 
                         get_and_add(player_this_archetype, 'count', 1)
                         get_and_add(player_this_profession, 'count', 1)
