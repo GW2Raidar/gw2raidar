@@ -34,7 +34,18 @@ class Skills:
     CLAIM = 37779
     DISPEL = 37697
     SOLDIERS_AURA = 37677
-
+    ENEMY_TILE = 38184
+    SAMAROG_CLAW = 37843
+    SHOCKWAVE = 37996
+    PRISONER_SWEEP = 38168
+    CHARGE = 37797
+    ANGUISHED_BOLT = 38314
+    INEVITABLE_BETRAYL = 38260
+    #Spear of Revulsion
+    EFFIGY_PULSE = 37901
+    BLUDGEON = 38305
+    
+    
 class BossMetricAnalyser:
     def __init__(self, agents, subgroups, players, bosses, phases):
         self.agents = agents
@@ -45,6 +56,14 @@ class BossMetricAnalyser:
 
     def standard_count(events):
         return len(events);
+    
+    def combine_by_time_range_and_instid(self, events, time_range, inst_id = 'dst_instid'):
+        events = events.sort_values(by=[inst_id, 'time'])
+        deltas = abs(events.time - events.time.shift(1)) + (abs(events[inst_id] - events[inst_id].shift(1)) * 10000000)
+        deltas.fillna(10000000, inplace=True)
+        events = events.assign(deltas = deltas)
+        events = events[events.deltas > time_range]
+        return events
 
     def generate_player_buff_times(self, events, players, skillid):
         # Get Up/Down/Death events
@@ -114,6 +133,8 @@ class BossMetricAnalyser:
             self.gather_cairn_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Mursaat Overseer']) != 0:
             self.gather_mursaat_overseer_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Samarog']) != 0:
+            self.gather_samarog_stats(events, metric_collector)
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
@@ -140,6 +161,7 @@ class BossMetricAnalyser:
     def gather_gorse_stats(self, events, collector):
         spectral_impact_events = events[(events.skillid == Skills.SPECTRAL_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         imprisonment_events = events[(events.skillid == Skills.GHASTLY_PRISON) & events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0)]
+        imprisonment_events = self.combine_by_time_range_and_instid(imprisonment_events, 1000)
         self.gather_count_stat('Unmitigated Spectral Impacts', collector, True, True, spectral_impact_events)
         self.gather_count_stat('Ghastly Imprisonments', collector, True, False, imprisonment_events)
         self.gorse_spectral_darkness_time('Spectral Darkness', collector, events)
@@ -226,6 +248,8 @@ class BossMetricAnalyser:
     def gather_cairn_stats(self, events, collector):
         displacement_events = events[(events.skillid == Skills.DISPLACEMENT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         meteor_swarm_events = events[(events.skillid == Skills.METEOR_SWARM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        meteor_swarm_events = self.combine_by_time_range_and_instid(meteor_swarm_events, 1000, 'dst_instid')
+        
         spatial_manipulation_events = events[(events.skillid.isin(Skills.SPATIAL_MANIPULATION)) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         shared_agony_events = events[(events.skillid == Skills.SHARED_AGONY) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)] 
         self.gather_count_stat('Displacement', collector, True, False, displacement_events)
@@ -235,14 +259,34 @@ class BossMetricAnalyser:
 
         
     def gather_mursaat_overseer_stats(self, events, collector):
-        protect_events = events[(events.skillid == Skills.PROTECT) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        claim_events = events[(events.skillid == Skills.CLAIM) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        protect_events = events[(events.skillid == Skills.PROTECT) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 1)]
+        claim_events = events[(events.skillid == Skills.CLAIM) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 1)]
+        dispel_events = events[(events.skillid == Skills.DISPEL) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 1)]
         soldiers_aura_events = events[(events.skillid == Skills.SOLDIERS_AURA) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         soldiers = events[(events.skillid == Skills.SOLDIERS_AURA)].groupby('src_instid').first()
+        enemy_tile_events = events[(events.skillid == Skills.ENEMY_TILE) & events.dst_instid.isin(self.players.index)]
         
         self.gather_count_stat('Protect', collector, True, False, protect_events)
         self.gather_count_stat('Claim', collector, True, False, claim_events)
         self.gather_count_stat('Dispel', collector, True, False, dispel_events)
         self.gather_count_stat('Soldiers', collector, False, False, soldiers)
         self.gather_count_stat('Soldier\'s Aura', collector, True, False, soldiers_aura_events)
+        self.gather_count_stat('Enemy Tile', collector, True, False, enemy_tile_events)
+    
+    def gather_samarog_stats(self, events, collector):
+        claw_events = events[(events.skillid == Skills.SAMAROG_CLAW) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        shockwave_events = events[(events.skillid == Skills.SHOCKWAVE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        sweep_events = events[(events.skillid == Skills.PRISONER_SWEEP) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        charge_events = events[(events.skillid == Skills.CHARGE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        guldhem_stun_events = events[(events.skillid == Skills.ANGUISHED_BOLT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        inevitable_betrayl_events = events[(events.skillid == Skills.INEVITABLE_BETRAYL) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        bludgeon_events = events[(events.skillid == Skills.BLUDGEON) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        
+        
+        self.gather_count_stat('Claw', collector, True, True, claw_events)
+        self.gather_count_stat('Shockwave', collector, True, True, shockwave_events)
+        self.gather_count_stat('Prisoner Sweep', collector, True, True, sweep_events)
+        self.gather_count_stat('Charge', collector, True, False, charge_events)
+        self.gather_count_stat('Anguished Bolt', collector, True, False, guldhem_stun_events)
+        self.gather_count_stat('Inevitable Betrayl', collector, True, False, inevitable_betrayl_events)
+        self.gather_count_stat('Bludgeon', collector, True, False, bludgeon_events)

@@ -2,7 +2,6 @@
 
 // Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
-
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
@@ -183,12 +182,19 @@ ${rectSvg.join("\n")}
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   }
 
+  const DEBUG = raidar_data.debug;
+  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
+  let initialPage = loggedInPage;
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
+  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+    initialPage = { name: 'login' };
+  }
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
-    page: window.raidar_data.username ? loggedInPage : { name: 'index' },
+    page: initialPage,
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
     settings: {
@@ -196,6 +202,7 @@ ${rectSvg.join("\n")}
     },
     upload: [],
   };
+  let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
@@ -254,6 +261,14 @@ ${rectSvg.join("\n")}
       });
       $.get({
         url: 'encounter/' + page.no + '.json',
+      }).then(setData);
+    },
+    profile: page => {
+      r.set({
+        loading: true,
+      });
+      $.get({
+        url: 'profile.json',
       }).then(setData);
     },
   };
@@ -384,7 +399,7 @@ ${rectSvg.join("\n")}
       },
       encounterPages: function encounterPages() {
         let page = this.get('page.no') || 1;
-        let encounters = this.get('encounters') || [];
+        let encounters = this.get('encountersFiltered') || [];
         let totalPages = Math.ceil(encounters.length / PAGE_SIZE);
         let minPage = Math.max(2, page - PAGINATION_WINDOW);
         let maxPage = Math.min(totalPages - 1, page + PAGINATION_WINDOW);
@@ -650,7 +665,6 @@ ${rectSvg.join("\n")}
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
-      console.log(r.get('settings.encounterSort.filter.success'));
       return false;
     },
   });
@@ -667,23 +681,33 @@ ${rectSvg.join("\n")}
   let uploadProgressDone = (entry, data) => {
     if (data.error) {
       entry.error = data.error;
-      error(entry.name + ': ' + data.error);
       uploadProgressFail(entry);
     } else {
-      if (data.encounter) {
-        let encounters = r.get('encounters');
-        encounters = encounters.filter(encounter => encounter.id != data.id)
-        encounters.push(data.encounter);
-        updateRactiveFromResponse({ encounters: encounters });
-      }
-
-      entry.encounterId = data.id;
-      entry.success = true;
-      delete entry.file;
-      r.update('upload');
-      startUpload(true);
+      entry.upload_id = data.upload_id;
     }
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
   }
+
+    // if (data.error) {
+    //   entry.error = data.error;
+    //   error(entry.name + ': ' + data.error);
+    //   uploadProgressFail(entry);
+    // } else {
+    //   if (data.encounter) {
+    //     let encounters = r.get('encounters');
+    //     encounters = encounters.filter(encounter => encounter.id != data.id)
+    //     encounters.push(data.encounter);
+    //     updateRactiveFromResponse({ encounters: encounters });
+    //   }
+
+    //   entry.encounterId = data.id;
+    //   entry.success = true;
+    //   delete entry.file;
+    //   r.update('upload');
+    //   startUpload(true);
+    // }
 
   let uploadProgressFail = entry => {
     entry.success = false;
@@ -702,7 +726,7 @@ ${rectSvg.join("\n")}
   function startUpload(previousIsFinished) {
     if (uploading && !previousIsFinished) return;
 
-    let entry = r.get('upload').find(entry => !("success" in entry));
+    let entry = r.get('upload').find(entry => !("progress" in entry));
     uploading = entry;
     if (!entry) return;
 
@@ -719,6 +743,77 @@ ${rectSvg.join("\n")}
     .done(uploadProgressDone.bind(null, entry))
     .fail(uploadProgressFail.bind(null, entry));
   }
+
+  const notificationHandlers = {
+    upload: notification => {
+      //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let newEntry = {
+        name: notification.filename,
+        progress: 100,
+        upload_id: notification.upload_id,
+        uploaded_by: notification.uploaded_by,
+        success: true,
+        encounterId: notification.encounter_id,
+        encounterUrlId: notification.encounter_url_id,
+      };
+      if (entry) {
+        Object.assign(entry, newEntry);
+        r.update('upload');
+      } else {
+        r.push('upload', newEntry);
+      }
+
+      let encounters = r.get('encounters');
+      encounters = encounters.filter(encounter => encounter.id != notification.encounter_id)
+      if (notification.encounter) {
+        encounters.push(notification.encounter);
+      }
+      updateRactiveFromResponse({ encounters: encounters });
+    },
+    upload_error: notification => {
+      let uploads = r.get('upload');
+      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      if (entry) {
+        entry.success = false;
+        entry.error = notification.error;
+        r.update('upload');
+      }
+    },
+  };
+
+  function handleNotification(notification) {
+    let handler = notificationHandlers[notification.type];
+    if (!handler) { // sanity check
+      console.error("No handler for notification type " + notification.type);
+      return;
+    }
+    handler(notification);
+  }
+
+  const POLL_TIME = 10000;
+  function pollNotifications() {
+    if (r.get('username')) {
+      let options = {
+        url: 'poll.json',
+        type: 'POST',
+      }
+      if (lastNotificationId) {
+        options.data = { last_id: lastNotificationId };
+      }
+      $.ajax(options).done(data => {
+        if (data.last_id) {
+          lastNotificationId = data.last_id;
+        }
+        data.notifications.forEach(handleNotification);
+      }).then(() => {
+        setTimeout(pollNotifications, POLL_TIME);
+      });
+    } else {
+      setTimeout(pollNotifications, POLL_TIME);
+    }
+  };
+  pollNotifications();
 
 
   $(document)
@@ -740,11 +835,24 @@ ${rectSvg.join("\n")}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-        r.push('upload', { name: file.name, file: file }).then(() => startUpload());
+        let entry = r.get('upload').find(entry => entry.name == file.name);
+        if (entry) {
+          delete entry.success;
+          delete entry.progress;
+          entry.file = file;
+          r.update('upload');
+        } else {
+          r.push('upload', {
+            name: file.name,
+            file: file,
+            uploaded_by: r.get('username'),
+          });
+        }
+        startUpload();
       });
       setPage('uploads');
       evt.preventDefault();
     });
 
-  window.r = r; // XXX DEBUG
+  if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();

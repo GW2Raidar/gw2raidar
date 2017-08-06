@@ -4,16 +4,22 @@
       <th class="uk-width-1-4">
         File
       </th>
-      <th class="uk-width-3-4">
+      <th class="uk-width-1-4">
+        Uploader
+      </th>
+      <th class="uk-width-2-4">
         Status
       </th>
     </tr>
   </thead>
   <tbody>
     [[#each upload]]
-      <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterId })"[[/if]]>
+      <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterUrlId })"[[/if]]>
         <td class="[[success === true ? 'uk-text-success' : success === false ? 'uk-text-danger' : '']]">
           [[name]]
+        </td>
+        <td>
+          [[uploaded_by]]
         </td>
         <td>
           [[#if success]]

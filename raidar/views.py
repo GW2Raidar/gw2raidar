@@ -8,7 +8,6 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
-from django.db import transaction
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.middleware.csrf import get_token
@@ -18,15 +17,13 @@ from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters
 from django.views.decorators.http import require_GET, require_POST
-from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
 from os import makedirs, sep as dirsep
-from os.path import join as path_join, isfile
+from os.path import join as path_join, isfile, dirname
 from re import match, sub
 from time import time
-from zipfile import ZipFile
 import logging
 
 
@@ -45,7 +42,6 @@ def _error(msg, **kwargs):
 
 
 def _userprops(request):
-    if request.user:
         accounts = request.user.accounts.all() if request.user.is_authenticated else []
         return {
                 'username': request.user.username,
@@ -59,28 +55,11 @@ def _userprops(request):
                     }
                     for account in accounts],
             }
-    else:
-        return {}
-
-def _participation_data(participation):
-    return {
-            'id': participation.encounter.id,
-            'area': participation.encounter.area.name,
-            'started_at': participation.encounter.started_at,
-            'duration': participation.encounter.duration,
-            'character': participation.character.name,
-            'account': participation.character.account.name,
-            'profession': participation.character.profession,
-            'archetype': participation.archetype,
-            'elite': participation.elite,
-            'uploaded_at': participation.encounter.uploaded_at,
-            'success': participation.encounter.success,
-        }
 
 
 def _encounter_data(request):
     participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
-    return [_participation_data(participation) for participation in participations]
+    return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
     auth_login(request, user)
@@ -96,10 +75,22 @@ def _login_successful(request, user):
 def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
-    response['ga_property_id'] = settings.GA_PROPERTY_ID
+    try:
+        response['ga_property_id'] = settings.GA_PROPERTY_ID
+    except:
+        # No Google Analytics, it's fine
+        pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
+    response['debug'] = settings.DEBUG
+    if request.user.is_authenticated:
+        try:
+            last_notification = request.user.notifications.latest('id')
+            response['last_notification_id'] = last_notification.id
+        except Notification.DoesNotExist:
+            # it's okay
+            pass
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
@@ -127,24 +118,50 @@ def download(request, id=None):
     else:
         raise Http404("Not allowed")
 
+
 @require_GET
 def index(request, page={ 'name': 'encounters', 'no': 1 }):
     return _html_response(request, page)
 
+
 @require_GET
-def encounter(request, id=None, json=None):
-    encounter = Encounter.objects.select_related('area').get(pk=id)
+def profile(request):
+    if not request.user.is_authenticated:
+        return _error("Not authenticated")
+
+    era = Era.objects.latest('started_at')
+    try:
+        profile = EraUserStore.objects.get(user=request.user, era=era)
+    except EraUserStore.DoesNotExist:
+        profile = {}
+
+    result = {
+            "profile": profile
+        }
+    return JsonResponse(result)
+
+
+
+@require_GET
+def encounter(request, url_id=None, json=None):
+    try:
+        encounter = Encounter.objects.select_related('area').get(url_id=url_id)
+    except Encounter.DoesNotExist:
+        if json:
+            return _error("Encounter does not exist")
+        else:
+            raise Http404("Encounter does not exist")
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
-        user=request.user)]
+        user=request.user)] if request.user.is_authenticated else []
 
     dump = json_loads(encounter.dump)
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
-    if not allowed:
-        return _error('Not allowed')
 
-    area_stats = json_loads(encounter.area.stats)
+    try:
+        area_stats = EraAreaStore.objects.get(era=encounter.era, area=encounter.area).val
+    except EraAreaStore.DoesNotExist:
+        area_stats = None
     phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
     partyfunc = lambda member: member['party']
     namefunc = lambda member: member['name']
@@ -180,6 +197,7 @@ def encounter(request, id=None, json=None):
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
+            "id": encounter.id,
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,
@@ -205,6 +223,9 @@ def encounter(request, id=None, json=None):
             "parties": parties,
         }
     }
+    if encounter.gdrive_url:
+        data['encounter']['evtc_url'] = encounter.gdrive_url;
+    # XXX relic TODO remove once we fully cross to GDrive?
     if hasattr(settings, 'UPLOAD_DIR'):
         path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
         if isfile(path):
@@ -213,13 +234,13 @@ def encounter(request, id=None, json=None):
     if json:
         return JsonResponse(data)
     else:
-        return _html_response(request, { "name": "encounter", "no": str(id) }, data)
+        return _html_response(request, { "name": "encounter", "no": encounter.url_id }, data)
 
 
 @require_GET
 def initial(request):
     response = _userprops(request)
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         response['encounters'] = _encounter_data(request)
     return JsonResponse(response)
 
@@ -257,7 +278,6 @@ def reset_pw(request):
         }
         form.save(**opts)
         return JsonResponse({});
-
 
 
 def register(request):
@@ -329,119 +349,37 @@ def upload(request):
     file = request.FILES[filename]
     uploaded_at = time()
 
-    if hasattr(settings, 'UPLOAD_DIR'):
-        dir = path_join(settings.UPLOAD_DIR, request.user.username.replace(dirsep, '_'))
-        makedirs(path_join(dir), exist_ok=True)
-        diskname = path_join(dir, filename)
-        with open(diskname, 'wb') as diskfile:
-            while True:
-                buf = file.read(16384)
-                if len(buf) == 0:
-                    break
-                diskfile.write(buf)
-        file = open(diskname, 'rb')
+    upload, _ = Upload.objects.update_or_create(
+            filename=filename, uploaded_by=request.user,
+            defaults={ "uploaded_at": time() })
 
-    zipfile = None
-    if filename.endswith('.evtc.zip'):
-        zipfile = ZipFile(file)
-        contents = zipfile.infolist()
-        if len(contents) == 1:
-            file = zipfile.open(contents[0].filename)
-        else:
-            return _error('Only single-file ZIP archives are allowed')
+    diskname = upload.diskname()
+    makedirs(dirname(diskname), exist_ok=True)
+    with open(diskname, 'wb') as diskfile:
+        while True:
+            buf = file.read(16384)
+            if len(buf) == 0:
+                break
+            diskfile.write(buf)
 
-    try:
-        evtc_encounter = EvtcEncounter(file)
-    except EvtcParseException as e:
-        return _error(e)
-
-    if zipfile:
-        zipfile.close()
-    file.close()
-
-    area = Area.objects.get(id=evtc_encounter.area_id)
-    if not area:
-        return _error('Unknown area')
-
-    try:
-        analyser = Analyser(evtc_encounter)
-    except EvtcAnalysisException as e:
-        return _error(e)
-
-    dump = analyser.data
-
-    # XXX
-
-    started_at = dump['Category']['encounter']['start']
-    duration = dump['Category']['encounter']['duration']
-    success = dump['Category']['encounter']['success']
-
-    if duration < 60:
-        return _error('Encounter shorter than 60s')
-
-    status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
-    account_names = [player['account'] for player in status_for.values()]
-    with transaction.atomic():
-        # heuristics to see if the encounter is a re-upload:
-        # a character can only be in one raid at a time
-        # account_names are being hashed, and the triplet
-        # (area, account_hash, started_at) is being checked for
-        # uniqueness (along with some fuzzing to started_at)
-        started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
-        account_hash = Encounter.calculate_account_hash(account_names)
-        try:
-            encounter = Encounter.objects.get(
-                Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
-                area=area, account_hash=account_hash
-            )
-            encounter.filename = filename
-            encounter.uploaded_at = uploaded_at
-            encounter.uploaded_by = request.user
-            encounter.duration = duration
-            encounter.success = success
-            encounter.dump = json_dumps(dump)
-            encounter.started_at = started_at
-            encounter.started_at_full = started_at_full
-            encounter.started_at_half = started_at_half
-            encounter.save()
-        except Encounter.DoesNotExist:
-            encounter = Encounter.objects.create(
-                filename=filename, uploaded_at=time(), uploaded_by=request.user,
-                duration=duration, success=success, dump=json_dumps(dump),
-                area=area, started_at=started_at,
-                started_at_full=started_at_full, started_at_half=started_at_half,
-                account_hash=account_hash
-            )
-
-        for name, player in status_for.items():
-            account, _ = Account.objects.get_or_create(
-                name=player['account'])
-            character, _ = Character.objects.get_or_create(
-                name=name, account=account,
-                defaults={
-                    'profession': player['profession']
-                }
-            )
-            participation, _ = Participation.objects.update_or_create(
-                character=character, encounter=encounter,
-                defaults={
-                    'archetype': player['archetype'],
-                    'party': player['party'],
-                    'elite': player['elite']
-                }
-            )
-
-    result = { 'id': encounter.id }
-    own_participation = encounter.participations.filter(character__account__user=request.user).first()
-    if own_participation:
-        result['encounter'] = _participation_data(own_participation)
-
-    return JsonResponse(result)
+    return JsonResponse({"filename": filename, "upload_id": upload.id})
 
 
 @require_GET
 def named(request, name, no):
     return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
+
+@login_required
+@require_POST
+def poll(request):
+    notifications = Notification.objects.filter(user=request.user)
+    last_id = request.POST.get('last_id')
+    if last_id:
+        notifications = notifications.filter(id__gt=last_id)
+    result = { "notifications": [notification.val for notification in notifications] }
+    if notifications:
+        result['last_id'] = notifications.last().id
+    return JsonResponse(result)
 
 @login_required
 @require_POST
