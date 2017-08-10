@@ -144,6 +144,31 @@ def find_bounds(hash, prop, lookup, attr=None):
     if minprop not in hash or value < hash[minprop]:
         hash[minprop] = value
 
+def navigate(node, *names):
+    new_node = node
+    for name in names:
+        if name not in new_node:
+            new_node[name] = dict()
+        new_node = new_node[name]
+    return new_node
+
+def bound_stats(output, name, value):
+    maxprop = 'max|' + name
+    if maxprop not in output or value > output[maxprop]:
+        output[maxprop] = value
+
+    minprop = 'min|' + name
+    if minprop not in output or value < output[minprop]:
+        output[minprop] = value
+
+def all_stats(output, name, value):
+    find_bounds(output, name, value)
+    average_stat(output, name, value)
+
+def average_stat(output, name, value):
+    output['avgsum|' + name] = output.get('avgsum|' + name, 0) + value
+    output['avgnum|' + name] = output.get('avgnum|' + name, 0) + 1
+
 def calculate_average(hash, prop):
     if prop in hash:
         hash['avg_' + prop] = hash[prop] / hash['num_' + prop]
@@ -341,9 +366,68 @@ class Command(BaseCommand):
         buffs = set()
         main_stats = ['dps', 'dps_boss', 'dps_received', 'total_received', 'crit', 'seaweed', 'scholar', 'flanking']
         for encounter in queryset_iterator(queryset):
+            participations = encounter.participations.select_related('character').all()
+
             try:
-                totals_in_area = get_or_create(totals['area'], encounter.area_id)
                 data = json_loads(encounter.dump)
+                duration = data['Category']['encounter']['duration'] * 1000
+                for participation in participations:
+                    try:
+                        player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                        totals_for_player = navigate(totals['character'], participation.character.account)
+                        player_summary = navigate(totals_for_player, 'summary')
+
+                        def categorise(split_encounter, split_archetype, split_profession):
+                            return navigate(totals_for_player,
+                                            'encounter', encounter.area_id if split_encounter else 'All',
+                                            'archetype', participation.archetype if split_archetype else 'All',
+                                            'profession', participation.character.profession if split_profession else 'All')
+                        player_this_encounter = categorise(True, False, False)
+                        player_this_archetype = categorise(False, True, False)
+                        player_this_profession = categorise(False, False, True)
+                        player_this_build = categorise(False, True, True)
+                        player_archetype_encounter = categorise(True, True, False)
+                        player_build_encounter = categorise(True, True, True)
+
+                        get_and_add(totals_for_player, 'count', 1)
+
+                        get_and_add(player_this_encounter, 'count', 1)
+                        average_stat(player_this_encounter, 'success_percentage', 100 if encounter.success else 0)
+
+                        get_and_add(player_this_archetype, 'count', 1)
+                        get_and_add(player_this_profession, 'count', 1)
+
+                        get_and_add(player_this_build, 'count', 1)
+                        stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
+                        stats_in_phase_events = player_stats['Metrics']['events']
+
+                        def calculate(l, f, *args):
+                            for t in l:
+                                f(t, *args)
+
+                        breakdown = [player_this_build,
+                                     player_this_archetype,
+                                     player_archetype_encounter,
+                                     player_build_encounter]
+                        all = breakdown + [player_summary]
+                        if(encounter.success):
+                            dps = stats_in_phase_to_all['dps']
+                            dead_percentage = 100 * stats_in_phase_events['dead_time'] / duration
+                            down_percentage = 100 * stats_in_phase_events['down_time'] / duration
+                            disconnect_percentage = 100 * stats_in_phase_events['disconnect_time'] / duration
+
+                            calculate(breakdown, all_stats, 'dps', dps)
+                            calculate(all, average_stat, 'dead_percentage', dead_percentage)
+                            calculate(all, average_stat, 'down_percentage', down_percentage)
+                            average_stat(player_summary, 'disconnect_percentage', disconnect_percentage)
+
+                        #else:
+                            #init_bounds(player_this_build, 'dps')
+                    except Exception as e:
+                        print("Toeofdoom's amazing code threw an exception, well done.", e)
+
+                totals_in_area = get_or_create(totals['area'], encounter.area_id)
+
                 phases = data['Category']['combat']['Phase']
                 participations = encounter.participations.select_related('character').all()
 
@@ -394,29 +478,6 @@ class Command(BaseCommand):
                         if (participation.character.name not in stats_in_phase['Player']):
                             continue
                         player_stats = stats_in_phase['Player'][participation.character.name]
-
-                        try:
-                            totals_for_player = get_or_create(totals['character'], participation.account)
-                            player_encounters = get_or_create(totals_for_player, 'encounter')
-                            player_this_encounter = get_or_create(player_encounters, encounter.area_id)
-                            player_archetypes = get_or_create(totals_for_player, 'archetype')
-                            player_this_archetype = get_or_create(player_archetypes, participation.archetype)
-                            player_professions = get_or_create(totals_for_player, 'profession')
-                            player_this_profession = get_or_create(player_professions, participation.character.profession)
-                            player_this_build = get_or_create(player_this_archetype, 'profession')
-                            get_and_add(totals_for_player, 'count', 1)
-
-                            get_and_add(player_this_encounter, 'count', 1)
-                            get_and_add(player_this_encounter, 'success_count', 1 if encounter.success else 0)
-
-                            get_and_add(player_this_archetype, 'count', 1)
-                            get_and_add(player_this_profession, 'count', 1)
-
-                            get_and_add(player_this_build, 'count', 1)
-                            stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
-                            find_bounds(player_this_build, 'dps', stats_in_phase_to_all)
-                        except:
-                            print("Toeofdoom's amazing code threw an exception, well done.")
 
                         totals_by_profession = get_or_create(totals_by_build, participation.character.profession)
                         elite = data['Category']['status']['Player'][participation.character.name]['elite']
@@ -523,4 +584,72 @@ class Command(BaseCommand):
 
             Area.objects.filter(pk=area_id).update(stats=json_dumps(totals_in_area))
 
+        for account_id, totals_for_player in totals['character'].items():
+            def finalise_stats(node):
+                try:
+                    for key in list(node):
+                        sections = str(key).split('|')
+                        if sections[0] == 'avgsum':
+                            node['avg_' + sections[1]] = node[key]/node['avgnum|' + sections[1]]
+                            del node['avgsum|' + sections[1]]
+                            del node['avgnum|' + sections[1]]
+                        elif key in node:
+                            finalise_stats(node[key])
+                except TypeError:
+                    pass
+
+            finalise_stats(totals_for_player)
+
+            json_dump = json_dumps(totals_for_player)
+            print()
+            print(account_id)
+            flattened = flatten(totals_for_player)
+            for key in sorted(flattened.keys()):
+                print_node(key, flattened[key])
+
+
+            #print(json_dump)
+            #Currently still gathering per account, not per user...
+            #UserProfile.objects.filter(pk=account_id).update(stats=json_dump)
+
         return totals
+
+
+def is_basic_value(node):
+    try:
+        dict(node)
+        return False
+    except:
+        return True
+
+def flatten(root):
+    nodes = dict((key, node) for key,node in root.items())
+    stack = list(nodes.keys())
+    for node_name in stack:
+        node = nodes[node_name]
+        try:
+            for child_name, child in node.items():
+                try:
+                    full_child_name = "{0}-{1}".format(node_name, child_name)
+                    nodes[full_child_name] = dict(child)
+                    stack.append(full_child_name)
+                except TypeError:
+                    pass
+                except ValueError:
+                    pass
+        except AttributeError:
+            pass
+    return nodes
+
+def format_value(value):
+    return value
+
+def print_node(key, node, f=None):
+    try:
+        basic_values = list(filter(lambda key:is_basic_value(key[1]), node.items()))
+        if basic_values:
+            output_string = "{0}: {1}".format(key, ", ".join(
+                ["{0}:{1}".format(name, format_value(value)) for name,value in basic_values]))
+            print(output_string, file=f)
+    except AttributeError:
+        pass
