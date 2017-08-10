@@ -130,7 +130,7 @@ def calculate_average(hash, prop):
 def _safe_get(func, default=0):
     try:
         return func()
-    except KeyError:
+    except (KeyError, TypeError):
         return default
 
 class Command(BaseCommand):
