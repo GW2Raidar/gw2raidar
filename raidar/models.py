@@ -8,6 +8,9 @@ from analyser.analyser import Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
 from gw2raidar import settings
 from os.path import join as path_join
+from functools import lru_cache
+from time import time
+import random
 import os
 import re
 
@@ -40,7 +43,6 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 class UserProfile(models.Model):
     portrait_url = models.URLField(null=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
-    stats = models.TextField(editable=False, default="{}")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
 
     def __str__(self):
@@ -56,7 +58,6 @@ post_save.connect(_create_user_profile, sender=User)
 class Area(models.Model):
     id = models.IntegerField(primary_key=True)
     name = models.CharField(max_length=64, unique=True)
-    stats = models.TextField(editable=False, default="{}")
 
     def __str__(self):
         return self.name
@@ -116,6 +117,16 @@ class Character(models.Model):
         (MESMER, 1): 'Chronomancer',
         (NECROMANCER, 1): 'Reaper',
         (REVENANT, 1): 'Herald',
+
+        (GUARDIAN, 2): 'Firebrand',
+        (WARRIOR, 2): 'Spellbreaker',
+        (ENGINEER, 2): 'Holosmith',
+        (RANGER, 2): 'Soulbeast',
+        (THIEF, 2): 'Deadeye',
+        (ELEMENTALIST, 2): 'Weaver',
+        (MESMER, 2): 'Mirage',
+        (NECROMANCER, 2): 'Scourge',
+        (REVENANT, 2): 'Renegade',
     })
 
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
@@ -158,11 +169,17 @@ class Upload(models.Model):
             upload_dir = settings.UPLOAD_DIR
         else:
             upload_dir = 'uploads'
-        dir = path_join(upload_dir, self.uploaded_by.username.replace(os.sep, '_'))
-        return path_join(dir, self.filename)
+        ext = '.' + '.'.join(self.filename.split('.')[1:])
+        return path_join(upload_dir, str(self.id) + ext)
+
+    class Meta:
+        unique_together = ('filename', 'uploaded_by')
 
 def _delete_upload_file(sender, instance, using, **kwargs):
-    os.remove(instance.diskname())
+    try:
+        os.remove(instance.diskname())
+    except FileNotFoundError:
+        pass
 
 post_delete.connect(_delete_upload_file, sender=Upload)
 
@@ -170,6 +187,7 @@ post_delete.connect(_delete_upload_file, sender=Upload)
 class Notification(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     value = models.TextField(default="{}")
+    created_at = models.IntegerField(db_index=True, default=time)
 
     @property
     def val(self):
@@ -202,7 +220,17 @@ class Variable(models.Model):
         Variable.objects.update_or_create(key=name, defaults={'val': value})
 
 
+@lru_cache(maxsize=1)
+def _dictionary():
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    with open(os.path.join(location, "words.txt")) as f:
+        return [l.strip() for l in f.readlines()]
+
+def _generate_url_id(size=5):
+    return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
+
 class Encounter(models.Model):
+    url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
     success = models.BooleanField()
@@ -269,6 +297,7 @@ class Participation(models.Model):
     ELITE_CHOICES = (
             (int(Elite.CORE), "Core"),
             (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
+            (int(Elite.PATH_OF_FIRE), "Path of Fire"),
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
@@ -283,6 +312,7 @@ class Participation(models.Model):
     def data(self):
         return {
                 'id': self.encounter.id,
+                'url_id': self.encounter.url_id,
                 'area': self.encounter.area.name,
                 'started_at': self.encounter.started_at,
                 'duration': self.encounter.duration,
@@ -297,3 +327,31 @@ class Participation(models.Model):
 
     class Meta:
         unique_together = ('encounter', 'character')
+
+
+class EraAreaStore(models.Model):
+    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
+    area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+
+class EraUserStore(models.Model):
+    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)

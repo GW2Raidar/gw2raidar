@@ -104,6 +104,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = ('raidar.backends.EmailAuthBackend',)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/

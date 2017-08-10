@@ -42,7 +42,6 @@ def _error(msg, **kwargs):
 
 
 def _userprops(request):
-    if request.user:
         accounts = request.user.accounts.all() if request.user.is_authenticated else []
         return {
                 'username': request.user.username,
@@ -56,8 +55,6 @@ def _userprops(request):
                     }
                     for account in accounts],
             }
-    else:
-        return {}
 
 
 def _encounter_data(request):
@@ -78,10 +75,22 @@ def _login_successful(request, user):
 def _html_response(request, page, data={}):
     response = _userprops(request)
     response.update(data)
-    response['ga_property_id'] = settings.GA_PROPERTY_ID
+    try:
+        response['ga_property_id'] = settings.GA_PROPERTY_ID
+    except:
+        # No Google Analytics, it's fine
+        pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
+    response['debug'] = settings.DEBUG
+    if request.user.is_authenticated:
+        try:
+            last_notification = request.user.notifications.latest('id')
+            response['last_notification_id'] = last_notification.id
+        except Notification.DoesNotExist:
+            # it's okay
+            pass
     return render(request, template_name='raidar/index.html', context={
             'userprops': json_dumps(response),
         })
@@ -109,24 +118,50 @@ def download(request, id=None):
     else:
         raise Http404("Not allowed")
 
+
 @require_GET
 def index(request, page={ 'name': 'encounters', 'no': 1 }):
     return _html_response(request, page)
 
+
 @require_GET
-def encounter(request, id=None, json=None):
-    encounter = Encounter.objects.select_related('area').get(pk=id)
+def profile(request):
+    if not request.user.is_authenticated:
+        return _error("Not authenticated")
+
+    era = Era.objects.latest('started_at')
+    try:
+        profile = EraUserStore.objects.get(user=request.user, era=era)
+    except EraUserStore.DoesNotExist:
+        profile = {}
+
+    result = {
+            "profile": profile
+        }
+    return JsonResponse(result)
+
+
+
+@require_GET
+def encounter(request, url_id=None, json=None):
+    try:
+        encounter = Encounter.objects.select_related('area').get(url_id=url_id)
+    except Encounter.DoesNotExist:
+        if json:
+            return _error("Encounter does not exist")
+        else:
+            raise Http404("Encounter does not exist")
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
-        user=request.user)]
+        user=request.user)] if request.user.is_authenticated else []
 
     dump = json_loads(encounter.dump)
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
-    if not allowed:
-        return _error('Not allowed')
 
-    area_stats = json_loads(encounter.area.stats)
+    try:
+        area_stats = EraAreaStore.objects.get(era=encounter.era, area=encounter.area).val
+    except EraAreaStore.DoesNotExist:
+        area_stats = None
     phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
     partyfunc = lambda member: member['party']
     namefunc = lambda member: member['name']
@@ -162,6 +197,7 @@ def encounter(request, id=None, json=None):
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
+            "id": encounter.id,
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,
@@ -198,13 +234,13 @@ def encounter(request, id=None, json=None):
     if json:
         return JsonResponse(data)
     else:
-        return _html_response(request, { "name": "encounter", "no": str(id) }, data)
+        return _html_response(request, { "name": "encounter", "no": encounter.url_id }, data)
 
 
 @require_GET
 def initial(request):
     response = _userprops(request)
-    if request.user.is_authenticated():
+    if request.user.is_authenticated:
         response['encounters'] = _encounter_data(request)
     return JsonResponse(response)
 
@@ -242,7 +278,6 @@ def reset_pw(request):
         }
         form.save(**opts)
         return JsonResponse({});
-
 
 
 def register(request):
@@ -338,10 +373,13 @@ def named(request, name, no):
 @require_POST
 def poll(request):
     notifications = Notification.objects.filter(user=request.user)
-    result = [notification.val for notification in notifications]
-    for notification in notifications:
-        notification.delete()
-    return JsonResponse({ "notifications": result })
+    last_id = request.POST.get('last_id')
+    if last_id:
+        notifications = notifications.filter(id__gt=last_id)
+    result = { "notifications": [notification.val for notification in notifications] }
+    if notifications:
+        result['last_id'] = notifications.last().id
+    return JsonResponse(result)
 
 @login_required
 @require_POST
