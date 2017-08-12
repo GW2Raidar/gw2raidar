@@ -45,6 +45,9 @@ class Skills:
     EFFIGY_PULSE = 37901
     BLUDGEON = 38305
     SAMAROG_FIXATE = 37868
+    SMALL_FRIEND = 38247
+    BIG_FRIEND = 37966
+    
     
     
 class BossMetricAnalyser:
@@ -283,6 +286,8 @@ class BossMetricAnalyser:
         inevitable_betrayl_events = events[(events.skillid == Skills.INEVITABLE_BETRAYL) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         bludgeon_events = events[(events.skillid == Skills.BLUDGEON) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         fixate_events = events[(events.skillid == Skills.SAMAROG_FIXATE) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        small_friend_events = events[(events.skillid == Skills.SMALL_FRIEND) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        big_friend_events = events[(events.skillid == Skills.BIG_FRIEND) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         
         self.gather_count_stat('Claw', collector, True, True, claw_events)
         self.gather_count_stat('Shockwave', collector, True, True, shockwave_events)
@@ -292,3 +297,6 @@ class BossMetricAnalyser:
         self.gather_count_stat('Inevitable Betrayl', collector, True, False, inevitable_betrayl_events)
         self.gather_count_stat('Bludgeon', collector, True, False, bludgeon_events)
         self.gather_count_stat('Fixate', collector, True, True, fixate_events)
+        self.gather_count_stat('Small Friend', collector, True, True, small_friend_events)
+        self.gather_count_stat('Big Friend', collector, True, True, big_friend_events)
+        
