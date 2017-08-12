@@ -47,6 +47,7 @@ class Skills:
     SAMAROG_FIXATE = 37868
     SMALL_FRIEND = 38247
     BIG_FRIEND = 37966
+    ANNIHILATE = 38208
     
     
     
@@ -139,6 +140,8 @@ class BossMetricAnalyser:
             self.gather_mursaat_overseer_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Samarog']) != 0:
             self.gather_samarog_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Deimos']) != 0:
+            self.gather_deimos_stats(events, metric_collector)
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
@@ -299,4 +302,9 @@ class BossMetricAnalyser:
         self.gather_count_stat('Fixate', collector, True, True, fixate_events)
         self.gather_count_stat('Small Friend', collector, True, True, small_friend_events)
         self.gather_count_stat('Big Friend', collector, True, True, big_friend_events)
+        
+    def gather_deimos_stats(self, events, collector):
+        annihilate_events = events[(events.skillid == Skills.ANNIHILATE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        self.gather_count_stat('Annihilate', collector, True, False, annihilate_events)
+        
         

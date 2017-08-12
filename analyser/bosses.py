@@ -213,6 +213,8 @@ BOSS_ARRAY = [
     Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
+    ], metrics = [
+        Metric('Annihilate', 'Slammed', MetricType.COUNT, True, False)
     ]),
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
