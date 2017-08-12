@@ -205,7 +205,8 @@ BOSS_ARRAY = [
         Metric('Charge', 'Charge', MetricType.COUNT, True, False),
         Metric('Anguished Bolt', 'Guldhem Stun', MetricType.COUNT, True, False),
         Metric('Inevitable Betrayl', 'Chose Poorly', MetricType.COUNT, True, False),
-        Metric('Bludgeon', 'Bludgeon', MetricType.COUNT, True, False)
+        Metric('Bludgeon', 'Bludgeon', MetricType.COUNT, True, False),
+        Metric('Fixate', 'Fixate', MetricType.COUNT, True, False)
     ]),
     Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),

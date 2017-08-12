@@ -44,6 +44,7 @@ class Skills:
     #Spear of Revulsion
     EFFIGY_PULSE = 37901
     BLUDGEON = 38305
+    SAMAROG_FIXATE = 37868
     
     
 class BossMetricAnalyser:
@@ -281,7 +282,7 @@ class BossMetricAnalyser:
         guldhem_stun_events = events[(events.skillid == Skills.ANGUISHED_BOLT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         inevitable_betrayl_events = events[(events.skillid == Skills.INEVITABLE_BETRAYL) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         bludgeon_events = events[(events.skillid == Skills.BLUDGEON) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
-        
+        fixate_events = events[(events.skillid == Skills.SAMAROG_FIXATE) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         
         self.gather_count_stat('Claw', collector, True, True, claw_events)
         self.gather_count_stat('Shockwave', collector, True, True, shockwave_events)
@@ -290,3 +291,4 @@ class BossMetricAnalyser:
         self.gather_count_stat('Anguished Bolt', collector, True, False, guldhem_stun_events)
         self.gather_count_stat('Inevitable Betrayl', collector, True, False, inevitable_betrayl_events)
         self.gather_count_stat('Bludgeon', collector, True, False, bludgeon_events)
+        self.gather_count_stat('Fixate', collector, True, True, fixate_events)
