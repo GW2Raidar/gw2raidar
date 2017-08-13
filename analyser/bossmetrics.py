@@ -48,6 +48,8 @@ class Skills:
     SMALL_FRIEND = 38247
     BIG_FRIEND = 37966
     ANNIHILATE = 38208
+    SOUL_FEAST = 37805
+    MIND_CRUSH = 37613
     
     
     
@@ -305,6 +307,11 @@ class BossMetricAnalyser:
         
     def gather_deimos_stats(self, events, collector):
         annihilate_events = events[(events.skillid == Skills.ANNIHILATE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        soul_feast_events = events[(events.skillid == Skills.SOUL_FEAST) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        mind_crush_events = events[(events.skillid == Skills.MIND_CRUSH) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         self.gather_count_stat('Annihilate', collector, True, False, annihilate_events)
+        self.gather_count_stat('Soul Feast', collector, True, False, soul_feast_events)
+        self.gather_count_stat('Mind Crush', collector, True, False, mind_crush_events)
+        
         
         

@@ -214,7 +214,9 @@ BOSS_ARRAY = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
     ], metrics = [
-        Metric('Annihilate', 'Slammed', MetricType.COUNT, True, False)
+        Metric('Annihilate', 'Slammed', MetricType.COUNT, True, False),
+        Metric('Soul Feast', 'Hand Touches', MetricType.COUNT, True, False),
+        Metric('Mind Crush', 'Mind Crush', MetricType.COUNT, True, False),
     ]),
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
