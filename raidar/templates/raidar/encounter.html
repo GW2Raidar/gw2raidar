@@ -11,8 +11,10 @@
       </h3>
       <div>
         <span class="ignore">Uploaded as</span>
-        [[#if downloadable]]
-          <a href="{% url 'download' %}[[page.no]]">[[filename]]</a>
+        [[#if evtc_url]]
+          <a href="[[evtc_url]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
+        [[elseif downloadable]]
+          <a href="{% url 'download' %}[[page.no]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
         [[else]]
           [[filename]]
         [[/if]]
@@ -28,12 +30,13 @@
     <ul class="uk-navbar-nav">
       <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
       <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
+      <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
     </ul>
   </div>
   <div class="uk-navbar-right">
     <ul class="uk-navbar-nav">
       [[#each encounter.phase_order]]
-      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == phaseName ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
       [[/each]]
     </ul>
   </div>
@@ -46,4 +49,6 @@
   {% include 'raidar/encounter_combat_data.html' %}
 [[elseif persistent_page.tab == 'boon_uptime']]
   {% include 'raidar/encounter_boon_uptime.html' %}
+[[elseif persistent_page.tab == 'boss_metrics']]
+  {% include 'raidar/encounter_boss_metrics.html' %}
 [[/if]]

@@ -63,9 +63,9 @@
         [[/if]]
         <div class="uk-float-right" on-click="encounter_filter_toggle">
           [[#if settings.encounterSort.filters]]
-            <span uk-icon="icon: minus-circle"></span>
+            <span uk-tooltip title="Remove filters" uk-icon="icon: close"></span>
           [[else]]
-            <span uk-icon="icon: plus-circle"></span>
+            <span uk-tooltip title="Filters" uk-icon="icon: search"></span>
           [[/if]]
         </div>
       </th>
@@ -119,7 +119,7 @@
   </thead>
 
   [[#each encounterSlice]]
-    <tr on-click="@this.page({ name: 'encounter', no: id })">
+    <tr on-click="@this.page({ name: 'encounter', no: url_id })" class="link">
       <td class="[[success ? 'uk-text-success' : 'uk-text-danger']]">
         [[area]]
       </td>

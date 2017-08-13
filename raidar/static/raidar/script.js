@@ -2,7 +2,6 @@
 
 // Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
-
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
@@ -31,7 +30,7 @@
 
   let helpers = Ractive.defaults.data;
   helpers.formatDate = timestamp => {
-    if (timestamp) {
+    if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
       return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
     } else {
@@ -39,18 +38,38 @@
     }
   };
   helpers.formatTime = duration => {
-    if (duration) {
+    if (duration !== undefined) {
       let seconds = Math.trunc(duration);
       let minutes = Math.trunc(seconds / 60);
       let usec = Math.trunc((duration - seconds) * 1000);
       seconds -= minutes * 60
       if (usec < 10) usec = "00" + usec;
       else if (usec < 100) usec = "0" + usec;
-      return minutes + ":" + f0X(seconds) + "." + usec;
+      if (minutes) return minutes + ":" + f0X(seconds) + "." + usec;
+      return seconds + "." + usec;
     } else {
       return '';
     }
   };
+  helpers.tagForMechanic = (context, metricData) => {
+    let metrics, ok, actualPhase;
+    try {
+      actualPhase = r.get('page.phase');
+      let phase = metricData.split_by_phase ? actualPhase : 'All';
+      metrics = context.phases[phase].mechanics;
+      ok = metrics && metricData.name in metrics;
+    } catch (e) {
+      ok = false;
+    }
+    if (!ok) return "<td/>";
+
+    let ignore = (actualPhase == 'All' || metricData.split_by_phase) ? '' : 'class="ignore"';
+    let value = metrics[metricData.name];
+    if (metricData.data_type == 0) {
+      value = "[" + helpers.formatTime(value / 1000) + "]";
+    }
+    return `<td ${ignore}>${value}</td>`;
+  }
   class Colour {
     constructor(r, g, b, a) {
       if (typeof(r) == 'string') {
@@ -163,19 +182,27 @@ ${rectSvg.join("\n")}
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   }
 
+  const DEBUG = raidar_data.debug;
+  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
+  let initialPage = loggedInPage;
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
+  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+    initialPage = { name: 'login' };
+  }
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
-    page: window.raidar_data.username ? loggedInPage : { name: 'index' },
+    page: initialPage,
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
     settings: {
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
-    upload: {}, // 1: uploading, 2: analysing, 3: done, 4: rejected
+    upload: [],
   };
+  let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
@@ -234,6 +261,14 @@ ${rectSvg.join("\n")}
       });
       $.get({
         url: 'encounter/' + page.no + '.json',
+      }).then(setData);
+    },
+    profile: page => {
+      r.set({
+        loading: true,
+      });
+      $.get({
+        url: 'profile.json',
       }).then(setData);
     },
   };
@@ -364,7 +399,7 @@ ${rectSvg.join("\n")}
       },
       encounterPages: function encounterPages() {
         let page = this.get('page.no') || 1;
-        let encounters = this.get('encounters') || [];
+        let encounters = this.get('encountersFiltered') || [];
         let totalPages = Math.ceil(encounters.length / PAGE_SIZE);
         let minPage = Math.max(2, page - PAGINATION_WINDOW);
         let maxPage = Math.min(totalPages - 1, page + PAGINATION_WINDOW);
@@ -379,14 +414,6 @@ ${rectSvg.join("\n")}
         if (maxPage < totalPages && totalPages != 1) pages.push({t: totalPages, a: totalPages == page});
         pages.push({t: ">", c: 'uk-pagination-next', d: totalPages == page, n: page + 1});
         return pages;
-      },
-      uploadsByState: function uploadsByState() {
-        let states = this.get('upload');
-        let files = { 1: [], 2: [], 3: [], 4: [] };
-        Object.keys(states).forEach(fileName => {
-          files[states[fileName]].push(fileName);
-        });
-        return files;
       },
     },
     delimiters: ['[[', ']]'],
@@ -629,53 +656,165 @@ ${rectSvg.join("\n")}
       return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
+      let filters = r.get('settings.encounterSort.filters');
       r.toggle('settings.encounterSort.filters');
+      if (filters) {
+        r.set('settings.encounterSort.filter.*', null);
+      }
       return false;
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
-      console.log(r.get('settings.encounterSort.filter.success'));
       return false;
     },
   });
 
 
 
-  let uploadProgressHandler = (file, evt) => {
-    // let progress = Math.round(100 * evt.loaded / evt.total);
-    if (evt.loaded == evt.total) {
-      r.get('upload')[file.name] = 2;
-      r.update('upload');
-    }
-  }
-  let uploadProgressDone = (file, data) => {
-    if (data.error) {
-      error(file.name + ': ' + data.error);
-      uploadProgressFail(file);
-    } else {
-      let encounters = r.get('encounters');
-      let fileNames = Object.keys(data);
-      let newKeys = fileNames.map(file => data[file].id)
-      encounters = encounters.filter(encounter => newKeys.indexOf(encounter.id) == -1)
-      fileNames.forEach(file => encounters.push(data[file]));
-      updateRactiveFromResponse({ encounters: encounters });
-
-      r.get('upload')[file.name] = 3;
-      r.update('upload');
-    }
-  }
-
-  let uploadProgressFail = file => {
-    console.log("FAIL", file);
-    r.get('upload')[file.name] = 4;
+  let uploadProgressHandler = (entry, evt) => {
+    let progress = Math.round(100 * evt.loaded / evt.total);
+    //if (evt.loaded == evt.total) {
+    //}
+    entry.progress = progress;
     r.update('upload');
   }
+  let uploadProgressDone = (entry, data) => {
+    if (data.error) {
+      entry.error = data.error;
+      uploadProgressFail(entry);
+    } else {
+      entry.upload_id = data.upload_id;
+    }
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
+  }
 
-  let makeXHR = file => {
+    // if (data.error) {
+    //   entry.error = data.error;
+    //   error(entry.name + ': ' + data.error);
+    //   uploadProgressFail(entry);
+    // } else {
+    //   if (data.encounter) {
+    //     let encounters = r.get('encounters');
+    //     encounters = encounters.filter(encounter => encounter.id != data.id)
+    //     encounters.push(data.encounter);
+    //     updateRactiveFromResponse({ encounters: encounters });
+    //   }
+
+    //   entry.encounterId = data.id;
+    //   entry.success = true;
+    //   delete entry.file;
+    //   r.update('upload');
+    //   startUpload(true);
+    // }
+
+  let uploadProgressFail = entry => {
+    entry.success = false;
+    delete entry.file;
+    r.update('upload');
+    startUpload(true);
+  }
+
+  let makeXHR = entry => {
     let req = $.ajaxSettings.xhr();
-    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, file), false);
+    req.upload.addEventListener("progress", uploadProgressHandler.bind(null, entry), false);
     return req;
   }
+
+  let uploading = null;
+  function startUpload(previousIsFinished) {
+    if (uploading && !previousIsFinished) return;
+
+    let entry = r.get('upload').find(entry => !("progress" in entry));
+    uploading = entry;
+    if (!entry) return;
+
+    let form = new FormData();
+    form.append(entry.name, entry.file);
+    return $.ajax({
+      url: 'upload.json',
+      data: form,
+      type: 'POST',
+      contentType: false,
+      processData: false,
+      xhr: makeXHR.bind(null, entry),
+    })
+    .done(uploadProgressDone.bind(null, entry))
+    .fail(uploadProgressFail.bind(null, entry));
+  }
+
+  const notificationHandlers = {
+    upload: notification => {
+      //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let newEntry = {
+        name: notification.filename,
+        progress: 100,
+        upload_id: notification.upload_id,
+        uploaded_by: notification.uploaded_by,
+        success: true,
+        encounterId: notification.encounter_id,
+        encounterUrlId: notification.encounter_url_id,
+      };
+      if (entry) {
+        Object.assign(entry, newEntry);
+        r.update('upload');
+      } else {
+        r.push('upload', newEntry);
+      }
+
+      let encounters = r.get('encounters');
+      encounters = encounters.filter(encounter => encounter.id != notification.encounter_id)
+      if (notification.encounter) {
+        encounters.push(notification.encounter);
+      }
+      updateRactiveFromResponse({ encounters: encounters });
+    },
+    upload_error: notification => {
+      let uploads = r.get('upload');
+      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      if (entry) {
+        entry.success = false;
+        entry.error = notification.error;
+        r.update('upload');
+      }
+    },
+  };
+
+  function handleNotification(notification) {
+    let handler = notificationHandlers[notification.type];
+    if (!handler) { // sanity check
+      console.error("No handler for notification type " + notification.type);
+      return;
+    }
+    handler(notification);
+  }
+
+  const POLL_TIME = 10000;
+  function pollNotifications() {
+    if (r.get('username')) {
+      let options = {
+        url: 'poll.json',
+        type: 'POST',
+      }
+      if (lastNotificationId) {
+        options.data = { last_id: lastNotificationId };
+      }
+      $.ajax(options).done(data => {
+        if (data.last_id) {
+          lastNotificationId = data.last_id;
+        }
+        data.notifications.forEach(handleNotification);
+      }).then(() => {
+        setTimeout(pollNotifications, POLL_TIME);
+      });
+    } else {
+      setTimeout(pollNotifications, POLL_TIME);
+    }
+  };
+  pollNotifications();
+
 
   $(document)
     .on('dragstart dragover dragenter', evt => {
@@ -696,25 +835,24 @@ ${rectSvg.join("\n")}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-
-        r.get('upload')[file.name] = 1;
-        r.update('upload');
-
-        let form = new FormData();
-        form.append(file.name, file);
-        return $.ajax({
-          url: 'upload.json',
-          data: form,
-          type: 'POST',
-          contentType: false,
-          processData: false,
-          xhr: makeXHR.bind(null, file),
-        })
-        .done(uploadProgressDone.bind(null, file))
-        .fail(uploadProgressFail.bind(null, file));
+        let entry = r.get('upload').find(entry => entry.name == file.name);
+        if (entry) {
+          delete entry.success;
+          delete entry.progress;
+          entry.file = file;
+          r.update('upload');
+        } else {
+          r.push('upload', {
+            name: file.name,
+            file: file,
+            uploaded_by: r.get('username'),
+          });
+        }
+        startUpload();
       });
+      setPage('uploads');
       evt.preventDefault();
     });
 
-  window.r = r; // XXX DEBUG
+  if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();
