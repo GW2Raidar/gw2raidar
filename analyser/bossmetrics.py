@@ -51,7 +51,10 @@ class Skills:
     SOUL_FEAST = 37805
     MIND_CRUSH = 37613
     RAPID_DECAY = 37716
-    
+    DEMONIC_SHOCKWAVE = 38046
+    DEIMOS_PRIMARY_AGGRO = 34500
+    DEIMOS_TELEPORT = 37838
+    TEAR_CONSUMED = 37733
     
     
 class BossMetricAnalyser:
@@ -292,7 +295,7 @@ class BossMetricAnalyser:
         inevitable_betrayl_events = events[(events.skillid == Skills.INEVITABLE_BETRAYL) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         bludgeon_events = events[(events.skillid == Skills.BLUDGEON) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         fixate_events = events[(events.skillid == Skills.SAMAROG_FIXATE) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
-        small_friend_events = events[(events.skillid == Skills.SMALL_FRIEND) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        small_friend_events = events[(events.skillid == Skills.SMALL_FRIEND) & events.dst_instid.isin(self.players.index) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         big_friend_events = events[(events.skillid == Skills.BIG_FRIEND) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         
         self.gather_count_stat('Claw', collector, True, True, claw_events)
@@ -311,9 +314,16 @@ class BossMetricAnalyser:
         soul_feast_events = events[(events.skillid == Skills.SOUL_FEAST) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         mind_crush_events = events[(events.skillid == Skills.MIND_CRUSH) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         rapid_decay_events = events[(events.skillid == Skills.RAPID_DECAY) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        shockwave_events = events[(events.skillid == Skills.DEMONIC_SHOCKWAVE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        teleport_events = events[(events.skillid == Skills.DEIMOS_TELEPORT) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        tear_consumed_events = events[(events.skillid == Skills.TEAR_CONSUMED) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        
         self.gather_count_stat('Annihilate', collector, True, False, annihilate_events)
         self.gather_count_stat('Soul Feast', collector, True, False, soul_feast_events)
         self.gather_count_stat('Mind Crush', collector, True, False, mind_crush_events)
         self.gather_count_stat('Rapid Decay', collector, True, False, rapid_decay_events)        
+        self.gather_count_stat('Demonic Shockwave', collector, True, False, shockwave_events) 
+        self.gather_count_stat('Teleports', collector, True, False, teleport_events)
+        self.gather_count_stat('Tear Consumed', collector, True, False, tear_consumed_events)
         
         
