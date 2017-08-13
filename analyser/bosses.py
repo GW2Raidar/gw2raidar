@@ -205,11 +205,22 @@ BOSS_ARRAY = [
         Metric('Charge', 'Charge', MetricType.COUNT, True, False),
         Metric('Anguished Bolt', 'Guldhem Stun', MetricType.COUNT, True, False),
         Metric('Inevitable Betrayl', 'Chose Poorly', MetricType.COUNT, True, False),
-        Metric('Bludgeon', 'Bludgeon', MetricType.COUNT, True, False)
+        Metric('Bludgeon', 'Bludgeon', MetricType.COUNT, True, False),
+        Metric('Fixate', 'Fixate', MetricType.COUNT, True, True),
+        Metric('Small Friend', 'Small Friend', MetricType.COUNT, True, True),
+        Metric('Big Friend', 'Big Friend', MetricType.COUNT, True, True),
     ]),
     Boss('Deimos', [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
+    ], metrics = [
+        Metric('Annihilate', 'Slammed', MetricType.COUNT, True, False),
+        Metric('Soul Feast', 'Hand Touches', MetricType.COUNT, True, False),
+        Metric('Mind Crush', 'Mind Crush', MetricType.COUNT, True, False),
+        Metric('Rapid Decay', 'Black', MetricType.COUNT, True, False),
+        Metric('Demonic Shockwave', 'Shockwave', MetricType.COUNT, True, False),
+        Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
+        Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ]),
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
