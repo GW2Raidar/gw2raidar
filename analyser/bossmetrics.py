@@ -50,6 +50,7 @@ class Skills:
     ANNIHILATE = 38208
     SOUL_FEAST = 37805
     MIND_CRUSH = 37613
+    RAPID_DECAY = 37716
     
     
     
@@ -309,9 +310,10 @@ class BossMetricAnalyser:
         annihilate_events = events[(events.skillid == Skills.ANNIHILATE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         soul_feast_events = events[(events.skillid == Skills.SOUL_FEAST) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         mind_crush_events = events[(events.skillid == Skills.MIND_CRUSH) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        rapid_decay_events = events[(events.skillid == Skills.RAPID_DECAY) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         self.gather_count_stat('Annihilate', collector, True, False, annihilate_events)
         self.gather_count_stat('Soul Feast', collector, True, False, soul_feast_events)
         self.gather_count_stat('Mind Crush', collector, True, False, mind_crush_events)
-        
+        self.gather_count_stat('Rapid Decay', collector, True, False, rapid_decay_events)        
         
         

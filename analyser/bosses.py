@@ -217,6 +217,7 @@ BOSS_ARRAY = [
         Metric('Annihilate', 'Slammed', MetricType.COUNT, True, False),
         Metric('Soul Feast', 'Hand Touches', MetricType.COUNT, True, False),
         Metric('Mind Crush', 'Mind Crush', MetricType.COUNT, True, False),
+        Metric('Rapid Decay', 'Black', MetricType.COUNT, True, False)
     ]),
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
