@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 def _safe_get(f, default=None):
     try:
         return f()
-    except KeyError:
+    except (KeyError, TypeError):
         return default
 
 def _error(msg, **kwargs):
