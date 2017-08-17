@@ -80,6 +80,7 @@ class Command(BaseCommand):
         with single_process('restat'):
             start = time()
             self.analyse_uploads(*args, **options)
+            self.clean_up(*args, **options)
             end = time()
 
             if options['verbosity'] >= 3:
@@ -190,7 +191,7 @@ class Command(BaseCommand):
                                 "encounter_url_id": encounter.url_id,
                                 "encounter": participation.data(),
                             })
-                            if account.user_id == uploader.id:
+                            if uploader and account.user_id == uploader.id:
                                 uploader = None
 
                 if uploader:
@@ -238,3 +239,7 @@ class Command(BaseCommand):
                     file.close()
 
                 upload.delete()
+
+    def clean_up(self, *args, **options):
+        # delete Notifications older than 15s (assuming poll is every 10s)
+        Notification.objects.filter(created_at__lt=time() - 15).delete()

@@ -57,15 +57,19 @@
 
         {# content #}
         <div class="uk-flex-1">
-          [[#if username]]
-
-            [[#if loading]]
+          [[#if loading]]
 
             <center class="uk-margin-large-top">
               <div uk-spinner></div>
             </center>
 
-            [[elseif page.name == "encounters"]]
+          [[elseif page.name == "encounter"]]
+
+            {% include 'raidar/encounter.html' %}
+
+          [[elseif username]]
+
+            [[#if page.name == "encounters"]]
 
               [[#if encounters.length]]
                 {% include 'raidar/encounters.html' %}
@@ -77,7 +81,7 @@
 
             [[elseif page.name == "profile"]]
 
-              TODO profile - all GW2 accounts, characters with stats
+              {% include 'raidar/profile.html' %}
 
             [[elseif page.name == "uploads"]]
 
@@ -90,10 +94,6 @@
             [[elseif page.name == "about"]]
 
               {% include 'raidar/about.html' %}
-
-            [[elseif page.name == "encounter"]]
-
-              {% include 'raidar/encounter.html' %}
 
             [[/if]]
 

@@ -2,7 +2,6 @@
 
 // Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
-
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
@@ -183,12 +182,19 @@ ${rectSvg.join("\n")}
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   }
 
+  const DEBUG = raidar_data.debug;
+  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
+  let initialPage = loggedInPage;
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
+  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+    initialPage = { name: 'login' };
+  }
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
     is_staff: window.raidar_data.is_staff,
-    page: window.raidar_data.username ? loggedInPage : { name: 'index' },
+    page: initialPage,
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
     settings: {
@@ -196,6 +202,7 @@ ${rectSvg.join("\n")}
     },
     upload: [],
   };
+  let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
@@ -254,6 +261,14 @@ ${rectSvg.join("\n")}
       });
       $.get({
         url: 'encounter/' + page.no + '.json',
+      }).then(setData);
+    },
+    profile: page => {
+      r.set({
+        loading: true,
+      });
+      $.get({
+        url: 'profile.json',
       }).then(setData);
     },
   };
@@ -384,7 +399,7 @@ ${rectSvg.join("\n")}
       },
       encounterPages: function encounterPages() {
         let page = this.get('page.no') || 1;
-        let encounters = this.get('encounters') || [];
+        let encounters = this.get('encountersFiltered') || [];
         let totalPages = Math.ceil(encounters.length / PAGE_SIZE);
         let minPage = Math.max(2, page - PAGINATION_WINDOW);
         let maxPage = Math.min(totalPages - 1, page + PAGINATION_WINDOW);
@@ -731,23 +746,22 @@ ${rectSvg.join("\n")}
 
   const notificationHandlers = {
     upload: notification => {
-      let uploads = r.get('upload');
-      let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
+      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let newEntry = {
+        name: notification.filename,
+        progress: 100,
+        upload_id: notification.upload_id,
+        uploaded_by: notification.uploaded_by,
+        success: true,
+        encounterId: notification.encounter_id,
+        encounterUrlId: notification.encounter_url_id,
+      };
       if (entry) {
-        entry.success = true;
-        entry.encounterId = notification.encounter_id;
-        entry.encounterUrlId = notification.encounter_url_id;
+        Object.assign(entry, newEntry);
         r.update('upload');
       } else {
-        entry = {
-          name: notification.filename,
-          progress: 100,
-          upload_id: notification.upload_id,
-          uploaded_by: notification.uploaded_by,
-          success: true,
-          encounterId: notification.encounter_id,
-        };
-        r.push('upload', entry);
+        r.push('upload', newEntry);
       }
 
       let encounters = r.get('encounters');
@@ -777,15 +791,27 @@ ${rectSvg.join("\n")}
     handler(notification);
   }
 
+  const POLL_TIME = 10000;
   function pollNotifications() {
-    $.ajax({
-      url: 'poll.json',
-      type: 'POST',
-    }).done(data => {
-      data.notifications.forEach(handleNotification);
-    }).then(() => {
-      setTimeout(pollNotifications, 10000);
-    });
+    if (r.get('username')) {
+      let options = {
+        url: 'poll.json',
+        type: 'POST',
+      }
+      if (lastNotificationId) {
+        options.data = { last_id: lastNotificationId };
+      }
+      $.ajax(options).done(data => {
+        if (data.last_id) {
+          lastNotificationId = data.last_id;
+        }
+        data.notifications.forEach(handleNotification);
+      }).then(() => {
+        setTimeout(pollNotifications, POLL_TIME);
+      });
+    } else {
+      setTimeout(pollNotifications, POLL_TIME);
+    }
   };
   pollNotifications();
 
@@ -828,5 +854,5 @@ ${rectSvg.join("\n")}
       evt.preventDefault();
     });
 
-  window.r = r; // XXX DEBUG
+  if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();
