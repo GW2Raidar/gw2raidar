@@ -22,6 +22,8 @@ from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
 from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile, dirname
+import pytz
+from datetime import datetime
 from re import match, sub
 from time import time
 import logging
@@ -129,11 +131,19 @@ def profile(request):
     if not request.user.is_authenticated:
         return _error("Not authenticated")
 
+    user = request.user
     era = Era.objects.latest('started_at')
     try:
-        profile = EraUserStore.objects.get(user=request.user, era=era)
+        profile = EraUserStore.objects.get(user=user, era=era).val
     except EraUserStore.DoesNotExist:
         profile = {}
+
+    num_characters = Character.objects.filter(account__user=user).count()
+    profile.update({
+        'username': user.username,
+        'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
+        'num_characters': num_characters,
+    })
 
     result = {
             "profile": profile

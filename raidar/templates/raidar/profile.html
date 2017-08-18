@@ -1,1 +1,32 @@
-TODO
+[[#with profile]]
+  <h2>Profile: <strong>[[username]]</strong></h2>
+  <p>
+    Joined at: [[formatDate(joined_at)]]
+  </p>
+  <p>
+    Encounters: [[count]]
+  </p>
+  <p>
+    Characters: [[num_characters]]
+  </p>
+
+  <table class="uk-table uk-table-striped">
+    <tr>
+      <th>Area (TODO: Name!)</th>
+      <th>Count</th>
+      <th>Success</th>
+    </tr>
+    [[#each encounter:encounterId]]
+      [[#if encounterId != "All"]]
+        <tr>
+          <td>[[encounterId]]</td>
+          [[#with archetype.All.profession.All]]
+            <td>[[count]]</td>
+            <td>[[avg_success_percentage.toPrecision(3)]]%</td>
+          [[/with]]
+        </tr>
+      [[/if]]
+    [[/each]]
+  </table>
+[[/with]]
+
