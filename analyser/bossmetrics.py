@@ -59,6 +59,9 @@ class Skills:
     WHITE_ORB = 34914
     RED_ORB_ATTUNEMENT = 35091
     WHITE_ORB_ATTUNEMENT = 35109
+    COMPROMISED = 35096
+    GAINING_POWER = 35075
+    MAGIC_BLAST_INTENSITY = 35119
     
     
 class BossMetricAnalyser:
@@ -232,9 +235,16 @@ class BossMetricAnalyser:
         orb_events = events[events.dst_instid.isin(self.players.index) & events.skillid.isin({Skills.RED_ORB_ATTUNEMENT, Skills.WHITE_ORB_ATTUNEMENT, Skills.RED_ORB, Skills.WHITE_ORB}) & (events.is_buffremove == 0)]
         
         orb_catch_events = self.generate_kc_orb_catch_events(self.players, orb_events)
+        
+        compromised_events = events[(events.skillid == Skills.COMPROMISED) & (events.is_buffremove == 0)]
+        gaining_power_events = events[(events.skillid == Skills.GAINING_POWER) & (events.is_buffremove == 0)]
+        magic_blast_intensity_events = events[(events.skillid == Skills.MAGIC_BLAST_INTENSITY) & (events.is_buffremove == 0)]
                             
         self.gather_count_stat('Correct Orb', collector, True, False, orb_catch_events[orb_catch_events.correct == 1])
         self.gather_count_stat('Wrong Orb', collector, True, False, orb_catch_events[orb_catch_events.correct == 0])
+        self.gather_count_stat('Rifts Hit', collector, False, False, compromised_events)
+        self.gather_count_stat('Gaining Power', collector, False, False, gaining_power_events)
+        self.gather_count_stat('Magic Blast Intensity', collector, False, False, magic_blast_intensity_events)
         
     def generate_kc_orb_catch_events(self, players, events):               
         raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
