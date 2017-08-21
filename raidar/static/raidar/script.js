@@ -266,6 +266,7 @@ ${rectSvg.join("\n")}
     profile: page => {
       r.set({
         loading: true,
+        "page.area": 'All',
       });
       $.get({
         url: 'profile.json',
