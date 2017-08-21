@@ -493,13 +493,16 @@ class Analyser:
         return across_phase.append(before_phase).append(main_phase).append(after_phase)
 
     def collect_buff(self, collector, diff_data):
-        total_time = diff_data['duration'].sum()
-        if total_time == 0:
-            mean = 0
+        if diff_data.empty:
+            collector.add_data(None, 0.0)
         else:
-            mean = (diff_data['duration'] * diff_data['stacks']).sum() / total_time
-        buff_type = collector.context_values[ContextType.BUFF_TYPE]
-        if buff_type.stacking == StackType.INTENSITY:
-            collector.add_data(None, mean)
-        else:
-            collector.add_data(None, mean, percentage)
+            total_time = diff_data['duration'].sum()
+            if total_time == 0:
+                mean = 0
+            else:
+                mean = (diff_data['duration'] * diff_data['stacks']).sum() / total_time
+            buff_type = collector.context_values[ContextType.BUFF_TYPE]
+            if buff_type.stacking == StackType.INTENSITY:
+                collector.add_data(None, mean)
+            else:
+                collector.add_data(None, mean, percentage)
