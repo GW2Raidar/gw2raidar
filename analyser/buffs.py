@@ -185,24 +185,6 @@ class BuffPreprocessor:
                 raw_buff_data = np.r_[raw_buff_data, track_data]
             return raw_buff_data
 
-        """ def no_buff_events(buff_type, raw_buff_data):
-            for player in list(players.index):
-
-                agent_start_time = self.get_time(player_events[player_events['src_instid'] == player], parser.StateChange.SPAWN, start_time)
-                agent_end_time = self.get_time(player_events[player_events['src_instid'] == player], parser.StateChange.DESPAWN, end_time)
-
-                if (buff_type.stacking == StackType.INTENSITY):
-                    bufftrack = BuffTrackIntensity(BUFFS[buff_type.name], agent_start_time, agent_end_time)
-                else:
-                    bufftrack = BuffTrackDuration(BUFFS[buff_type.name], agent_start_time, agent_end_time)
-
-                bufftrack.end_track(agent_end_time)
-
-                track_data = bufftrack.data
-                track_data = np.c_[[buff_type.code] * track_data.shape[0], [player] * track_data.shape[0], track_data]
-                raw_buff_data = np.r_[raw_buff_data, track_data]
-            return raw_buff_data"""
-
         # Filter out state change and cancellation events
         not_cancel_events = player_events[(player_events.state_change == parser.StateChange.NORMAL)
                                         & (player_events.is_activation < parser.Activation.CANCEL_FIRE)
@@ -225,8 +207,6 @@ class BuffPreprocessor:
         buff_update_events = pd.concat([buff_events, buffremove_events]).sort_values('time')
 
         # Add in skill ids for ease of processing
-
-
         buff_update_events[['time', 'value']] = buff_update_events[['time', 'value']].apply(pd.to_numeric)
 
         raw_buff_data = np.array([]).reshape(0,6)
@@ -244,9 +224,6 @@ class BuffPreprocessor:
             buff_type = relevant_buff_types[0]
             remaining_buff_types.remove(buff_type)
             raw_buff_data = process_buff_events(buff_type, buff_events, raw_buff_data)
-
-        #for buff_type in remaining_buff_types:
-        #    raw_buff_data = no_buff_events(buff_type, raw_buff_data)
 
         buff_data = pd.DataFrame(columns = ['buff', 'player', 'time', 'stacks', 'stripped', 'duration'], data = raw_buff_data)
         buff_data.fillna(0, inplace=True)
