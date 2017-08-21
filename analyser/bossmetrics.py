@@ -55,6 +55,13 @@ class Skills:
     DEIMOS_PRIMARY_AGGRO = 34500
     DEIMOS_TELEPORT = 37838
     TEAR_CONSUMED = 37733
+    RED_ORB = 34972
+    WHITE_ORB = 34914
+    RED_ORB_ATTUNEMENT = 35091
+    WHITE_ORB_ATTUNEMENT = 35109
+    COMPROMISED = 35096
+    GAINING_POWER = 35075
+    MAGIC_BLAST_INTENSITY = 35119
     
     
 class BossMetricAnalyser:
@@ -138,6 +145,8 @@ class BossMetricAnalyser:
             self.gather_sloth_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Matthias Gabrel']) != 0:
             self.gather_matt_stats(events, metric_collector)
+        elif len(self.bosses[self.bosses.name == 'Keep Construct']) != 0:
+            self.gather_kc_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Xera']) != 0:
             self.gather_xera_stats(events, metric_collector)
         elif len(self.bosses[self.bosses.name == 'Cairn the Indomitable']) != 0:
@@ -222,11 +231,48 @@ class BossMetricAnalyser:
         self.gather_count_stat('Sacrificed', collector, True, False, sacrifice_events)
         self.gather_count_stat('Well of the Profane Carrier', collector, True, False, profane_events)
 
+    def gather_kc_stats(self, events, collector):
+        orb_events = events[events.dst_instid.isin(self.players.index) & events.skillid.isin({Skills.RED_ORB_ATTUNEMENT, Skills.WHITE_ORB_ATTUNEMENT, Skills.RED_ORB, Skills.WHITE_ORB}) & (events.is_buffremove == 0)]
+        
+        orb_catch_events = self.generate_kc_orb_catch_events(self.players, orb_events)
+        
+        compromised_events = events[(events.skillid == Skills.COMPROMISED) & (events.is_buffremove == 0)]
+        gaining_power_events = events[(events.skillid == Skills.GAINING_POWER) & (events.is_buffremove == 0)]
+        magic_blast_intensity_events = events[(events.skillid == Skills.MAGIC_BLAST_INTENSITY) & (events.is_buffremove == 0)]
+                            
+        self.gather_count_stat('Correct Orb', collector, True, False, orb_catch_events[orb_catch_events.correct == 1])
+        self.gather_count_stat('Wrong Orb', collector, True, False, orb_catch_events[orb_catch_events.correct == 0])
+        self.gather_count_stat('Rifts Hit', collector, False, False, compromised_events)
+        self.gather_count_stat('Gaining Power', collector, False, False, gaining_power_events)
+        self.gather_count_stat('Magic Blast Intensity', collector, False, False, magic_blast_intensity_events)
+        
+    def generate_kc_orb_catch_events(self, players, events):               
+        raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
+        for player in list(players.index):
+            data = np.array([np.arange(0)] * 2).T
+            player_events = events[(events['dst_instid'] == player)]
+
+            red_attuned = False
+            for event in player_events.itertuples():
+                if event.skillid == Skills.RED_ORB_ATTUNEMENT:
+                    red_attuned = True
+                elif event.skillid == Skills.WHITE_ORB_ATTUNEMENT:
+                    red_attuned = False
+                elif event.skillid == Skills.RED_ORB:
+                    data = np.append(data, [[event.time, red_attuned]], axis=0)
+                elif event.skillid == Skills.WHITE_ORB:
+                    data = np.append(data, [[event.time, not red_attuned]], axis=0)
+
+            data = np.c_[[player] * data.shape[0], data]
+            raw_data = np.r_[raw_data, data]
+
+        return pd.DataFrame(columns = ['dst_instid', 'time', 'correct'], data = raw_data)
+        
     def gather_xera_stats(self, events, collector):
         derangement_events = events[(events.skillid == Skills.DERANGEMENT) & (events.buff == 1) & ((events.dst_instid.isin(self.players.index) & (events.is_buffremove == 0))|(events.src_instid.isin(self.players.index) & (events.is_buffremove == 1)))]
         self.gather_count_stat('Derangement', collector, True, False, derangement_events[derangement_events.is_buffremove == 0])
         #self.xera_derangement_max_stacks('Peak Derangement', collector, derangement_events)
-
+        
     def xera_derangement_max_stacks(self, name, collector, events):
         events = events.sort_values(by='time')
 
