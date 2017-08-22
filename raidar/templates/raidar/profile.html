@@ -2,12 +2,16 @@
   <div class="uk-clearfix">
     <div class="uk-float-left">
       <h2 class="uk-margin-remove">Profile: <strong>[[username]]</strong></h2>
-      <span class="ignore">Played</span>
-      [[num_characters]]
-      <span class="ignore">characters through</span>
-      [[count]]
-      <span class="ignore">encounters since</span>
-      [[formatDate(joined_at)]]
+      <div>
+        <span class="ignore">Member since</span> [[formatDate(joined_at)]]
+      </div>
+      <div>
+        <span class="ignore">Played</span>
+        [[num_characters]]
+        <span class="ignore">characters through</span>
+        [[count]]
+        <span class="ignore">encounters in this age</span>
+      </div>
     </div>
     <div class="uk-float-right uk-padding-small uk-text-center" style="[[barSurvivalPerc(summary.avg_down_percentage, summary.avg_dead_percentage, summary.avg_disconnect_percentage)]]; width: 400px">
       <span class="uk-float-left">Down [[summary.avg_down_percentage.toPrecision(3)]]%</span>
