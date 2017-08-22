@@ -150,16 +150,7 @@
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
-  helpers.barSurvival = (events, duration, numPlayers) => {
-    switch (typeof numPlayers) {
-      case "undefined":
-        numPlayers = 1; break;
-      case "object":
-        numPlayers = Object.values(numPlayers).reduce((a, e) => a + e.members.length, 0);
-    }
-    let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
-    let down_perc = (events.down_time || 0) * 100 / 1000 / numPlayers / duration;
-    let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
+  helpers.barSurvivalPerc = (down_perc, dead_perc, disconnect_perc) => {
     let live_perc = 100 - (down_perc + dead_perc + disconnect_perc);
     let rects = [
       [live_perc, barcss.live],
@@ -180,6 +171,18 @@ ${rectSvg.join("\n")}
 </svg>
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+  };
+  helpers.barSurvival = (events, duration, numPlayers) => {
+    switch (typeof numPlayers) {
+      case "undefined":
+        numPlayers = 1; break;
+      case "object":
+        numPlayers = Object.values(numPlayers).reduce((a, e) => a + e.members.length, 0);
+    }
+    let down_perc = (events.down_time || 0) * 100 / 1000 / numPlayers / duration;
+    let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
+    let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
+    return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
 
   const DEBUG = raidar_data.debug;
