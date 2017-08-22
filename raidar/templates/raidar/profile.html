@@ -17,29 +17,19 @@
   </div>
 
 
-  <table class="uk-table uk-table-striped">
-    <thead>
-      <tr>
-        <th>Area</th>
-        <th>Count</th>
-        <th>Success</th>
-      </tr>
-    </thead>
-    <tbody>
+  <div class="uk-container uk-margin" style="padding-left: 15px">
+    <div uk-grid class="uk-child-width-1-5@m uk-grid-small">
       [[#each encounter:encounterId]]
-        <tr on-click="@.set({'page.area': [[encounterId]]})">
-          <td>
+        [[#with archetype.All.profession.All]]
+          <div uk-tooltip class="uk-card uk-padding-small uk-card-small uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]" on-click="@.set({ 'page.area': encounterId })">
             <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
             [[encounterId == 'All' ? 'All' : data.areas[encounterId]]]
-          </td>
-          [[#with archetype.All.profession.All]]
-            <td>[[count]]</td>
-            <td>[[avg_success_percentage.toPrecision(3)]]%</td>
-          [[/with]]
-        </tr>
+            ([[count]])
+          </div>
+        [[/with]]
       [[/each]]
-    </tbody>
-  </table>
+    </div>
+  </div>
 
 
   [[#each encounter[page.area].archetype:archetypeId]]
