@@ -10,7 +10,14 @@
         [[num_characters]]
         <span class="ignore">characters through</span>
         [[count]]
-        <span class="ignore">encounters in this age</span>
+        <span class="ignore">encounters in</span>
+        <span>[[era.name]]</span>
+        <div uk-dropdown>
+          <h4>[[era.name]] Era</h4>
+          <div>Started at: [[formatDate(era.started_at)]]</div>
+          <div>[[era.description]]</div>
+        </div>
+        <span class="ignore">era</span>
       </div>
     </div>
     <div class="uk-float-right uk-padding-small uk-text-center" style="[[barSurvivalPerc(summary.avg_down_percentage, summary.avg_dead_percentage, summary.avg_disconnect_percentage)]]; width: 400px">

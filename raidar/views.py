@@ -143,6 +143,11 @@ def profile(request):
     profile.update({
         'username': user.username,
         'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
+        'era': {
+            'name': era.name,
+            'started_at': era.started_at,
+            'description': era.description,
+        },
         'num_characters': num_characters,
     })
 
