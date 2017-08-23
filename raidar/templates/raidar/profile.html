@@ -6,9 +6,7 @@
         <span class="ignore">Member since</span> [[formatDate(joined_at)]]
       </div>
       <div>
-        <span class="ignore">Played</span>
-        [[num_characters]]
-        <span class="ignore">characters through</span>
+        <span class="ignore">Played through</span>
         [[count]]
         <span class="ignore">encounters in</span>
         <span>[[era.name]]</span>
@@ -20,6 +18,7 @@
         <span class="ignore">era</span>
       </div>
     </div>
+
     <div class="uk-float-right uk-padding-small uk-text-center" style="[[barSurvivalPerc(summary.avg_down_percentage, summary.avg_dead_percentage, summary.avg_disconnect_percentage)]]; width: 400px">
       <span class="uk-float-left">Down [[summary.avg_down_percentage.toPrecision(3)]]%</span>
       Dead [[summary.avg_dead_percentage.toPrecision(3)]]%
@@ -28,11 +27,11 @@
   </div>
 
 
-  <div class="uk-container uk-margin" style="padding-left: 15px">
-    <div uk-grid class="uk-child-width-1-5@m uk-grid-small">
+  <div class="uk-container uk-margin">
+    <div uk-grid class="uk-grid-small">
       [[#each encounter:encounterId]]
         [[#with archetype.All.profession.All]]
-          <div uk-tooltip class="uk-card uk-padding-small uk-card-small uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]" on-click="@.set({ 'page.area': encounterId })">
+          <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })">
             <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
             [[encounterId == 'All' ? 'All' : data.areas[encounterId]]]
             ([[count]])
@@ -46,7 +45,7 @@
   [[#each encounter[page.area].archetype:archetypeId]]
   <h3>
     [[archetypeId == 'All' ? 'All' : data.archetypes[archetypeId]]]
-    Archetypes on
+    <span class="ignore">Archetypes on</span>
     [[page.area == 'All' ? 'All Encounters' : data.areas[page.area]]]
   </h3>
     <table class="uk-table uk-table-striped">
@@ -58,7 +57,6 @@
           <th>Max DPS</th>
           <th>Down</th>
           <th>Dead</th>
-          <th>Disconnected</th>
         </tr>
       </thead>
       <tbody>
@@ -71,19 +69,16 @@
               [[count]]
             </td>
             <td>
-              [[avg_dps]]
+              [[avg_dps !== undefined ? Math.round(avg_dps) : '']]
             </td>
             <td>
-              [[max_dps]]
+              [[max_dps !== undefined ? Math.round(max_dps) : '']]
             </td>
             <td>
-              [[avg_down_percentage ? avg_down_percentage.toPrecision(3) + '%' : '']]
+              [[avg_down_percentage !== undefined ? avg_down_percentage.toPrecision(3) + '%' : '']]
             </td>
             <td>
-              [[avg_dead_percentage ? avg_dead_percentage.toPrecision(3) + '%' : '']]
-            </td>
-            <td>
-              [[avg_disconnect_percentage ? avg_disconnect_percentage.toPrecision(3) + '%' : '']]
+              [[avg_dead_percentage !== undefined ? avg_dead_percentage.toPrecision(3) + '%' : '']]
             </td>
           </tr>
         [[/each]]

@@ -139,7 +139,6 @@ def profile(request):
     except EraUserStore.DoesNotExist:
         profile = {}
 
-    num_characters = Character.objects.filter(account__user=user).count()
     profile.update({
         'username': user.username,
         'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
@@ -148,7 +147,6 @@ def profile(request):
             'started_at': era.started_at,
             'description': era.description,
         },
-        'num_characters': num_characters,
     })
 
     result = {
