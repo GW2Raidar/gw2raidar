@@ -188,16 +188,8 @@ class Command(BaseCommand):
                             player_this_build = categorise(False, True, True)
                             player_archetype_encounter = categorise(True, True, False)
                             player_build_encounter = categorise(True, True, True)
+                            player_profession_encounter = categorise(True, False, True)
 
-                            get_and_add(totals_for_player, 'count', 1)
-
-                            get_and_add(player_this_encounter, 'count', 1)
-                            average_stat(player_this_encounter, 'success_percentage', 100 if encounter.success else 0)
-
-                            get_and_add(player_this_archetype, 'count', 1)
-                            get_and_add(player_this_profession, 'count', 1)
-
-                            get_and_add(player_this_build, 'count', 1)
                             stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
                             stats_in_phase_events = player_stats['Metrics']['events']
 
@@ -207,9 +199,22 @@ class Command(BaseCommand):
 
                             breakdown = [player_this_build,
                                         player_this_archetype,
+                                        player_this_profession,
                                         player_archetype_encounter,
-                                        player_build_encounter]
-                            all = breakdown + [player_summary]
+                                        player_build_encounter,
+                                        player_profession_encounter]
+                            all = breakdown + [player_summary, player_this_encounter]
+                            encounter_stats = [player_this_encounter,
+                                               player_archetype_encounter,
+                                               player_build_encounter,
+                                               player_profession_encounter]
+
+                            #TODO: Remove if the one in player_summary is enough!
+                            get_and_add(totals_for_player, 'count', 1)
+
+                            calculate(all, get_and_add, 'count', 1)
+                            calculate(encounter_stats, average_stat, 'success_percentage', 100 if encounter.success else 0)
+
                             if(encounter.success):
                                 dps = stats_in_phase_to_all['dps']
                                 dead_percentage = 100 * stats_in_phase_events['dead_time'] / duration
@@ -404,6 +409,7 @@ class Command(BaseCommand):
                         pass
 
                 finalise_stats(totals_for_player)
+                print_node(totals_for_player)
 
                 if options['verbosity'] >= 3:
                     # DEBUG
