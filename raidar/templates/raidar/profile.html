@@ -1,1 +1,88 @@
-TODO
+[[#with profile]]
+  <div class="uk-clearfix">
+    <div class="uk-float-left">
+      <h2 class="uk-margin-remove">Profile: <strong>[[username]]</strong></h2>
+      <div>
+        <span class="ignore">Member since</span> [[formatDate(joined_at)]]
+      </div>
+      <div>
+        <span class="ignore">Played through</span>
+        [[count]]
+        <span class="ignore">encounters in</span>
+        <span>[[era.name]]</span>
+        <div uk-dropdown>
+          <h4>[[era.name]] Era</h4>
+          <div>Started at: [[formatDate(era.started_at)]]</div>
+          <div>[[era.description]]</div>
+        </div>
+        <span class="ignore">era</span>
+      </div>
+    </div>
+
+    <div class="uk-float-right uk-padding-small uk-text-center" style="[[barSurvivalPerc(summary.avg_down_percentage, summary.avg_dead_percentage, summary.avg_disconnect_percentage)]]; width: 400px">
+      <span class="uk-float-left">Down [[summary.avg_down_percentage.toPrecision(3)]]%</span>
+      Dead [[summary.avg_dead_percentage.toPrecision(3)]]%
+      <span class="uk-float-right">Disc [[summary.avg_disconnect_percentage.toPrecision(3)]]%</span>
+    </div>
+  </div>
+
+
+  <div class="uk-container uk-margin">
+    <div uk-grid class="uk-grid-small">
+      [[#each encounter:encounterId]]
+        [[#with archetype.All.profession.All]]
+          <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })">
+            <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
+            [[encounterId == 'All' ? 'All' : data.areas[encounterId]]]
+            ([[count]])
+          </div>
+        [[/with]]
+      [[/each]]
+    </div>
+  </div>
+
+
+  [[#each encounter[page.area].archetype:archetypeId]]
+  <h3>
+    [[archetypeId == 'All' ? 'All' : data.archetypes[archetypeId]]]
+    <span class="ignore">Archetypes on</span>
+    [[page.area == 'All' ? 'All Encounters' : data.areas[page.area]]]
+  </h3>
+    <table class="uk-table uk-table-striped">
+      <thead>
+        <tr>
+          <th>Profession</th>
+          <th>Encounters</th>
+          <th>Avg DPS</th>
+          <th>Max DPS</th>
+          <th>Down</th>
+          <th>Dead</th>
+        </tr>
+      </thead>
+      <tbody>
+        [[#each profession:professionId]]
+          <tr>
+            <th>
+              [[professionId == 'All' ? 'All' : data.specialisations[professionId][0]]]
+            </th>
+            <td>
+              [[count]]
+            </td>
+            <td>
+              [[avg_dps !== undefined ? Math.round(avg_dps) : '']]
+            </td>
+            <td>
+              [[max_dps !== undefined ? Math.round(max_dps) : '']]
+            </td>
+            <td>
+              [[avg_down_percentage !== undefined ? avg_down_percentage.toPrecision(3) + '%' : '']]
+            </td>
+            <td>
+              [[avg_dead_percentage !== undefined ? avg_dead_percentage.toPrecision(3) + '%' : '']]
+            </td>
+          </tr>
+        [[/each]]
+      </tbody>
+    </table>
+  [[/each]]
+[[/with]]

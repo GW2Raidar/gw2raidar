@@ -170,6 +170,12 @@ BOSS_ARRAY = [
         Phase("Pre-burn 3", True, phase_end_damage_stop = 30000),
         Phase("Split 3", False, phase_end_damage_start = 30000),
         Phase("Burn 3", True)
+    ], metrics = [
+        Metric('Correct Orbs', 'Correct Orbs', MetricType.COUNT),
+        Metric('Wrong Orbs', 'Wrong Orbs', MetricType.COUNT),
+        Metric('Rifts Hit', 'Rifts Hit', MetricType.COUNT, False, False, DesiredValue.HIGH),
+        Metric('Gaining Power', 'Power Gained', MetricType.COUNT, False, False),
+        Metric('Magic Blast Intensity', 'Orbs Missed', MetricType.COUNT, False, False)
     ]),
     Boss('Xera', [0x3F76, 0x3F9E], despawns_instead_of_dying = True, phases = [
         Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),

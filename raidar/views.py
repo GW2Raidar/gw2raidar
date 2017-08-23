@@ -22,6 +22,8 @@ from itertools import groupby
 from json import dumps as json_dumps, loads as json_loads
 from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile, dirname
+import pytz
+from datetime import datetime
 from re import match, sub
 from time import time
 import logging
@@ -81,6 +83,7 @@ def _html_response(request, page, data={}):
         # No Google Analytics, it's fine
         pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
+    response['areas'] = {area.id: area.name for area in Area.objects.all()}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
     response['debug'] = settings.DEBUG
@@ -129,11 +132,22 @@ def profile(request):
     if not request.user.is_authenticated:
         return _error("Not authenticated")
 
+    user = request.user
     era = Era.objects.latest('started_at')
     try:
-        profile = EraUserStore.objects.get(user=request.user, era=era)
+        profile = EraUserStore.objects.get(user=user, era=era).val
     except EraUserStore.DoesNotExist:
         profile = {}
+
+    profile.update({
+        'username': user.username,
+        'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
+        'era': {
+            'name': era.name,
+            'started_at': era.started_at,
+            'description': era.description,
+        },
+    })
 
     result = {
             "profile": profile
