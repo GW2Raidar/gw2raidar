@@ -409,7 +409,6 @@ class Command(BaseCommand):
                         pass
 
                 finalise_stats(totals_for_player)
-                print_node(totals_for_player)
 
                 if options['verbosity'] >= 3:
                     # DEBUG
