@@ -188,7 +188,6 @@ class Command(BaseCommand):
                             player_this_build = categorise(False, True, True)
                             player_archetype_encounter = categorise(True, True, False)
                             player_build_encounter = categorise(True, True, True)
-                            player_all = categorise(False, False, False)
 
                             get_and_add(totals_for_player, 'count', 1)
 
@@ -199,9 +198,6 @@ class Command(BaseCommand):
                             get_and_add(player_this_profession, 'count', 1)
 
                             get_and_add(player_this_build, 'count', 1)
-                            get_and_add(player_all, 'count', 1)
-                            average_stat(player_all, 'success_percentage', 100 if encounter.success else 0)
-
                             stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
                             stats_in_phase_events = player_stats['Metrics']['events']
 
@@ -213,7 +209,7 @@ class Command(BaseCommand):
                                         player_this_archetype,
                                         player_archetype_encounter,
                                         player_build_encounter]
-                            all = breakdown + [player_summary, player_all]
+                            all = breakdown + [player_summary]
                             if(encounter.success):
                                 dps = stats_in_phase_to_all['dps']
                                 dead_percentage = 100 * stats_in_phase_events['dead_time'] / duration
