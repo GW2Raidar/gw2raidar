@@ -2,6 +2,8 @@
   <div class="uk-clearfix">
     <div class="uk-float-left">
       <h2 class="uk-margin-remove">Profile: <strong>[[username]]</strong></h2>
+    </div>
+    <div class="uk-float-right uk-text-right">
       <div>
         <span class="ignore">Member since</span> [[formatDate(joined_at)]]
       </div>
@@ -18,23 +20,6 @@
         <span class="ignore">era</span>
       </div>
     </div>
-
-    <div class="uk-float-right uk-text-center">
-      <div class="uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(summary.avg_down_percentage, summary.avg_dead_percentage, summary.avg_disconnect_percentage)]]; width: 400px">
-        <div>Down [[(100 * summary.avg_down_percentage).toPrecision(3)]]%</div>
-        <div>Dead [[(100 * summary.avg_dead_percentage).toPrecision(3)]]%</div>
-        <div>Disc [[(100 * summary.avg_disconnect_percentage).toPrecision(3)]]%</div>
-      </div>
-      <div class="uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
-          100 * encounter.All.archetype[1].profession.All.count / encounter.All.archetype.All.profession.All.count,
-          100 * encounter.All.archetype[2].profession.All.count / encounter.All.archetype.All.profession.All.count,
-          0
-        )]]; width: 400px">
-        <div>Support [[(100 * encounter.All.archetype[5].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
-        <div>Power [[(100 * encounter.All.archetype[1].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
-        <div>Condi [[(100 * encounter.All.archetype[2].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
-      </div>
-    </div>
   </div>
 
 
@@ -42,7 +27,7 @@
     <div uk-grid class="uk-grid-small">
       [[#each encounter:encounterId]]
         [[#with archetype.All.profession.All]]
-          <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })">
+          <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })" class-all="[[encounterId === 'All']]">
             <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
             [[encounterId == 'All' ? 'All' : data.areas[encounterId]]]
             ([[count]])
@@ -53,15 +38,40 @@
   </div>
 
 
+  <div class="uk-text-center uk-clearfix">
+      <div class="uk-float-left uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
+          encounter[page.area].archetype.All.profession.All.avg_down_percentage,
+          encounter[page.area].archetype.All.profession.All.avg_dead_percentage,
+          0)]]; width: 400px">
+          <div>Live [[
+            (100
+            - encounter[page.area].archetype.All.profession.All.avg_down_percentage
+            - encounter[page.area].archetype.All.profession.All.avg_dead_percentage
+            ).toPrecision(3)]]%</div>
+        <div>Down [[encounter[page.area].archetype.All.profession.All.avg_down_percentage.toPrecision(3)]]%</div>
+        <div>Dead [[encounter[page.area].archetype.All.profession.All.avg_dead_percentage.toPrecision(3)]]%</div>
+      </div>
+      <div class="uk-float-right uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
+          encounter[page.area].archetype[1] ? 100 * encounter[page.area].archetype[1].profession.All.count / encounter[page.area].archetype.All.profession.All.count : 0,
+          encounter[page.area].archetype[2] ? 100 * encounter[page.area].archetype[2].profession.All.count / encounter[page.area].archetype.All.profession.All.count : 0,
+          0
+        )]]; width: 400px">
+        <div>Support [[encounter[page.area].archetype[5] ? (100 * encounter[page.area].archetype[5].profession.All.count / encounter[page.area].archetype.All.profession.All.count).toPrecision(3) : 0]]%</div>
+        <div>Power [[encounter[page.area].archetype[1] ? (100 * encounter[page.area].archetype[1].profession.All.count / encounter[page.area].archetype.All.profession.All.count).toPrecision(3) : 0]]%</div>
+        <div>Condi [[encounter[page.area].archetype[2] ? (100 * encounter[page.area].archetype[2].profession.All.count / encounter[page.area].archetype.All.profession.All.count).toPrecision(3) : 0]]%</div>
+      </div>
+    </div>
+
+
   [[#each encounter[page.area].archetype:archetypeId]]
   <h3>
-    [[archetypeId == 'All' ? 'All' : data.archetypes[archetypeId]]]
+    [[archetypeId === 'All' ? 'All' : data.archetypes[archetypeId]]]
     <span class="ignore">Archetypes on</span>
-    [[page.area == 'All' ? 'All Encounters' : data.areas[page.area]]]
+    [[page.area === 'All' ? 'All Encounters' : data.areas[page.area]]]
   </h3>
     <table class="uk-table uk-table-striped">
       <thead>
-        <tr>
+        <tr class="uk-background-secondary">
           <th>Profession</th>
           <th>Encounters</th>
           <th>Avg DPS</th>
@@ -72,9 +82,9 @@
       </thead>
       <tbody>
         [[#each profession:professionId]]
-          <tr>
+          <tr class="[[professionId === 'All' ? 'all' : '']]">
             <th>
-              [[professionId == 'All' ? 'All' : data.specialisations[professionId][0]]]
+              [[professionId === 'All' ? 'All' : data.specialisations[professionId][0]]]
             </th>
             <td>
               [[count]]
