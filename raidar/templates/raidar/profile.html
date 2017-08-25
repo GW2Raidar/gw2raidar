@@ -21,18 +21,18 @@
 
     <div class="uk-float-right uk-text-center">
       <div class="uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(summary.avg_down_percentage, summary.avg_dead_percentage, summary.avg_disconnect_percentage)]]; width: 400px">
-        <div>Down [[summary.avg_down_percentage.toPrecision(3)]]%</div>
-        <div>Dead [[summary.avg_dead_percentage.toPrecision(3)]]%</div>
-        <div>Disc [[summary.avg_disconnect_percentage.toPrecision(3)]]%</div>
+        <div>Down [[(100 * summary.avg_down_percentage).toPrecision(3)]]%</div>
+        <div>Dead [[(100 * summary.avg_dead_percentage).toPrecision(3)]]%</div>
+        <div>Disc [[(100 * summary.avg_disconnect_percentage).toPrecision(3)]]%</div>
       </div>
       <div class="uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
           100 * encounter.All.archetype[1].profession.All.count / encounter.All.archetype.All.profession.All.count,
           100 * encounter.All.archetype[2].profession.All.count / encounter.All.archetype.All.profession.All.count,
           0
         )]]; width: 400px">
-        <div>Support [[(encounter.All.archetype[5].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
-        <div>Power [[(encounter.All.archetype[1].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
-        <div>Condi [[(encounter.All.archetype[2].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
+        <div>Support [[(100 * encounter.All.archetype[5].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
+        <div>Power [[(100 * encounter.All.archetype[1].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
+        <div>Condi [[(100 * encounter.All.archetype[2].profession.All.count / encounter.All.archetype.All.profession.All.count).toPrecision(3)]]%</div>
       </div>
     </div>
   </div>
