@@ -288,7 +288,11 @@ ${rectSvg.join("\n")}
       });
       $.get({
         url: 'profile.json',
-      }).then(setData);
+      }).then(setData).then(() => {
+        let eras = r.get('profile.eras');
+        let latest = eras[eras.length - 1];
+        r.set('page.era', latest);
+      });
     },
   };
 
