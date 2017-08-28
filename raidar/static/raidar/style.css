@@ -84,3 +84,6 @@ input[type="date"] {
 .link {
   cursor: pointer;
 }
+.uk-table tr.all *, div.all {
+  font-weight: bold;
+}

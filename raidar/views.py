@@ -133,21 +133,22 @@ def profile(request):
         return _error("Not authenticated")
 
     user = request.user
-    era = Era.objects.latest('started_at')
+    queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
-        profile = EraUserStore.objects.get(user=user, era=era).val
+        eras = [{
+                'name': era_user_store.era.name,
+                'started_at': era_user_store.era.started_at,
+                'description': era_user_store.era.description,
+                'profile': era_user_store.val,
+            } for era_user_store in queryset]
     except EraUserStore.DoesNotExist:
-        profile = {}
+        eras = []
 
-    profile.update({
+    profile = {
         'username': user.username,
         'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
-        'era': {
-            'name': era.name,
-            'started_at': era.started_at,
-            'description': era.description,
-        },
-    })
+        'eras': eras,
+    }
 
     result = {
             "profile": profile

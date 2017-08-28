@@ -181,7 +181,8 @@ class Command(BaseCommand):
                                 return navigate(totals_for_player,
                                                 'encounter', encounter.area_id if split_encounter else 'All',
                                                 'archetype', participation.archetype if split_archetype else 'All',
-                                                'profession', participation.character.profession if split_profession else 'All')
+                                                'profession', participation.character.profession if split_profession else 'All',
+                                                'elite', participation.elite if split_profession else 'All')
                             player_this_encounter = categorise(True, False, False)
                             player_this_archetype = categorise(False, True, False)
                             player_this_profession = categorise(False, False, True)
@@ -189,6 +190,7 @@ class Command(BaseCommand):
                             player_archetype_encounter = categorise(True, True, False)
                             player_build_encounter = categorise(True, True, True)
                             player_profession_encounter = categorise(True, False, True)
+                            player_all = categorise(False, False, False)
 
                             stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
                             stats_in_phase_events = player_stats['Metrics']['events']
@@ -203,11 +205,12 @@ class Command(BaseCommand):
                                         player_archetype_encounter,
                                         player_build_encounter,
                                         player_profession_encounter]
-                            all = breakdown + [player_summary, player_this_encounter]
+                            all = breakdown + [player_summary, player_this_encounter, player_all]
                             encounter_stats = [player_this_encounter,
                                                player_archetype_encounter,
                                                player_build_encounter,
-                                               player_profession_encounter]
+                                               player_profession_encounter,
+                                               player_all]
 
                             #TODO: Remove if the one in player_summary is enough!
                             get_and_add(totals_for_player, 'count', 1)
