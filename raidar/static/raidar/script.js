@@ -29,6 +29,21 @@
   }
 
   let helpers = Ractive.defaults.data;
+  helpers.keysWithAllLast = (obj, lookup) => {
+    let keys = Object.keys(obj);
+    keys.sort((a, b) => {
+      if (a == 'All') return 1;
+      if (b == 'All') return -1;
+      if (lookup) {
+        a = lookup[a];
+        b = lookup[b];
+      }
+      if (a < b) return -1;
+      if (a > b) return 1;
+      return 0;
+    });
+    return keys;
+  };
   helpers.formatDate = timestamp => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
