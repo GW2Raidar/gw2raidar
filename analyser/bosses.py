@@ -171,8 +171,8 @@ BOSS_ARRAY = [
         Phase("Split 3", False, phase_end_damage_start = 30000),
         Phase("Burn 3", True)
     ], metrics = [
-        Metric('Correct Orbs', 'Correct Orbs', MetricType.COUNT),
-        Metric('Wrong Orbs', 'Wrong Orbs', MetricType.COUNT),
+        Metric('Correct Orb', 'Correct Orbs', MetricType.COUNT),
+        Metric('Wrong Orb', 'Wrong Orbs', MetricType.COUNT),
         Metric('Rifts Hit', 'Rifts Hit', MetricType.COUNT, False, False, DesiredValue.HIGH),
         Metric('Gaining Power', 'Power Gained', MetricType.COUNT, False, False),
         Metric('Magic Blast Intensity', 'Orbs Missed', MetricType.COUNT, False, False)
