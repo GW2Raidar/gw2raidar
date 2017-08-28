@@ -215,8 +215,8 @@ class BuffPreprocessor:
 
         remaining_buff_types = list(BUFF_TYPES)
         for skillid, buff_events in groups:
-            name = skills['name'][skillid]
-            #print(name)
+
+            name = skills['name'].get(skillid)
 
             relevant_buff_types = list(filter(lambda a: a.name == name, remaining_buff_types))
             if not relevant_buff_types:
