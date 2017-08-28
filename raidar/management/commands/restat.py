@@ -181,7 +181,8 @@ class Command(BaseCommand):
                                 return navigate(totals_for_player,
                                                 'encounter', encounter.area_id if split_encounter else 'All',
                                                 'archetype', participation.archetype if split_archetype else 'All',
-                                                'profession', participation.character.profession if split_profession else 'All')
+                                                'profession', participation.character.profession if split_profession else 'All',
+                                                'elite', participation.elite if split_profession else 'All')
                             player_this_encounter = categorise(True, False, False)
                             player_this_archetype = categorise(False, True, False)
                             player_this_profession = categorise(False, False, True)
