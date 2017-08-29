@@ -192,7 +192,7 @@ class Command(BaseCommand):
                             player_profession_encounter = categorise(True, False, True)
                             player_all = categorise(False, False, False)
 
-                            stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
+                            stats_in_phase_to_all = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*All'], {})
                             stats_in_phase_events = player_stats['Metrics']['events']
 
                             def calculate(l, f, *args):
@@ -219,7 +219,7 @@ class Command(BaseCommand):
                             calculate(encounter_stats, average_stat, 'success_percentage', 100 if encounter.success else 0)
 
                             if(encounter.success):
-                                dps = stats_in_phase_to_all['dps']
+                                dps = _safe_get(lambda: stats_in_phase_to_all['dps'])
                                 dead_percentage = 100 * stats_in_phase_events['dead_time'] / duration
                                 down_percentage = 100 * stats_in_phase_events['down_time'] / duration
                                 disconnect_percentage = 100 * stats_in_phase_events['disconnect_time'] / duration

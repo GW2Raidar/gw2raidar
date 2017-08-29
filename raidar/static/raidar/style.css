@@ -87,3 +87,6 @@ input[type="date"] {
 .uk-table tr.all *, div.all {
   font-weight: bold;
 }
+.main {
+  margin: 0 2%;
+}
