@@ -877,5 +877,6 @@ ${rectSvg.join("\n")}
       evt.preventDefault();
     });
 
+
   if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();
