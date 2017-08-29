@@ -91,9 +91,21 @@
 
               {% include 'raidar/account.html' %}
 
-            [[elseif page.name == "about"]]
+            [[elseif page.name == "info-help"]]
 
-              {% include 'raidar/about.html' %}
+              {% include 'raidar/info_help.html' %}
+
+            [[elseif page.name == "info-releasenotes"]]
+
+              {% include 'raidar/info_releasenotes.html' %}
+
+            [[elseif page.name == "info-contact"]]
+
+              {% include 'raidar/info_contact.html' %}
+
+            [[elseif page.name == "info-about"]]
+
+              {% include 'raidar/info_about.html' %}
 
             [[/if]]
 

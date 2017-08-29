@@ -2,7 +2,17 @@
   <div class="uk-navbar-left">
     <ul class="uk-navbar-nav">
       [[#if username]]
-        <li class="[[page.name=='about' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'about'})">About</a></li>
+        <li>
+          <a href="#">Info</a>
+          <div uk-dropdown="offset: 0; delay-hide: 0" class="uk-navbar-dropdown">
+            <ul class="uk-nav uk-navbar-dropdown-nav">
+              <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-help'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">Help</a></li>
+              <li class="[[page.name=='info-releasenotes' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-releasenotes'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">Release Notes</a></li>
+              <li class="[[page.name=='info-contact' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-contact'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">Contact Us</a></li>
+              <li class="[[page.name=='info-about' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-about'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">About Us</a></li>
+            </ul>
+          </div>
+        </li>
         <li class="[[page.name=='encounters' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
         <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
         <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')">Uploads</a></li>
