@@ -87,6 +87,7 @@ def _html_response(request, page, data={}):
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
     response['debug'] = settings.DEBUG
+    response['version'] = settings.VERSION
     if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
