@@ -8,6 +8,8 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
+from django.core.mail import send_mail
+from smtplib import SMTPException
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.middleware.csrf import get_token
@@ -414,6 +416,30 @@ def change_password(request):
         return JsonResponse({})
     else:
         return _error(' '.join(' '.join(v) for k, v in form.errors.items()))
+
+@require_POST
+def contact(request):
+    subject = request.POST.get('subject')
+    body = request.POST.get('body')
+    if request.user.is_authenticated:
+        name = request.user.username
+        email = request.user.email
+    else:
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+
+    try:
+        send_mail(
+                settings.EMAIL_SUBJECT_PREFIX + '[contact] ' + subject,
+                body,
+                "%s <%s>" % (name, email),
+                [settings.DEFAULT_FROM_EMAIL],
+                False)
+    except SMTPException as e:
+        return _error(e)
+
+    return JsonResponse({})
+
 
 @login_required
 @require_POST

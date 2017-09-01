@@ -91,6 +91,6 @@ input[type="date"] {
   margin: 0 2%;
 }
 
-input:invalid {
+input:invalid, textarea:invalid {
   border: 1px dashed red !important;
 }
