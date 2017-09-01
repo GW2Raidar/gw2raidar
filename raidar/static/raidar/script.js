@@ -661,6 +661,25 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
+    contact_us: function contactUs(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
+      let data = r.get('contact.input');
+
+      $.post({
+        url: 'contact.json',
+        data: data
+      }).done(response => {
+        if (response.error) {
+          error(response.error);
+        } else {
+          success('Email sent');
+          r.set('contact.input', {});
+        }
+      });
+
+      return false;
+    },
     sort_encounters: function sortEncountersChange(evt) {
       let currentProp = r.get('settings.encounterSort.prop');
       let currentDir = r.get('settings.encounterSort.dir');
