@@ -8,7 +8,7 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
-from django.core.mail import send_mail
+from django.core.mail import EmailMessage
 from smtplib import SMTPException
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
@@ -429,12 +429,14 @@ def contact(request):
         email = request.POST.get('email')
 
     try:
-        send_mail(
+        headers = {'Reply-To': "%s <%s>" % (name, email)}
+        msg = EmailMessage(
                 settings.EMAIL_SUBJECT_PREFIX + '[contact] ' + subject,
                 body,
-                "%s <%s>" % (name, email),
+                '"%s" <%s>' % (name, settings.DEFAULT_FROM_EMAIL),
                 [settings.DEFAULT_FROM_EMAIL],
-                False)
+                reply_to=['%s <%s>' % (name, email)])
+        msg.send(False)
     except SMTPException as e:
         return _error(e)
 
