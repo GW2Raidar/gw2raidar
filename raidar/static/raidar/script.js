@@ -581,7 +581,7 @@ ${rectSvg.join("\n")}
         this.set({
           username: null,
         });
-        setPage('index');
+        setPage('info-help');
       });
     },
     page_no: function pageNo(evt) {
