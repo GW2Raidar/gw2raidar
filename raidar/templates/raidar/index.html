@@ -115,13 +115,13 @@
 
               <form class="uk-form-stacked uk-padding-large uk-text-center">
                 <div class="uk-margin">
-                  <input id="login_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username (or Email)">
+                  <input id="login_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username (or Email)" required>
                 </div>
                 <div class="uk-margin">
-                  <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password">
+                  <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required>
                 </div>
                 <div class="uk-margin">
-                  <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login" disabled="[[authBad]]">Login</button><br>
+                  <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login">Login</button><br>
                 </div>
               </form>
 
@@ -129,25 +129,25 @@
 
               <form class="uk-form-stacked uk-padding-large uk-text-center">
                 <div class="uk-margin">
-                  <input id="register_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username">
+                  <input id="register_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username" pattern="[\w.@+-]+" required on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use letters, numbers, and ._+-@')">
                 </div>
                 <div class="uk-margin">
-                  <input id="register_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email">
+                  <input id="register_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" type="email" placeholder="Email" required>
                 </div>
                 <div class="uk-margin">
-                  <input id="register_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password">
+                  <input id="register_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required pattern=".{8,}" on-input="@this.set('auth.passpattern', @node.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')), @node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')">
                 </div>
                 <div class="uk-margin">
-                  <input id="register_password2" class="uk-input uk-form-width-medium" value="[[auth.input.password2]]" placeholder="Again" type="password">
+                  <input id="register_password2" class="uk-input uk-form-width-medium" value="[[auth.input.password2]]" placeholder="Again" type="password" required on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please make sure the password fields match')">
                 </div>
                 <div class="uk-margin">
                   <div class="uk-inline">
                     <a class="uk-form-icon uk-form-icon-flip" href="https://account.arena.net/applications" uk-icon="icon: link" target="gw2apps"></a>
-                    <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="GW2 API key" autocomplete="off">
+                    <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="GW2 API key" autocomplete="off" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')">
                   </div>
                 </div>
                 <div class="uk-margin">
-                  <button id="register_submit" class="uk-button uk-button-default" on-click="auth_register" disabled="[[authBad]]">Register</button><br>
+                  <button id="register_submit" class="uk-button uk-button-default" on-click="auth_register" >Register</button><br>
                 </div>
               </form>
 
@@ -155,10 +155,10 @@
 
               <form class="uk-form-stacked uk-padding-large uk-text-center">
                 <div class="uk-margin">
-                  <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email">
+                  <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email" type="email" required>
                 </div>
                 <div class="uk-margin">
-                  <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw" disabled="[[authBad]]">Reset password</button><br>
+                  <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw">Reset password</button><br>
                 </div>
               </form>
 
