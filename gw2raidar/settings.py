@@ -50,6 +50,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
 ]
 
+import importlib
+if importlib.util.find_spec("django_extensions"):
+    INSTALLED_APPS.append('django_extensions')
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
