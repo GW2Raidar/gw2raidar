@@ -21,6 +21,7 @@ BUFF_TYPES = [
         BuffType('Fury', 'fury', StackType.DURATION, 9),
         BuffType('Protection', 'protection', StackType.DURATION, 5),
         BuffType('Alacrity', 'alacrity', StackType.DURATION, 9),
+        BuffType('Retaliation', 'retaliation', StackType.DURATION, 5),
 
         # Ranger
         BuffType('Spotter', 'spotter', StackType.DURATION, 1),
