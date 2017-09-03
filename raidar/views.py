@@ -8,6 +8,8 @@ from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
+from django.core.mail import EmailMessage
+from smtplib import SMTPException
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
 from django.middleware.csrf import get_token
@@ -87,6 +89,7 @@ def _html_response(request, page, data={}):
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['page'] = page
     response['debug'] = settings.DEBUG
+    response['version'] = settings.VERSION
     if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
@@ -133,21 +136,22 @@ def profile(request):
         return _error("Not authenticated")
 
     user = request.user
-    era = Era.objects.latest('started_at')
+    queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
-        profile = EraUserStore.objects.get(user=user, era=era).val
+        eras = [{
+                'name': era_user_store.era.name,
+                'started_at': era_user_store.era.started_at,
+                'description': era_user_store.era.description,
+                'profile': era_user_store.val,
+            } for era_user_store in queryset]
     except EraUserStore.DoesNotExist:
-        profile = {}
+        eras = []
 
-    profile.update({
+    profile = {
         'username': user.username,
         'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
-        'era': {
-            'name': era.name,
-            'started_at': era.started_at,
-            'description': era.description,
-        },
-    })
+        'eras': eras,
+    }
 
     result = {
             "profile": profile
@@ -412,6 +416,32 @@ def change_password(request):
         return JsonResponse({})
     else:
         return _error(' '.join(' '.join(v) for k, v in form.errors.items()))
+
+@require_POST
+def contact(request):
+    subject = request.POST.get('subject')
+    body = request.POST.get('body')
+    if request.user.is_authenticated:
+        name = request.user.username
+        email = request.user.email
+    else:
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+
+    try:
+        headers = {'Reply-To': "%s <%s>" % (name, email)}
+        msg = EmailMessage(
+                settings.EMAIL_SUBJECT_PREFIX + '[contact] ' + subject,
+                body,
+                '"%s" <%s>' % (name, settings.DEFAULT_FROM_EMAIL),
+                [settings.DEFAULT_FROM_EMAIL],
+                reply_to=['%s <%s>' % (name, email)])
+        msg.send(False)
+    except SMTPException as e:
+        return _error(e)
+
+    return JsonResponse({})
+
 
 @login_required
 @require_POST

@@ -87,3 +87,10 @@ input[type="date"] {
 .uk-table tr.all *, div.all {
   font-weight: bold;
 }
+.main {
+  margin: 0 2%;
+}
+
+input:invalid, textarea:invalid {
+  border: 1px dashed red !important;
+}

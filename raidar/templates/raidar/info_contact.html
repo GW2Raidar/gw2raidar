@@ -1,0 +1,21 @@
+<h2>Contact</h2>
+
+<form class="uk-form-stacked uk-padding-large uk-text-center">
+  [[#if !username]]
+    <div class="uk-margin">
+      <input class="uk-input uk-form-width-medium" value="[[contact.input.name]]" required placeholder="Your name"/>
+    </div>
+    <div class="uk-margin">
+      <input class="uk-input uk-form-width-medium" value="[[contact.input.email]]" required placeholder="Your email"/>
+    </div>
+  [[/if]]
+  <div class="uk-margin">
+    <input class="uk-input uk-form-width-medium" value="[[contact.input.subject]]" required placeholder="Subject"/>
+  </div>
+  <div class="uk-margin">
+    <textarea class="uk-textarea uk-form-width-1-1" rows="10" placeholder="Email text" required>[[contact.input.body]]</textarea>
+  </div>
+  <div class="uk-margin">
+    <button class="uk-button uk-button-primary" on-click="contact_us">Contact us!</button><br>
+  </div>
+</form>

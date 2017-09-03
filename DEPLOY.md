@@ -1,7 +1,7 @@
 How to pull off the WSGI+PostgreSQL deploy
 
 ```
-apt install python3-dev apache2-dev git postgres9.5
+apt install python3-dev python3-pip apache2 apache2-dev git postgresql-9.6
 ```
 
 Create the postgres user
@@ -36,10 +36,11 @@ Then
 
 ```
 a2enmod wsgi
+certbot --apache
 ```
 
 Assume the app will be called `gw2r-test`.
-Put the following into `/etc/apache2/sites-enabled/000-default.conf`, somewhere inside `VirtualHost`:
+Put the following into `/etc/apache2/sites-enabled/000-default-le-ssl.conf`, somewhere inside `VirtualHost`:
 
 ```
 Alias /gw2r-test/static/ /var/www/apps/gw2r-test/static/
@@ -59,6 +60,7 @@ Get GW2Raidar (assuming `develop` branch):
 mkdir /var/www/apps
 cd /var/www/apps
 git clone git@github.com:merforga/gw2raidar.git -b develop gw2r-test
+cd gw2r-test
 cp gw2raidar/settings_local.py.example gw2raidar/settings_local.py
 ```
 
@@ -116,3 +118,17 @@ EMAIL_HOST = 'localhost'
 STATIC_URL = '/gw2r-test/static/'
 STATIC_ROOT = '/var/www/apps/gw2r-test/static/'
 ```
+
+
+# Adding a user
+
+```
+useradd -m amadan
+passwd amadan
+mkdir ~amadan/.ssh
+cd ~amadan/.ssh
+cat > authorized_hosts
+chown amadan:amadan . authorized_hosts
+chmod og-rwx . authorized_hosts
+usermod -aG sudo amadan
+
