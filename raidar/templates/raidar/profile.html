@@ -30,7 +30,7 @@
 
 
   [[#with page.era.profile]]
-    <div class="uk-container uk-margin">
+    <div class="uk-margin">
       <div uk-grid class="uk-grid-small">
         [[#each keysWithAllLast(encounter, data.areas)]]
           [[#with {encounterId: .}]]
@@ -107,19 +107,19 @@
                           [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
                         </th>
                         <td>
-                          [[count]]
+                          [[.count]]
                         </td>
                         <td>
-                          [[avg_dps !== undefined ? Math.round(avg_dps) : '']]
+                          [[.avg_dps !== undefined ? Math.round(.avg_dps) : '']]
                         </td>
                         <td>
-                          [[max_dps !== undefined ? Math.round(max_dps) : '']]
+                          [[.max_dps !== undefined ? Math.round(.max_dps) : '']]
                         </td>
                         <td>
-                          [[avg_down_percentage !== undefined ? avg_down_percentage.toPrecision(3) + '%' : '']]
+                          [[.avg_down_percentage !== undefined ? .avg_down_percentage.toPrecision(3) + '%' : '']]
                         </td>
                         <td>
-                          [[avg_dead_percentage !== undefined ? avg_dead_percentage.toPrecision(3) + '%' : '']]
+                          [[.avg_dead_percentage !== undefined ? .avg_dead_percentage.toPrecision(3) + '%' : '']]
                         </td>
                       </tr>
                     [[/with]]

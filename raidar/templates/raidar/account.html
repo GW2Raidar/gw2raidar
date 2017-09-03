@@ -1,34 +1,34 @@
 <div class="uk-padding">
-  <form class="uk-grid uk-grid-small" on-submit="change_password">
+  <form class="uk-grid uk-grid-small">
     <div class="uk-width-1-4">
-      <input class="uk-input" type="password" placeholder="Old password" value="[[account.old_password]]"/>
+      <input class="uk-input" type="password" placeholder="Old password" value="[[account.old_password]]" required pattern=".{8,}" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')"/>
     </div>
     <div class="uk-width-1-4">
-      <input class="uk-input" type="password" placeholder="Change password" value="[[account.password]]"/>
+      <input class="uk-input" type="password" placeholder="Change password" value="[[account.password]]" required on-input="@this.set('account.passpattern', @node.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')), @node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')"/>
     </div>
     <div class="uk-width-1-4">
-      <input class="uk-input" type="password" placeholder="Confirm password" value="[[account.password2]]"/>
+      <input class="uk-input" type="password" placeholder="Confirm password" value="[[account.password2]]" required pattern="[[account.passpattern]]" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please make sure the password fields match')"/>
     </div>
     <div class="uk-width-1-4">
-      <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[changePassBad]]">Save</button>
+      <button class="uk-button uk-button-primary uk-width-1-1" on-click="change_password">Save</button>
     </div>
   </form>
 
-  <form class="uk-grid uk-grid-small" on-submit="change_email">
+  <form class="uk-grid uk-grid-small">
     <div class="uk-width-3-4">
-      <input class="uk-input" type="email" placeholder="Change email address" value="[[account.email]]"/>
+      <input class="uk-input" type="email" placeholder="Change email address" value="[[account.email]]" required/>
     </div>
     <div class="uk-width-1-4">
-      <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[account.email.match(/^\s*(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))\s*$/) == null]]">Save</button>
+      <button class="uk-button uk-button-primary uk-width-1-1" on-click="change_email">Save</button>
     </div>
   </form>
 
-  <form class="uk-grid uk-grid-small" on-submit="add_api_key">
+  <form class="uk-grid uk-grid-small">
     <div class="uk-width-3-4">
-      <input class="uk-input" placeholder="Enter GW2 API key to link another account" value="[[account.api_key]]"/>
+      <input class="uk-input" placeholder="Enter GW2 API key to link another account" value="[[account.api_key]]" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')"/>
     </div>
     <div class="uk-width-1-4">
-      <button class="uk-button uk-button-primary uk-width-1-1" disabled="[[account.api_key.match(/^\s*[a-zA-Z0-9]{8}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{20}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{4}-[a-zA-Z0-9]{12}\s*$/) == null]]" on-click="add_api_key">Save</button>
+      <button class="uk-button uk-button-primary uk-width-1-1" on-click="add_api_key">Save</button>
     </div>
   </form>
 </div>

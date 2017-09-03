@@ -204,9 +204,9 @@ ${rectSvg.join("\n")}
   Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
-  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
   if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
-    initialPage = { name: 'login' };
+    initialPage = { name: 'info-help' };
   }
   let initData = {
     data: window.raidar_data,
@@ -308,19 +308,6 @@ ${rectSvg.join("\n")}
     template: '#template',
     data: initData,
     computed: {
-      authBad: function authBad() {
-        let username = this.get('auth.input.username'),
-            password = this.get('auth.input.password'),
-            email = this.get('auth.input.email');
-
-        let authOK = username != '' && password != '';
-        if (this.get('page.name') == 'register') {
-          let password2 = this.get('auth.input.password2');
-          let emailOK = email != ''; // TODO maybe basic pattern check
-          authOK = authOK && password == password2 && emailOK;
-        }
-        return !authOK;
-      },
       changePassBad: function changePassBad() {
         let password = this.get('account.password'),
             password2 = this.get('account.password2');
@@ -533,8 +520,11 @@ ${rectSvg.join("\n")}
     a[prop] < b[prop] ? 1 :
     a[prop] > b[prop] ? -1 : 0;
 
+
   r.on({
-    auth_login: function login() {
+    auth_login: function login(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let username = this.get('auth.input.username'),
           password = this.get('auth.input.password');
 
@@ -548,7 +538,9 @@ ${rectSvg.join("\n")}
 
       return false;
     },
-    auth_register: function register() {
+    auth_register: function register(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let username = this.get('auth.input.username'),
           password = this.get('auth.input.password'),
           apiKey = this.get('auth.input.api_key'),
@@ -566,7 +558,9 @@ ${rectSvg.join("\n")}
 
       return false;
     },
-    auth_reset_pw: function resetPw() {
+    auth_reset_pw: function resetPw(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let email = this.get('auth.input.email');
 
       $.post({
@@ -587,7 +581,7 @@ ${rectSvg.join("\n")}
         this.set({
           username: null,
         });
-        setPage('index');
+        setPage('info-help');
       });
     },
     page_no: function pageNo(evt) {
@@ -596,7 +590,9 @@ ${rectSvg.join("\n")}
       setPage(Object.assign(page, { no: page_no }));
       return false;
     },
-    change_password: function changePassword(evt) {
+    change_password: function changePassword(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       $.post({
         url: 'change_password.json',
         data: {
@@ -616,7 +612,9 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
-    change_email: function changeEmail(evt) {
+    change_email: function changeEmail(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       $.post({
         url: 'change_email.json',
         data: {
@@ -632,7 +630,9 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
-    add_api_key: function addAPIKey(evt) {
+    add_api_key: function addAPIKey(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let api_key = r.get('account.api_key');
       $.post({
         url: 'add_api_key.json',
@@ -659,6 +659,25 @@ ${rectSvg.join("\n")}
           r.update('accounts');
         }
       });
+      return false;
+    },
+    contact_us: function contactUs(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
+      let data = r.get('contact.input');
+
+      $.post({
+        url: 'contact.json',
+        data: data
+      }).done(response => {
+        if (response.error) {
+          error(response.error);
+        } else {
+          success('Email sent');
+          r.set('contact.input', {});
+        }
+      });
+
       return false;
     },
     sort_encounters: function sortEncountersChange(evt) {
@@ -876,6 +895,7 @@ ${rectSvg.join("\n")}
       setPage('uploads');
       evt.preventDefault();
     });
+
 
   if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();

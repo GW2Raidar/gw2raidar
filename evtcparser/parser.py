@@ -215,7 +215,7 @@ class Encounter:
     def __init__(self, file):
         try:
             self._read_header(file)
-            if self.version <= "20170214":
+            if self.version <= "20170808":
                 raise EvtcParseException('Unsupported EVTC version')
             self._read_agents(file)
             self._read_skills(file)
