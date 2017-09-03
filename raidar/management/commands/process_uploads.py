@@ -7,7 +7,7 @@ from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2raidar import settings
 from json import loads as json_loads, dumps as json_dumps
 from raidar.models import *
-from sys import exit
+from sys import exit, stderr
 from time import time
 from zipfile import ZipFile
 import os
@@ -24,6 +24,7 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
         from httplib2 import Http
         from apiclient import discovery
         from googleapiclient.http import MediaFileUpload
+        from googleapiclient.errors import HttpError
 
         scopes = ['https://www.googleapis.com/auth/drive.file']
         credentials = ServiceAccountCredentials.from_json_keyfile_name(
@@ -206,23 +207,27 @@ class Command(BaseCommand):
 
                 if gdrive_service:
                     media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
-                    if encounter.gdrive_id:
-                        result = gdrive_service.files().update(
-                                fileId=encounter.gdrive_id,
-                                media_body=media,
-                            ).execute()
-                    else:
-                        metadata = {
-                                'name': upload.filename,
-                                'parents': [gdrive_folder],
-                            }
-                        gdrive_file = gdrive_service.files().create(
-                                body=metadata, media_body=media,
-                                fields='id, webContentLink',
-                            ).execute()
-                        encounter.gdrive_id = gdrive_file['id']
-                        encounter.gdrive_url = gdrive_file['webContentLink']
-                        encounter.save()
+                    try:
+                        if encounter.gdrive_id:
+                            result = gdrive_service.files().update(
+                                    fileId=encounter.gdrive_id,
+                                    media_body=media,
+                                ).execute()
+                        else:
+                            metadata = {
+                                    'name': upload.filename,
+                                    'parents': [gdrive_folder],
+                                }
+                            gdrive_file = gdrive_service.files().create(
+                                    body=metadata, media_body=media,
+                                    fields='id, webContentLink',
+                                ).execute()
+                            encounter.gdrive_id = gdrive_file['id']
+                            encounter.gdrive_url = gdrive_file['webContentLink']
+                            encounter.save()
+                    except HttpError as e:
+                        print(e, file=stderr)
+                        pass
 
             except (EvtcParseException, EvtcAnalysisException) as e:
                 Notification.objects.create(user=upload.uploaded_by, val={
