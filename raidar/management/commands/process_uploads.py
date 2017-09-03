@@ -40,6 +40,10 @@ class GracefulKiller:
 # Google Drive
 # pip install --upgrade google-api-python-client
 
+
+def get_gdrive_service():
+    return None
+
 gdrive_service = None
 if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
     try:
@@ -49,11 +53,15 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
         from googleapiclient.http import MediaFileUpload
         from googleapiclient.errors import HttpError
 
-        scopes = ['https://www.googleapis.com/auth/drive.file']
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-        http_auth = credentials.authorize(Http())
-        gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+        def get_gdrive_service():
+            scopes = ['https://www.googleapis.com/auth/drive.file']
+            credentials = ServiceAccountCredentials.from_json_keyfile_name(
+                    settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+            http_auth = credentials.authorize(Http())
+            gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+            return gdrive_service
+        
+        gdrive_service = get_gdrive_service()
 
         try:
             gdrive_folder = Variable.get('gdrive_folder')
@@ -139,6 +147,9 @@ class Command(BaseCommand):
         for upload in new_uploads:
             queue.put(upload)
 
+        from django import db
+        db.connections.close_all()
+
         process_pool = []
         for i in range(options['processes']):
             process = Process(target=self.analyse_upload_worker, args=(queue,))
@@ -148,10 +159,11 @@ class Command(BaseCommand):
             process.join()
 
     def analyse_upload_worker(self, queue):
+        self.gdrive_service = get_gdrive_service()
         try:
             while True:
                 upload = queue.get_nowait()
-                logger.info(upload)
+                logger.info(upload.filename)
                 self.analyse_upload(upload)
         except Empty:
             logger.info("done")
@@ -266,11 +278,11 @@ class Command(BaseCommand):
                     "encounter_url_id": encounter.url_id,
                 })
 
-            if gdrive_service:
+            if self.gdrive_service:
                 media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
                 try:
                     if encounter.gdrive_id:
-                        result = gdrive_service.files().update(
+                        result = self.gdrive_service.files().update(
                                 fileId=encounter.gdrive_id,
                                 media_body=media,
                             ).execute()
@@ -279,7 +291,7 @@ class Command(BaseCommand):
                                 'name': upload.filename,
                                 'parents': [gdrive_folder],
                             }
-                        gdrive_file = gdrive_service.files().create(
+                        gdrive_file = self.gdrive_service.files().create(
                                 body=metadata, media_body=media,
                                 fields='id, webContentLink',
                             ).execute()
@@ -287,7 +299,7 @@ class Command(BaseCommand):
                         encounter.gdrive_url = gdrive_file['webContentLink']
                         encounter.save()
                 except HttpError as e:
-                    print(e, file=stderr)
+                    logger.error(e)
                     pass
 
         except (EvtcParseException, EvtcAnalysisException) as e:
