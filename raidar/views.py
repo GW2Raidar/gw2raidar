@@ -328,8 +328,15 @@ def register(request):
         old_gw2api = GW2API(account.api_key)
         try:
             gw2_account = old_gw2api.query("/account")
-            
-            return _error("This GW2 account is registered to another user.")
+            # Old key is still valid, ask user to invalidate it
+            try:
+                old_api_key_info = old_gw2api.query("/tokeninfo")
+                key_id = "named '%s'" % old_api_key_info['name']
+            except GW2APIException as e:
+                key_id = "ending in '%s'" % api_key[-4:]
+            new_key = "" if account.api_key != api_key else " and generate a new key"
+
+            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
         except GW2APIException as e:
             # Old key is invalid, reassign OK
             pass
@@ -467,8 +474,15 @@ def add_api_key(request):
         old_gw2api = GW2API(account.api_key)
         try:
             gw2_account = old_gw2api.query("/account")
-            
-            return _error("This GW2 account is registered to another user.")
+            # Old key is still valid, ask user to invalidate it
+            try:
+                old_api_key_info = old_gw2api.query("/tokeninfo")
+                key_id = "named '%s'" % old_api_key_info['name']
+            except GW2APIException as e:
+                key_id = "ending in '%s'" % api_key[-4:]
+            new_key = "" if account.api_key != api_key else " and generate a new key"
+
+            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
         except GW2APIException as e:
             # Old key is invalid, reassign OK
             pass
