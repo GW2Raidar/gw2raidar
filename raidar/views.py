@@ -314,7 +314,7 @@ def register(request):
 
     try:
         token_info = gw2api.query("/tokeninfo")
-        if token_info['name'].lower() != 'gw2raidar':
+        if 'gw2raidar' not in token_info['name'].lower():
             return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
@@ -460,7 +460,7 @@ def add_api_key(request):
     
     try:
         token_info = gw2api.query("/tokeninfo")
-        if token_info['name'].lower() != 'gw2raidar':
+        if 'gw2raidar' not in token_info['name'].lower():
             return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
