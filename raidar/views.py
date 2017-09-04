@@ -17,7 +17,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
-from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from django.views.decorators.http import require_GET, require_POST
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
@@ -263,6 +263,9 @@ def initial(request):
     return JsonResponse(response)
 
 
+@require_POST
+@sensitive_post_parameters('password')
+@sensitive_variables('password')
 def login(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'login' })
@@ -282,7 +285,6 @@ def login(request):
         return _error('Could not log in')
 
 @require_POST
-@sensitive_post_parameters()
 @never_cache
 def reset_pw(request):
     email = request.POST.get('email')
@@ -298,6 +300,8 @@ def reset_pw(request):
         return JsonResponse({});
 
 
+@sensitive_post_parameters('password')
+@sensitive_variables('password')
 def register(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'register' })
@@ -407,6 +411,8 @@ def change_email(request):
     return JsonResponse({})
 
 @login_required
+@sensitive_post_parameters()
+@sensitive_variables('form')
 @require_POST
 def change_password(request):
     form = PasswordChangeForm(request.user, request.POST)

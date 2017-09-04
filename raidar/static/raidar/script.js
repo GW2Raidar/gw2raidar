@@ -231,6 +231,7 @@ ${rectSvg.join("\n")}
     { boon: 'quickness' },
     { boon: 'alacrity' },
     { boon: 'protection' },
+    { boon: 'retaliation' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
     { boon: 'gotl', stacks: 5 },
