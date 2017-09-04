@@ -17,7 +17,7 @@ class ParticipationInline(admin.TabularInline):
     readonly_fields = ('character', 'elite', 'party')
 
 class EncounterAdmin(admin.ModelAdmin):
-    search_fields = ('url_id', 'filename')
+    search_fields = ('url_id', 'filename', 'characters__name', 'characters__account__name', 'characters__account__user__username')
     list_display = ('url_id', 'filename', 'area', 'success', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
     inlines = (ParticipationInline,)
     readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_at', 'uploaded_by', 'area', 'filename')
