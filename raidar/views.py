@@ -313,6 +313,9 @@ def register(request):
     gw2api = GW2API(api_key)
 
     try:
+        token_info = gw2api.query("/tokeninfo")
+        if token_info['name'].lower() != 'gw2raidar':
+            return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
         return _error(e)
@@ -325,15 +328,8 @@ def register(request):
         old_gw2api = GW2API(account.api_key)
         try:
             gw2_account = old_gw2api.query("/account")
-            # Old key is still valid, ask user to invalidate it
-            try:
-                old_api_key_info = old_gw2api.query("/tokeninfo")
-                key_id = "named '%s'" % old_api_key_info['name']
-            except GW2APIException as e:
-                key_id = "ending in '%s'" % api_key[-4:]
-            new_key = "" if account.api_key != api_key else " and generate a new key"
-
-            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
+            
+            return _error("This GW2 account is registered to another user.")
         except GW2APIException as e:
             # Old key is invalid, reassign OK
             pass
@@ -454,8 +450,11 @@ def contact(request):
 def add_api_key(request):
     api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
-
+    
     try:
+        token_info = gw2api.query("/tokeninfo")
+        if token_info['name'].lower() != 'gw2raidar':
+            return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
         return _error(e)
@@ -468,15 +467,8 @@ def add_api_key(request):
         old_gw2api = GW2API(account.api_key)
         try:
             gw2_account = old_gw2api.query("/account")
-            # Old key is still valid, ask user to invalidate it
-            try:
-                old_api_key_info = old_gw2api.query("/tokeninfo")
-                key_id = "named '%s'" % old_api_key_info['name']
-            except GW2APIException as e:
-                key_id = "ending in '%s'" % api_key[-4:]
-            new_key = "" if account.api_key != api_key else " and generate a new key"
-
-            return _error("This account is registered to another user. To confirm this account is yours, please invalidate the key %s%s." % (key_id, new_key))
+            
+            return _error("This GW2 account is registered to another user.")
         except GW2APIException as e:
             # Old key is invalid, reassign OK
             pass
