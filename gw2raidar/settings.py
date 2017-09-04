@@ -11,6 +11,12 @@ https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
 import os
+from dateutil import parser
+
+VERSION = {
+        'id': '0.9.1',
+        'timestamp': 1504417172, # date +%s
+        }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -25,6 +31,10 @@ SECRET_KEY = 'o6x&+oy92&0qz9-8nkrqv$qyf3k0d$7zd4&o-6%qeg+44@@6d_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# When DEBUG is False (must for production),
+# this needs to be set for the app's host, like so:
+# ALLOWED_HOSTS = ['gw2raidar.example.com']
+# (it can be set in `settings_local.py`)
 ALLOWED_HOSTS = []
 
 
@@ -100,6 +110,8 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+AUTHENTICATION_BACKENDS = ('raidar.backends.EmailAuthBackend',)
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -119,9 +131,26 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
 STATIC_URL = '/static/'
-
+STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
 # Other
 
 LOGIN_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
+
+
+
+# Google Analytics
+GA_PROPERTY_ID = None
+
+import os.path
+RESTAT_PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'log', 'restat.pid')
+
+
+# Local settings, not checked into the repository
+# Model on the example at `settings_local.py.example`
+# They can override the options in this file
+try:
+    from .settings_local import *
+except ImportError:
+    pass
