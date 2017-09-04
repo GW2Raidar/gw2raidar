@@ -40,6 +40,8 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 
 
 
+User._meta.get_field('email')._unique = True
+
 class UserProfile(models.Model):
     portrait_url = models.URLField(null=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
