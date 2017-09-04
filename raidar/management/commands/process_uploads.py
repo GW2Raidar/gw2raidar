@@ -61,7 +61,7 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
             http_auth = credentials.authorize(Http())
             gdrive_service = discovery.build('drive', 'v3', http=http_auth)
             return gdrive_service
-        
+
         gdrive_service = get_gdrive_service()
 
         try:
