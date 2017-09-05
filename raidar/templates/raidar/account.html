@@ -25,7 +25,7 @@
 
   <form class="uk-grid uk-grid-small">
     <div class="uk-width-3-4">
-      <input class="uk-input" placeholder="Enter GW2 API key to link another account" value="[[account.api_key]]" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')"/>
+      <input class="uk-input" placeholder="Enter GW2 API key named 'gw2raidar' to link another account" value="[[account.api_key]]" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')"/>
     </div>
     <div class="uk-width-1-4">
       <button class="uk-button uk-button-primary uk-width-1-1" on-click="add_api_key">Save</button>
@@ -49,6 +49,4 @@
 <p>
   Note that GW2 Raidar only requires the keys to authenticate your ownership of
   a GW2 account. Therefore, you only need the default "account" permission.
-  While registered (and valid), the API key is also protecting your account
-  from being linked by anyone else.
 </p>
