@@ -129,7 +129,7 @@ class Command(BaseCommand):
             help='Limit of uploads to process')
 
     def handle(self, *args, **options):
-        with single_process('restat'):
+        with single_process('process_uploads'):
             start = time()
             self.analyse_uploads(*args, **options)
             self.clean_up(*args, **options)
@@ -156,6 +156,7 @@ class Command(BaseCommand):
         process_pool = []
         for i in range(options['processes']):
             process = Process(target=self.analyse_upload_worker, args=(queue,))
+            process_pool.append(process)
             process.start()
 
         for process in process_pool:
