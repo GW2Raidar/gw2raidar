@@ -40,8 +40,10 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 
 
 
+User._meta.get_field('email')._unique = True
+
 class UserProfile(models.Model):
-    portrait_url = models.URLField(null=True)
+    portrait_url = models.URLField(null=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
 
@@ -132,7 +134,7 @@ class Character(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
     name = models.CharField(max_length=64, db_index=True)
     profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
-    verified_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(auto_now_add=True) # XXX don't remember this... delete?
 
     def __str__(self):
         return self.name

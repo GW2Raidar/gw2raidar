@@ -11,11 +11,13 @@ from json import loads as json_loads, dumps as json_dumps
 from raidar.models import *
 from sys import exit, stderr
 from time import time
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 from queue import Empty
 import os
+import os.path
 import logging
 import signal
+from traceback import format_exc
 
 
 logger = log_to_stderr()
@@ -61,7 +63,7 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
             http_auth = credentials.authorize(Http())
             gdrive_service = discovery.build('drive', 'v3', http=http_auth)
             return gdrive_service
-        
+
         gdrive_service = get_gdrive_service()
 
         try:
@@ -127,7 +129,7 @@ class Command(BaseCommand):
             help='Limit of uploads to process')
 
     def handle(self, *args, **options):
-        with single_process('restat'):
+        with single_process('process_uploads'):
             start = time()
             self.analyse_uploads(*args, **options)
             self.clean_up(*args, **options)
@@ -154,6 +156,7 @@ class Command(BaseCommand):
         process_pool = []
         for i in range(options['processes']):
             process = Process(target=self.analyse_upload_worker, args=(queue,))
+            process_pool.append(process)
             process.start()
 
         for process in process_pool:
@@ -304,11 +307,28 @@ class Command(BaseCommand):
                     logger.error(e)
                     pass
 
-        except (EvtcParseException, EvtcAnalysisException) as e:
+        except (EvtcParseException, EvtcAnalysisException, BadZipFile) as e:
             Notification.objects.create(user=upload.uploaded_by, val={
                 "type": "upload_error",
                 "upload_id": upload.id,
                 "error": str(e),
+            })
+
+        # for diagnostics and catching new exceptions
+        except Exception as e:
+            exc = format_exc()
+            path = os.path.join(upload_dir, 'errors')
+            os.makedirs(path, exist_ok=True)
+            path = os.path.join(path, os.path.basename(diskname))
+            os.rename(diskname, path)
+            with open(path + '.error', 'w') as f:
+                f.write("%s (%s)\n" % (upload.filename, upload.uploaded_by.username))
+                f.write(exc)
+            logger.error(exc)
+            Notification.objects.create(user=upload.uploaded_by, val={
+                "type": "upload_error",
+                "upload_id": upload.id,
+                "error": "An unexpected error has occured, and your file has been stored for inspection by the developers.",
             })
 
         finally:

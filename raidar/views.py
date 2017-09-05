@@ -17,7 +17,7 @@ from django.shortcuts import render
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
-from django.views.decorators.debug import sensitive_post_parameters
+from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from django.views.decorators.http import require_GET, require_POST
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
@@ -263,6 +263,9 @@ def initial(request):
     return JsonResponse(response)
 
 
+@require_POST
+@sensitive_post_parameters('password')
+@sensitive_variables('password')
 def login(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'login' })
@@ -282,7 +285,6 @@ def login(request):
         return _error('Could not log in')
 
 @require_POST
-@sensitive_post_parameters()
 @never_cache
 def reset_pw(request):
     email = request.POST.get('email')
@@ -298,6 +300,8 @@ def reset_pw(request):
         return JsonResponse({});
 
 
+@sensitive_post_parameters('password')
+@sensitive_variables('password')
 def register(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'register' })
@@ -309,6 +313,9 @@ def register(request):
     gw2api = GW2API(api_key)
 
     try:
+        token_info = gw2api.query("/tokeninfo")
+        if 'gw2raidar' not in token_info['name'].lower():
+            return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
         return _error(e)
@@ -407,6 +414,8 @@ def change_email(request):
     return JsonResponse({})
 
 @login_required
+@sensitive_post_parameters()
+@sensitive_variables('form')
 @require_POST
 def change_password(request):
     form = PasswordChangeForm(request.user, request.POST)
@@ -448,8 +457,11 @@ def contact(request):
 def add_api_key(request):
     api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
-
+    
     try:
+        token_info = gw2api.query("/tokeninfo")
+        if 'gw2raidar' not in token_info['name'].lower():
+            return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
         return _error(e)
@@ -470,7 +482,7 @@ def add_api_key(request):
                 key_id = "ending in '%s'" % api_key[-4:]
             new_key = "" if account.api_key != api_key else " and generate a new key"
 
-            return _error("This account is registered to another user. To confirm this account is yours, please invalidate the key %s%s." % (key_id, new_key))
+            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
         except GW2APIException as e:
             # Old key is invalid, reassign OK
             pass

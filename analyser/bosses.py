@@ -228,5 +228,6 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ]),
+    Boss('Standard Kitty Golem', [16199])
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}

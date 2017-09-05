@@ -8,52 +8,54 @@ class StackType(IntEnum):
     DURATION = 1
 
 class BuffType:
-    def __init__(self, name, code, stacking, capacity):
+    def __init__(self, name, code, skillid, stacking, capacity):
         self.name = name
         self.code = code
+        self.skillid = skillid
         self.stacking = stacking
         self.capacity = capacity
-
+        
 BUFF_TYPES = [
         # General Boons
-        BuffType('Might', 'might', StackType.INTENSITY, 25),
-        BuffType('Quickness', 'quickness', StackType.DURATION, 5),
-        BuffType('Fury', 'fury', StackType.DURATION, 9),
-        BuffType('Protection', 'protection', StackType.DURATION, 5),
-        BuffType('Alacrity', 'alacrity', StackType.DURATION, 9),
+        BuffType('Might', 'might', 740, StackType.INTENSITY, 25),
+        BuffType('Quickness', 'quickness', 1187, StackType.DURATION, 5),
+        BuffType('Fury', 'fury', 725, StackType.DURATION, 9),
+        BuffType('Protection', 'protection', 717, StackType.DURATION, 5),
+        BuffType('Alacrity', 'alacrity', 30328, StackType.DURATION, 9),
+        BuffType('Retaliation', 'retaliation', 873, StackType.DURATION, 5),
 
         # Ranger
-        BuffType('Spotter', 'spotter', StackType.DURATION, 1),
-        BuffType('Spirit of Frost', 'spirit_of_frost', StackType.DURATION, 1),
-        BuffType('Sun Spirit', 'sun_spirit', StackType.DURATION, 1),
-        BuffType('Stone Spirit', 'stone_spirit', StackType.DURATION, 1),
-        BuffType('Storm Spirit', 'storm_spirit', StackType.DURATION, 1),
-        BuffType('Glyph of Empowerment', 'glyph_of_empowerment', StackType.DURATION, 1),
-        BuffType('Grace of the Land', 'gotl', StackType.INTENSITY, 5),
+        BuffType('Spotter', 'spotter', 14055, StackType.DURATION, 1),
+        BuffType('Spirit of Frost', 'spirit_of_frost', 12544, StackType.DURATION, 1),
+        BuffType('Sun Spirit', 'sun_spirit', 12540, StackType.DURATION, 1),
+        BuffType('Stone Spirit', 'stone_spirit', 12547, StackType.DURATION, 1),
+        BuffType('Storm Spirit', 'storm_spirit', -1, StackType.DURATION, 1),
+        BuffType('Glyph of Empowerment', 'glyph_of_empowerment', 31803, StackType.DURATION, 1),
+        BuffType('Grace of the Land', 'gotl', 34062, StackType.INTENSITY, 5),
 
         # Warrior
-        BuffType('Empower Allies', 'empower_allies', StackType.DURATION, 1),
-        BuffType('Banner of Strength', 'banner_strength', StackType.DURATION, 1),
-        BuffType('Banner of Discipline', 'banner_discipline', StackType.DURATION, 1),
-        BuffType('Banner of Tactics', 'banner_tactics', StackType.DURATION, 1),
-        BuffType('Banner of Defence', 'banner_defence', StackType.DURATION, 1),
+        BuffType('Empower Allies', 'empower_allies', 14222, StackType.DURATION, 1),
+        BuffType('Banner of Strength', 'banner_strength', 14417, StackType.DURATION, 1),
+        BuffType('Banner of Discipline', 'banner_discipline', 14449, StackType.DURATION, 1),
+        BuffType('Banner of Tactics', 'banner_tactics', 14450, StackType.DURATION, 1),
+        BuffType('Banner of Defence', 'banner_defence', 14543, StackType.DURATION, 1),
 
         # Revenant
-        BuffType('Assassin''s Presence', 'assassins_presence', StackType.DURATION, 1),
-        BuffType('Naturalistic Resonance', 'naturalistic_resonance', StackType.DURATION, 1),
+        BuffType('Assassin''s Presence', 'assassins_presence', 26854, StackType.DURATION, 1),
+        BuffType('Naturalistic Resonance', 'naturalistic_resonance', 29379, StackType.DURATION, 1),
 
         # Engineer
-        BuffType('Pinpoint Distribution', 'pinpoint_distribution', StackType.DURATION, 1),
+        BuffType('Pinpoint Distribution', 'pinpoint_distribution', 38333, StackType.DURATION, 1),
 
         # Elementalist
-        BuffType('Soothing Mist', 'soothing_mist', StackType.DURATION, 1),
+        BuffType('Soothing Mist', 'soothing_mist', 5587, StackType.DURATION, 1),
 
         # Necro
-        BuffType('Vampiric Presence', 'vampiric_presence', StackType.DURATION, 1),
+        BuffType('Vampiric Presence', 'vampiric_presence', -1, StackType.DURATION, 1),
     
         # Thief
-        BuffType('Lotus Training', 'lotus_training', StackType.DURATION, 1),
-        BuffType('Lead Attacks', 'lead_attacks', StackType.INTENSITY, 15)
+        BuffType('Lotus Training', 'lotus_training', 32200, StackType.DURATION, 1),
+        BuffType('Lead Attacks', 'lead_attacks', 34659, StackType.INTENSITY, 15)
     ]
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }
@@ -184,7 +186,7 @@ class BuffPreprocessor:
                 track_data = np.c_[[buff_type.code] * track_data.shape[0], [player] * track_data.shape[0], track_data]
                 raw_buff_data = np.r_[raw_buff_data, track_data]
             return raw_buff_data
-
+       
         # Filter out state change and cancellation events
         not_cancel_events = player_events[(player_events.state_change == parser.StateChange.NORMAL)
                                         & (player_events.is_activation < parser.Activation.CANCEL_FIRE)
@@ -216,11 +218,10 @@ class BuffPreprocessor:
         remaining_buff_types = list(BUFF_TYPES)
         for skillid, buff_events in groups:
 
-            name = skills['name'].get(skillid)
-
-            relevant_buff_types = list(filter(lambda a: a.name == name, remaining_buff_types))
+            relevant_buff_types = list(filter(lambda a: a.skillid == skillid, remaining_buff_types))
             if not relevant_buff_types:
                 continue
+            
             buff_type = relevant_buff_types[0]
             remaining_buff_types.remove(buff_type)
             raw_buff_data = process_buff_events(buff_type, buff_events, raw_buff_data)

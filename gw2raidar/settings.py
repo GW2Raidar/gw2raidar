@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '0.9.1',
-        'timestamp': 1504417172, # date +%s
+        'id': '0.9.3',
+        'timestamp': 1504619292, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -49,6 +49,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
 ]
+
+import importlib
+if importlib.util.find_spec("django_extensions"):
+    INSTALLED_APPS.append('django_extensions')
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -130,6 +134,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.10/howto/static-files/
 
+STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
 STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
 
