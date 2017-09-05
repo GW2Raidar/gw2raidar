@@ -62,6 +62,7 @@ class Skills:
     COMPROMISED = 35096
     GAINING_POWER = 35075
     MAGIC_BLAST_INTENSITY = 35119
+    SPEAR_IMPACT = 37816
     
     
 class BossMetricAnalyser:
