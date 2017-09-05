@@ -33,6 +33,27 @@ class Elite(IntEnum):
     HEART_OF_THORNS = 1
     PATH_OF_FIRE = 2
 
+class Specialization(IntEnum):
+    NONE = 0
+    DRUID = 5
+    DAREDEVIL = 7
+    BERSERKER = 18
+    DRAGONHUNTER = 27
+    REAPER = 34
+    CHRONOMANCER = 40
+    SCRAPPER = 43
+    TEMPEST = 48
+    HERALD = 52
+    SOULBEAST = 55
+    WEAVER = 56
+    HOLOSMITH = 57
+    DEADEYE = 58
+    MIRAGE = 59
+    SCOURGE = 60
+    SPELLBREAKER = 61
+    FIREBRAND = 62
+    RENEGADE = 63
+      
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
 
@@ -355,7 +376,12 @@ class Analyser:
     def collect_individual_player_status(self, collector, player):
         only_entry = player.iloc[0]
         collector.add_data('profession', only_entry['prof'], parser.AgentType)
-        collector.add_data('elite', only_entry['elite'], Elite)
+        if only_entry['elite'] == 0:
+            collector.add_data('elite', Elite.CORE)
+        elif only_entry['elite'] < 55:
+            collector.add_data('elite', Elite.HEART_OF_THORNS)
+        else:
+            collector.add_data('elite', Elite.PATH_OF_FIRE)
         collector.add_data('toughness', only_entry['toughness'], int)
         collector.add_data('healing', only_entry['healing'], int)
         collector.add_data('condition', only_entry['condition'], int)
