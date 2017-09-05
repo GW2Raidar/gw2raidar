@@ -11,7 +11,7 @@ from json import loads as json_loads, dumps as json_dumps
 from raidar.models import *
 from sys import exit, stderr
 from time import time
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 from queue import Empty
 import os
 import os.path
@@ -306,7 +306,7 @@ class Command(BaseCommand):
                     logger.error(e)
                     pass
 
-        except (EvtcParseException, EvtcAnalysisException) as e:
+        except (EvtcParseException, EvtcAnalysisException, BadZipFile) as e:
             Notification.objects.create(user=upload.uploaded_by, val={
                 "type": "upload_error",
                 "upload_id": upload.id,
