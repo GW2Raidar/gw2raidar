@@ -496,10 +496,11 @@ class Analyser:
 
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
-        for buff_type in BUFF_TYPES:
-            collector.set_context_value(ContextType.BUFF_TYPE, buff_type)
-            buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
-            collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
+        if len(buff_data) > 0:
+            for buff_type in BUFF_TYPES:
+                collector.set_context_value(ContextType.BUFF_TYPE, buff_type)
+                buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
+                collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
 
     def _split_buff_by_phase(self, diff_data, start, end):
         across_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > end)]
