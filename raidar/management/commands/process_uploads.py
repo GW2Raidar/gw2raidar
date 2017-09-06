@@ -129,7 +129,7 @@ class Command(BaseCommand):
             help='Limit of uploads to process')
 
     def handle(self, *args, **options):
-        with single_process('restat'):
+        with single_process('process_uploads'):
             start = time()
             self.analyse_uploads(*args, **options)
             self.clean_up(*args, **options)
@@ -156,6 +156,7 @@ class Command(BaseCommand):
         process_pool = []
         for i in range(options['processes']):
             process = Process(target=self.analyse_upload_worker, args=(queue,))
+            process_pool.append(process)
             process.start()
 
         for process in process_pool:
@@ -182,7 +183,10 @@ class Command(BaseCommand):
                 zipfile = ZipFile(diskname)
                 contents = zipfile.infolist()
                 if len(contents) == 1:
-                    file = zipfile.open(contents[0].filename)
+                    try:
+                        file = zipfile.open(contents[0].filename)
+                    except RuntimeError as e:
+                        raise EvtcAnalysisException(e)
                 else:
                     raise EvtcParseException('Only single-file ZIP archives are allowed')
             else:
@@ -201,9 +205,8 @@ class Command(BaseCommand):
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
             era = Era.by_time(started_at)
-            area = Area.objects.get(id=evtc_encounter.area_id)
-            if not area:
-                raise EvtcAnalysisException('Unknown area')
+            area, _ = Area.objects.get_or_create(id=evtc_encounter.area_id,
+                    defaults={ "name": analyser.boss_info.name })
 
             status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
