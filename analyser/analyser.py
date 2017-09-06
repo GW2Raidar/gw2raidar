@@ -236,7 +236,7 @@ class Analyser:
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
-        BossMetricAnalyser(agents, self.subgroups, self.players, bosses, self.phases).gather_boss_specific_stats(events, collector)
+        BossMetricAnalyser(agents, self.subgroups, self.players, bosses, self.phases, encounter_end).gather_boss_specific_stats(events, collector)
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
 
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
