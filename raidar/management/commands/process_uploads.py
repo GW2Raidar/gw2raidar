@@ -205,9 +205,8 @@ class Command(BaseCommand):
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
             era = Era.by_time(started_at)
-            area = Area.objects.get(id=evtc_encounter.area_id)
-            if not area:
-                raise EvtcAnalysisException('Unknown area')
+            area, _ = Area.objects.get_or_create(id=evtc_encounter.area_id,
+                    defaults={ "name": analyser.boss_info.name })
 
             status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
