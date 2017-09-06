@@ -63,7 +63,7 @@ class Phase:
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
             if not relevant_gaps.empty:
                 end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
-            elif int(damage_gaps.time.iloc[-1]) >= current_time:
+            elif len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time:
                 end_time = current_time = int(damage_gaps.time.iloc[-1])
             else:
                 return None
