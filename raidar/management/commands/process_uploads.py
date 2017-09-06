@@ -183,7 +183,10 @@ class Command(BaseCommand):
                 zipfile = ZipFile(diskname)
                 contents = zipfile.infolist()
                 if len(contents) == 1:
-                    file = zipfile.open(contents[0].filename)
+                    try:
+                        file = zipfile.open(contents[0].filename)
+                    except RuntimeError as e:
+                        raise EvtcAnalysisException(e)
                 else:
                     raise EvtcParseException('Only single-file ZIP archives are allowed')
             else:
