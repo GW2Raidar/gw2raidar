@@ -35,7 +35,7 @@
         [[#each keysWithAllLast(encounter, data.areas)]]
           [[#with {encounterId: .}]]
             [[#with encounter[encounterId].archetype.All.profession.All.elite.All]]
-              <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })" class-all="[[encounterId.match(/^All \w+ bosses$/)]]">
+              <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent link" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })" class-all="[[encounterId.match(/^All \w+ bosses$/)]]">
                 <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
                 [[encounterId.match(/^All \w+ bosses$/) ? encounterId : data.areas[encounterId]]]
                 ([[count]])
