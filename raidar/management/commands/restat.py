@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.utils import IntegrityError
 from gw2raidar import settings
+from analyser.bosses import BOSSES, Kind
 from json import loads as json_loads, dumps as json_dumps
 from os.path import join as path_join
 from raidar.models import *
@@ -18,6 +19,7 @@ import os
 # l = logging.getLogger('django.db.backends')
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
+
 
 
 @contextmanager
@@ -164,6 +166,8 @@ class Command(BaseCommand):
             era_queryset = era.encounters.all()
             buffs = set()
             for encounter in queryset_iterator(era_queryset):
+                boss = BOSSES[encounter.area_id]
+
                 participations = encounter.participations.select_related('character', 'character__account').all()
 
                 try:
@@ -179,7 +183,7 @@ class Command(BaseCommand):
 
                             def categorise(split_encounter, split_archetype, split_profession):
                                 return navigate(totals_for_player,
-                                                'encounter', encounter.area_id if split_encounter else 'All',
+                                                'encounter', encounter.area_id if split_encounter else 'All %s bosses' % boss.kind.name.lower(),
                                                 'archetype', participation.archetype if split_archetype else 'All',
                                                 'profession', participation.character.profession if split_profession else 'All',
                                                 'elite', participation.elite if split_profession else 'All')
