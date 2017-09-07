@@ -194,14 +194,21 @@ class BuffPreprocessor:
 
         # Extract out the buff events
         status_remove_groups = not_cancel_events.groupby('is_buffremove')
-        not_statusremove_events = status_remove_groups.get_group(0)
+        if 0 in status_remove_groups.indices:
+            not_statusremove_events = status_remove_groups.get_group(0)
+        else:
+            not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
+            
         #not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
         apply_events = not_statusremove_events[(not_statusremove_events.buff != 0)
                                              & (not_statusremove_events.value != 0)]
         buff_events = apply_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']]
 
         # Extract out buff removal events
-        statusremove_events = status_remove_groups.get_group(1)
+        if 1 in status_remove_groups.indices:
+            statusremove_events = status_remove_groups.get_group(1)
+        else:
+            statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
         #statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
         buffremove_events = statusremove_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']]
 
