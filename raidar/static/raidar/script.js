@@ -295,7 +295,6 @@ ${rectSvg.join("\n")}
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
         let latest = eras[eras.length - 1];
-        console.log(eras, latest);
         r.set({
           'page.era': latest,
         });
