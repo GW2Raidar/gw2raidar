@@ -237,5 +237,12 @@ BOSS_ARRAY = [
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199])
+    Boss('Average Kitty Golem', Kind.DUMMY, [16177])
+    Boss('Vital Kitty Golem', Kind.DUMMY, [16198])
+    Boss('Massive Standard Kitty Golem', Kind.DUMMY, [16178])
+    Boss('Massive Average Kitty Golem', Kind.DUMMY, [16202])
+    Boss('Massive Vital Kitty Golem', Kind.DUMMY, [16169])
+    Boss('Resistant Kitty Golem', Kind.DUMMY, [16176])
+    Boss('Tough Kitty Golem', Kind.DUMMY, [16174])
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
