@@ -33,6 +33,27 @@ class Elite(IntEnum):
     HEART_OF_THORNS = 1
     PATH_OF_FIRE = 2
 
+class Specialization(IntEnum):
+    NONE = 0
+    DRUID = 5
+    DAREDEVIL = 7
+    BERSERKER = 18
+    DRAGONHUNTER = 27
+    REAPER = 34
+    CHRONOMANCER = 40
+    SCRAPPER = 43
+    TEMPEST = 48
+    HERALD = 52
+    SOULBEAST = 55
+    WEAVER = 56
+    HOLOSMITH = 57
+    DEADEYE = 58
+    MIRAGE = 59
+    SCOURGE = 60
+    SPELLBREAKER = 61
+    FIREBRAND = 62
+    RENEGADE = 63
+      
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
 
@@ -209,13 +230,13 @@ class Analyser:
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
-        start_timestamp = start_event['value'][0]
-        start_time = start_event['time'][0]
+        start_timestamp = start_event['value'].iloc[0]
+        start_time = start_event['time'].iloc[0]
         encounter_end = events.time.max()
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
-        BossMetricAnalyser(agents, self.subgroups, self.players, bosses, self.phases).gather_boss_specific_stats(events, collector)
+        BossMetricAnalyser(agents, self.subgroups, self.players, bosses, self.phases, encounter_end).gather_boss_specific_stats(events, collector)
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
 
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
@@ -355,7 +376,12 @@ class Analyser:
     def collect_individual_player_status(self, collector, player):
         only_entry = player.iloc[0]
         collector.add_data('profession', only_entry['prof'], parser.AgentType)
-        collector.add_data('elite', only_entry['elite'], Elite)
+        if only_entry['elite'] == 0:
+            collector.add_data('elite', Elite.CORE)
+        elif only_entry['elite'] < 55:
+            collector.add_data('elite', Elite.HEART_OF_THORNS)
+        else:
+            collector.add_data('elite', Elite.PATH_OF_FIRE)
         collector.add_data('toughness', only_entry['toughness'], int)
         collector.add_data('healing', only_entry['healing'], int)
         collector.add_data('condition', only_entry['condition'], int)
@@ -470,10 +496,11 @@ class Analyser:
 
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
-        for buff_type in BUFF_TYPES:
-            collector.set_context_value(ContextType.BUFF_TYPE, buff_type)
-            buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
-            collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
+        if len(buff_data) > 0:
+            for buff_type in BUFF_TYPES:
+                collector.set_context_value(ContextType.BUFF_TYPE, buff_type)
+                buff_specific_data = buff_data[buff_data['buff'] ==  buff_type.code]
+                collector.with_key(Group.BUFF, buff_type.code).run(self.collect_buff, buff_specific_data)
 
     def _split_buff_by_phase(self, diff_data, start, end):
         across_phase = diff_data[(diff_data['time'] < start) & (diff_data['time'] + diff_data['duration'] > end)]

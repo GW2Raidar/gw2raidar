@@ -5,6 +5,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.utils import IntegrityError
 from gw2raidar import settings
+from analyser.bosses import BOSSES, Kind
 from json import loads as json_loads, dumps as json_dumps
 from os.path import join as path_join
 from raidar.models import *
@@ -18,6 +19,7 @@ import os
 # l = logging.getLogger('django.db.backends')
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
+
 
 
 @contextmanager
@@ -164,6 +166,8 @@ class Command(BaseCommand):
             era_queryset = era.encounters.all()
             buffs = set()
             for encounter in queryset_iterator(era_queryset):
+                boss = BOSSES[encounter.area_id]
+
                 participations = encounter.participations.select_related('character', 'character__account').all()
 
                 try:
@@ -179,7 +183,7 @@ class Command(BaseCommand):
 
                             def categorise(split_encounter, split_archetype, split_profession):
                                 return navigate(totals_for_player,
-                                                'encounter', encounter.area_id if split_encounter else 'All',
+                                                'encounter', encounter.area_id if split_encounter else 'All %s bosses' % boss.kind.name.lower(),
                                                 'archetype', participation.archetype if split_archetype else 'All',
                                                 'profession', participation.character.profession if split_profession else 'All',
                                                 'elite', participation.elite if split_profession else 'All')
@@ -244,13 +248,13 @@ class Command(BaseCommand):
                         stats_in_phase_to_all = squad_stats_in_phase['Metrics']['damage']['To']['*All']
                         stats_in_phase_to_boss = squad_stats_in_phase['Metrics']['damage']['To']['*Boss']
                         stats_in_phase_received = _safe_get(lambda: squad_stats_in_phase['Metrics']['damage']['From']['*All'], {})
-                        stats_in_phase_buffs = squad_stats_in_phase['Metrics']['buffs']
+                        stats_in_phase_buffs = _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs'], {})
                         totals_in_phase = get_or_create(totals_in_area, phase)
                         group_totals = get_or_create(totals_in_phase, 'group')
                         individual_totals = get_or_create(totals_in_phase, 'individual')
 
                         buffs_by_party = get_or_create(group_totals, 'buffs')
-                        for buff, value in squad_stats_in_phase['Metrics']['buffs']['From']['*All'].items():
+                        for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['From']['*All'], {}).items():
                             find_bounds(buffs_by_party, buff, value)
 
                         # sums and averages, per encounter
@@ -264,7 +268,7 @@ class Command(BaseCommand):
                             get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all)
                             get_or_create_then_increment(group_totals, 'flanking', stats_in_phase_to_all)
 
-                            for buff, value in squad_stats_in_phase['Metrics']['buffs']['From']['*All'].items():
+                            for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['From']['*All'], {}).items():
                                 buffs.add(buff)
                                 get_or_create_then_increment(buffs_by_party, buff, value)
 
@@ -345,7 +349,7 @@ class Command(BaseCommand):
                                 pass
 
                             buffs_by_archetype = get_or_create(totals_by_archetype, 'buffs')
-                            for buff, value in player_stats['Metrics']['buffs']['From']['*All'].items():
+                            for buff, value in _safe_get(lambda: player_stats['Metrics']['buffs']['From']['*All'], {}).items():
                                 buffs.add(buff)
                                 if encounter.success:
                                     get_or_create_then_increment(buffs_by_archetype, buff, value)

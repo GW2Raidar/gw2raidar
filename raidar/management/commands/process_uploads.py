@@ -1,4 +1,5 @@
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from Crypto import Random
 from multiprocessing import Queue, Process, log_to_stderr
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
@@ -10,11 +11,13 @@ from json import loads as json_loads, dumps as json_dumps
 from raidar.models import *
 from sys import exit, stderr
 from time import time
-from zipfile import ZipFile
+from zipfile import ZipFile, BadZipFile
 from queue import Empty
 import os
+import os.path
 import logging
 import signal
+from traceback import format_exc
 
 
 logger = log_to_stderr()
@@ -60,7 +63,7 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
             http_auth = credentials.authorize(Http())
             gdrive_service = discovery.build('drive', 'v3', http=http_auth)
             return gdrive_service
-        
+
         gdrive_service = get_gdrive_service()
 
         try:
@@ -126,7 +129,7 @@ class Command(BaseCommand):
             help='Limit of uploads to process')
 
     def handle(self, *args, **options):
-        with single_process('restat'):
+        with single_process('process_uploads'):
             start = time()
             self.analyse_uploads(*args, **options)
             self.clean_up(*args, **options)
@@ -153,12 +156,14 @@ class Command(BaseCommand):
         process_pool = []
         for i in range(options['processes']):
             process = Process(target=self.analyse_upload_worker, args=(queue,))
+            process_pool.append(process)
             process.start()
 
         for process in process_pool:
             process.join()
 
     def analyse_upload_worker(self, queue):
+        Random.atfork()
         self.gdrive_service = get_gdrive_service()
         try:
             while True:
@@ -178,7 +183,10 @@ class Command(BaseCommand):
                 zipfile = ZipFile(diskname)
                 contents = zipfile.infolist()
                 if len(contents) == 1:
-                    file = zipfile.open(contents[0].filename)
+                    try:
+                        file = zipfile.open(contents[0].filename)
+                    except RuntimeError as e:
+                        raise EvtcAnalysisException(e)
                 else:
                     raise EvtcParseException('Only single-file ZIP archives are allowed')
             else:
@@ -197,9 +205,8 @@ class Command(BaseCommand):
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
             era = Era.by_time(started_at)
-            area = Area.objects.get(id=evtc_encounter.area_id)
-            if not area:
-                raise EvtcAnalysisException('Unknown area')
+            area, _ = Area.objects.get_or_create(id=evtc_encounter.area_id,
+                    defaults={ "name": analyser.boss_info.name })
 
             status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
@@ -302,11 +309,28 @@ class Command(BaseCommand):
                     logger.error(e)
                     pass
 
-        except (EvtcParseException, EvtcAnalysisException) as e:
+        except (EvtcParseException, EvtcAnalysisException, BadZipFile) as e:
             Notification.objects.create(user=upload.uploaded_by, val={
                 "type": "upload_error",
                 "upload_id": upload.id,
                 "error": str(e),
+            })
+
+        # for diagnostics and catching new exceptions
+        except Exception as e:
+            exc = format_exc()
+            path = os.path.join(upload_dir, 'errors')
+            os.makedirs(path, exist_ok=True)
+            path = os.path.join(path, os.path.basename(diskname))
+            os.rename(diskname, path)
+            with open(path + '.error', 'w') as f:
+                f.write("%s (%s)\n" % (upload.filename, upload.uploaded_by.username))
+                f.write(exc)
+            logger.error(exc)
+            Notification.objects.create(user=upload.uploaded_by, val={
+                "type": "upload_error",
+                "upload_id": upload.id,
+                "error": "An unexpected error has occured, and your file has been stored for inspection by the developers.",
             })
 
         finally:

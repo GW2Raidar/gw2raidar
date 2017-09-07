@@ -29,12 +29,15 @@
   }
 
   let helpers = Ractive.defaults.data;
+  let allRE = /^All(?: \w+ bosses)?$/;
   helpers.keysWithAllLast = (obj, lookup) => {
     let keys = Object.keys(obj);
     keys.sort((a, b) => {
-      if (a == 'All') return 1;
-      if (b == 'All') return -1;
-      if (lookup) {
+      let aAll = a.match(allRE);
+      let bAll = b.match(allRE);
+      if (aAll && !bAll) return 1;
+      if (!aAll && bAll) return -1;
+      if (lookup && !(aAll && bAll)) {
         a = lookup[a];
         b = lookup[b];
       }
@@ -231,6 +234,7 @@ ${rectSvg.join("\n")}
     { boon: 'quickness' },
     { boon: 'alacrity' },
     { boon: 'protection' },
+    { boon: 'retaliation' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
     { boon: 'gotl', stacks: 5 },
@@ -284,14 +288,16 @@ ${rectSvg.join("\n")}
     profile: page => {
       r.set({
         loading: true,
-        "page.area": 'All',
+        'page.area': 'All raid bosses',
       });
       $.get({
         url: 'profile.json',
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
         let latest = eras[eras.length - 1];
-        r.set('page.era', latest);
+        r.set({
+          'page.era': latest,
+        });
       });
     },
   };
