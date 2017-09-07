@@ -66,12 +66,13 @@ class Skills:
     
     
 class BossMetricAnalyser:
-    def __init__(self, agents, subgroups, players, bosses, phases):
+    def __init__(self, agents, subgroups, players, bosses, phases, encounter_end):
         self.agents = agents
         self.subgroups = subgroups
         self.players = players
         self.bosses = bosses
         self.phases = phases
+        self.encounter_end = encounter_end
 
     def standard_count(events):
         return len(events);
@@ -85,7 +86,6 @@ class BossMetricAnalyser:
         return events
 
     def generate_player_buff_times(self, events, players, skillid):
-        # Get Up/Down/Death events
         events = events[(events.skillid == skillid) & (events.buff == 1)].sort_values(by='time')
 
         raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
@@ -105,7 +105,7 @@ class BossMetricAnalyser:
                     data = np.append(data, [[start_time, event.time - start_time]], axis=0)
 
             if active == True:
-                data = np.append(data, [[start_time, encounter_end - start_time]], axis=0)
+                data = np.append(data, [[start_time, self.encounter_end - start_time]], axis=0)
 
             data = np.c_[[player] * data.shape[0], data]
             raw_data = np.r_[raw_data, data]
