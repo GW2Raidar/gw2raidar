@@ -126,7 +126,7 @@ def download(request, id=None):
 
 
 @require_GET
-def index(request, page={ 'name': 'encounters', 'no': 1 }):
+def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
