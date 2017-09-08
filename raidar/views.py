@@ -216,6 +216,7 @@ def encounter(request, url_id=None, json=None):
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
             "id": encounter.id,
+            "url_id": encounter.url_id,
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,

@@ -504,7 +504,7 @@ ${rectSvg.join("\n")}
 
   // test for shenanigans
   $.ajax({
-    url: 'initial',
+    url: 'initial.json',
   }).done(updateRactiveFromResponse);
 
 
@@ -535,6 +535,12 @@ ${rectSvg.join("\n")}
 
 
   r.on({
+    encounter_bug: function encounterBug(x) {
+      let url = r.get('encounter.url_id');
+      r.set('contact.input.subject', `Error report: ${url}`);
+      setPage('info-contact');
+      return false;
+    },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;
 
