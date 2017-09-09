@@ -52,3 +52,8 @@
 [[elseif persistent_page.tab == 'boss_metrics']]
   {% include 'raidar/encounter_boss_metrics.html' %}
 [[/if]]
+
+<p>
+  Found an error?
+  <a href="{% url 'named' name='info-contact' %}" on-click="encounter_bug">Contact us</a>!
+</p>

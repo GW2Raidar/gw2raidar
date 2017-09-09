@@ -208,8 +208,15 @@ ${rectSvg.join("\n")}
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
   const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
-  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
-    initialPage = { name: 'info-help' };
+  if (!window.raidar_data.username) {
+    if (!initialPage.name) {
+      loggedInPage = { name: 'info-releasenotes' };
+      initialPage = { name: 'info-help' };
+    } else if (PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+      initialPage = { name: 'login' };
+    }
+  } else if (!initialPage.name) {
+    initialPage = { name: 'info-releasenotes' };
   }
   let initData = {
     data: window.raidar_data,
@@ -497,7 +504,7 @@ ${rectSvg.join("\n")}
 
   // test for shenanigans
   $.ajax({
-    url: 'initial',
+    url: 'initial.json',
   }).done(updateRactiveFromResponse);
 
 
@@ -528,6 +535,12 @@ ${rectSvg.join("\n")}
 
 
   r.on({
+    encounter_bug: function encounterBug(x) {
+      let url = r.get('encounter.url_id');
+      r.set('contact.input.subject', `Error report: ${url}`);
+      setPage('info-contact');
+      return false;
+    },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;
 
