@@ -29,7 +29,7 @@ BUFF_TYPES = [
         BuffType('Spirit of Frost', 'spirit_of_frost', 12544, StackType.DURATION, 1),
         BuffType('Sun Spirit', 'sun_spirit', 12540, StackType.DURATION, 1),
         BuffType('Stone Spirit', 'stone_spirit', 12547, StackType.DURATION, 1),
-        BuffType('Storm Spirit', 'storm_spirit', -1, StackType.DURATION, 1),
+        BuffType('Storm Spirit', 'storm_spirit', 12549, StackType.DURATION, 1),
         BuffType('Glyph of Empowerment', 'glyph_of_empowerment', 31803, StackType.DURATION, 1),
         BuffType('Grace of the Land', 'gotl', 34062, StackType.INTENSITY, 5),
 
@@ -51,11 +51,14 @@ BUFF_TYPES = [
         BuffType('Soothing Mist', 'soothing_mist', 5587, StackType.DURATION, 1),
 
         # Necro
-        BuffType('Vampiric Presence', 'vampiric_presence', -1, StackType.DURATION, 1),
+        BuffType('Vampiric Presence', 'vampiric_presence', 30285, StackType.DURATION, 1),
     
         # Thief
         BuffType('Lotus Training', 'lotus_training', 32200, StackType.DURATION, 1),
         BuffType('Lead Attacks', 'lead_attacks', 34659, StackType.INTENSITY, 15)
+    
+    #Future boon ids
+    #Aegis - 743
     ]
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }

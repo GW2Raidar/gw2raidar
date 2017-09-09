@@ -161,6 +161,7 @@ class BossMetricAnalyser:
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        teleport_events = self.combine_by_time_range_and_instid(teleport_events, 1000)
         bullet_storm_events = events[(events.skillid == Skills.BULLET_STORM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         self.gather_count_stat('Teleports', collector, True, False, teleport_events)
         self.gather_count_stat('Bullets Eaten', collector, True, False, bullet_storm_events)
