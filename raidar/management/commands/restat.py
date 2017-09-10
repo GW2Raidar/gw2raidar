@@ -11,8 +11,8 @@ from raidar.models import *
 from sys import exit
 from time import time
 import os
-
-
+from evtcparser.parser import AgentType
+from analyser.analyser import Archetype, Elite
 # XXX DEBUG
 # import logging
 # l = logging.getLogger('django.db.backends')
@@ -104,6 +104,7 @@ def navigate(node, *names):
         new_node = new_node[name]
     return new_node
 
+#Automated statistics style:
 def bound_stats(output, name, value):
     maxprop = 'max|' + name
     if maxprop not in output or value > output[maxprop]:
@@ -113,6 +114,11 @@ def bound_stats(output, name, value):
     if minprop not in output or value < output[minprop]:
         output[minprop] = value
 
+def advanced_stats(output, name, value):
+    l = output.get('values|' + name, [])
+    l.append(value)
+    output['values|' + name] = l
+
 def all_stats(output, name, value):
     find_bounds(output, name, value)
     average_stat(output, name, value)
@@ -120,6 +126,37 @@ def all_stats(output, name, value):
 def average_stat(output, name, value):
     output['avgsum|' + name] = output.get('avgsum|' + name, 0) + value
     output['avgnum|' + name] = output.get('avgnum|' + name, 0) + 1
+
+def finalise_stats(node):
+    try:
+        for key in list(node):
+            sections = str(key).split('|')
+            if sections[0] == 'avgsum':
+                node['avg_' + sections[1]] = node[key]/node['avgnum|' + sections[1]]
+                del node['avgsum|' + sections[1]]
+                del node['avgnum|' + sections[1]]
+            if sections[0] == 'values':
+                values = node[key]
+                def percentile(n):
+                    i, p = divmod((len(values)-1) * n, 100)
+                    n = values[i]
+                    if(p > 0):
+                        n = ((n * (100-p)) + (values[i+1] * p))/100
+                    return n
+                values.sort()
+                node['avg_' + sections[1]] = sum(values) / len(values)
+                node['min_' + sections[1]] = values[0]
+                node['max_' + sections[1]] = values[-1]
+                #node['p_' + sections[1]] = list(map(percentile, range(0, 100)))
+                node['p10_' + sections[1]] = percentile(10)
+                node['p25_' + sections[1]] = percentile(25)
+                node['p50_' + sections[1]] = percentile(50)
+                node['p75_' + sections[1]] = percentile(75)
+                node['p90_' + sections[1]] = percentile(90)
+            elif key in node:
+                finalise_stats(node[key])
+    except TypeError as e:
+        pass
 
 def calculate_average(hash, prop):
     if prop in hash:
@@ -159,8 +196,15 @@ class Command(BaseCommand):
             # TODO: don't recalculate eras with no uploads
             totals = {
                 "area": {},
-                "user": {},
+                "user": {}
             }
+
+            global_stats = {}
+
+            def calculate(l, f, *args):
+                for t in l:
+                    f(t, *args)
+
             era_queryset = era.encounters.all()
             buffs = set()
             for encounter in queryset_iterator(era_queryset):
@@ -170,6 +214,24 @@ class Command(BaseCommand):
                     data = json_loads(encounter.dump)
                     duration = data['Category']['encounter']['duration'] * 1000
                     for participation in participations:
+                        try:
+                            player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                            #data dump stats...
+                            target = navigate(global_stats,
+                                              'encounter', encounter.area_id,
+                                              'archetype', participation.archetype,
+                                              'profession', participation.character.profession,
+                                              'elite', participation.elite)
+                            targets = [target]
+                            stats_in_phase_to_all = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*All'], {})
+                            stats_in_phase_to_boss = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
+
+                            calculate(targets, get_and_add, 'count', 1)
+                            calculate(targets, advanced_stats, 'dps', _safe_get(lambda: stats_in_phase_to_all['dps']))
+                            calculate(targets, advanced_stats, 'boss_dps', _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+                        except Exception as e:
+                            print("Could not gather stats from encounter for global stats calculations.", e)
+
                         try:
                             player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
                             user_id = participation.character.account.user_id
@@ -195,9 +257,7 @@ class Command(BaseCommand):
                             stats_in_phase_to_all = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*All'], {})
                             stats_in_phase_events = player_stats['Metrics']['events']
 
-                            def calculate(l, f, *args):
-                                for t in l:
-                                    f(t, *args)
+
 
                             breakdown = [player_this_build,
                                         player_this_archetype,
@@ -350,7 +410,6 @@ class Command(BaseCommand):
                                 if encounter.success:
                                     get_or_create_then_increment(buffs_by_archetype, buff, value)
                                 find_bounds(buffs_by_archetype, buff, value)
-
                 except:
                     raise RestatException("Error in %s" % encounter)
 
@@ -397,20 +456,21 @@ class Command(BaseCommand):
             if None in totals['user']:
                 del totals['user'][None]
 
-            for user_id, totals_for_player in totals['user'].items():
-                def finalise_stats(node):
-                    try:
-                        for key in list(node):
-                            sections = str(key).split('|')
-                            if sections[0] == 'avgsum':
-                                node['avg_' + sections[1]] = node[key]/node['avgnum|' + sections[1]]
-                                del node['avgsum|' + sections[1]]
-                                del node['avgnum|' + sections[1]]
-                            elif key in node:
-                                finalise_stats(node[key])
-                    except TypeError:
-                        pass
+            finalise_stats(global_stats)
+            keys = ['encounter','archetype','profession','elite']
+            values = ['count','avg_dps','p50_dps','p75_dps','p90_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps']
+            print(",".join(keys+values))
+            for e, g1 in global_stats[keys[0]].items():
+                for a, g2 in g1[keys[1]].items():
+                    for p, g3 in g2[keys[2]].items():
+                        for l, g4 in g3[keys[3]].items():
+                            try:
+                                print(",".join([AgentType(e).name,Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: str(g4[k]), values))))
+                            except ValueError:
+                                pass
 
+
+            for user_id, totals_for_player in totals['user'].items():
                 finalise_stats(totals_for_player)
 
                 if options['verbosity'] >= 3:
@@ -421,6 +481,7 @@ class Command(BaseCommand):
 
                 EraUserStore.objects.update_or_create(
                         era=era, user_id=user_id, defaults={ "val": totals_for_player })
+
 
             if options['verbosity'] >= 2:
                 import pprint
