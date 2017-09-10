@@ -182,6 +182,12 @@ class Command(BaseCommand):
             default=False,
             help='Force calculation even if no new Encounters')
 
+        parser.add_argument('-g', '--global',
+                            action='store_true',
+                            dest='calculate_global',
+                            default=False,
+                            help='Calculates global statistics in greater detail')
+
     def handle(self, *args, **options):
         with single_process('restat'), necessary(options['force']) as last_run:
             start = time()
@@ -219,43 +225,44 @@ class Command(BaseCommand):
                     duration = data['Category']['encounter']['duration'] * 1000
 
                     try:
-                        target = navigate(global_stats, 'encounter', encounter.area_id)
-                        targets = [target]
+                        if options ['calculate_global']:
+                            target = navigate(global_stats, 'encounter', encounter.area_id)
+                            targets = [target]
 
-                        stats = data['Category']['combat']['Phase']['All']['Subgroup']['*All']
-                        stats_in_phase_to_all = _safe_get(
-                            lambda: stats['Metrics']['damage']['To']['*All'], {})
-                        stats_in_phase_to_boss = _safe_get(
-                            lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+                            stats = data['Category']['combat']['Phase']['All']['Subgroup']['*All']
+                            stats_in_phase_to_all = _safe_get(
+                                lambda: stats['Metrics']['damage']['To']['*All'], {})
+                            stats_in_phase_to_boss = _safe_get(
+                                lambda: stats['Metrics']['damage']['To']['*Boss'], {})
 
-                        calculate(targets, get_and_add, 'count', 1)
-                        calculate(targets, advanced_stats, 'time',
-                                  _safe_get(lambda: stats_in_phase_to_all['dps']))
-                        calculate(targets, advanced_stats, 'dps',
-                                  _safe_get(lambda: stats_in_phase_to_all['dps']))
-                        calculate(targets, advanced_stats, 'boss_dps',
-                                  _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+                            calculate(targets, get_and_add, 'count', 1)
+                            calculate(targets, advanced_stats, 'time',
+                                      _safe_get(lambda: stats_in_phase_to_all['dps']))
+                            calculate(targets, advanced_stats, 'dps',
+                                      _safe_get(lambda: stats_in_phase_to_all['dps']))
+                            calculate(targets, advanced_stats, 'boss_dps',
+                                      _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
 
-                        for participation in participations:
-                            if(encounter.success):
-                                player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
-                                #data dump stats...
-                                target = navigate(global_stats,
-                                                  'encounter', encounter.area_id,
-                                                  'archetype', participation.archetype,
-                                                  'profession', participation.character.profession,
-                                                  'elite', participation.elite)
-                                targets = [target]
-                                stats_in_phase_to_all = _safe_get(
-                                    lambda: player_stats['Metrics']['damage']['To']['*All'], {})
-                                stats_in_phase_to_boss = _safe_get(
-                                    lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
+                            for participation in participations:
+                                if(encounter.success):
+                                    player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                                    #data dump stats...
+                                    target = navigate(global_stats,
+                                                      'encounter', encounter.area_id,
+                                                      'archetype', participation.archetype,
+                                                      'profession', participation.character.profession,
+                                                      'elite', participation.elite)
+                                    targets = [target]
+                                    stats_in_phase_to_all = _safe_get(
+                                        lambda: player_stats['Metrics']['damage']['To']['*All'], {})
+                                    stats_in_phase_to_boss = _safe_get(
+                                        lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
 
-                                calculate(targets, get_and_add, 'count', 1)
-                                calculate(targets, advanced_stats, 'dps',
-                                          _safe_get(lambda: stats_in_phase_to_all['dps']))
-                                calculate(targets, advanced_stats, 'boss_dps',
-                                          _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+                                    calculate(targets, get_and_add, 'count', 1)
+                                    calculate(targets, advanced_stats, 'dps',
+                                              _safe_get(lambda: stats_in_phase_to_all['dps']))
+                                    calculate(targets, advanced_stats, 'boss_dps',
+                                              _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
                     except Exception as e:
                         print("Could not gather stats from encounter for global stats calculations.", e)
 
@@ -486,42 +493,35 @@ class Command(BaseCommand):
             if None in totals['user']:
                 del totals['user'][None]
 
-#
-    #Encounter time
-   # Squad DPS
-   # Squad DPS to Boss
-   # Number of people in squad (just minimum is fine or do a bin count of min to 10)
+            if options['calculate_global']:
+                finalise_stats(global_stats)
+                keys = ['encounter']
+                values = ['count',
+                          'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
+                          'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                          'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
 
+                print(",".join(keys+values))
+                for e, g1 in global_stats[keys[0]].items():
+                    try:
+                        print(",".join([AgentType(e).name] + list(map(lambda k: str(g1[k]), values))))
+                    except ValueError:
+                        pass
 
-            finalise_stats(global_stats)
-            keys = ['encounter']
-            values = ['count',
-                      'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
-                      'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
-                      'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                keys = ['encounter','archetype','profession','elite']
+                values = ['count',
+                          'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                          'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
 
-            print(",".join(keys+values))
-            for e, g1 in global_stats[keys[0]].items():
-                try:
-                    print(",".join([AgentType(e).name] + list(map(lambda k: str(g1[k]), values))))
-                except ValueError:
-                    pass
-
-            keys = ['encounter','archetype','profession','elite']
-            values = ['count',
-                      'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
-                      'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
-
-            print(",".join(keys+values))
-            for e, g1 in global_stats[keys[0]].items():
-                for a, g2 in g1[keys[1]].items():
-                    for p, g3 in g2[keys[2]].items():
-                        for l, g4 in g3[keys[3]].items():
-                            try:
-                                print(",".join([AgentType(e).name,Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: str(g4[k]), values))))
-                            except ValueError:
-                                pass
-
+                print(",".join(keys+values))
+                for e, g1 in global_stats[keys[0]].items():
+                    for a, g2 in g1[keys[1]].items():
+                        for p, g3 in g2[keys[2]].items():
+                            for l, g4 in g3[keys[3]].items():
+                                try:
+                                    print(",".join([AgentType(e).name,Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: str(g4[k]), values))))
+                                except ValueError:
+                                    pass
 
             for user_id, totals_for_player in totals['user'].items():
                 finalise_stats(totals_for_player)
