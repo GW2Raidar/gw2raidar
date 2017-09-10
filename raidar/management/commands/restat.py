@@ -494,6 +494,7 @@ class Command(BaseCommand):
                 del totals['user'][None]
 
             if options['calculate_global']:
+                global_stats_file = open('global_stats.csv', 'w')
                 finalise_stats(global_stats)
                 keys = ['encounter']
                 values = ['count',
@@ -501,10 +502,11 @@ class Command(BaseCommand):
                           'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
                           'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
 
-                print(",".join(keys+values))
+                print(",".join(keys+values), file=global_stats_file)
                 for e, g1 in global_stats[keys[0]].items():
                     try:
-                        print(",".join([AgentType(e).name] + list(map(lambda k: str(g1[k]), values))))
+                        print(",".join([AgentType(e).name] + list(map(lambda k: str(g1[k]), values))),
+                              file=global_stats_file)
                     except ValueError:
                         pass
 
@@ -513,13 +515,15 @@ class Command(BaseCommand):
                           'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
                           'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
 
-                print(",".join(keys+values))
+                print(",".join(keys+values),
+                              file=global_stats_file)
                 for e, g1 in global_stats[keys[0]].items():
                     for a, g2 in g1[keys[1]].items():
                         for p, g3 in g2[keys[2]].items():
                             for l, g4 in g3[keys[3]].items():
                                 try:
-                                    print(",".join([AgentType(e).name,Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: str(g4[k]), values))))
+                                    print(",".join([AgentType(e).name,Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: str(g4[k]), values))),
+                              file=global_stats_file)
                                 except ValueError:
                                     pass
 
