@@ -236,8 +236,7 @@ class Command(BaseCommand):
                                 lambda: stats['Metrics']['damage']['To']['*Boss'], {})
 
                             calculate(targets, get_and_add, 'count', 1)
-                            calculate(targets, advanced_stats, 'time',
-                                      _safe_get(lambda: stats_in_phase_to_all['dps']))
+                            calculate(targets, advanced_stats, 'time', duration)
                             calculate(targets, advanced_stats, 'dps',
                                       _safe_get(lambda: stats_in_phase_to_all['dps']))
                             calculate(targets, advanced_stats, 'boss_dps',
