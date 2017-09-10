@@ -213,24 +213,50 @@ class Command(BaseCommand):
                 try:
                     data = json_loads(encounter.dump)
                     duration = data['Category']['encounter']['duration'] * 1000
-                    for participation in participations:
-                        try:
-                            player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
-                            #data dump stats...
-                            target = navigate(global_stats,
-                                              'encounter', encounter.area_id,
-                                              'archetype', participation.archetype,
-                                              'profession', participation.character.profession,
-                                              'elite', participation.elite)
-                            targets = [target]
-                            stats_in_phase_to_all = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*All'], {})
-                            stats_in_phase_to_boss = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
 
-                            calculate(targets, get_and_add, 'count', 1)
-                            calculate(targets, advanced_stats, 'dps', _safe_get(lambda: stats_in_phase_to_all['dps']))
-                            calculate(targets, advanced_stats, 'boss_dps', _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
-                        except Exception as e:
-                            print("Could not gather stats from encounter for global stats calculations.", e)
+                    try:
+                        target = navigate(global_stats, 'encounter', encounter.area_id)
+                        targets = [target]
+
+                        stats = data['Category']['combat']['Phase']['All']['Subgroup']['*All']
+                        stats_in_phase_to_all = _safe_get(
+                            lambda: stats['Metrics']['damage']['To']['*All'], {})
+                        stats_in_phase_to_boss = _safe_get(
+                            lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+
+                        calculate(targets, get_and_add, 'count', 1)
+                        calculate(targets, advanced_stats, 'time',
+                                  _safe_get(lambda: stats_in_phase_to_all['dps']))
+                        calculate(targets, advanced_stats, 'dps',
+                                  _safe_get(lambda: stats_in_phase_to_all['dps']))
+                        calculate(targets, advanced_stats, 'boss_dps',
+                                  _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+
+                        for participation in participations:
+                            if(encounter.success):
+                                player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                                #data dump stats...
+                                target = navigate(global_stats,
+                                                  'encounter', encounter.area_id,
+                                                  'archetype', participation.archetype,
+                                                  'profession', participation.character.profession,
+                                                  'elite', participation.elite)
+                                targets = [target]
+                                stats_in_phase_to_all = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*All'], {})
+                                stats_in_phase_to_boss = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
+
+                                calculate(targets, get_and_add, 'count', 1)
+                                calculate(targets, advanced_stats, 'dps',
+                                          _safe_get(lambda: stats_in_phase_to_all['dps']))
+                                calculate(targets, advanced_stats, 'boss_dps',
+                                          _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+                    except Exception as e:
+                        print("Could not gather stats from encounter for global stats calculations.", e)
+
+
+                    for participation in participations:
 
                         try:
                             player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
@@ -456,9 +482,32 @@ class Command(BaseCommand):
             if None in totals['user']:
                 del totals['user'][None]
 
+#
+    #Encounter time
+   # Squad DPS
+   # Squad DPS to Boss
+   # Number of people in squad (just minimum is fine or do a bin count of min to 10)
+
+
             finalise_stats(global_stats)
+            keys = ['encounter']
+            values = ['count',
+                      'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
+                      'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                      'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+
+            print(",".join(keys+values))
+            for e, g1 in global_stats[keys[0]].items():
+                try:
+                    print(",".join([AgentType(e).name] + list(map(lambda k: str(g1[k]), values))))
+                except ValueError:
+                    pass
+
             keys = ['encounter','archetype','profession','elite']
-            values = ['count','avg_dps','p50_dps','p75_dps','p90_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps']
+            values = ['count',
+                      'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                      'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+
             print(",".join(keys+values))
             for e, g1 in global_stats[keys[0]].items():
                 for a, g2 in g1[keys[1]].items():
