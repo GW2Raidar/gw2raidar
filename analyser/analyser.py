@@ -256,7 +256,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty
+        success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
 
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
