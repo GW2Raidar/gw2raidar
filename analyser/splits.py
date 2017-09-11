@@ -74,7 +74,7 @@ def split_by_phase(collector, method, events, phases):
         collector.set_context_value(ContextType.DURATION, duration)
         collector.with_key(Group.PHASE, name).run(method, phase_events)
 
-    collect_phase("All", events)
+    collect_phase("All", events, float(events['time'].max() - events['time'].min()) / 1000.0)
 
     #Yes, this lists each phase individually even if there is only one
     #That's for consistency for things like:
