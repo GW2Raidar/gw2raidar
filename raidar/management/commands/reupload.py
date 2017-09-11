@@ -46,8 +46,9 @@ class Command(BaseCommand):
         for filename in files:
             try:
                 with open(filename + '.error', 'r') as f:
-                    orig_name, username = f.readline().rstrip().split(' ', 1)
-                    username = username[1:-1]
+                    match = re.match(r"(.*) \((.*?)\)", f.readline().rstrip())
+                    orig_name = match.group(1)
+                    username = match.group(2)
             except FileNotFoundError:
                 continue
 
