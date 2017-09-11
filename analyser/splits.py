@@ -84,7 +84,7 @@ def split_by_phase(collector, method, events, phases):
     for i in range(0,len(phases)):
         phase = phases[i]
         phase_events = events[(events.time >= phase[1]) & (events.time <= phase[2])]
-        collect_phase(phase[0], phase_events, phase[2] - phase[1])
+        collect_phase(phase[0], phase_events, (phase[2] - phase[1]) / 1000.0)
 
 def split_by_player_groups(collector, method, events, player_column, subgroups, players):
     collector.with_key(Group.SUBGROUP, "*All").run(method, events)
