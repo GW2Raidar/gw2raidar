@@ -23,7 +23,7 @@ class EncounterAdmin(admin.ModelAdmin):
         return format_html("<a href='../../../encounter/{url_id}'>{url_id}</a>", url_id=obj.url_id)
     url_id_link.short_description = "Link"
 
-    search_fields = ('url_id', 'filename', 'characters__name', 'characters__account__name', 'characters__account__user__username')
+    search_fields = ('url_id', 'filename', 'area__name', 'characters__name', 'characters__account__name', 'characters__account__user__username')
     list_display = ('filename', 'url_id_link', 'area', 'success', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
     inlines = (ParticipationInline,)
     readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_at', 'uploaded_by', 'area', 'filename')

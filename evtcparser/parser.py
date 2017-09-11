@@ -46,7 +46,6 @@ class AgentType(IntEnum):
     MESMER = 7
     NECROMANCER = 8
     REVENANT = 9
-    MURSAAT_OVERSEER = 17172
 
     def is_player(self):
         return AgentType.GUARDIAN <= self <= AgentType.REVENANT

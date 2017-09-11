@@ -66,12 +66,13 @@ class Skills:
     
     
 class BossMetricAnalyser:
-    def __init__(self, agents, subgroups, players, bosses, phases):
+    def __init__(self, agents, subgroups, players, bosses, phases, encounter_end):
         self.agents = agents
         self.subgroups = subgroups
         self.players = players
         self.bosses = bosses
         self.phases = phases
+        self.encounter_end = encounter_end
 
     def standard_count(events):
         return len(events);
@@ -85,7 +86,6 @@ class BossMetricAnalyser:
         return events
 
     def generate_player_buff_times(self, events, players, skillid):
-        # Get Up/Down/Death events
         events = events[(events.skillid == skillid) & (events.buff == 1)].sort_values(by='time')
 
         raw_data = np.array([np.arange(0, dtype=int)] * 3, dtype=int).T
@@ -105,7 +105,7 @@ class BossMetricAnalyser:
                     data = np.append(data, [[start_time, event.time - start_time]], axis=0)
 
             if active == True:
-                data = np.append(data, [[start_time, encounter_end - start_time]], axis=0)
+                data = np.append(data, [[start_time, self.encounter_end - start_time]], axis=0)
 
             data = np.c_[[player] * data.shape[0], data]
             raw_data = np.r_[raw_data, data]
@@ -161,6 +161,7 @@ class BossMetricAnalyser:
 
     def gather_vg_stats(self, events, collector):
         teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
+        teleport_events = self.combine_by_time_range_and_instid(teleport_events, 1000)
         bullet_storm_events = events[(events.skillid == Skills.BULLET_STORM) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         self.gather_count_stat('Teleports', collector, True, False, teleport_events)
         self.gather_count_stat('Bullets Eaten', collector, True, False, bullet_storm_events)
@@ -344,6 +345,7 @@ class BossMetricAnalyser:
         fixate_events = events[(events.skillid == Skills.SAMAROG_FIXATE) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
         small_friend_events = events[(events.skillid == Skills.SMALL_FRIEND) & events.dst_instid.isin(self.players.index) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         big_friend_events = events[(events.skillid == Skills.BIG_FRIEND) & events.dst_instid.isin(self.players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+        spear_impact_events = events[(events.skillid == Skills.SPEAR_IMPACT) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
         
         self.gather_count_stat('Claw', collector, True, True, claw_events)
         self.gather_count_stat('Shockwave', collector, True, True, shockwave_events)
@@ -355,6 +357,7 @@ class BossMetricAnalyser:
         self.gather_count_stat('Fixate', collector, True, True, fixate_events)
         self.gather_count_stat('Small Friend', collector, True, True, small_friend_events)
         self.gather_count_stat('Big Friend', collector, True, True, big_friend_events)
+        self.gather_count_stat('Spear Impact', collector, True, True, spear_impact_events)
         
     def gather_deimos_stats(self, events, collector):
         annihilate_events = events[(events.skillid == Skills.ANNIHILATE) & events.dst_instid.isin(self.players.index) & (events.value > 0)]
