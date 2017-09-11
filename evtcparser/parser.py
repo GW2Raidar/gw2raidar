@@ -46,7 +46,6 @@ class AgentType(IntEnum):
     MESMER = 7
     NECROMANCER = 8
     REVENANT = 9
-    MURSAAT_OVERSEER = 17172
 
     def is_player(self):
         return AgentType.GUARDIAN <= self <= AgentType.REVENANT
@@ -215,7 +214,7 @@ class Encounter:
     def __init__(self, file):
         try:
             self._read_header(file)
-            if self.version < "20170808":
+            if self.version < "20170419":
                 raise EvtcParseException('Unsupported EVTC version')
             self._read_agents(file)
             self._read_skills(file)

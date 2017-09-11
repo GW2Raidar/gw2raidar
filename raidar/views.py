@@ -126,7 +126,7 @@ def download(request, id=None):
 
 
 @require_GET
-def index(request, page={ 'name': 'encounters', 'no': 1 }):
+def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
@@ -216,6 +216,7 @@ def encounter(request, url_id=None, json=None):
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
             "id": encounter.id,
+            "url_id": encounter.url_id,
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,
@@ -313,6 +314,9 @@ def register(request):
     gw2api = GW2API(api_key)
 
     try:
+        token_info = gw2api.query("/tokeninfo")
+        if 'gw2raidar' not in token_info['name'].lower():
+            return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
         return _error(e)
@@ -454,8 +458,11 @@ def contact(request):
 def add_api_key(request):
     api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
-
+    
     try:
+        token_info = gw2api.query("/tokeninfo")
+        if 'gw2raidar' not in token_info['name'].lower():
+            return _error("Your api key must be named 'gw2raidar'.")
         gw2_account = gw2api.query("/account")
     except GW2APIException as e:
         return _error(e)
@@ -476,7 +483,7 @@ def add_api_key(request):
                 key_id = "ending in '%s'" % api_key[-4:]
             new_key = "" if account.api_key != api_key else " and generate a new key"
 
-            return _error("This account is registered to another user. To confirm this account is yours, please invalidate the key %s%s." % (key_id, new_key))
+            return _error("This GW2 account is registered to another user. To prove it is yours, please invalidate the key %s%s." % (key_id, new_key))
         except GW2APIException as e:
             # Old key is invalid, reassign OK
             pass

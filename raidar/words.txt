@@ -4208,10 +4208,6 @@ fruits
 frustration
 frustrations
 ft
-fuck
-fucked
-fucking
-fucks
 fuel
 fuels
 fulfil
@@ -8664,8 +8660,6 @@ shipping
 ships
 shirt
 shirts
-shit
-shits
 shiver
 shivered
 shivering

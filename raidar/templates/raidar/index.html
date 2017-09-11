@@ -143,13 +143,17 @@
                 <div class="uk-margin">
                   <div class="uk-inline">
                     <a class="uk-form-icon uk-form-icon-flip" href="https://account.arena.net/applications" uk-icon="icon: link" target="gw2apps"></a>
-                    <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="GW2 API key" autocomplete="off" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')">
+                    <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="'gw2raidar' API key" autocomplete="off" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')">
                   </div>
                 </div>
                 <div class="uk-margin">
                   <button id="register_submit" class="uk-button uk-button-default" on-click="auth_register" >Register</button><br>
                 </div>
               </form>
+
+              <p>
+                For security reasons, please make sure that you use an API key specifically generated for GW2Raidar: the key needs to contain "<em>GW2Raidar</em>" (case insensitive) in its name. For example, here are some valid API key names: "The key for GW2Raidar", "http://gw2raidar.com/", "GW2Raidar".
+              </p>
 
             [[elseif page.name == "reset_pw"]]
 
