@@ -234,7 +234,7 @@ class Command(BaseCommand):
                     duration = data['Category']['encounter']['duration'] * 1000
 
                     try:
-                        if options ['calculate_global']:
+                        if options ['calculate_global'] and encounter.success:
                             target = navigate(global_stats, 'encounter', encounter.area_id)
                             targets = [target]
 
@@ -252,25 +252,24 @@ class Command(BaseCommand):
                                       _safe_get(lambda: stats_in_phase_to_boss['dps']))
 
                             for participation in participations:
-                                if(encounter.success):
-                                    player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
-                                    #data dump stats...
-                                    target = navigate(global_stats,
-                                                      'encounter', encounter.area_id,
-                                                      'archetype', participation.archetype,
-                                                      'profession', participation.character.profession,
-                                                      'elite', participation.elite)
-                                    targets = [target]
-                                    stats_in_phase_to_all = _safe_get(
-                                        lambda: player_stats['Metrics']['damage']['To']['*All'], {})
-                                    stats_in_phase_to_boss = _safe_get(
-                                        lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
+                                player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                                #data dump stats...
+                                target = navigate(global_stats,
+                                                  'encounter', encounter.area_id,
+                                                  'archetype', participation.archetype,
+                                                  'profession', participation.character.profession,
+                                                  'elite', participation.elite)
+                                targets = [target]
+                                stats_in_phase_to_all = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*All'], {})
+                                stats_in_phase_to_boss = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
 
-                                    calculate(targets, get_and_add, 'count', 1)
-                                    calculate(targets, advanced_stats, 'dps',
-                                              _safe_get(lambda: stats_in_phase_to_all['dps']))
-                                    calculate(targets, advanced_stats, 'boss_dps',
-                                              _safe_get(lambda: stats_in_phase_to_boss['dps']))
+                                calculate(targets, get_and_add, 'count', 1)
+                                calculate(targets, advanced_stats, 'dps',
+                                          _safe_get(lambda: stats_in_phase_to_all['dps']))
+                                calculate(targets, advanced_stats, 'boss_dps',
+                                          _safe_get(lambda: stats_in_phase_to_boss['dps']))
                     except Exception as e:
                         print("Could not gather stats from encounter for global stats calculations.", e)
 
