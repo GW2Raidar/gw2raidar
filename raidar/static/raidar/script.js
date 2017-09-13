@@ -221,6 +221,7 @@ ${rectSvg.join("\n")}
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
+    privacy: window.raidar_data.privacy,
     is_staff: window.raidar_data.is_staff,
     page: initialPage,
     persistent_page: { tab: 'combat_stats' },
@@ -727,6 +728,17 @@ ${rectSvg.join("\n")}
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
       return false;
+    },
+    privacy: function privacy(evt) {
+      let privacy = r.get('privacy');
+      $.post({
+        url: 'privacy.json',
+        data: {
+          privacy: privacy,
+        },
+      }).done(() => {
+        notification('Privacy updated.', 'success');
+      });
     },
   });
 

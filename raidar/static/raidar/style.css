@@ -94,3 +94,10 @@ input[type="date"] {
 input:invalid, textarea:invalid {
   border: 1px dashed red !important;
 }
+
+.private {
+  background-color: #000000;
+  color: #ffffff;
+  transform: rotate(-5deg);
+  display: inline-block;
+}
