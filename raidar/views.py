@@ -218,7 +218,7 @@ def encounter(request, url_id=None, json=None):
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
             if user_profile:
                 privacy = user_profile[0].privacy
-                if not member['self'] and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
                     member['name'] = ''
                     member['account'] = ''
 
