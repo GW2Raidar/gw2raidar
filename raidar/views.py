@@ -90,6 +90,7 @@ def _html_response(request, page, data={}):
     response['page'] = page
     response['debug'] = settings.DEBUG
     response['version'] = settings.VERSION
+    response['privacy'] = request.user.user_profile.privacy
     if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
@@ -213,9 +214,11 @@ def encounter(request, url_id=None, json=None):
             }
 
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
-            if user_profile and user_profile[0].private:
-                member['name'] = ''
-                member['account'] = ''
+            if user_profile:
+                privacy = user_profile[0].privacy
+                if privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names):
+                    member['name'] = ''
+                    member['account'] = ''
 
     data = {
         "encounter": {
