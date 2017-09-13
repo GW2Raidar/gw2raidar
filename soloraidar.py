@@ -2,6 +2,7 @@ __author__ = "Toeofdoom"
 
 import time
 import sys
+import os.path
 from evtcparser import *
 from analyser import *
 from enum import IntEnum
@@ -76,7 +77,7 @@ def main():
             print("Analyser took {0} seconds".format(time.clock() - start))
 
             start = time.clock()
-            with open('Output/'+filename+'.txt','w') as output_file:
+            with open('Output/'+os.path.basename(filename)+'.txt','w') as output_file:
                 flattened = flatten(a.data)
                 for key in sorted(flattened.keys()):
                     if "-s" not in sys.argv:
