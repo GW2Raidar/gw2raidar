@@ -7,6 +7,9 @@
 # test data
 /TestLogs
 
+# soloraidar output
+/Output
+
 # IntelliJ IDEA
 .idea
 

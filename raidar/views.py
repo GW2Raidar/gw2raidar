@@ -212,6 +212,11 @@ def encounter(request, url_id=None, json=None):
                 } for phase in phases
             }
 
+            user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
+            if user_profile and user_profile[0].private:
+                member['name'] = ''
+                member['account'] = ''
+
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
