@@ -419,6 +419,14 @@ def poll(request):
 
 @login_required
 @require_POST
+def privacy(request):
+    profile = request.user.user_profile
+    profile.privacy = int(request.POST.get('privacy'))
+    profile.save()
+    return JsonResponse({})
+
+@login_required
+@require_POST
 def change_email(request):
     request.user.email = request.POST.get('email')
     request.user.save()
