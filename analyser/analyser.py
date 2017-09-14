@@ -155,7 +155,8 @@ class Analyser:
         boss_power_events = boss_power_events.assign(delta = deltas)
         #print_frame(boss_power_events[boss_power_events.delta >= 1000])
         #construct frame of all health updates from the boss
-        health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
+        health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
+        & (from_boss_events.dst_agent > 0)]
         #print_frame(health_updates)
 
         #construct frame of all boss skill activations

@@ -192,7 +192,7 @@ class Encounter:
         agent_map = agent_map.sort_values(by='time')
         agent_map.drop_duplicates(subset='addr',inplace=True)
         agent_map.insert(0, 'new_id', range(1, 1 + len(agent_map)))
-        
+
         del self.events['src_instid']
         del self.events['dst_instid']
         self.events = pd.merge(left=self.events,right=agent_map[['addr', 'new_id']].rename(columns={'addr' : 'src_agent', 'new_id' : 'src_instid'}), how='left', left_on='src_agent', right_on='src_agent')
