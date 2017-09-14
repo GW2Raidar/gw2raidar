@@ -199,6 +199,7 @@ def encounter(request, url_id=None, json=None):
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
+    private = False
     for party_no, party in parties.items():
         for member in party['members']:
             if member['account'] in own_account_names:
@@ -221,6 +222,7 @@ def encounter(request, url_id=None, json=None):
                 if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
                     member['name'] = ''
                     member['account'] = ''
+                    private = True
 
     data = {
         "encounter": {
@@ -252,13 +254,14 @@ def encounter(request, url_id=None, json=None):
             "parties": parties,
         }
     }
-    if encounter.gdrive_url:
-        data['encounter']['evtc_url'] = encounter.gdrive_url;
-    # XXX relic TODO remove once we fully cross to GDrive?
-    if hasattr(settings, 'UPLOAD_DIR'):
-        path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
-        if isfile(path):
-            data['encounter']['downloadable'] = True
+    if not private:
+        if encounter.gdrive_url:
+            data['encounter']['evtc_url'] = encounter.gdrive_url;
+        # XXX relic TODO remove once we fully cross to GDrive?
+        if hasattr(settings, 'UPLOAD_DIR'):
+            path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
+            if isfile(path):
+                data['encounter']['downloadable'] = True
 
     if json:
         return JsonResponse(data)
