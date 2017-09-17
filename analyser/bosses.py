@@ -30,7 +30,7 @@ class Metric:
         return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
-    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False):
+    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None):
         self.name = name
         self.kind = kind
         self.boss_ids = boss_ids
@@ -40,6 +40,7 @@ class Boss:
         self.key_npc_ids = [] if key_npc_ids is None else key_npc_ids
         self.despawns_instead_of_dying = despawns_instead_of_dying
         self.has_structure_boss = has_structure_boss
+        self.success_health_limit = success_health_limit
 
 class Phase:
     def __init__(self, name, important,
@@ -185,7 +186,7 @@ BOSS_ARRAY = [
         Metric('Gaining Power', 'Power Gained', MetricType.COUNT, False, False),
         Metric('Magic Blast Intensity', 'Orbs Missed', MetricType.COUNT, False, False)
     ]),
-    Boss('Xera', Kind.RAID, [0x3F76, 0x3F9E], despawns_instead_of_dying = True, phases = [
+    Boss('Xera', Kind.RAID, [0x3F76, 0x3F9E], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
         Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),

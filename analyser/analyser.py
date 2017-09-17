@@ -197,7 +197,7 @@ class Analyser:
         print("Important phases:")
         list(map(print_phase, self.phases))
 
-        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events
+        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
 
     def preprocess_skills(self, skills, collector):
         collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
@@ -217,16 +217,19 @@ class Analyser:
 
                                     ])
 
+
+
         #print_frame(encounter.duplicate_id_agents)
 
         #set up data structures
         events = assign_event_types(encounter.events)
+
         agents = encounter.agents
         skills = encounter.skills
         players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
         self.preprocess_skills(skills, collector)
         self.players = players
-        player_src_events, player_dst_events, boss_events, final_boss_events = self.preprocess_events(events)
+        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
 
         #time constraints
@@ -257,7 +260,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
+
 
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
@@ -267,17 +270,7 @@ class Analyser:
             phase_collector.add_data('end_tick', phase[2], int)
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
 
-        #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
-        if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
-            end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
-            key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
-            if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
-                dead_players = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
-                                                 (player_src_events.state_change.isin(end_state_changes))].src_instid.unique()
-                surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))
-                if surviving_players:
-                    success = True
-
+        success = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
         encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
@@ -534,3 +527,34 @@ class Analyser:
                 collector.add_data(None, mean)
             else:
                 collector.add_data(None, mean, percentage)
+
+    def determine_success(self, events, final_boss_events, player_src_events, encounter, health_updates):
+        success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
+        print("Death detected: {0}".format(success))
+        #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
+        if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
+            end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
+            key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
+            if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
+                dead_players = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
+                                                 (player_src_events.state_change.isin(end_state_changes))].src_instid.unique()
+                surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))
+                if surviving_players:
+                    success = True
+            print("Probable death of despawn-only boss detected: {0}".format(success))
+
+        if (self.boss_info.success_health_limit is not None and
+                health_updates[health_updates.dst_agent <= (self.boss_info.success_health_limit * 100)].empty):
+            success = False
+            print("Success changed due to health still being too high: {0}".format(success))
+
+        print_frame(events[events.state_change == parser.StateChange.REWARD][['value', 'src_agent', 'dst_agent']])
+
+        if encounter.version >= '20170905':
+            success_types = [55821, 60685]
+            success = not events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].empty
+
+            print("Success overridden by reward chest logging: {0}".format(success))
+
+        return success
