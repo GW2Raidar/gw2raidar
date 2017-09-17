@@ -66,9 +66,8 @@ BUFFS = { buff.name: buff for buff in BUFF_TYPES }
 class BuffTrackIntensity:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type
-        self.stack_end_times = []
-        self.data = np.array([np.arange(0)] * 4).T
-        self.data = np.append(self.data, [[encounter_start, 0, 0, 0]], axis=0)
+        self.stacks = {}
+        self.data = [[encounter_start, 0, 0, 0]]
         self.current_time = encounter_start
 
     def add_event(self, event):
@@ -76,43 +75,63 @@ class BuffTrackIntensity:
             self.simulate_to_time(event.time)
 
         if event.is_buffremove:
-            if len(self.stack_end_times) > 0:
-                self.stack_end_times = []
-                self.record_event(event.time, 0, 1)
-        elif len(self.stack_end_times) < self.buff_type.capacity:
-            self.stack_end_times += [event.time + event.value]
-            self.stack_end_times.sort()
-            self.record_event(event.time, len(self.stack_end_times), 0)
-        elif (self.stack_end_times[0] < event.time + event.value):
-            self.stack_end_times[0] = event.time + event.value
-            self.stack_end_times.sort()
+            if len(self.stacks) > 0:
+                self.clear_stacks(event.time, 1)
+        elif self.total_stacks() < self.buff_type.capacity:
+            self.stacks.setdefault(event.src_instid,[])
+            self.stacks[event.src_instid] += [event.time + event.value]
+            self.stacks[event.src_instid].sort()
+            self.record_event(event.time, self.total_stacks(), 0, event.src_instid, len(self.stacks[event.src_instid]))
+        elif (min(self.stacks.values())[0] < event.time + event.value):
+            minsrc = min(self.stacks, key=self.stacks.get)
+            minstacks = len(self.stacks[minsrc])
+            self.stacks.setdefault(event.src_instid,[])
+            self.stacks[event.src_instid] += [event.time + event.value]
+            self.stacks[event.src_instid].sort()
+            if minsrc != event.src_instid:
+                self.record_event(event.time, self.buff_type.capacity, 0, minsrc, minstacks - 1)
+                self.record_event(event.time, self.buff_type.capacity, 0, event.src_instid, len(self.stacks[event.src_instid]))
+            del self.stacks[minsrc][0]
+            if len(self.stacks[minsrc]) == 0:
+                del self.stacks[minsrc]
 
+    def clear_stacks(self, time, stripped):
+        for x in self.stacks:
+            self.record_event(time, 0, stripped, x, 0)
+        self.stacks = {}
+                                  
     def simulate_to_time(self, new_time):
-        while len(self.stack_end_times) > 0 and self.stack_end_times[0] <= new_time:
-            self.record_event(self.stack_end_times[0], len(self.stack_end_times) - 1, 0)
-            self.stack_end_times.remove(self.stack_end_times[0])
+        while self.total_stacks() > 0 and ((min(self.stacks.values()))[0]) <= new_time:
+            mintime = min(self.stacks.values())[0]
+            minsrc = min(self.stacks, key=self.stacks.get)
+            minstacks = len(self.stacks[minsrc])
+            self.record_event(mintime, self.total_stacks() - 1, 0, minsrc, minstacks - 1)
+            del self.stacks[minsrc][0]
+            if minstacks == 1:
+                del self.stacks[minsrc]
         self.current_time = new_time
-
+        
+    def total_stacks(self):
+        return sum([len(x) for x in self.stacks.values()])
+        
     def end_track(self, time):
         end_time = int(time)
         self.simulate_to_time(end_time)
-        if self.data[-1][0] != end_time:
-            self.record_event(end_time, len(self.stack_end_times), 0)
+        self.clear_stacks(time, 0)
             
-    def record_event(self, new_time, stacks, stripped):
+    def record_event(self, new_time, total_stacks, stripped, src, src_stacks):
         if self.data[-1][0] == new_time:
-            self.data[-1][1] = stacks
+            self.data[-1][1] = total_stacks
             self.data[-1][2] = max(self.data[-1][2], stripped)
         else:
             self.data[-1][3] = new_time - self.data[-1][0]
-            self.data = np.append(self.data, [[new_time, stacks, stripped, 0]], axis=0)
+            self.data.append([new_time, total_stacks, stripped, 0])
 
 class BuffTrackDuration:
     def __init__(self, buff_type, encounter_start, encounter_end):
         self.buff_type = buff_type
-        self.stack_durations = np.array([np.arange(0)]).T
-        self.data = np.array([np.arange(0)] * 4).T
-        self.data = np.append(self.data, [[encounter_start, 0, 0, 0]], axis=0)
+        self.stack_durations = []
+        self.data = [[encounter_start, 0, 0, 0]]
         self.current_time = encounter_start
 
     def add_event(self, event):
@@ -120,36 +139,36 @@ class BuffTrackDuration:
             self.simulate(event.time - self.current_time)
 
         if event.is_buffremove:
-            if self.stack_durations.size > 0:
-                self.stack_durations = np.array([np.arange(0)]).T
+            if len(self.stack_durations) > 0:
+                self.stack_durations = []
                 self.record_event(event.time, 0, 1)
-        elif self.stack_durations.size < self.buff_type.capacity:
-            if self.stack_durations.size == 0:
+        elif len(self.stack_durations) < self.buff_type.capacity:
+            if len(self.stack_durations) == 0:
                 self.record_event(event.time, 1, 0)
-            self.stack_durations = np.append(self.stack_durations, [event.value])
+            self.stack_durations.append([event.value, event.src_instid])
             self.stack_durations.sort()
-        elif (self.stack_durations[0] < event.value):
-            self.stack_durations[0] = event.value
+        elif (self.stack_durations[0][0] < event.value):
+            self.stack_durations[0] = [event.value, event.src_instid]
             self.stack_durations.sort()
 
     def simulate(self, delta_time):
         remaining_delta = delta_time
-        while self.stack_durations.size > 0 and self.stack_durations[0] <= remaining_delta:
-            self.current_time += self.stack_durations[0]
-            if self.stack_durations.size == 1:
+        while len(self.stack_durations) > 0 and self.stack_durations[0][0] <= remaining_delta:
+            self.current_time += self.stack_durations[0][0]
+            if len(self.stack_durations) == 1:
                 self.record_event(self.current_time, 0, 0)
-            remaining_delta -= self.stack_durations[0]
-            self.stack_durations = np.delete(self.stack_durations, 0)
+            remaining_delta -= self.stack_durations[0][0]
+            del self.stack_durations[0]
 
         self.current_time += remaining_delta
-        if self.stack_durations.size > 0:
-            self.stack_durations[0] -= remaining_delta
+        if len(self.stack_durations) > 0:
+            self.stack_durations[0][0] -= remaining_delta
 
     def end_track(self, time):
         end_time = int(time)
         self.simulate(end_time - self.current_time)
         if self.data[-1][0] != end_time:
-            self.record_event(end_time, self.stack_durations.size > 0, 0)
+            self.record_event(end_time, len(self.stack_durations) > 0, 0)
             
     def record_event(self, new_time, stacks, stripped):
         if self.data[-1][0] == new_time:
@@ -157,7 +176,7 @@ class BuffTrackDuration:
             self.data[-1][2] = max(self.data[-1][2], stripped)
         else:
             self.data[-1][3] = new_time - self.data[-1][0]
-            self.data = np.append(self.data, [[new_time, stacks, stripped, 0]], axis=0)
+            self.data.append([new_time, stacks, stripped, 0])
 
 class BuffPreprocessor:
 
@@ -185,7 +204,7 @@ class BuffPreprocessor:
                     bufftrack.add_event(event)
                 bufftrack.end_track(agent_end_time)
 
-                track_data = bufftrack.data
+                track_data = np.array(bufftrack.data)
                 track_data = np.c_[[buff_type.code] * track_data.shape[0], [player] * track_data.shape[0], track_data]
                 raw_buff_data = np.r_[raw_buff_data, track_data]
             return raw_buff_data
@@ -205,7 +224,7 @@ class BuffPreprocessor:
         #not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
         apply_events = not_statusremove_events[(not_statusremove_events.buff != 0)
                                              & (not_statusremove_events.value != 0)]
-        buff_events = apply_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']]
+        buff_events = apply_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid', 'src_instid']]
 
         # Extract out buff removal events
         if 1 in status_remove_groups.indices:
@@ -213,7 +232,7 @@ class BuffPreprocessor:
         else:
             statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
         #statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 1]
-        buffremove_events = statusremove_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid']]
+        buffremove_events = statusremove_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid', 'src_instid']]
 
         # Combine buff application and removal events
         buff_update_events = pd.concat([buff_events, buffremove_events]).sort_values('time')
