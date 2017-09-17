@@ -12,6 +12,7 @@ from raidar.models import *
 from sys import exit
 from time import time
 import os
+import csv
 from evtcparser.parser import AgentType
 from analyser.analyser import Archetype, Elite
 # XXX DEBUG
@@ -57,6 +58,14 @@ def necessary(force=False):
 
 class RestatException(Exception):
     pass
+
+
+
+def name_for(id):
+    if id in BOSSES:
+        return BOSSES[id].name
+    return AgentType(id).name
+
 
 def get_and_add(hash, prop, n):
     get_or_create(hash, prop, float)
@@ -225,7 +234,7 @@ class Command(BaseCommand):
                     duration = data['Category']['encounter']['duration'] * 1000
 
                     try:
-                        if options ['calculate_global']:
+                        if options ['calculate_global'] and encounter.success:
                             target = navigate(global_stats, 'encounter', encounter.area_id)
                             targets = [target]
 
@@ -236,33 +245,31 @@ class Command(BaseCommand):
                                 lambda: stats['Metrics']['damage']['To']['*Boss'], {})
 
                             calculate(targets, get_and_add, 'count', 1)
-                            calculate(targets, advanced_stats, 'time',
-                                      _safe_get(lambda: stats_in_phase_to_all['dps']))
+                            calculate(targets, advanced_stats, 'time', duration)
                             calculate(targets, advanced_stats, 'dps',
                                       _safe_get(lambda: stats_in_phase_to_all['dps']))
                             calculate(targets, advanced_stats, 'boss_dps',
-                                      _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+                                      _safe_get(lambda: stats_in_phase_to_boss['dps']))
 
                             for participation in participations:
-                                if(encounter.success):
-                                    player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
-                                    #data dump stats...
-                                    target = navigate(global_stats,
-                                                      'encounter', encounter.area_id,
-                                                      'archetype', participation.archetype,
-                                                      'profession', participation.character.profession,
-                                                      'elite', participation.elite)
-                                    targets = [target]
-                                    stats_in_phase_to_all = _safe_get(
-                                        lambda: player_stats['Metrics']['damage']['To']['*All'], {})
-                                    stats_in_phase_to_boss = _safe_get(
-                                        lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
+                                player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                                #data dump stats...
+                                target = navigate(global_stats,
+                                                  'encounter', encounter.area_id,
+                                                  'archetype', participation.archetype,
+                                                  'profession', participation.character.profession,
+                                                  'elite', participation.elite)
+                                targets = [target]
+                                stats_in_phase_to_all = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*All'], {})
+                                stats_in_phase_to_boss = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
 
-                                    calculate(targets, get_and_add, 'count', 1)
-                                    calculate(targets, advanced_stats, 'dps',
-                                              _safe_get(lambda: stats_in_phase_to_all['dps']))
-                                    calculate(targets, advanced_stats, 'boss_dps',
-                                              _safe_get(lambda: stats_in_phase_to_boss['boss_dps']))
+                                calculate(targets, get_and_add, 'count', 1)
+                                calculate(targets, advanced_stats, 'dps',
+                                          _safe_get(lambda: stats_in_phase_to_all['dps']))
+                                calculate(targets, advanced_stats, 'boss_dps',
+                                          _safe_get(lambda: stats_in_phase_to_boss['dps']))
                     except Exception as e:
                         print("Could not gather stats from encounter for global stats calculations.", e)
 
@@ -494,38 +501,39 @@ class Command(BaseCommand):
                 del totals['user'][None]
 
             if options['calculate_global']:
-                global_stats_file = open('global_stats.csv', 'w')
-                finalise_stats(global_stats)
-                keys = ['encounter']
-                values = ['count',
-                          'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
-                          'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
-                          'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                with open('global_stats_%s.csv' % era.id, 'w') as global_stats_file:
+                    global_stats_csv = csv.writer(global_stats_file)
 
-                print(",".join(keys+values), file=global_stats_file)
-                for e, g1 in global_stats[keys[0]].items():
-                    try:
-                        print(",".join([AgentType(e).name] + list(map(lambda k: str(g1[k]), values))),
-                              file=global_stats_file)
-                    except ValueError:
-                        pass
+                    finalise_stats(global_stats)
+                    keys = ['encounter']
+                    values = ['count',
+                            'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
+                            'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                            'min_boss_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                    global_stats_csv.writerow(keys + values)
 
-                keys = ['encounter','archetype','profession','elite']
-                values = ['count',
-                          'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
-                          'min_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                    for e, g1 in global_stats[keys[0]].items():
+                        try:
+                            global_stats_csv.writerow([name_for(e)] + list(map(lambda k: g1[k], values)))
+                        except ValueError as x:
+                            print("FOO", x)
+                            pass
 
-                print(",".join(keys+values),
-                              file=global_stats_file)
-                for e, g1 in global_stats[keys[0]].items():
-                    for a, g2 in g1[keys[1]].items():
-                        for p, g3 in g2[keys[2]].items():
-                            for l, g4 in g3[keys[3]].items():
-                                try:
-                                    print(",".join([AgentType(e).name,Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: str(g4[k]), values))),
-                              file=global_stats_file)
-                                except ValueError:
-                                    pass
+                    keys = ['encounter','archetype','profession','elite']
+                    values = ['count',
+                            'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                            'min_boss_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                    global_stats_csv.writerow(keys + values)
+
+                    for e, g1 in global_stats[keys[0]].items():
+                        for a, g2 in g1[keys[1]].items():
+                            for p, g3 in g2[keys[2]].items():
+                                for l, g4 in g3[keys[3]].items():
+                                    try:
+                                        global_stats_csv.writerow([name_for(e), Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: g4[k], values)))
+                                    except ValueError as x:
+                                        print("POO", x)
+                                        pass
 
             for user_id, totals_for_player in totals['user'].items():
                 finalise_stats(totals_for_player)

@@ -46,18 +46,6 @@ class AgentType(IntEnum):
     MESMER = 7
     NECROMANCER = 8
     REVENANT = 9
-    VALE_GUARDIAN = 0x3C4E
-    GORSEVAL = 0x3C45
-    SABETHA = 0x3C0F
-    SLOTHASOR = 0x3EFB
-    BANDIT_TRIO = 0x3ED8
-    MATTHIAS = 0x3EF3
-    KEEP_CONSTRUCT = 0x3F6B
-    XERA = 0x3F76
-    CAIRN = 0x432A
-    MURSAAT_OVERSEER = 17172
-    SAMAROG = 0x4324
-    DEIMOS = 0x4302
 
     def is_player(self):
         return AgentType.GUARDIAN <= self <= AgentType.REVENANT
@@ -204,7 +192,7 @@ class Encounter:
         agent_map = agent_map.sort_values(by='time')
         agent_map.drop_duplicates(subset='addr',inplace=True)
         agent_map.insert(0, 'new_id', range(1, 1 + len(agent_map)))
-        
+
         del self.events['src_instid']
         del self.events['dst_instid']
         self.events = pd.merge(left=self.events,right=agent_map[['addr', 'new_id']].rename(columns={'addr' : 'src_agent', 'new_id' : 'src_instid'}), how='left', left_on='src_agent', right_on='src_agent')

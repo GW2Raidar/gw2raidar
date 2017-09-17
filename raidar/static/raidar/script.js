@@ -5,6 +5,9 @@
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
+  const DEBUG = raidar_data.debug;
+  Ractive.DEBUG = DEBUG;
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -203,8 +206,6 @@ ${rectSvg.join("\n")}
     return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
 
-  const DEBUG = raidar_data.debug;
-  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
   const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
@@ -221,6 +222,7 @@ ${rectSvg.join("\n")}
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
+    privacy: window.raidar_data.privacy,
     is_staff: window.raidar_data.is_staff,
     page: initialPage,
     persistent_page: { tab: 'combat_stats' },
@@ -727,6 +729,17 @@ ${rectSvg.join("\n")}
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
       return false;
+    },
+    privacy: function privacy(evt) {
+      let privacy = r.get('privacy');
+      $.post({
+        url: 'privacy.json',
+        data: {
+          privacy: privacy,
+        },
+      }).done(() => {
+        notification('Privacy updated.', 'success');
+      });
     },
   });
 

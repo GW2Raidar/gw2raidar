@@ -155,7 +155,8 @@ class Analyser:
         boss_power_events = boss_power_events.assign(delta = deltas)
         #print_frame(boss_power_events[boss_power_events.delta >= 1000])
         #construct frame of all health updates from the boss
-        health_updates = from_boss_events[from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE]
+        health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
+        & (from_boss_events.dst_agent > 0)]
         #print_frame(health_updates)
 
         #construct frame of all boss skill activations
@@ -256,7 +257,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        success = not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty
+        success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
 
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])

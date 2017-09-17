@@ -218,7 +218,7 @@ BOSS_ARRAY = [
         Metric('Prisoner Sweep', 'Sweep', MetricType.COUNT, True, True),
         Metric('Charge', 'Charge', MetricType.COUNT, True, False),
         Metric('Anguished Bolt', 'Guldhem Stun', MetricType.COUNT, True, False),
-        Metric('Inevitable Betrayl', 'Chose Poorly', MetricType.COUNT, True, False),
+        Metric('Inevitable Betrayal', 'Chose Poorly', MetricType.COUNT, True, False),
         Metric('Bludgeon', 'Bludgeon', MetricType.COUNT, True, False),
         Metric('Fixate', 'Fixate', MetricType.COUNT, True, True),
         Metric('Small Friend', 'Small Friend', MetricType.COUNT, True, True),
