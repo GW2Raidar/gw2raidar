@@ -1,5 +1,4 @@
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
-from Crypto import Random
 from multiprocessing import Queue, Process, log_to_stderr
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
@@ -153,17 +152,22 @@ class Command(BaseCommand):
         from django import db
         db.connections.close_all()
 
-        process_pool = []
-        for i in range(options['processes']):
-            process = Process(target=self.analyse_upload_worker, args=(queue,))
-            process_pool.append(process)
-            process.start()
+        if options['processes'] > 1:
+            process_pool = []
+            for i in range(options['processes']):
+                process = Process(target=self.analyse_upload_worker, args=(queue,))
+                process_pool.append(process)
+                process.start()
 
-        for process in process_pool:
-            process.join()
+            for process in process_pool:
+                process.join()
+        else:
+            self.analyse_upload_worker(queue, False)
 
-    def analyse_upload_worker(self, queue):
-        Random.atfork()
+    def analyse_upload_worker(self, queue, multi=True):
+        if multi:
+            from Crypto import Random
+            Random.atfork()
         self.gdrive_service = get_gdrive_service()
         try:
             while True:
