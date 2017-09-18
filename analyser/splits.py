@@ -67,14 +67,14 @@ def split_duration_event_by_phase(collector, method, events, phases):
             collect_phase(phase[0], events)
                 
 def split_by_phase(collector, method, events, phases):
-    def collect_phase(name, phase_events):
-        duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
+    def collect_phase(name, phase_events, duration):
+        #duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
         if not duration > 0.001:
             duration = 0
         collector.set_context_value(ContextType.DURATION, duration)
         collector.with_key(Group.PHASE, name).run(method, phase_events)
 
-    collect_phase("All", events)
+    collect_phase("All", events, float(events['time'].max() - events['time'].min()) / 1000.0)
 
     #Yes, this lists each phase individually even if there is only one
     #That's for consistency for things like:
@@ -84,7 +84,7 @@ def split_by_phase(collector, method, events, phases):
     for i in range(0,len(phases)):
         phase = phases[i]
         phase_events = events[(events.time >= phase[1]) & (events.time <= phase[2])]
-        collect_phase(phase[0], phase_events)
+        collect_phase(phase[0], phase_events, (phase[2] - phase[1]) / 1000.0)
 
 def split_by_player_groups(collector, method, events, player_column, subgroups, players):
     collector.with_key(Group.SUBGROUP, "*All").run(method, events)

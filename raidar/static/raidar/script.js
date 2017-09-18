@@ -5,6 +5,9 @@
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
+  const DEBUG = raidar_data.debug;
+  Ractive.DEBUG = DEBUG;
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -29,12 +32,15 @@
   }
 
   let helpers = Ractive.defaults.data;
+  let allRE = /^All(?: \w+ bosses)?$/;
   helpers.keysWithAllLast = (obj, lookup) => {
     let keys = Object.keys(obj);
     keys.sort((a, b) => {
-      if (a == 'All') return 1;
-      if (b == 'All') return -1;
-      if (lookup) {
+      let aAll = a.match(allRE);
+      let bAll = b.match(allRE);
+      if (aAll && !bAll) return 1;
+      if (!aAll && bAll) return -1;
+      if (lookup && !(aAll && bAll)) {
         a = lookup[a];
         b = lookup[b];
       }
@@ -200,17 +206,23 @@ ${rectSvg.join("\n")}
     return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
 
-  const DEBUG = raidar_data.debug;
-  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
   const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
-  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
-    initialPage = { name: 'info-help' };
+  if (!window.raidar_data.username) {
+    if (!initialPage.name) {
+      loggedInPage = { name: 'info-releasenotes' };
+      initialPage = { name: 'info-help' };
+    } else if (PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+      initialPage = { name: 'login' };
+    }
+  } else if (!initialPage.name) {
+    initialPage = { name: 'info-releasenotes' };
   }
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
+    privacy: window.raidar_data.privacy,
     is_staff: window.raidar_data.is_staff,
     page: initialPage,
     persistent_page: { tab: 'combat_stats' },
@@ -285,14 +297,16 @@ ${rectSvg.join("\n")}
     profile: page => {
       r.set({
         loading: true,
-        "page.area": 'All',
+        'page.area': 'All raid bosses',
       });
       $.get({
         url: 'profile.json',
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
         let latest = eras[eras.length - 1];
-        r.set('page.era', latest);
+        r.set({
+          'page.era': latest,
+        });
       });
     },
   };
@@ -492,7 +506,7 @@ ${rectSvg.join("\n")}
 
   // test for shenanigans
   $.ajax({
-    url: 'initial',
+    url: 'initial.json',
   }).done(updateRactiveFromResponse);
 
 
@@ -523,6 +537,12 @@ ${rectSvg.join("\n")}
 
 
   r.on({
+    encounter_bug: function encounterBug(x) {
+      let url = r.get('encounter.url_id');
+      r.set('contact.input.subject', `Error report: ${url}`);
+      setPage('info-contact');
+      return false;
+    },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;
 
@@ -709,6 +729,17 @@ ${rectSvg.join("\n")}
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
       return false;
+    },
+    privacy: function privacy(evt) {
+      let privacy = r.get('privacy');
+      $.post({
+        url: 'privacy.json',
+        data: {
+          privacy: privacy,
+        },
+      }).done(() => {
+        notification('Privacy updated.', 'success');
+      });
     },
   });
 

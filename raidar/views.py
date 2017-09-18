@@ -71,6 +71,7 @@ def _login_successful(request, user):
     userprops = _userprops(request)
     userprops['csrftoken'] = csrftoken
     userprops['encounters'] = _encounter_data(request)
+    userprops['privacy'] = request.user.user_profile.privacy
     return JsonResponse(userprops)
 
 
@@ -90,6 +91,8 @@ def _html_response(request, page, data={}):
     response['page'] = page
     response['debug'] = settings.DEBUG
     response['version'] = settings.VERSION
+    if request.user.is_authenticated:
+        response['privacy'] = request.user.user_profile.privacy
     if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
@@ -126,7 +129,7 @@ def download(request, id=None):
 
 
 @require_GET
-def index(request, page={ 'name': 'encounters', 'no': 1 }):
+def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
@@ -212,10 +215,18 @@ def encounter(request, url_id=None, json=None):
                 } for phase in phases
             }
 
+            user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
+            if user_profile:
+                privacy = user_profile[0].privacy
+                if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                    member['name'] = ''
+                    member['account'] = ''
+
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
             "id": encounter.id,
+            "url_id": encounter.url_id,
             "name": encounter.area.name,
             "filename": encounter.filename,
             "uploaded_at": encounter.uploaded_at,
@@ -405,6 +416,14 @@ def poll(request):
     if notifications:
         result['last_id'] = notifications.last().id
     return JsonResponse(result)
+
+@login_required
+@require_POST
+def privacy(request):
+    profile = request.user.user_profile
+    profile.privacy = int(request.POST.get('privacy'))
+    profile.save()
+    return JsonResponse({})
 
 @login_required
 @require_POST

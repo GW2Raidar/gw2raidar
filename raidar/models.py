@@ -43,9 +43,19 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 User._meta.get_field('email')._unique = True
 
 class UserProfile(models.Model):
+    PRIVATE = 1
+    SQUAD = 2
+    PUBLIC = 3
+
+    PRIVACY_CHOICES = (
+            (PRIVATE, 'Private'),
+            (SQUAD, 'Squad'),
+            (PUBLIC, 'Public')
+        )
     portrait_url = models.URLField(null=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
+    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
 
     def __str__(self):
         return self.user.username

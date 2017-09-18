@@ -2,11 +2,13 @@ __author__ = "Toeofdoom"
 
 import time
 import sys
+import os.path
 from evtcparser import *
 from analyser import *
 from enum import IntEnum
 import json
 from zipfile import ZipFile
+import argparse
 
 def is_basic_value(node):
     try:
@@ -45,15 +47,22 @@ def print_node(key, node, f=None):
         print(output_string, file=f)
 
 def main():
-    filename = sys.argv[1]
 
-    print("Parsing {0}".format(filename))
 
     zipfile = None
 
-    filenames = sys.argv[1].split(",")
+    argparser = argparse.ArgumentParser(description='Process some integers.')
+    argparser.add_argument('filenames', metavar='N', type=str, nargs='+',
+                        help='the files to load')
+    argparser.add_argument('-s', dest='silent', action='store_true',
+                            help='silent mode, no output dump')
+    argparser.add_argument('--no-json', dest='json', action='store_false',
+                            help='disable json output')
+
+    args = argparser.parse_args()
     start_all = time.clock()
-    for filename in filenames:
+    print("Parsing {0}".format(args.filenames))
+    for filename in args.filenames:
         print("Loading {0}".format(filename))
         with open(filename, mode='rb') as file:
 
@@ -76,10 +85,10 @@ def main():
             print("Analyser took {0} seconds".format(time.clock() - start))
 
             start = time.clock()
-            with open('Output/'+filename+'.txt','w') as output_file:
+            with open('Output/'+os.path.basename(filename)+'.txt','w') as output_file:
                 flattened = flatten(a.data)
                 for key in sorted(flattened.keys()):
-                    if "-s" not in sys.argv:
+                    if not args.silent:
                         print_node(key, flattened[key])
                     print_node(key, flattened[key], output_file)
             print("Completed parsing {0} - Success: {1}".format(
