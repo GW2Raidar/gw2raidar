@@ -168,16 +168,16 @@ BOSS_ARRAY = [
     ]),
     Boss('Keep Construct', Kind.RAID, [0x3F6B], phases = [
         # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
-        Phase("Pre-burn 1", True, phase_end_damage_stop = 30000),
-        Phase("Split 1", False, phase_end_damage_start = 30000),
-        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 30000),
-        Phase("Pacman 1", False, phase_end_damage_start = 30000),
-        Phase("Pre-burn 2", True, phase_end_damage_stop = 30000),
-        Phase("Split 2", False, phase_end_damage_start = 30000),
-        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 30000),
-        Phase("Pacman 2", False, phase_end_damage_start = 30000),
-        Phase("Pre-burn 3", True, phase_end_damage_stop = 30000),
-        Phase("Split 3", False, phase_end_damage_start = 30000),
+        Phase("Pre-burn 1", True, phase_end_damage_stop = 15000),
+        Phase("Split 1", False, phase_end_damage_start = 15000),
+        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
+        Phase("Pacman 1", False, phase_end_damage_start = 15000),
+        Phase("Pre-burn 2", True, phase_end_damage_stop = 15000),
+        Phase("Split 2", False, phase_end_damage_start = 15000),
+        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
+        Phase("Pacman 2", False, phase_end_damage_start = 15000),
+        Phase("Pre-burn 3", True, phase_end_damage_stop = 18000),
+        Phase("Split 3", False, phase_end_damage_start = 18000),
         Phase("Burn 3", True)
     ], metrics = [
         Metric('Correct Orb', 'Correct Orbs', MetricType.COUNT),
@@ -246,5 +246,56 @@ BOSS_ARRAY = [
     Boss('Massive Vital Kitty Golem', Kind.DUMMY, [16169]),
     Boss('Resistant Kitty Golem', Kind.DUMMY, [16176]),
     Boss('Tough Kitty Golem', Kind.DUMMY, [16174]),
+    Boss('Skorvald the Shattered (CM)', Kind.FRACTAL,[0x44E0], phases = [
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
+        Phase("First split", False, phase_end_damage_start = 15000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
+        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 3", True, phase_end_health=1)
+    ]),
+    Boss('Artsariiv', Kind.FRACTAL, [0x461d], phases = [
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
+        Phase("First split", False, phase_end_damage_start = 10000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
+        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 3", True, phase_end_health=1)
+    ]),
+    Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], phases =[
+        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000),
+        Phase("First orb", False, phase_end_damage_start = 10000),
+        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000),
+        Phase("Archdiviner", False, phase_end_damage_start = 10000),
+        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000),
+        Phase("Second orb", False, phase_end_damage_start = 10000),
+        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000),
+        Phase("Gladiator", False, phase_end_damage_start = 10000),
+        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000),
+        Phase("Third orb", False, phase_end_damage_start = 10000),
+        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
+    ]),
+    Boss('MAMA', Kind.FRACTAL, [0x427d], phases = [
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000),
+        Phase("First split", False, phase_end_damage_start = 3000),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000),
+        Phase("Second split", False, phase_end_damage_start = 3000),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000),
+        Phase("Second split", False, phase_end_damage_start = 3000),
+        Phase("Phase 4", True, phase_end_health=1)
+    ]),
+    Boss('Siax (CM)', Kind.FRACTAL,[0x4284], phases = [
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
+        Phase("First split", False, phase_end_damage_start = 15000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
+        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 3", True, phase_end_health=1)
+    ]),
+    Boss('Ensolyss (CM)', Kind.FRACTAL,[0x4234], phases = [
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
+        Phase("First split", False, phase_end_damage_start = 15000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
+        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 3", True, phase_end_health=15),
+        Phase("Phase 4", True, phase_end_health=1)
+    ])
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
