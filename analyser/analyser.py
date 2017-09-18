@@ -153,7 +153,7 @@ class Analyser:
         boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
         deltas = boss_power_events.time - boss_power_events.time.shift(1)
         boss_power_events = boss_power_events.assign(delta = deltas)
-        #print_frame(boss_power_events[boss_power_events.delta >= 1000])
+        #print_frame(boss_power_events[boss_power_events.delta >= 3000])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
         & (from_boss_events.dst_agent > 0)]
@@ -550,7 +550,7 @@ class Analyser:
 
         print_frame(events[events.state_change == parser.StateChange.REWARD][['value', 'src_agent', 'dst_agent']])
 
-        if encounter.version >= '20170905':
+        if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
             success_types = [55821, 60685]
             success = not events[(events.state_change == parser.StateChange.REWARD)
                              & events.value.isin(success_types)].empty
