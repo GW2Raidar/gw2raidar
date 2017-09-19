@@ -32,6 +32,7 @@ class StateChange(IntEnum):
     LANGUAGE = 14
     GW_BUILD = 15
     SHARD_ID = 16
+    REWARD = 17
 
 #Change to another data type - it's not really an enum?
 class AgentType(IntEnum):
