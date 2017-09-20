@@ -236,6 +236,7 @@ def encounter(request, url_id=None, json=None):
             "success": encounter.success,
             "tags": encounter.tagstring,
             "phase_order": phases,
+            "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
             "phases": {
                 phase: {
@@ -430,6 +431,9 @@ def privacy(request):
 @require_POST
 def set_tags(request):
     encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
+    participation = encounter.participations.filter(character__account__user=request.user).exists()
+    if not participation:
+        return _error('Not a participant')
     encounter.tagstring = request.POST.get('tags')
     encounter.save()
     return JsonResponse({})
