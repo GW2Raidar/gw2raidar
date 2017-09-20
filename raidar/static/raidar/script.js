@@ -8,6 +8,30 @@
   const DEBUG = raidar_data.debug;
   Ractive.DEBUG = DEBUG;
 
+
+  // bring tagsInput into Ractive
+  Ractive.decorators.tagsInput = function(node, tagsPath) {
+    let ractive = this;
+    tagsPath = ractive.getContext(node).resolve(tagsPath);
+    let classList = Array.from(node.classList);
+    tagsInput(node);
+    node.nextSibling.setValue(ractive.get(tagsPath));
+    node.nextSibling.classList.add(...classList);
+    node.addEventListener('change', function(evt) {
+      ractive.set(tagsPath, node.nextSibling.getValue());
+    });
+    this.observe(tagsPath, (newValue, oldValue, keypath) => {
+      if (node.nextSibling && newValue != oldValue) {
+        node.nextSibling.setValue(newValue);
+      }
+    });
+    return {
+      teardown: () => {
+        node.nextSibling.remove();
+      },
+    };
+  };
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -739,6 +763,17 @@ ${rectSvg.join("\n")}
         },
       }).done(() => {
         notification('Privacy updated.', 'success');
+      });
+    },
+    set_tags: function setTags(evt) {
+      console.log("change");
+      let encounter = r.get('encounter');
+      $.post({
+        url: 'set_tags.json',
+        data: {
+          id: encounter.id,
+          tags: encounter.tags,
+        },
       });
     },
   });

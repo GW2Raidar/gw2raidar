@@ -10,6 +10,7 @@ from gw2raidar import settings
 from os.path import join as path_join
 from functools import lru_cache
 from time import time
+from taggit.managers import TaggableManager
 import random
 import os
 import re
@@ -260,6 +261,7 @@ class Encounter(models.Model):
     # Google Drive
     gdrive_id = models.CharField(max_length=255, editable=False, null=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True)
+    tags = TaggableManager()
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -267,6 +269,14 @@ class Encounter(models.Model):
     def save(self, *args, **kwargs):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
+
+    @property
+    def tagstring(self):
+        return ','.join(self.tags.names())
+
+    @tagstring.setter
+    def tagstring(self, value):
+        self.tags.set(*value.split(','))
 
     @staticmethod
     def calculate_account_hash(account_names):
