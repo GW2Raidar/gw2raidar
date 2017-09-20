@@ -779,6 +779,8 @@ ${rectSvg.join("\n")}
           id: encounter.id,
           tags: encounter.tags,
         },
+      }).done(() => {
+        notification('Tags updated.', 'success');
       });
       return false;
     },
