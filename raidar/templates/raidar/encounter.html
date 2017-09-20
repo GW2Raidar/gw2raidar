@@ -1,6 +1,6 @@
 <div class="uk-clearfix uk-padding-small">
   [[#with encounter]]
-    <h2 class="uk-padding-small uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
+    <h2 class="uk-margin-remove-bottom uk-padding-small uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
       [[name]]
     </h2>
     <div class="uk-float-right uk-text-right uk-float-right">
@@ -23,6 +23,10 @@
       </div>
     </div>
   [[/with]]
+</div>
+
+<div class="uk-margin-small">
+  <input class="uk-width-1-1" placeholder="Tags" as-tagsInput="'encounter.tags'" on-change="set_tags">
 </div>
 
 <nav class="uk-navbar-container navbar-secondary" uk-navbar>

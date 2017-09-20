@@ -234,6 +234,7 @@ def encounter(request, url_id=None, json=None):
             "started_at": encounter.started_at,
             "duration": encounter.duration,
             "success": encounter.success,
+            "tags": encounter.tagstring,
             "phase_order": phases,
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
             "phases": {
@@ -423,6 +424,14 @@ def privacy(request):
     profile = request.user.user_profile
     profile.privacy = int(request.POST.get('privacy'))
     profile.save()
+    return JsonResponse({})
+
+@login_required
+@require_POST
+def set_tags(request):
+    encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
+    encounter.tagstring = request.POST.get('tags')
+    encounter.save()
     return JsonResponse({})
 
 @login_required
