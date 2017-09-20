@@ -17,8 +17,14 @@
     tagsInput(node);
     node.nextSibling.setValue(ractive.get(tagsPath));
     node.nextSibling.classList.add(...classList);
+    if (node.getAttribute('readonly')) {
+      node.nextSibling.firstChild.setAttribute('readonly', true);
+    }
     node.addEventListener('change', function(evt) {
-      ractive.set(tagsPath, node.nextSibling.getValue());
+      let tags = node.nextSibling.getValue();
+      if (r.get(tagsPath) != tags) {
+        ractive.set(tagsPath, node.nextSibling.getValue());
+      }
     });
     this.observe(tagsPath, (newValue, oldValue, keypath) => {
       if (node.nextSibling && newValue != oldValue) {
@@ -766,7 +772,6 @@ ${rectSvg.join("\n")}
       });
     },
     set_tags: function setTags(evt) {
-      console.log("change");
       let encounter = r.get('encounter');
       $.post({
         url: 'set_tags.json',
@@ -775,6 +780,7 @@ ${rectSvg.join("\n")}
           tags: encounter.tags,
         },
       });
+      return false;
     },
   });
 
