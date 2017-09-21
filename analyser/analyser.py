@@ -121,7 +121,11 @@ class Analyser:
         agents.hit_count.fillna(0, inplace=True)
 
         #identify specific ones we care about
-        players = agents[agents.party != 0]
+        players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
+
+        if not players[players.party == 0].empty:
+            for player in players.index.values:
+                agents.loc[player,'party'] = 1
         bosses = agents[(agents.prof.isin(self.boss_info.boss_ids)) |
                         (self.boss_info.has_structure_boss
                          & (agents.prof < 0)
@@ -130,6 +134,7 @@ class Analyser:
 
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
+
         self.player_instids = players.index.values
         self.boss_instids = bosses.index.values
 
@@ -536,9 +541,12 @@ class Analyser:
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
             key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
             if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
+                print("No key NPCs died...")
                 dead_players = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
                                                  (player_src_events.state_change.isin(end_state_changes))].src_instid.unique()
+                print("These players died: {0}".format(dead_players))
                 surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))
+                print("These players survived: {0}".format(surviving_players))
                 if surviving_players:
                     success = True
             print("Probable death of despawn-only boss detected: {0}".format(success))
