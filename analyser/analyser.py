@@ -125,7 +125,9 @@ class Analyser:
 
         if not players[players.party == 0].empty:
             for player in players.index.values:
-                agents.loc[player,'party'] = 1
+                agents.loc[player, 'party'] = 1
+                players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
+
         bosses = agents[(agents.prof.isin(self.boss_info.boss_ids)) |
                         (self.boss_info.has_structure_boss
                          & (agents.prof < 0)
