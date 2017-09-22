@@ -9,6 +9,14 @@
   Ractive.DEBUG = DEBUG;
 
 
+  Ractive.decorators.ukUpdate = function(node) {
+    UIkit.update();
+    return {
+      teardown: () => {
+      },
+    };
+  };
+
   // bring tagsInput into Ractive
   Ractive.decorators.tagsInput = function(node, tagsPath) {
     let ractive = this;
@@ -26,13 +34,14 @@
         ractive.set(tagsPath, node.nextSibling.getValue());
       }
     });
-    this.observe(tagsPath, (newValue, oldValue, keypath) => {
+    let observer = this.observe(tagsPath, (newValue, oldValue, keypath) => {
       if (node.nextSibling && newValue != oldValue) {
         node.nextSibling.setValue(newValue);
       }
     });
     return {
       teardown: () => {
+        observer.cancel();
         node.nextSibling.remove();
       },
     };
@@ -771,16 +780,17 @@ ${rectSvg.join("\n")}
         notification('Privacy updated.', 'success');
       });
     },
-    set_tags: function setTags(evt) {
+    set_tags_cat: function setTags(evt) {
       let encounter = r.get('encounter');
       $.post({
-        url: 'set_tags.json',
+        url: 'set_tags_cat.json',
         data: {
           id: encounter.id,
           tags: encounter.tags,
+          category: encounter.category,
         },
       }).done(() => {
-        notification('Tags updated.', 'success');
+        notification('Category and tags saved.', 'success');
       });
       return false;
     },

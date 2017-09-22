@@ -25,12 +25,24 @@
   [[/with]]
 </div>
 
-<form class="uk-margin-small uk-flex" on-submit="set_tags">
+<form class="uk-margin-small uk-flex uk-flex-bottom" on-submit="set_tags_cat">
   [[#if encounter.participated]]
+    <select as-ukUpdate class="uk-select uk-margin-small" style="width: 150px" value="[[encounter.category]]">
+      <option value="[[null]]">No category</option>
+      [[#each data.categories:id]]
+        <option value="[[id]]">[[.]]</option>
+      [[/each]]
+    </select>
     <input class="uk-flex-auto uk-margin-small" placeholder="Tags" as-tagsInput="'encounter.tags'">
-    <button class="uk-flex-initial uk-margin-small uk-button uk-button-primary">Set tags</button>
+    <button class="uk-margin-small uk-button uk-button-primary">Save</button>
   [[else]]
-    <input class="uk-width-1-1" as-tagsInput="'encounter.tags'" readonly>
+    <select as-ukUpdate class="uk-select uk-margin-small" style="width: 150px" value="[[encounter.category]]" readonly>
+      <option value="null">No category</option>
+      [[#each data.categories:id]]
+        <option value="[[id]]">[[.]]</option>
+      [[/each]]
+    </select>
+    <input class="uk-flex-auto uk-margin-small" as-tagsInput="'encounter.tags'" readonly>
   [[/if]]
 </form>
 

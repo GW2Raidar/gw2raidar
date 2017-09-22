@@ -88,6 +88,7 @@ def _html_response(request, page, data={}):
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['areas'] = {area.id: area.name for area in Area.objects.all()}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
+    response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['page'] = page
     response['debug'] = settings.DEBUG
     response['version'] = settings.VERSION
@@ -166,7 +167,7 @@ def profile(request):
 @require_GET
 def encounter(request, url_id=None, json=None):
     try:
-        encounter = Encounter.objects.select_related('area').get(url_id=url_id)
+        encounter = Encounter.objects.select_related('area', 'uploaded_by').get(url_id=url_id)
     except Encounter.DoesNotExist:
         if json:
             return _error("Encounter does not exist")
@@ -235,6 +236,7 @@ def encounter(request, url_id=None, json=None):
             "duration": encounter.duration,
             "success": encounter.success,
             "tags": encounter.tagstring,
+            "category": encounter.category_id,
             "phase_order": phases,
             "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
@@ -429,12 +431,13 @@ def privacy(request):
 
 @login_required
 @require_POST
-def set_tags(request):
+def set_tags_cat(request):
     encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
     participation = encounter.participations.filter(character__account__user=request.user).exists()
     if not participation:
         return _error('Not a participant')
     encounter.tagstring = request.POST.get('tags')
+    encounter.category_id = request.POST.get('category')
     encounter.save()
     return JsonResponse({})
 
