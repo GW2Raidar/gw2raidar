@@ -253,14 +253,14 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 15000),
         Phase("Phase 3", True, phase_end_health=1)
     ]),
-    Boss('Artsariiv', Kind.FRACTAL, [0x461d], phases = [
+    Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True, phase_end_health=1)
     ]),
-    Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], phases =[
+    Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
         Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000),
         Phase("First orb", False, phase_end_damage_start = 10000),
         Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000),
@@ -273,7 +273,7 @@ BOSS_ARRAY = [
         Phase("Third orb", False, phase_end_damage_start = 10000),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
     ]),
-    Boss('MAMA', Kind.FRACTAL, [0x427d], phases = [
+    Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000),
         Phase("First split", False, phase_end_damage_start = 3000),
         Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000),
