@@ -142,6 +142,7 @@ class Analyser:
         #experimental phase calculations
         events['ult_src_instid'] = events.src_master_instid.where(
             events.src_master_instid != 0, events.src_instid)
+
         player_src_events = events[events.ult_src_instid.isin(self.player_instids)].sort_values(by='time')
 
         player_dst_events = events[events.dst_instid.isin(self.player_instids)].sort_values(by='time')
@@ -217,16 +218,22 @@ class Analyser:
 
                                     ])
 
-
+        #@merforga youll want to disable logs with a build stamp prior to today's
+        #or, if the system supports it, game build >= 82356 requires arc from sep22 2017
 
         #print_frame(encounter.duplicate_id_agents)
 
         #set up data structures
         events = assign_event_types(encounter.events)
+        if (encounter.version < '20170922'
+            and not events[(events.state_change == parser.StateChange.GW_BUILD)
+                & (events.src_agent >= 82356)].empty):
+            raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
         agents = encounter.agents
         skills = encounter.skills
         players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
+
         self.preprocess_skills(skills, collector)
         self.players = players
         player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events)
