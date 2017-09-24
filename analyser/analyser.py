@@ -223,7 +223,7 @@ class Analyser:
 
         #set up data structures
         events = assign_event_types(encounter.events)
-        if (encounter.version < '20170922'
+        if (encounter.version < '20170923'
             and not events[(events.state_change == parser.StateChange.GW_BUILD)
                 & (events.src_agent >= 82356)].empty):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
