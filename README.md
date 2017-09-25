@@ -5,7 +5,7 @@ Quickstart
 ----------
 
 * Install Python 3 and pip3
-* `pip3 install django pandas requests psycopg2 google-api-python-client`
+* `pip3 install django pandas requests django-taggit psycopg2 google-api-python-client`
 * `python3 manage.py migrate`
 * `python3 manage.py createsuperuser`
 * `python3 manage.py runserver`
