@@ -71,6 +71,7 @@ def _login_successful(request, user):
     userprops = _userprops(request)
     userprops['csrftoken'] = csrftoken
     userprops['encounters'] = _encounter_data(request)
+    userprops['privacy'] = request.user.user_profile.privacy
     return JsonResponse(userprops)
 
 
@@ -87,9 +88,12 @@ def _html_response(request, page, data={}):
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
     response['areas'] = {area.id: area.name for area in Area.objects.all()}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
+    response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['page'] = page
     response['debug'] = settings.DEBUG
     response['version'] = settings.VERSION
+    if request.user.is_authenticated:
+        response['privacy'] = request.user.user_profile.privacy
     if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
@@ -163,7 +167,7 @@ def profile(request):
 @require_GET
 def encounter(request, url_id=None, json=None):
     try:
-        encounter = Encounter.objects.select_related('area').get(url_id=url_id)
+        encounter = Encounter.objects.select_related('area', 'uploaded_by').get(url_id=url_id)
     except Encounter.DoesNotExist:
         if json:
             return _error("Encounter does not exist")
@@ -212,6 +216,13 @@ def encounter(request, url_id=None, json=None):
                 } for phase in phases
             }
 
+            user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
+            if user_profile:
+                privacy = user_profile[0].privacy
+                if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                    member['name'] = ''
+                    member['account'] = ''
+
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
@@ -224,7 +235,10 @@ def encounter(request, url_id=None, json=None):
             "started_at": encounter.started_at,
             "duration": encounter.duration,
             "success": encounter.success,
+            "tags": encounter.tagstring,
+            "category": encounter.category_id,
             "phase_order": phases,
+            "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
             "phases": {
                 phase: {
@@ -406,6 +420,26 @@ def poll(request):
     if notifications:
         result['last_id'] = notifications.last().id
     return JsonResponse(result)
+
+@login_required
+@require_POST
+def privacy(request):
+    profile = request.user.user_profile
+    profile.privacy = int(request.POST.get('privacy'))
+    profile.save()
+    return JsonResponse({})
+
+@login_required
+@require_POST
+def set_tags_cat(request):
+    encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
+    participation = encounter.participations.filter(character__account__user=request.user).exists()
+    if not participation:
+        return _error('Not a participant')
+    encounter.tagstring = request.POST.get('tags')
+    encounter.category_id = request.POST.get('category')
+    encounter.save()
+    return JsonResponse({})
 
 @login_required
 @require_POST
