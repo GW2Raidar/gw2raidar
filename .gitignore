@@ -1,4 +1,28 @@
+# compiled Python files
 *.pyc
-db.sqlite3
-TestLogs
+
+# dev database
+/db.sqlite3
+
+# test data
+/TestLogs
+
+# soloraidar output
+/Output
+
+# IntelliJ IDEA
 .idea
+
+# iPython
+.ipynb_checkpoints
+*.ipynb
+
+# Local settings, possibly with sensitive info
+# (copy from `gw2raidar/settings_local.py.example`)
+/gw2raidar/settings_local.py
+
+# result of `python3 manage.py collectstatic --noinput`
+/static
+
+# secret stuff
+/credentials

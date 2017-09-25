@@ -1,28 +1,103 @@
-header {
+.uk-badge.uploading {
+  background-color:#4282bb;
+  background-image:-webkit-linear-gradient(top,#569fd2,#346fac);
+  background-image:linear-gradient(to bottom,#569fd2,#346fac);
+}
+.uk-badge.analysing {
+  background-color:#f9a124;
+  background-image:-webkit-linear-gradient(top,#fbb450,#f89406);
+  background-image:linear-gradient(to bottom,#fbb450,#f89406);
+}
+.uk-badge.uploaded {
+  background-color:#82bb42;
+  background-image:-webkit-linear-gradient(top,#9fd256,#6fac34);
+  background-image:linear-gradient(to bottom,#9fd256,#6fac34);
+}
+.uk-badge.rejected {
+  background-color:#d32c46;
+  background-image:-webkit-linear-gradient(top,#ee465a,#c11a39);
+  background-image:linear-gradient(to bottom,#ee465a,#c11a39);
+}
+.states .uk-badge, .states .uk-badge:hover {
+  color: #ffffff;
+}
+.expected {
+  color: #999999;
+  font-size: 70%;
+}
+.ignore {
+  color: #bbbbbb;
+}
+.uk-h1, .uk-h2, .uk-h3, .uk-h4, .uk-h5, .uk-h6, h1, h2, h3, h4, h5, h6,
+body
+{
+  font-family: 'Raleway', sans-serif;
+}
+.navbar-secondary .uk-navbar-nav > li > a {
+  height: 40px;
+}
+rect.bar-average {
+  fill: #eeeeff;
+  stroke: #ddddff;
+}
+rect.bar-good {
+  fill: #eeffee;
+  stroke: #ddffdd;
+}
+rect.bar-bad {
+  fill: #ffeeee;
+  stroke: #ffdddd;
+}
+
+table.stats {
+  table-layout: fixed;
+  width: 1px;
+}
+table.stats td, th {
+  overflow: hidden;
+  width: 100px;
+  white-space: nowrap;
+}
+table.stats td:nth-of-type(1), table.stats th:nth-of-type(1) {
+  width: 250px;
+}
+.table-container {
   position: relative;
-  color: white;
-  /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#001d4c+0,000000+100 */
-  background: #001d4c; /* Old browsers */
-  background: -moz-linear-gradient(-45deg,  #001d4c 0%, #000000 100%); /* FF3.6-15 */
-  background: -webkit-linear-gradient(-45deg,  #001d4c 0%,#000000 100%); /* Chrome10-25,Safari5.1-6 */
-  background: linear-gradient(135deg,  #001d4c 0%,#000000 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-  filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#001d4c', endColorstr='#000000',GradientType=1 ); /* IE6-9 fallback on horizontal gradient */
 }
-header .logo {
-  font-size: 60px;
-  color: lightblue;
-  padding: 2px 5px;
-}
-header .auth {
+table.row-header {
   position: absolute;
-  bottom: 2px;
-  right: 5px;
-  text-align: right;
+  top: 0;
+  left: 0;
+  height: 0;
+  width: 0;
+  background: #ffffff;
 }
-header .auth a {
-  padding: 2px 5px;
-  color: lightblue;
+
+table td {
+  white-space: nowrap;
 }
-.error {
-  color: red;
+
+input[type="date"] {
+  max-width: 160px;
+}
+
+.link {
+  cursor: pointer;
+}
+.uk-table tr.all *, div.all {
+  font-weight: bold;
+}
+.main {
+  margin: 0 2%;
+}
+
+input:invalid, textarea:invalid {
+  border: 1px dashed red !important;
+}
+
+.private {
+  background-color: #000000;
+  color: #ffffff;
+  transform: rotate(-5deg);
+  display: inline-block;
 }

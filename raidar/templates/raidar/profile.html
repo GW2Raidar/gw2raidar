@@ -1,0 +1,137 @@
+{% load staticfiles %}
+[[#with profile]]
+  <div class="uk-clearfix">
+    <div class="uk-float-left">
+      <h2 class="uk-margin-remove">Profile: <strong>[[username]]</strong></h2>
+      <div>
+        <span class="ignore">Member since</span> [[formatDate(joined_at)]]
+      </div>
+      <div>
+        <span class="ignore">Played through</span>
+        [[page.era.profile.count]]
+        <span class="ignore">encounters in</span>
+        <span>[[page.era.name]]</span>
+        <div uk-dropdown>
+          <h4>[[page.era.name]] Era</h4>
+          <div>Started at: [[formatDate(page.era.started_at)]]</div>
+          <div>[[page.era.description]]</div>
+        </div>
+        <span class="ignore">era</span>
+      </div>
+    </div>
+    <div class="uk-float-right uk-text-right">
+      <select class="uk-select" value='[[page.era]]'>
+        [[#each eras]]
+          <option value='[[this]]'>[[name]]</option>
+        [[/each]]
+      </select>
+    </div>
+  </div>
+
+
+  [[#with page.era.profile]]
+    <div class="uk-margin">
+      <div uk-grid class="uk-grid-small">
+        [[#each keysWithAllLast(encounter, data.areas)]]
+          [[#with {encounterId: .}]]
+            [[#with encounter[encounterId].archetype.All.profession.All.elite.All]]
+              <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent link" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })" class-all="[[encounterId.match(/^All \w+ bosses$/)]]">
+                <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
+                [[encounterId.match(/^All \w+ bosses$/) ? encounterId : data.areas[encounterId]]]
+                ([[count]])
+              </div>
+            [[/with]]
+          [[/with]]
+        [[/each]]
+      </div>
+    </div>
+
+
+    [[#if encounter[page.area]]]
+      <div class="uk-text-center uk-clearfix">
+        <div class="uk-float-left uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
+            encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage,
+            encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage,
+            0)]]; width: 400px">
+            <div>Live [[
+              (100
+              - encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage
+              - encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage
+              ).toPrecision(3)]]%</div>
+          <div>Down [[encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage.toPrecision(3)]]%</div>
+          <div>Dead [[encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage.toPrecision(3)]]%</div>
+        </div>
+        <div class="uk-float-right uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
+            encounter[page.area].archetype[1] ? 100 * encounter[page.area].archetype[1].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count : 0,
+            encounter[page.area].archetype[2] ? 100 * encounter[page.area].archetype[2].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count : 0,
+            0
+          )]]; width: 400px">
+          <div>Support [[encounter[page.area].archetype[5] ? (100 * encounter[page.area].archetype[5].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count).toPrecision(3) : 0]]%</div>
+          <div>Power [[encounter[page.area].archetype[1] ? (100 * encounter[page.area].archetype[1].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count).toPrecision(3) : 0]]%</div>
+          <div>Condi [[encounter[page.area].archetype[2] ? (100 * encounter[page.area].archetype[2].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count).toPrecision(3) : 0]]%</div>
+        </div>
+      </div>
+
+
+      [[#each keysWithAllLast(encounter[page.area].archetype, {1: 2, 2: 3, 5: 1})]]
+        [[#with {archetypeId: ., archetype: encounter[page.area].archetype[.]}]]
+          <h3>
+            [[#if archetypeId !== 'All']]
+              <img alt="[[data.archetypes[archetypeId]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetypeId]]].png"/>
+            [[/if]]
+            [[archetypeId === 'All' ? 'All' : data.archetypes[archetypeId]]]
+            <span class="ignore">Archetypes on</span>
+            [[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area]]]
+          </h3>
+          <table class="uk-table uk-table-striped">
+            <thead>
+              <tr class="uk-background-secondary">
+                <th>Profession</th>
+                <th>Encounters</th>
+                <th>Avg DPS</th>
+                <th>Max DPS</th>
+                <th>Down</th>
+                <th>Dead</th>
+              </tr>
+            </thead>
+            <tbody>
+              [[#each keysWithAllLast(archetype.profession)]]
+                [[#with {professionId: ., profession: archetype.profession[.]}]]
+                  [[#each keysWithAllLast(profession.elite)]]
+                    [[#with {eliteId: ., elite: profession.elite[.]}]]
+                      [[#with elite]]
+                        <tr class="[[professionId === 'All' ? 'all' : '']]">
+                          <th>
+                            [[#if professionId !== 'All']]
+                              <img alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png"/>
+                            [[/if]]
+                            [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
+                          </th>
+                          <td>
+                            [[.count]]
+                          </td>
+                          <td>
+                            [[.avg_dps !== undefined ? Math.round(.avg_dps) : '']]
+                          </td>
+                          <td>
+                            [[.max_dps !== undefined ? Math.round(.max_dps) : '']]
+                          </td>
+                          <td>
+                            [[.avg_down_percentage !== undefined ? .avg_down_percentage.toPrecision(3) + '%' : '']]
+                          </td>
+                          <td>
+                            [[.avg_dead_percentage !== undefined ? .avg_dead_percentage.toPrecision(3) + '%' : '']]
+                          </td>
+                        </tr>
+                      [[/with]]
+                    [[/with]]
+                  [[/each]]
+                [[/with]]
+              [[/each]]
+            </tbody>
+          </table>
+        [[/with]]
+      [[/each]]
+    [[/if]]
+  [[/with]]
+[[/with]]

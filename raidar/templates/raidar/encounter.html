@@ -1,0 +1,59 @@
+<div class="uk-clearfix uk-padding-small">
+  [[#with encounter]]
+    <h2 class="uk-padding-small uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
+      [[name]]
+    </h2>
+    <div class="uk-float-right uk-text-right uk-float-right">
+      <h3 class="uk-margin-remove">
+        <span>[[formatDate(started_at)]]</span>
+        &#32;
+        <span>&#91;[[formatTime(duration)]]&#93;</span>
+      </h3>
+      <div>
+        <span class="ignore">Uploaded as</span>
+        [[#if evtc_url]]
+          <a href="[[evtc_url]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
+        [[elseif downloadable]]
+          <a href="{% url 'download' %}[[page.no]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
+        [[else]]
+          [[filename]]
+        [[/if]]
+        <span class="ignore">by</span> [[uploaded_by]]
+        <span class="ignore">at</span> [[formatDate(uploaded_at)]]
+      </div>
+    </div>
+  [[/with]]
+</div>
+
+<nav class="uk-navbar-container navbar-secondary" uk-navbar>
+  <div class="uk-navbar-left">
+    <ul class="uk-navbar-nav">
+      <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
+      <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
+      <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
+    </ul>
+  </div>
+  <div class="uk-navbar-right">
+    <ul class="uk-navbar-nav">
+      [[#each encounter.phase_order]]
+      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+      [[/each]]
+    </ul>
+  </div>
+</nav>
+
+<div class="uk-overflow-auto">
+</div>
+
+[[#if persistent_page.tab == 'combat_stats']]
+  {% include 'raidar/encounter_combat_data.html' %}
+[[elseif persistent_page.tab == 'boon_uptime']]
+  {% include 'raidar/encounter_boon_uptime.html' %}
+[[elseif persistent_page.tab == 'boss_metrics']]
+  {% include 'raidar/encounter_boss_metrics.html' %}
+[[/if]]
+
+<p>
+  Found an error?
+  <a href="{% url 'named' name='info-contact' %}" on-click="encounter_bug">Contact us</a>!
+</p>
