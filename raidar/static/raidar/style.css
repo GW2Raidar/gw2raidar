@@ -105,4 +105,13 @@ input:invalid, textarea:invalid {
 input[readonly] + .tags-input {
   border: none;
   pointer-events: none;
+  width: inherit !important;
+}
+.tags-input.no-background {
+  background: inherit;
+  border: none;
+  width: unset;
+  padding: 0;
+  margin: -3px 0;
+  box-shadow: none;
 }

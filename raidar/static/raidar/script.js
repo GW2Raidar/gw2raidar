@@ -454,6 +454,15 @@ ${rectSvg.join("\n")}
             encounters = encounters.filter(e => e.uploaded_at < f);
           }
         }
+        if (filters.category !== null) {
+          let f = filters.category;
+          if (!f) f = null;
+          encounters = encounters.filter(e => e.category === f);
+        }
+        if (filters.tag) {
+          let f = filters.tag.toLowerCase();
+          encounters = encounters.filter(e => e.tags.some(t => t.toLowerCase().startsWith(f)));
+        }
         return encounters;
       },
       encounterSlice: function encounterSlice() {
@@ -782,6 +791,7 @@ ${rectSvg.join("\n")}
     },
     set_tags_cat: function setTags(evt) {
       let encounter = r.get('encounter');
+
       $.post({
         url: 'set_tags_cat.json',
         data: {
@@ -790,6 +800,12 @@ ${rectSvg.join("\n")}
           category: encounter.category,
         },
       }).done(() => {
+        let eRowId = r.get('encounters').findIndex(e => e.id == encounter.id);
+        let eRow = r.get('encounters.' + eRowId);
+        eRow.category = encounter.category;
+        eRow.tags = encounter.tags.split(',');
+        r.update('encounters.' + eRowId);
+
         notification('Category and tags saved.', 'success');
       });
       return false;
