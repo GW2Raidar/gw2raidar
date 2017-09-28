@@ -356,6 +356,8 @@ class Participation(models.Model):
                 'elite': self.elite,
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
+                'category': self.encounter.category_id,
+                'tags': list(self.encounter.tags.names()),
             }
 
     class Meta:

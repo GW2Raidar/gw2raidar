@@ -26,22 +26,16 @@
 </div>
 
 <form class="uk-margin-small uk-flex uk-flex-bottom" on-submit="set_tags_cat">
+  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[encounter.category]]" [[#if encounter.participated]]readonly[[/if]]>
+    <option value="[[null]]">No category</option>
+    [[#each data.categories:id]]
+      <option value="[[id]]">[[.]]</option>
+    [[/each]]
+  </select>
   [[#if encounter.participated]]
-    <select as-ukUpdate class="uk-select uk-margin-small" style="width: 150px" value="[[encounter.category]]">
-      <option value="[[null]]">No category</option>
-      [[#each data.categories:id]]
-        <option value="[[id]]">[[.]]</option>
-      [[/each]]
-    </select>
     <input class="uk-flex-auto uk-margin-small" placeholder="Tags" as-tagsInput="'encounter.tags'">
-    <button class="uk-margin-small uk-button uk-button-primary">Save</button>
+    <button class="uk-margin-small uk-button uk-button-small uk-button-primary">Save</button>
   [[else]]
-    <select as-ukUpdate class="uk-select uk-margin-small" style="width: 150px" value="[[encounter.category]]" readonly>
-      <option value="null">No category</option>
-      [[#each data.categories:id]]
-        <option value="[[id]]">[[.]]</option>
-      [[/each]]
-    </select>
     <input class="uk-flex-auto uk-margin-small" as-tagsInput="'encounter.tags'" readonly>
   [[/if]]
 </form>
