@@ -272,6 +272,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_outgoing_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration, state_events)
 
@@ -498,6 +499,18 @@ class Analyser:
                            percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
     #Section: buff stats
+    
+    def collect_outgoing_buffs(self, collector, buff_data):
+        destination_collector = collector.with_key(Group.DESTINATION, "*All");
+        phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
+        destination_collector.set_context_value(ContextType.DURATION, self.end_time - self.start_time)
+        destination_collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_source, phase_data)
+
+        for i in range(0, len(self.phases)):
+            phase = self.phases[i]
+            phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            destination_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_source, phase_data)
+            
     def collect_incoming_buffs(self, collector, buff_data):
         source_collector = collector.with_key(Group.SOURCE, "*All");
         phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
@@ -512,6 +525,8 @@ class Analyser:
     def collect_buffs_by_target(self, collector, buff_data):
         split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'dst_instid', self.subgroups, self.players)
 
+    def collect_buffs_by_source(self, collector, buff_data):
+        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'src_instid', self.subgroups, self.players)                            
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
         if len(buff_data) > 0:
