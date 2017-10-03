@@ -57,6 +57,15 @@ class Specialization(IntEnum):
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
 
+def percentage_per_second(f):
+    return portion_of(percentage, ContextType.DURATION)
+
+def percentage_per_second_per_dst(f):
+    return portion_of2(percentage, ContextType.DESTINATIONS, ContextType.DURATION)
+
+def per_second_per_dst(f):
+    return portion_of2(f, ContextType.DESTINATIONS, ContextType.DURATION)
+
 def assign_event_types(events):
     events['type'] = np.where(
         events['is_activation'] != parser.Activation.NONE, LogType.ACTIVATION,
@@ -263,6 +272,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_outgoing_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration, state_events)
 
@@ -489,9 +499,22 @@ class Analyser:
                            percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
     #Section: buff stats
+    
+    def collect_outgoing_buffs(self, collector, buff_data):
+        destination_collector = collector.with_key(Group.DESTINATION, "*All");
+        phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
+        destination_collector.set_context_value(ContextType.DURATION, self.end_time - self.start_time)
+        destination_collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_source, phase_data)
+
+        for i in range(0, len(self.phases)):
+            phase = self.phases[i]
+            phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            destination_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_source, phase_data)
+            
     def collect_incoming_buffs(self, collector, buff_data):
         source_collector = collector.with_key(Group.SOURCE, "*All");
         phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
+        source_collector.set_context_value(ContextType.DURATION, self.end_time - self.start_time)
         source_collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, phase_data)
 
         for i in range(0, len(self.phases)):
@@ -500,8 +523,10 @@ class Analyser:
             source_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
 
     def collect_buffs_by_target(self, collector, buff_data):
-        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'player', self.subgroups, self.players)
+        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'dst_instid', self.subgroups, self.players)
 
+    def collect_buffs_by_source(self, collector, buff_data):
+        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'src_instid', self.subgroups, self.players)                            
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
         if len(buff_data) > 0:
@@ -531,16 +556,12 @@ class Analyser:
         if diff_data.empty:
             collector.add_data(None, 0.0)
         else:
-            total_time = diff_data['duration'].sum()
-            if total_time == 0:
-                mean = 0
-            else:
-                mean = (diff_data['duration'] * diff_data['stacks']).sum() / total_time
+            mean = (diff_data['duration'] * diff_data['stacks']).sum()
             buff_type = collector.context_values[ContextType.BUFF_TYPE]
             if buff_type.stacking == StackType.INTENSITY:
-                collector.add_data(None, mean)
+                collector.add_data(None, mean, per_second_per_dst(float))
             else:
-                collector.add_data(None, mean, percentage)
+                collector.add_data(None, mean, percentage_per_second_per_dst(float))
 
     def determine_success(self, events, final_boss_events, player_src_events, encounter, health_updates):
         success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
