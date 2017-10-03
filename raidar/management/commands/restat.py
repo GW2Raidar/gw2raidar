@@ -356,6 +356,9 @@ class Command(BaseCommand):
                         buffs_by_party = get_or_create(group_totals, 'buffs')
                         for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['From']['*All'], {}).items():
                             find_bounds(buffs_by_party, buff, value)
+                        buffs_out_by_party = get_or_create(group_totals, 'buffs_out')
+                        for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['To']['*All'], {}).items():
+                            find_bounds(buffs_out_by_party, buff, value)
 
                         # sums and averages, per encounter
                         if encounter.success:
@@ -371,6 +374,9 @@ class Command(BaseCommand):
                             for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['From']['*All'], {}).items():
                                 buffs.add(buff)
                                 get_or_create_then_increment(buffs_by_party, buff, value)
+                            for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['To']['*All'], {}).items():
+                                buffs.add(buff)
+                                get_or_create_then_increment(buffs_out_by_party, buff, value)
 
                         # mins and maxes, per encounter
                         find_bounds(group_totals, 'dps', stats_in_phase_to_all)
@@ -454,6 +460,12 @@ class Command(BaseCommand):
                                 if encounter.success:
                                     get_or_create_then_increment(buffs_by_archetype, buff, value)
                                 find_bounds(buffs_by_archetype, buff, value)
+                            buffs_out_by_archetype = get_or_create(totals_by_archetype, 'buffs_out')
+                            for buff, value in _safe_get(lambda: player_stats['Metrics']['buffs']['To']['*All'], {}).items():
+                                buffs.add(buff)
+                                if encounter.success:
+                                    get_or_create_then_increment(buffs_out_by_archetype, buff, value)
+                                find_bounds(buffs_out_by_archetype, buff, value)
                 except:
                     raise RestatException("Error in %s" % encounter)
 
@@ -472,6 +484,9 @@ class Command(BaseCommand):
                     buffs_by_party = group_totals['buffs']
                     for buff in buffs:
                         calculate_average(buffs_by_party, buff)
+                    buffs_out_by_party = group_totals['buffs_out']
+                    for buff in buffs:
+                        calculate_average(buffs_out_by_party, buff)
                     for stat in main_stats:
                         calculate_average(group_totals, stat)
 
@@ -492,6 +507,9 @@ class Command(BaseCommand):
                                 buffs_by_archetype = totals_by_archetype['buffs']
                                 for buff in buffs:
                                     calculate_average(buffs_by_archetype, buff)
+                                buffs_out_by_archetype = totals_by_archetype['buffs_out']
+                                for buff in buffs:
+                                    calculate_average(buffs_out_by_archetype, buff)
 
                     EraAreaStore.objects.update_or_create(
                             era=era, area_id=area_id, defaults={ "val": totals_in_area })
