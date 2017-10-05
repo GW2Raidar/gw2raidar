@@ -47,6 +47,16 @@
     };
   };
 
+  const lightbox = (() => {
+    let lightboxNode = document.getElementById('lightbox');
+    let items = [{source: "#", type: "", content: "<div/>"}];
+    let lightbox = UIkit.lightbox(lightboxNode, {preload: 0, items: items});
+    return lightbox;
+  })();
+  const setLightbox = (content, width, height) => {
+    lightbox.setItem(lightbox.getItem(), content, width, height);
+  }
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
