@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
 from django.core.mail import EmailMessage
+from django.views.decorators.csrf import csrf_exempt
 from smtplib import SMTPException
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
@@ -281,13 +282,7 @@ def initial(request):
     return JsonResponse(response)
 
 
-@require_POST
-@sensitive_post_parameters('password')
-@sensitive_variables('password')
-def login(request):
-    if request.method == 'GET':
-        return index(request, page={ 'name': 'login' })
-
+def _perform_login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     # stayloggedin = request.GET.get('stayloggedin')
@@ -296,7 +291,17 @@ def login(request):
     # else:
     #     request.session.set_expiry(0)
 
-    user = authenticate(username=username, password=password)
+    return authenticate(username=username, password=password)
+
+
+@require_POST
+@sensitive_post_parameters('password')
+@sensitive_variables('password')
+def login(request):
+    if request.method == 'GET':
+        return index(request, page={ 'name': 'login' })
+
+    user = _perform_login(request)
     if user is not None and user.is_active:
         return _login_successful(request, user)
     else:
@@ -382,9 +387,7 @@ def logout(request):
     return JsonResponse({})
 
 
-@login_required
-@require_POST
-def upload(request):
+def _perform_upload(request):
     if (len(request.FILES) != 1):
         return _error("Only single file uploads are allowed")
 
@@ -404,6 +407,24 @@ def upload(request):
             if len(buf) == 0:
                 break
             diskfile.write(buf)
+    return (filename, upload)
+
+
+@login_required
+@require_POST
+def upload(request):
+    filename, upload = _perform_upload(request)
+
+    return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+@csrf_exempt
+@require_POST
+def api_upload(request):
+    user = _perform_login(request)
+    if not user:
+        return _error('Could not authenticate')
+    auth_login(request, user)
+    filename, upload = _perform_upload(request)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
