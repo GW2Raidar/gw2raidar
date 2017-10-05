@@ -47,15 +47,6 @@
     };
   };
 
-  const lightbox = (() => {
-    let lightboxNode = document.getElementById('lightbox');
-    let items = [{source: "#", type: "", content: "<div/>"}];
-    let lightbox = UIkit.lightbox(lightboxNode, {preload: 0, items: items});
-    return lightbox;
-  })();
-  const setLightbox = (content, width, height) => {
-    lightbox.setItem(lightbox.getItem(), content, width, height);
-  }
 
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
@@ -586,6 +577,12 @@ ${rectSvg.join("\n")}
     }
   }
 
+  function graphLine(value, data) {
+    let ary = Array(data.length);
+    ary[0] = ary[data.length - 1] = value;
+    return ary;
+  }
+
   const ascSort = (prop) => (a, b) =>
     a[prop] > b[prop] ? 1 :
     a[prop] < b[prop] ? -1 : 0;
@@ -819,6 +816,116 @@ ${rectSvg.join("\n")}
         notification('Category and tags saved.', 'success');
       });
       return false;
+    },
+    chart: function chart(evt, archetype, profession, elite, stats) {
+      let era = r.get('page.era');
+      let eras = r.get('profile.eras');
+      let eraId = Object.keys(eras).find(key => eras[key] === era);
+      let areaId = r.get('page.area');
+      let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
+      let charDescription = profession == 'All' ? `All ${archetypeName}professions'` : archetypeName + r.get('data.specialisations')[profession][elite];
+
+      let data = [30876, 33098, 17666, 28909, 33762, 31983, 30173]; // XXX dummy values
+      let labels = [
+            "2017/09/23 13:12:14",
+            "2017/09/23 13:22:14",
+            "2017/09/23 13:32:14",
+            "2017/09/23 13:42:14",
+            "2017/09/23 13:52:14",
+            "2017/09/23 14:02:14",
+            "2017/09/23 14:12:14",
+          ];
+      charDescription = "(DUMMY - real data not implemented yet) " + charDescription; // XXX
+
+      let height = Math.round(window.innerHeight * 0.80);
+      let width = Math.round(window.innerWidth * 0.80);
+      let dialog = UIkit.modal.dialog(`
+<button class="uk-modal-close-outside" uk-transition-hide type="button" uk-close></button>
+<div>
+<canvas height="${height}" width="${width}"/>
+</div>
+          `, {center: true});
+      dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
+      dialog.panel.css({width: width, height: height});
+      dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
+      let ctx = dialog.$el.find('canvas');
+      let chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'P95',
+              data: graphLine(41000, data),
+              spanGaps: true,
+              borderDash: [10, 10],
+              pointRadius: 0,
+              backgroundColor: "rgba(255, 255, 255, 0)",
+              borderColor: "rgba(128, 128, 128, 1)",
+              borderWidth: 1,
+            },
+            {
+              label: 'P90',
+              data: graphLine(40000, data),
+              spanGaps: true,
+              borderDash: [7, 7],
+              pointRadius: 0,
+              backgroundColor: "rgba(255, 255, 255, 0)",
+              borderColor: "rgba(128, 128, 128, 1)",
+              borderWidth: 1,
+            },
+            {
+              label: 'P75',
+              data: graphLine(36000, data),
+              spanGaps: true,
+              borderDash: [4, 4],
+              pointRadius: 0,
+              backgroundColor: "rgba(255, 255, 255, 0)",
+              borderColor: "rgba(128, 128, 128, 1)",
+              borderWidth: 1,
+            },
+            {
+              label: 'Mean',
+              data: graphLine(30000, data),
+              spanGaps: true,
+              borderDash: [1, 1],
+              pointRadius: 0,
+              backgroundColor: "rgba(255, 255, 255, 0)",
+              borderColor: "rgba(128, 128, 255, 1)",
+              borderWidth: 1,
+            },
+            {
+              label: 'Median',
+              data: graphLine(30561, data),
+              spanGaps: true,
+              pointRadius: 0,
+              backgroundColor: "rgba(255, 255, 255, 0)",
+              borderColor: "rgba(224, 224, 0, 1)",
+              borderWidth: 1,
+            },
+            {
+              label: 'DPS',
+              data: data,
+              backgroundColor: "rgba(0, 0, 0, 0.05)",
+              borderColor: "rgba(0, 0, 0, 1)",
+            },
+          ]
+        },
+        options: {
+          title: {
+            text: `${charDescription} DPS on ${areaId}`,
+            display: true,
+          },
+          scales: {
+            yAxes: [{
+              ticks: {
+                beginAtZero: true
+              }
+            }]
+          }
+        }
+      });
+
     },
   });
 

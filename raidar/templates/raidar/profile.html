@@ -100,7 +100,7 @@
                   [[#each keysWithAllLast(profession.elite)]]
                     [[#with {eliteId: ., elite: profession.elite[.]}]]
                       [[#with elite]]
-                        <tr class="[[professionId === 'All' ? 'all' : '']]">
+                        <tr class="[[professionId === 'All' ? 'all' : '']] link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, .)">
                           <th>
                             [[#if professionId !== 'All']]
                               <img alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png"/>
