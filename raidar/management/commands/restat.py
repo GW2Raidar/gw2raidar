@@ -159,7 +159,6 @@ def finalise_stats(node):
                 node['max_' + sections[1]] = values[-1]
                 #node['p_' + sections[1]] = list(map(percentile, range(0, 100)))
                 node['p01_' + sections[1]] = percentile(1)
-                node['p05_' + sections[1]] = percentile(5)
                 node['p10_' + sections[1]] = percentile(10)
                 node['p25_' + sections[1]] = percentile(25)
                 node['p50_' + sections[1]] = percentile(50)
