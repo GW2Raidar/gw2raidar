@@ -144,6 +144,7 @@ def profile(request):
     queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
         eras = [{
+                'id': era_user_store.era_id,
                 'name': era_user_store.era.name,
                 'started_at': era_user_store.era.started_at,
                 'description': era_user_store.era.description,
@@ -427,6 +428,56 @@ def api_upload(request):
     filename, upload = _perform_upload(request)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+
+@login_required
+@require_POST
+def profile_graph(request):
+    era_id = request.POST['era']
+    area_id = request.POST['area']
+    archetype_id = request.POST['archetype']
+    profession_id = request.POST['profession']
+    elite_id = request.POST['elite']
+    stat = request.POST['stat']
+
+    participations = Participation.objects.select_related('encounter').filter(
+            encounter__era_id=era_id, character__account__user=request.user)
+
+    try:
+        if area_id.startswith('All'):
+            store = Era.objects.get(pk=era_id).val[area_id]
+        else:
+            participations = participations.filter(encounter__area_id=area_id)
+            store = EraAreaStore.objects.get(era_id=era_id, area_id=area_id).val
+    except (EraAreaStore.DoesNotExist, Era.DoesNotExist, KeyError):
+        store = {}
+    if archetype_id != 'All':
+        participations = participations.filter(archetype=archetype_id)
+    if profession_id != 'All':
+        participations = participations.filter(character__profession=profession_id)
+    if elite_id != 'All':
+        participations = participations.filter(elite=elite_id)
+
+    requested = _safe_get(lambda: store['All']['build'][profession_id][elite_id][archetype_id], {})
+    MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
+    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character__name', 'encounter__started_at', 'encounter__value')
+    debug = str(participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].query)
+    data = []
+    times = []
+    target = '*Boss' if stat == 'boss_dps' else 'All'
+    for name, started_at, json in reversed(db_data):
+        dump = json_loads(json)
+        datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target]['dps'], 0)
+        data.append(datum)
+        times.append(started_at)
+
+    result = {
+        'globals': requested,
+        'data': data,
+        'times': times,
+        'debug': debug,
+    }
+    return JsonResponse(result)
 
 
 @require_GET
