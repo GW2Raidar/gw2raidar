@@ -847,7 +847,7 @@ ${rectSvg.join("\n")}
           archetype: archetype,
           profession: profession,
           elite: elite,
-          stat: 'boss_dps',
+          stat: 'dps_boss',
         },
       }).then(payload => {
         let {globals, data, times} = payload;

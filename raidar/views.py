@@ -464,7 +464,7 @@ def profile_graph(request):
     debug = str(participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].query)
     data = []
     times = []
-    target = '*Boss' if stat == 'boss_dps' else 'All'
+    target = '*Boss' if stat == 'dps_boss' else 'All'
     for name, started_at, json in reversed(db_data):
         dump = json_loads(json)
         datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target]['dps'], 0)
