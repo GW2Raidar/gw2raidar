@@ -4,8 +4,8 @@ GW2 Raidar
 Quickstart
 ----------
 
-* Install Python 3
-* `pip3 install django pandas requests`
+* Install Python 3 and pip3
+* `pip3 install django pandas requests psycopg2 django-taggit google-api-python-client`
 * `python3 manage.py migrate`
 * `python3 manage.py createsuperuser`
 * `python3 manage.py runserver`

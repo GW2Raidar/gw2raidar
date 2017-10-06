@@ -5,19 +5,22 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.utils import IntegrityError
 from gw2raidar import settings
+from analyser.bosses import BOSSES, Kind
 from json import loads as json_loads, dumps as json_dumps
 from os.path import join as path_join
 from raidar.models import *
 from sys import exit
 from time import time
 import os
-
-
+import csv
+from evtcparser.parser import AgentType
+from analyser.analyser import Archetype, Elite
 # XXX DEBUG
 # import logging
 # l = logging.getLogger('django.db.backends')
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
+
 
 
 @contextmanager
@@ -55,6 +58,14 @@ def necessary(force=False):
 
 class RestatException(Exception):
     pass
+
+
+
+def name_for(id):
+    if id in BOSSES:
+        return BOSSES[id].name
+    return AgentType(id).name
+
 
 def get_and_add(hash, prop, n):
     get_or_create(hash, prop, float)
@@ -104,6 +115,7 @@ def navigate(node, *names):
         new_node = new_node[name]
     return new_node
 
+#Automated statistics style:
 def bound_stats(output, name, value):
     maxprop = 'max|' + name
     if maxprop not in output or value > output[maxprop]:
@@ -113,6 +125,11 @@ def bound_stats(output, name, value):
     if minprop not in output or value < output[minprop]:
         output[minprop] = value
 
+def advanced_stats(output, name, value):
+    l = output.get('values|' + name, [])
+    l.append(value)
+    output['values|' + name] = l
+
 def all_stats(output, name, value):
     find_bounds(output, name, value)
     average_stat(output, name, value)
@@ -120,6 +137,37 @@ def all_stats(output, name, value):
 def average_stat(output, name, value):
     output['avgsum|' + name] = output.get('avgsum|' + name, 0) + value
     output['avgnum|' + name] = output.get('avgnum|' + name, 0) + 1
+
+def finalise_stats(node):
+    try:
+        for key in list(node):
+            sections = str(key).split('|')
+            if sections[0] == 'avgsum':
+                node['avg_' + sections[1]] = node[key]/node['avgnum|' + sections[1]]
+                del node['avgsum|' + sections[1]]
+                del node['avgnum|' + sections[1]]
+            if sections[0] == 'values':
+                values = node[key]
+                def percentile(n):
+                    i, p = divmod((len(values)-1) * n, 100)
+                    n = values[i]
+                    if(p > 0):
+                        n = ((n * (100-p)) + (values[i+1] * p))/100
+                    return n
+                values.sort()
+                node['avg_' + sections[1]] = sum(values) / len(values)
+                node['min_' + sections[1]] = values[0]
+                node['max_' + sections[1]] = values[-1]
+                #node['p_' + sections[1]] = list(map(percentile, range(0, 100)))
+                node['p10_' + sections[1]] = percentile(10)
+                node['p25_' + sections[1]] = percentile(25)
+                node['p50_' + sections[1]] = percentile(50)
+                node['p75_' + sections[1]] = percentile(75)
+                node['p90_' + sections[1]] = percentile(90)
+            elif key in node:
+                finalise_stats(node[key])
+    except TypeError as e:
+        pass
 
 def calculate_average(hash, prop):
     if prop in hash:
@@ -143,6 +191,12 @@ class Command(BaseCommand):
             default=False,
             help='Force calculation even if no new Encounters')
 
+        parser.add_argument('-g', '--global',
+                            action='store_true',
+                            dest='calculate_global',
+                            default=False,
+                            help='Calculates global statistics in greater detail')
+
     def handle(self, *args, **options):
         with single_process('restat'), necessary(options['force']) as last_run:
             start = time()
@@ -159,17 +213,69 @@ class Command(BaseCommand):
             # TODO: don't recalculate eras with no uploads
             totals = {
                 "area": {},
-                "user": {},
+                "user": {}
             }
+
+            global_stats = {}
+
+            def calculate(l, f, *args):
+                for t in l:
+                    f(t, *args)
+
             era_queryset = era.encounters.all()
             buffs = set()
             for encounter in queryset_iterator(era_queryset):
+                boss = BOSSES[encounter.area_id]
+
                 participations = encounter.participations.select_related('character', 'character__account').all()
 
                 try:
                     data = json_loads(encounter.dump)
                     duration = data['Category']['encounter']['duration'] * 1000
+
+                    try:
+                        if options ['calculate_global'] and encounter.success:
+                            target = navigate(global_stats, 'encounter', encounter.area_id)
+                            targets = [target]
+
+                            stats = data['Category']['combat']['Phase']['All']['Subgroup']['*All']
+                            stats_in_phase_to_all = _safe_get(
+                                lambda: stats['Metrics']['damage']['To']['*All'], {})
+                            stats_in_phase_to_boss = _safe_get(
+                                lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+
+                            calculate(targets, get_and_add, 'count', 1)
+                            calculate(targets, advanced_stats, 'time', duration)
+                            calculate(targets, advanced_stats, 'dps',
+                                      _safe_get(lambda: stats_in_phase_to_all['dps']))
+                            calculate(targets, advanced_stats, 'boss_dps',
+                                      _safe_get(lambda: stats_in_phase_to_boss['dps']))
+
+                            for participation in participations:
+                                player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
+                                #data dump stats...
+                                target = navigate(global_stats,
+                                                  'encounter', encounter.area_id,
+                                                  'archetype', participation.archetype,
+                                                  'profession', participation.character.profession,
+                                                  'elite', participation.elite)
+                                targets = [target]
+                                stats_in_phase_to_all = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*All'], {})
+                                stats_in_phase_to_boss = _safe_get(
+                                    lambda: player_stats['Metrics']['damage']['To']['*Boss'], {})
+
+                                calculate(targets, get_and_add, 'count', 1)
+                                calculate(targets, advanced_stats, 'dps',
+                                          _safe_get(lambda: stats_in_phase_to_all['dps']))
+                                calculate(targets, advanced_stats, 'boss_dps',
+                                          _safe_get(lambda: stats_in_phase_to_boss['dps']))
+                    except Exception as e:
+                        print("Could not gather stats from encounter for global stats calculations.", e)
+
+
                     for participation in participations:
+
                         try:
                             player_stats = data['Category']['combat']['Phase']['All']['Player'][participation.character.name]
                             user_id = participation.character.account.user_id
@@ -179,39 +285,45 @@ class Command(BaseCommand):
 
                             def categorise(split_encounter, split_archetype, split_profession):
                                 return navigate(totals_for_player,
-                                                'encounter', encounter.area_id if split_encounter else 'All',
+                                                'encounter', encounter.area_id if split_encounter else 'All %s bosses' % boss.kind.name.lower(),
                                                 'archetype', participation.archetype if split_archetype else 'All',
-                                                'profession', participation.character.profession if split_profession else 'All')
+                                                'profession', participation.character.profession if split_profession else 'All',
+                                                'elite', participation.elite if split_profession else 'All')
                             player_this_encounter = categorise(True, False, False)
                             player_this_archetype = categorise(False, True, False)
                             player_this_profession = categorise(False, False, True)
                             player_this_build = categorise(False, True, True)
                             player_archetype_encounter = categorise(True, True, False)
                             player_build_encounter = categorise(True, True, True)
+                            player_profession_encounter = categorise(True, False, True)
+                            player_all = categorise(False, False, False)
 
-                            get_and_add(totals_for_player, 'count', 1)
-
-                            get_and_add(player_this_encounter, 'count', 1)
-                            average_stat(player_this_encounter, 'success_percentage', 100 if encounter.success else 0)
-
-                            get_and_add(player_this_archetype, 'count', 1)
-                            get_and_add(player_this_profession, 'count', 1)
-
-                            get_and_add(player_this_build, 'count', 1)
-                            stats_in_phase_to_all = player_stats['Metrics']['damage']['To']['*All']
+                            stats_in_phase_to_all = _safe_get(lambda: player_stats['Metrics']['damage']['To']['*All'], {})
                             stats_in_phase_events = player_stats['Metrics']['events']
 
-                            def calculate(l, f, *args):
-                                for t in l:
-                                    f(t, *args)
+
 
                             breakdown = [player_this_build,
                                         player_this_archetype,
+                                        player_this_profession,
                                         player_archetype_encounter,
-                                        player_build_encounter]
-                            all = breakdown + [player_summary]
+                                        player_build_encounter,
+                                        player_profession_encounter]
+                            all = breakdown + [player_summary, player_this_encounter, player_all]
+                            encounter_stats = [player_this_encounter,
+                                               player_archetype_encounter,
+                                               player_build_encounter,
+                                               player_profession_encounter,
+                                               player_all]
+
+                            #TODO: Remove if the one in player_summary is enough!
+                            get_and_add(totals_for_player, 'count', 1)
+
+                            calculate(all, get_and_add, 'count', 1)
+                            calculate(encounter_stats, average_stat, 'success_percentage', 100 if encounter.success else 0)
+
                             if(encounter.success):
-                                dps = stats_in_phase_to_all['dps']
+                                dps = _safe_get(lambda: stats_in_phase_to_all['dps'])
                                 dead_percentage = 100 * stats_in_phase_events['dead_time'] / duration
                                 down_percentage = 100 * stats_in_phase_events['down_time'] / duration
                                 disconnect_percentage = 100 * stats_in_phase_events['disconnect_time'] / duration
@@ -236,14 +348,17 @@ class Command(BaseCommand):
                         stats_in_phase_to_all = squad_stats_in_phase['Metrics']['damage']['To']['*All']
                         stats_in_phase_to_boss = squad_stats_in_phase['Metrics']['damage']['To']['*Boss']
                         stats_in_phase_received = _safe_get(lambda: squad_stats_in_phase['Metrics']['damage']['From']['*All'], {})
-                        stats_in_phase_buffs = squad_stats_in_phase['Metrics']['buffs']
+                        stats_in_phase_buffs = _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs'], {})
                         totals_in_phase = get_or_create(totals_in_area, phase)
                         group_totals = get_or_create(totals_in_phase, 'group')
                         individual_totals = get_or_create(totals_in_phase, 'individual')
 
                         buffs_by_party = get_or_create(group_totals, 'buffs')
-                        for buff, value in squad_stats_in_phase['Metrics']['buffs']['From']['*All'].items():
+                        for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['From']['*All'], {}).items():
                             find_bounds(buffs_by_party, buff, value)
+                        buffs_out_by_party = get_or_create(group_totals, 'buffs_out')
+                        for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['To']['*All'], {}).items():
+                            find_bounds(buffs_out_by_party, buff, value)
 
                         # sums and averages, per encounter
                         if encounter.success:
@@ -256,9 +371,12 @@ class Command(BaseCommand):
                             get_or_create_then_increment(group_totals, 'scholar', stats_in_phase_to_all)
                             get_or_create_then_increment(group_totals, 'flanking', stats_in_phase_to_all)
 
-                            for buff, value in squad_stats_in_phase['Metrics']['buffs']['From']['*All'].items():
+                            for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['From']['*All'], {}).items():
                                 buffs.add(buff)
                                 get_or_create_then_increment(buffs_by_party, buff, value)
+                            for buff, value in _safe_get(lambda: squad_stats_in_phase['Metrics']['buffs']['To']['*All'], {}).items():
+                                buffs.add(buff)
+                                get_or_create_then_increment(buffs_out_by_party, buff, value)
 
                         # mins and maxes, per encounter
                         find_bounds(group_totals, 'dps', stats_in_phase_to_all)
@@ -337,12 +455,17 @@ class Command(BaseCommand):
                                 pass
 
                             buffs_by_archetype = get_or_create(totals_by_archetype, 'buffs')
-                            for buff, value in player_stats['Metrics']['buffs']['From']['*All'].items():
+                            for buff, value in _safe_get(lambda: player_stats['Metrics']['buffs']['From']['*All'], {}).items():
                                 buffs.add(buff)
                                 if encounter.success:
                                     get_or_create_then_increment(buffs_by_archetype, buff, value)
                                 find_bounds(buffs_by_archetype, buff, value)
-
+                            buffs_out_by_archetype = get_or_create(totals_by_archetype, 'buffs_out')
+                            for buff, value in _safe_get(lambda: player_stats['Metrics']['buffs']['To']['*All'], {}).items():
+                                buffs.add(buff)
+                                if encounter.success:
+                                    get_or_create_then_increment(buffs_out_by_archetype, buff, value)
+                                find_bounds(buffs_out_by_archetype, buff, value)
                 except:
                     raise RestatException("Error in %s" % encounter)
 
@@ -361,6 +484,9 @@ class Command(BaseCommand):
                     buffs_by_party = group_totals['buffs']
                     for buff in buffs:
                         calculate_average(buffs_by_party, buff)
+                    buffs_out_by_party = group_totals['buffs_out']
+                    for buff in buffs:
+                        calculate_average(buffs_out_by_party, buff)
                     for stat in main_stats:
                         calculate_average(group_totals, stat)
 
@@ -381,6 +507,9 @@ class Command(BaseCommand):
                                 buffs_by_archetype = totals_by_archetype['buffs']
                                 for buff in buffs:
                                     calculate_average(buffs_by_archetype, buff)
+                                buffs_out_by_archetype = totals_by_archetype['buffs_out']
+                                for buff in buffs:
+                                    calculate_average(buffs_out_by_archetype, buff)
 
                     EraAreaStore.objects.update_or_create(
                             era=era, area_id=area_id, defaults={ "val": totals_in_area })
@@ -389,20 +518,42 @@ class Command(BaseCommand):
             if None in totals['user']:
                 del totals['user'][None]
 
-            for user_id, totals_for_player in totals['user'].items():
-                def finalise_stats(node):
-                    try:
-                        for key in list(node):
-                            sections = str(key).split('|')
-                            if sections[0] == 'avgsum':
-                                node['avg_' + sections[1]] = node[key]/node['avgnum|' + sections[1]]
-                                del node['avgsum|' + sections[1]]
-                                del node['avgnum|' + sections[1]]
-                            elif key in node:
-                                finalise_stats(node[key])
-                    except TypeError:
-                        pass
+            if options['calculate_global']:
+                with open('global_stats_%s.csv' % era.id, 'w') as global_stats_file:
+                    global_stats_csv = csv.writer(global_stats_file)
 
+                    finalise_stats(global_stats)
+                    keys = ['encounter']
+                    values = ['count',
+                            'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
+                            'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                            'min_boss_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                    global_stats_csv.writerow(keys + values)
+
+                    for e, g1 in global_stats[keys[0]].items():
+                        try:
+                            global_stats_csv.writerow([name_for(e)] + list(map(lambda k: g1[k], values)))
+                        except ValueError as x:
+                            print("FOO", x)
+                            pass
+
+                    keys = ['encounter','archetype','profession','elite']
+                    values = ['count',
+                            'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
+                            'min_boss_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                    global_stats_csv.writerow(keys + values)
+
+                    for e, g1 in global_stats[keys[0]].items():
+                        for a, g2 in g1[keys[1]].items():
+                            for p, g3 in g2[keys[2]].items():
+                                for l, g4 in g3[keys[3]].items():
+                                    try:
+                                        global_stats_csv.writerow([name_for(e), Archetype(a).name, AgentType(p).name, Elite(l).name] + list(map(lambda k: g4[k], values)))
+                                    except ValueError as x:
+                                        print("POO", x)
+                                        pass
+
+            for user_id, totals_for_player in totals['user'].items():
                 finalise_stats(totals_for_player)
 
                 if options['verbosity'] >= 3:
@@ -413,6 +564,7 @@ class Command(BaseCommand):
 
                 EraUserStore.objects.update_or_create(
                         era=era, user_id=user_id, defaults={ "val": totals_for_player })
+
 
             if options['verbosity'] >= 2:
                 import pprint

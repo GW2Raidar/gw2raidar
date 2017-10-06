@@ -1,0 +1,63 @@
+<h2>Release Notes</h2>
+<h4>
+  <span class="ignore">Version</span>
+  [[data.version.id]]
+  <span class="ignore">released on</span>
+  [[formatDate(data.version.timestamp)]]
+</h4>
+<ul>
+  <li>Added game build check for compatible ARC versions. GW2Raidar will now reject logs using game builds where ARC is not functioning properly (latest only).</li>
+  <li>Added Fractal CM support for Nightmare and Shattered Observatory</li>
+  <li>Added basic functionality to categorise raid encounter in preparation for website statistics reporting. </li>
+  <li>Added basic functionality to add custom user tags to encounters. Tags will be editable by all participants. </li>
+</ul>
+<h4>Version 0.9.6</h4>
+<ul>
+  <li>Added more robust success detection. Applies to logs uploaded using ARC version 20170905 or higher</li>
+  <li>Updated 'classic' Xera success detection to minimise occurence of false successes.</li>
+  <li>Added Path of Fire Era. PoF Era will apply to all encounters starting from 22nd September 9AM GMT -7</li>
+</ul>
+<h4>Version 0.9.5</h4>
+<ul>
+  <li>Added privacy options for GW2R Accounts. You can now select between one of the following options:
+    <ol>
+      <li><strong>Private</strong>: Display your account and character names to no-one but yourself</li>
+      <li><strong>Squad</strong>: Display your account and character names only to participants in your specific encounter</li>
+      <li><strong>Public</strong>: Show your account and character names to everyone</li>
+    </ol>
+    Privacy options will apply to all accounts and characters linked to your GW2R account.</li>
+</ul>
+<h4>Version 0.9.4</h4>
+<ul>
+  <li>Added basic Kitty Golem log support.</li>
+  <li>Added additional aggregation groups (Raids, Golems)</li>
+  <li>Tweaked log processor to make it more robust.</li>
+  <li>Modified Deimos success detector.</li>
+  <li>Fixed tiny Deimos Phase 2 bars.</li>
+  <li>Removed some less than desirable words from URL wordlist.</li>
+  <li>Fixed a server crash.</li>
+</ul>
+<h4>Version 0.9.3</h4>
+<ul>
+  <li>Added support for non-English GW2 clients</li>
+  <li>From now on, GW2 API key used to authenticate accounts needs to have "gw2raidar" in its name</li>
+  <li>Added support for new ARC Version 20170905</li>
+  <li>Minimum ARC version relaxed to 20170419. Any logs prior to this date will be rejected.</li>
+</ul>
+<h4>Version 0.9.2</h4>
+<ul>
+  <li>Added support for Retaliation uptime. (Any logs uploaded prior to this release will need to be uploaded again for Retaliation to appear.)</li>
+  <li>Better error handling</li>
+</ul>
+<h4>Version 0.9.1</h4>
+<ul>
+  <li>Added multiple processor support</li>
+  <li>Minimum ARC version updated to 20170808. Any logs prior to this date will be rejected</li>
+  <li>Logs for most recent encounters will always be processed first</li>
+</ul>
+<h4>Version 0.9.0</h4>
+<ul>
+  <li>
+    Initial Release of GW2Raidar \o/
+  </li>
+</ul>

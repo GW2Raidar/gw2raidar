@@ -40,10 +40,14 @@
           [[#each members]]
             [[#with { member: . }]]
               <tr>
-                <td class="[[self && 'uk-text-primary']]" title="[[account]]" uk-tooltip>
+                <td class="[[self && 'uk-text-primary']]">
                   <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
                   <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
-                  [[name]]
+                  [[#if name]]
+                    [[name]]
+                  [[else]]
+                    <span class="private">PRIVATE</span>
+                  [[/if]]
                 </td>
                 [[#each encounter.boss_metrics]]
                   [[[tagForMechanic(member, .)]]]

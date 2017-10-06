@@ -5,6 +5,58 @@
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
+  const DEBUG = raidar_data.debug;
+  Ractive.DEBUG = DEBUG;
+
+
+  Ractive.decorators.ukUpdate = function(node) {
+    UIkit.update();
+    return {
+      teardown: () => {
+      },
+    };
+  };
+
+  // bring tagsInput into Ractive
+  Ractive.decorators.tagsInput = function(node, tagsPath) {
+    let ractive = this;
+    tagsPath = ractive.getContext(node).resolve(tagsPath);
+    let classList = Array.from(node.classList);
+    tagsInput(node);
+    node.nextSibling.setValue(ractive.get(tagsPath));
+    node.nextSibling.classList.add(...classList);
+    if (node.getAttribute('readonly')) {
+      node.nextSibling.firstChild.setAttribute('readonly', true);
+    }
+    node.addEventListener('change', function(evt) {
+      let tags = node.nextSibling.getValue();
+      if (r.get(tagsPath) != tags) {
+        ractive.set(tagsPath, node.nextSibling.getValue());
+      }
+    });
+    let observer = this.observe(tagsPath, (newValue, oldValue, keypath) => {
+      if (node.nextSibling && newValue != oldValue) {
+        node.nextSibling.setValue(newValue);
+      }
+    });
+    return {
+      teardown: () => {
+        observer.cancel();
+        node.nextSibling.remove();
+      },
+    };
+  };
+
+  const lightbox = (() => {
+    let lightboxNode = document.getElementById('lightbox');
+    let items = [{source: "#", type: "", content: "<div/>"}];
+    let lightbox = UIkit.lightbox(lightboxNode, {preload: 0, items: items});
+    return lightbox;
+  })();
+  const setLightbox = (content, width, height) => {
+    lightbox.setItem(lightbox.getItem(), content, width, height);
+  }
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -29,6 +81,24 @@
   }
 
   let helpers = Ractive.defaults.data;
+  let allRE = /^All(?: \w+ bosses)?$/;
+  helpers.keysWithAllLast = (obj, lookup) => {
+    let keys = Object.keys(obj);
+    keys.sort((a, b) => {
+      let aAll = a.match(allRE);
+      let bAll = b.match(allRE);
+      if (aAll && !bAll) return 1;
+      if (!aAll && bAll) return -1;
+      if (lookup && !(aAll && bAll)) {
+        a = lookup[a];
+        b = lookup[b];
+      }
+      if (a < b) return -1;
+      if (a > b) return 1;
+      return 0;
+    });
+    return keys;
+  };
   helpers.formatDate = timestamp => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
@@ -150,16 +220,7 @@
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   };
-  helpers.barSurvival = (events, duration, numPlayers) => {
-    switch (typeof numPlayers) {
-      case "undefined":
-        numPlayers = 1; break;
-      case "object":
-        numPlayers = Object.values(numPlayers).reduce((a, e) => a + e.members.length, 0);
-    }
-    let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
-    let down_perc = (events.down_time || 0) * 100 / 1000 / numPlayers / duration;
-    let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
+  helpers.barSurvivalPerc = (down_perc, dead_perc, disconnect_perc) => {
     let live_perc = 100 - (down_perc + dead_perc + disconnect_perc);
     let rects = [
       [live_perc, barcss.live],
@@ -180,19 +241,37 @@ ${rectSvg.join("\n")}
 </svg>
     `.replace(/\n\s*/g, "");
     return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+  };
+  helpers.barSurvival = (events, duration, numPlayers) => {
+    switch (typeof numPlayers) {
+      case "undefined":
+        numPlayers = 1; break;
+      case "object":
+        numPlayers = Object.values(numPlayers).reduce((a, e) => a + e.members.length, 0);
+    }
+    let down_perc = (events.down_time || 0) * 100 / 1000 / numPlayers / duration;
+    let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
+    let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
+    return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
 
-  const DEBUG = raidar_data.debug;
-  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
-  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw'];
-  if (!window.raidar_data.username && PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
-    initialPage = { name: 'login' };
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
+  if (!window.raidar_data.username) {
+    if (!initialPage.name) {
+      loggedInPage = { name: 'info-releasenotes' };
+      initialPage = { name: 'info-help' };
+    } else if (PERMITTED_PAGES.indexOf(loggedInPage.name) == -1) {
+      initialPage = { name: 'login' };
+    }
+  } else if (!initialPage.name) {
+    initialPage = { name: 'info-releasenotes' };
   }
   let initData = {
     data: window.raidar_data,
     username: window.raidar_data.username,
+    privacy: window.raidar_data.privacy,
     is_staff: window.raidar_data.is_staff,
     page: initialPage,
     persistent_page: { tab: 'combat_stats' },
@@ -213,6 +292,7 @@ ${rectSvg.join("\n")}
     { boon: 'quickness' },
     { boon: 'alacrity' },
     { boon: 'protection' },
+    { boon: 'retaliation' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
     { boon: 'gotl', stacks: 5 },
@@ -266,10 +346,17 @@ ${rectSvg.join("\n")}
     profile: page => {
       r.set({
         loading: true,
+        'page.area': 'All raid bosses',
       });
       $.get({
         url: 'profile.json',
-      }).then(setData);
+      }).then(setData).then(() => {
+        let eras = r.get('profile.eras');
+        let latest = eras[eras.length - 1];
+        r.set({
+          'page.era': latest,
+        });
+      });
     },
   };
 
@@ -285,19 +372,6 @@ ${rectSvg.join("\n")}
     template: '#template',
     data: initData,
     computed: {
-      authBad: function authBad() {
-        let username = this.get('auth.input.username'),
-            password = this.get('auth.input.password'),
-            email = this.get('auth.input.email');
-
-        let authOK = username != '' && password != '';
-        if (this.get('page.name') == 'register') {
-          let password2 = this.get('auth.input.password2');
-          let emailOK = email != ''; // TODO maybe basic pattern check
-          authOK = authOK && password == password2 && emailOK;
-        }
-        return !authOK;
-      },
       changePassBad: function changePassBad() {
         let password = this.get('account.password'),
             password2 = this.get('account.password2');
@@ -390,6 +464,15 @@ ${rectSvg.join("\n")}
             encounters = encounters.filter(e => e.uploaded_at < f);
           }
         }
+        if (filters.category !== null) {
+          let f = filters.category;
+          if (!f) f = null;
+          encounters = encounters.filter(e => e.category === f);
+        }
+        if (filters.tag) {
+          let f = filters.tag.toLowerCase();
+          encounters = encounters.filter(e => e.tags.some(t => t.toLowerCase().startsWith(f)));
+        }
         return encounters;
       },
       encounterSlice: function encounterSlice() {
@@ -481,7 +564,7 @@ ${rectSvg.join("\n")}
 
   // test for shenanigans
   $.ajax({
-    url: 'initial',
+    url: 'initial.json',
   }).done(updateRactiveFromResponse);
 
 
@@ -510,8 +593,17 @@ ${rectSvg.join("\n")}
     a[prop] < b[prop] ? 1 :
     a[prop] > b[prop] ? -1 : 0;
 
+
   r.on({
-    auth_login: function login() {
+    encounter_bug: function encounterBug(x) {
+      let url = r.get('encounter.url_id');
+      r.set('contact.input.subject', `Error report: ${url}`);
+      setPage('info-contact');
+      return false;
+    },
+    auth_login: function login(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let username = this.get('auth.input.username'),
           password = this.get('auth.input.password');
 
@@ -525,7 +617,9 @@ ${rectSvg.join("\n")}
 
       return false;
     },
-    auth_register: function register() {
+    auth_register: function register(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let username = this.get('auth.input.username'),
           password = this.get('auth.input.password'),
           apiKey = this.get('auth.input.api_key'),
@@ -543,7 +637,9 @@ ${rectSvg.join("\n")}
 
       return false;
     },
-    auth_reset_pw: function resetPw() {
+    auth_reset_pw: function resetPw(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let email = this.get('auth.input.email');
 
       $.post({
@@ -564,7 +660,7 @@ ${rectSvg.join("\n")}
         this.set({
           username: null,
         });
-        setPage('index');
+        setPage('info-help');
       });
     },
     page_no: function pageNo(evt) {
@@ -573,7 +669,9 @@ ${rectSvg.join("\n")}
       setPage(Object.assign(page, { no: page_no }));
       return false;
     },
-    change_password: function changePassword(evt) {
+    change_password: function changePassword(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       $.post({
         url: 'change_password.json',
         data: {
@@ -593,7 +691,9 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
-    change_email: function changeEmail(evt) {
+    change_email: function changeEmail(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       $.post({
         url: 'change_email.json',
         data: {
@@ -609,7 +709,9 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
-    add_api_key: function addAPIKey(evt) {
+    add_api_key: function addAPIKey(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
       let api_key = r.get('account.api_key');
       $.post({
         url: 'add_api_key.json',
@@ -636,6 +738,25 @@ ${rectSvg.join("\n")}
           r.update('accounts');
         }
       });
+      return false;
+    },
+    contact_us: function contactUs(x) {
+      if (!x.element.node.form.checkValidity()) return;
+
+      let data = r.get('contact.input');
+
+      $.post({
+        url: 'contact.json',
+        data: data
+      }).done(response => {
+        if (response.error) {
+          error(response.error);
+        } else {
+          success('Email sent');
+          r.set('contact.input', {});
+        }
+      });
+
       return false;
     },
     sort_encounters: function sortEncountersChange(evt) {
@@ -665,6 +786,38 @@ ${rectSvg.join("\n")}
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
+      return false;
+    },
+    privacy: function privacy(evt) {
+      let privacy = r.get('privacy');
+      $.post({
+        url: 'privacy.json',
+        data: {
+          privacy: privacy,
+        },
+      }).done(() => {
+        notification('Privacy updated.', 'success');
+      });
+    },
+    set_tags_cat: function setTags(evt) {
+      let encounter = r.get('encounter');
+
+      $.post({
+        url: 'set_tags_cat.json',
+        data: {
+          id: encounter.id,
+          tags: encounter.tags,
+          category: encounter.category,
+        },
+      }).done(() => {
+        let eRowId = r.get('encounters').findIndex(e => e.id == encounter.id);
+        let eRow = r.get('encounters.' + eRowId);
+        eRow.category = encounter.category;
+        eRow.tags = encounter.tags.split(',');
+        r.update('encounters.' + eRowId);
+
+        notification('Category and tags saved.', 'success');
+      });
       return false;
     },
   });
@@ -853,6 +1006,7 @@ ${rectSvg.join("\n")}
       setPage('uploads');
       evt.preventDefault();
     });
+
 
   if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();

@@ -10,6 +10,7 @@ from gw2raidar import settings
 from os.path import join as path_join
 from functools import lru_cache
 from time import time
+from taggit.managers import TaggableManager
 import random
 import os
 import re
@@ -40,10 +41,22 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 
 
 
+User._meta.get_field('email')._unique = True
+
 class UserProfile(models.Model):
-    portrait_url = models.URLField(null=True)
+    PRIVATE = 1
+    SQUAD = 2
+    PUBLIC = 3
+
+    PRIVACY_CHOICES = (
+            (PRIVATE, 'Private'),
+            (SQUAD, 'Squad'),
+            (PUBLIC, 'Public')
+        )
+    portrait_url = models.URLField(null=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
+    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
 
     def __str__(self):
         return self.user.username
@@ -132,7 +145,7 @@ class Character(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
     name = models.CharField(max_length=64, db_index=True)
     profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
-    verified_at = models.DateTimeField(auto_now_add=True)
+    verified_at = models.DateTimeField(auto_now_add=True) # XXX don't remember this... delete?
 
     def __str__(self):
         return self.name
@@ -154,6 +167,16 @@ class Era(models.Model):
     @staticmethod
     def by_time(started_at):
         return Era.objects.filter(started_at__lte=started_at).latest('started_at')
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "categories"
 
 
 class Upload(models.Model):
@@ -239,6 +262,7 @@ class Encounter(models.Model):
     uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True)
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
     dump = models.TextField(editable=False)
     # hack to try to ensure uniqueness
@@ -248,6 +272,7 @@ class Encounter(models.Model):
     # Google Drive
     gdrive_id = models.CharField(max_length=255, editable=False, null=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True)
+    tags = TaggableManager(blank=True)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -255,6 +280,14 @@ class Encounter(models.Model):
     def save(self, *args, **kwargs):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
+
+    @property
+    def tagstring(self):
+        return ','.join(self.tags.names())
+
+    @tagstring.setter
+    def tagstring(self, value):
+        self.tags.set(*value.split(','))
 
     @staticmethod
     def calculate_account_hash(account_names):
@@ -323,6 +356,8 @@ class Participation(models.Model):
                 'elite': self.elite,
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
+                'category': self.encounter.category_id,
+                'tags': list(self.encounter.tags.names()),
             }
 
     class Meta:
