@@ -847,7 +847,7 @@ ${rectSvg.join("\n")}
           archetype: archetype,
           profession: profession,
           elite: elite,
-          stat: 'boss_dps',
+          stat: 'dps_boss',
         },
       }).then(payload => {
         let {globals, data, times} = payload;
@@ -962,7 +962,7 @@ ${rectSvg.join("\n")}
     if (!entry) return;
 
     let form = new FormData();
-    form.append(entry.name, entry.file);
+    form.append('file', entry.file);
     return $.ajax({
       url: 'upload.json',
       data: form,
