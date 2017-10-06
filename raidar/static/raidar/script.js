@@ -583,6 +583,19 @@ ${rectSvg.join("\n")}
     return ary;
   }
 
+  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor) {
+    return {
+      label: label,
+      data: graphLine(value, data),
+      spanGaps: true,
+      borderDash: borderDash,
+      pointRadius: 0,
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      borderWidth: 1,
+    };
+  };
+
   const ascSort = (prop) => (a, b) =>
     a[prop] > b[prop] ? 1 :
     a[prop] < b[prop] ? -1 : 0;
@@ -820,112 +833,69 @@ ${rectSvg.join("\n")}
     chart: function chart(evt, archetype, profession, elite, stats) {
       let era = r.get('page.era');
       let eras = r.get('profile.eras');
-      let eraId = Object.keys(eras).find(key => eras[key] === era);
+      let eraId = era.id;
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
-      let charDescription = profession == 'All' ? `All ${archetypeName}professions'` : archetypeName + r.get('data.specialisations')[profession][elite];
+      let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
 
-      let data = [30876, 33098, 17666, 28909, 33762, 31983, 30173]; // XXX dummy values
-      let labels = [
-            "2017/09/23 13:12:14",
-            "2017/09/23 13:22:14",
-            "2017/09/23 13:32:14",
-            "2017/09/23 13:42:14",
-            "2017/09/23 13:52:14",
-            "2017/09/23 14:02:14",
-            "2017/09/23 14:12:14",
-          ];
-      charDescription = "(DUMMY - real data not implemented yet) " + charDescription; // XXX
+      $.post({
+        url: 'profile_graph.json',
+        data: {
+          era: eraId,
+          area: areaId,
+          archetype: archetype,
+          profession: profession,
+          elite: elite,
+          stat: 'boss_dps',
+        },
+      }).then(payload => {
+        let {globals, data, times} = payload;
+        console.log(globals);
+        times = times.map(time => helpers.formatDate(time));
+        charDescription = "(DUMMY - global data not implemented yet) " + charDescription; // XXX
 
-      let height = Math.round(window.innerHeight * 0.80);
-      let width = Math.round(window.innerWidth * 0.80);
-      let dialog = UIkit.modal.dialog(`
+        let height = Math.round(window.innerHeight * 0.80);
+        let width = Math.round(window.innerWidth * 0.80);
+        let dialog = UIkit.modal.dialog(`
 <button class="uk-modal-close-outside" uk-transition-hide type="button" uk-close></button>
 <div>
 <canvas height="${height}" width="${width}"/>
 </div>
-          `, {center: true});
-      dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
-      dialog.panel.css({width: width, height: height});
-      dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
-      let ctx = dialog.$el.find('canvas');
-      let chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: labels,
-          datasets: [
-            {
-              label: 'P95',
-              data: graphLine(41000, data),
-              spanGaps: true,
-              borderDash: [10, 10],
-              pointRadius: 0,
-              backgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(128, 128, 128, 1)",
-              borderWidth: 1,
-            },
-            {
-              label: 'P90',
-              data: graphLine(40000, data),
-              spanGaps: true,
-              borderDash: [7, 7],
-              pointRadius: 0,
-              backgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(128, 128, 128, 1)",
-              borderWidth: 1,
-            },
-            {
-              label: 'P75',
-              data: graphLine(36000, data),
-              spanGaps: true,
-              borderDash: [4, 4],
-              pointRadius: 0,
-              backgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(128, 128, 128, 1)",
-              borderWidth: 1,
-            },
-            {
-              label: 'Mean',
-              data: graphLine(30000, data),
-              spanGaps: true,
-              borderDash: [1, 1],
-              pointRadius: 0,
-              backgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(128, 128, 255, 1)",
-              borderWidth: 1,
-            },
-            {
-              label: 'Median',
-              data: graphLine(30561, data),
-              spanGaps: true,
-              pointRadius: 0,
-              backgroundColor: "rgba(255, 255, 255, 0)",
-              borderColor: "rgba(224, 224, 0, 1)",
-              borderWidth: 1,
-            },
-            {
-              label: 'DPS',
-              data: data,
-              backgroundColor: "rgba(0, 0, 0, 0.05)",
-              borderColor: "rgba(0, 0, 0, 1)",
-            },
-          ]
-        },
-        options: {
-          title: {
-            text: `${charDescription} DPS on ${areaId}`,
-            display: true,
+            `, {center: true});
+        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        dialog.panel.css({width: width, height: height});
+        dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
+        let ctx = dialog.$el.find('canvas');
+        let datasets = [];
+        // for every global graph line:
+        // datasets.push(graphLineDataset('P99', 41900, [10, 10], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)"));
+        datasets.push({
+          label: 'DPS',
+          data: data,
+          backgroundColor: "rgba(0, 0, 0, 0.05)",
+          borderColor: "rgba(0, 0, 0, 1)",
+        });
+        let chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: times,
+            datasets: datasets,
           },
-          scales: {
-            yAxes: [{
-              ticks: {
-                beginAtZero: true
-              }
-            }]
+          options: {
+            title: {
+              text: `${charDescription} DPS on ${areaId}`,
+              display: true,
+            },
+            scales: {
+              yAxes: [{
+                ticks: {
+                  beginAtZero: true
+                }
+              }]
+            }
           }
-        }
+        });
       });
-
     },
   });
 

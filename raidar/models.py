@@ -160,6 +160,15 @@ class Era(models.Model):
     started_at = models.IntegerField(db_index=True)
     name = models.CharField(max_length=255, null=True)
     description = models.TextField(null=True)
+    value = models.TextField(default="{}")
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
 
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
@@ -264,7 +273,7 @@ class Encounter(models.Model):
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True)
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
-    dump = models.TextField(editable=False)
+    value = models.TextField(editable=False)
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
@@ -273,6 +282,14 @@ class Encounter(models.Model):
     gdrive_id = models.CharField(max_length=255, editable=False, null=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True)
     tags = TaggableManager(blank=True)
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
