@@ -393,7 +393,8 @@ def _perform_upload(request):
         return _error("Only single file uploads are allowed")
 
     filename = next(iter(request.FILES))
-    file = request.FILES[filename]
+    file = request.FILES['file']
+    filename = file.name
     uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(

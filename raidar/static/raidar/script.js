@@ -962,7 +962,7 @@ ${rectSvg.join("\n")}
     if (!entry) return;
 
     let form = new FormData();
-    form.append(entry.name, entry.file);
+    form.append('file', entry.file);
     return $.ajax({
       url: 'upload.json',
       data: form,
