@@ -6,7 +6,6 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from gw2raidar import settings
 from analyser.bosses import BOSSES, Kind
-from json import loads as json_loads, dumps as json_dumps
 from os.path import join as path_join
 from raidar.models import *
 from sys import exit
@@ -159,11 +158,14 @@ def finalise_stats(node):
                 node['min_' + sections[1]] = values[0]
                 node['max_' + sections[1]] = values[-1]
                 #node['p_' + sections[1]] = list(map(percentile, range(0, 100)))
+                node['p01_' + sections[1]] = percentile(1)
+                node['p05_' + sections[1]] = percentile(5)
                 node['p10_' + sections[1]] = percentile(10)
                 node['p25_' + sections[1]] = percentile(25)
                 node['p50_' + sections[1]] = percentile(50)
                 node['p75_' + sections[1]] = percentile(75)
                 node['p90_' + sections[1]] = percentile(90)
+                node['p99_' + sections[1]] = percentile(99)
             elif key in node:
                 finalise_stats(node[key])
     except TypeError as e:
@@ -230,7 +232,7 @@ class Command(BaseCommand):
                 participations = encounter.participations.select_related('character', 'character__account').all()
 
                 try:
-                    data = json_loads(encounter.dump)
+                    data = encounter.val
                     duration = data['Category']['encounter']['duration'] * 1000
 
                     try:
@@ -525,9 +527,9 @@ class Command(BaseCommand):
                     finalise_stats(global_stats)
                     keys = ['encounter']
                     values = ['count',
-                            'max_time','avg_time','p50_time','p25_time','p10_time','min_time',
-                            'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','max_dps',
-                            'min_boss_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','max_boss_dps']
+                            'max_time','avg_time','p50_time','p25_time','p10_time','p01_time','min_time',
+                            'min_dps','avg_dps','p50_dps','p75_dps','p90_dps','p99_dps','max_dps',
+                            'min_boss_dps','avg_boss_dps','p50_boss_dps','p75_boss_dps','p90_boss_dps','p99_boss_dps','max_boss_dps']
                     global_stats_csv.writerow(keys + values)
 
                     for e, g1 in global_stats[keys[0]].items():

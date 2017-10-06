@@ -22,7 +22,7 @@ from django.views.decorators.debug import sensitive_post_parameters, sensitive_v
 from django.views.decorators.http import require_GET, require_POST
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
-from json import dumps as json_dumps, loads as json_loads
+from json import dumps as json_dumps
 from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile, dirname
 import pytz
@@ -115,7 +115,7 @@ def download(request, id=None):
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
         user=request.user)]
-    dump = json_loads(encounter.dump)
+    dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
     allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
     if not allowed:
@@ -178,7 +178,7 @@ def encounter(request, url_id=None, json=None):
         characters__participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
-    dump = json_loads(encounter.dump)
+    dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
     try:
