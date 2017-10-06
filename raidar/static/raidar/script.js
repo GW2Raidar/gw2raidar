@@ -837,6 +837,7 @@ ${rectSvg.join("\n")}
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
+      let areaName = r.get('data.areas')[areaId] || areaId;
 
       $.post({
         url: 'profile_graph.json',
@@ -883,7 +884,7 @@ ${rectSvg.join("\n")}
           },
           options: {
             title: {
-              text: `${charDescription} DPS on ${areaId}`,
+              text: `${charDescription} DPS on ${areaName}`,
               display: true,
             },
             scales: {
