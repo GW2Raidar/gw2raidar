@@ -92,9 +92,10 @@ maximum_percentile_samples = 1000
 def advanced_stats(output, name, value):
     bound_stats(output, name, value)
     average_stats(output, name, value)
-    l = output.get('values|' + name, pd.Series([],dtype=np.float32))
+    l = output.get('values|' + name, [])
+    l.append(value)
     if(len(l) < maximum_percentile_samples):
-        output['values|' + name] = np.append(l, np.float32(value))
+        output['values|' + name] = l
 
 def all_stats(output, name, value):
     bound_stats(output, name, value)
@@ -120,10 +121,9 @@ def finalise_stats(node):
                     if(p > 0):
                         n = ((n * (100-p)) + (values[i+1] * p))/100
                     return n"""
-                values.sort()
                 b = np.percentile(values, q = range(0,100)).astype(np.float32).tobytes()
-                node['b_' + sections[1]] = str(base64.b64encode(b))
-                    #list(map(percentile, range(0, 100)))
+                node['per_' + sections[1]] = str(base64.b64encode(b))
+                #node['per_a_' + sections[1]] = np.frombuffer(b, np.float32).tolist()
                 del node['values|' + sections[1]]
             elif key in node:
                 finalise_stats(node[key])
