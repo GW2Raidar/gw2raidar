@@ -155,9 +155,13 @@ class Encounter:
         agents_string = file.read(AGENT_DTYPE.itemsize * num_agents)
         self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=AGENT_DTYPE, count=num_agents))
         split = self.agents.name.str.split(b'\x00:?', expand=True)
-        self.agents['name'] = split[0].str.decode(ENCODING)
-        self.agents['account'] = split[1].str.decode(ENCODING)
-        self.agents['party'] = split[2].fillna(0).astype(np.uint8)
+        if len(split.columns) > 1:
+            self.agents['name'] = split[0].str.decode(ENCODING)
+            self.agents['account'] = split[1].str.decode(ENCODING)
+            self.agents['party'] = split[2].fillna(0).astype(np.uint8)
+        else:
+            self.agents['account'] = None
+            self.agents['party'] = 0
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))

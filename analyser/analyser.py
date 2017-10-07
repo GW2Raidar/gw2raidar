@@ -131,6 +131,11 @@ class Analyser:
 
         #identify specific ones we care about
         players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
+        
+        if len(players) < 1:
+            raise EvtcAnalysisException("No players found in this log")
+        elif len(players) > 50:
+            raise EvtcAnalysisException("Too many players found in this log: {0}".format(len(agents)))
 
         if not players[players.party == 0].empty:
             for player in players.index.values:
