@@ -179,6 +179,9 @@ class Encounter:
                     'skar','skar_aly','skar_use_alt','result_local','ident_local']:
             del self.events[name]
 
+        if len(self.events[self.events.state_change == StateChange.LOG_END]) == 0:
+            raise EvtcParseException('EVTC missing end event')
+        
         self.log_started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
