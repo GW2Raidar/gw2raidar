@@ -145,6 +145,8 @@ EVENT_DTYPE = np.dtype([
 
 class Encounter:
     def _read_header(self, file):
+        if len(file.peek(16)) < 16:
+            raise EvtcParseException("Not an EVTC file")
         evtc, version, self.area_id = struct.unpack("<4s9sHx", file.read(16))
         if evtc != b"EVTC":
             raise EvtcParseException("Not an EVTC file")
@@ -219,6 +221,7 @@ class Encounter:
     def __init__(self, file):
         try:
             self._read_header(file)
+
             if self.version < "20170419":
                 raise EvtcParseException('Unsupported EVTC version')
             self._read_agents(file)
