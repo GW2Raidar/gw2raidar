@@ -233,3 +233,5 @@ class Encounter:
             self._add_inst_id_to_agents()
         except UnsupportedOperation:
             raise EvtcParseException('Bad EVTC file')
+        except ValueError:
+            raise EvtcParseException('Bad or truncated EVTC file')
