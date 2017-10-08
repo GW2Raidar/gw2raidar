@@ -88,13 +88,15 @@ def bound_stats(output, name, value):
     if minprop not in output or value < output[minprop]:
         output[minprop] = value
 
-maximum_percentile_samples = 1000
-def advanced_stats(output, name, value):
+def advanced_stats(maximum_percentile_samples):
+    return lambda a,b,c: advanced_stats_internal(maximum_percentile_samples, a, b, c)
+
+def advanced_stats_internal(maximum_percentile_samples, output, name, value):
     bound_stats(output, name, value)
     average_stats(output, name, value)
     l = output.get('values|' + name, [])
-    l.append(value)
     if(len(l) < maximum_percentile_samples):
+        l.append(value)
         output['values|' + name] = l
 
 def all_stats(output, name, value):
@@ -121,6 +123,7 @@ def finalise_stats(node):
                     if(p > 0):
                         n = ((n * (100-p)) + (values[i+1] * p))/100
                     return n"""
+                #node['n_' + sections[1]] = len(values)
                 b = np.percentile(values, q = range(0,100)).astype(np.float32).tobytes()
                 node['per_' + sections[1]] = str(base64.b64encode(b))
                 #node['per_a_' + sections[1]] = np.frombuffer(b, np.float32).tolist()
@@ -135,10 +138,6 @@ def _safe_get(func, default=0):
         return func()
     except (KeyError, TypeError):
         return default
-
-#encounter json navigation
-
-
 
 #subprocesses
 def calculate(l, f, *args):
@@ -227,6 +226,13 @@ class Command(BaseCommand):
                             default=False,
                             help='Calculates global statistics in greater detail')
 
+        parser.add_argument('-p', '--percentile_samples',
+                            action='store',
+                            dest='percentile_samples',
+                            type=int,
+                            default=100,
+                            help='Indicates the maximum number of samples to store for percentile sampling')
+
     def handle(self, *args, **options):
         with single_process('restat'), necessary(options['force']) as last_run:
             start = time()
@@ -246,7 +252,7 @@ class Command(BaseCommand):
                 "area": {},
                 "user": {}
             }
-
+            print(options['percentile_samples'])
             era_queryset = era.encounters.all().order_by('?')
             for encounter in queryset_iterator(era_queryset):
                 boss = BOSSES[encounter.area_id]
@@ -281,7 +287,7 @@ class Command(BaseCommand):
 
                         if(encounter.success):
                             calculate_standard_stats(
-                                advanced_stats,
+                                advanced_stats(options['percentile_samples']),
                                 squad_stats,
                                 [group_totals],
                                 [buffs_by_party],
@@ -295,17 +301,22 @@ class Command(BaseCommand):
                                 continue
                             player_stats = stats_in_phase['Player'][participation.character.name]
 
-                            totals_by_archetype = navigate(totals_in_area, phase, 'build', participation.character.profession,  participation.elite, participation.archetype)
-                            buffs_by_archetype = navigate(totals_by_archetype, 'buffs')
-                            buffs_out_by_archetype = navigate(totals_by_archetype, 'buffs_out')
+                            prof = participation.character.profession
+                            arch = participation.archetype
+                            elite = participation.elite
+                            totals_by_build = navigate(totals_in_area, phase, 'build', prof, elite, arch)
+                            totals_by_archetype = navigate(totals_in_area, phase, 'build', 'All', 'All', arch)
+                            totals_by_spec = navigate(totals_in_area, phase, 'build', prof, elite, 'All')
+                            buffs_by_build = navigate(totals_by_build, 'buffs')
+                            buffs_out_by_build = navigate(totals_by_build, 'buffs_out')
 
                             if(encounter.success):
                                 calculate_standard_stats(
-                                    advanced_stats,
+                                    advanced_stats(options['percentile_samples']),
                                     player_stats,
-                                    [totals_by_archetype, individual_totals],
-                                    [buffs_by_archetype],
-                                    [buffs_out_by_archetype])
+                                    [totals_by_build, totals_by_archetype, totals_by_spec, individual_totals],
+                                    [buffs_by_build],
+                                    [buffs_out_by_build])
 
                             if phase == 'All':
                                 profile_output = navigate_to_profile_outputs(totals, participation, encounter, boss)
@@ -348,32 +359,23 @@ class Command(BaseCommand):
                 EraAreaStore.objects.update_or_create(
                         era=era, area_id=area_id, defaults={ "val": totals_in_area })
 
-            # TODO remove if we ignore the unnecessary processing above (`if user_id:`)
-            if None in totals['user']:
-                del totals['user'][None]
-
             for user_id, totals_for_player in totals['user'].items():
                 finalise_stats(totals_for_player)
                 EraUserStore.objects.update_or_create(
                         era=era, user_id=user_id, defaults={ "val": totals_for_player })
 
-                if options['verbosity'] >= 3:
-                    # DEBUG
-                    flattened = flatten(totals_for_player)
-                    for key in sorted(flattened.keys()):
-                        print_node(key, flattened[key])
 
-            if options['verbosity'] >= 1:
-                # DEBUG
-                flattened = flatten(totals['area'])
+            if options['verbosity'] >= 2:
+                flattened = flatten(totals)
                 for key in sorted(flattened.keys()):
                     print_node(key, flattened[key])
 
-            if options['verbosity'] >= 2:
+            if options['verbosity'] >= 3:
                 import pprint
                 pp = pprint.PrettyPrinter(indent=2)
                 print(era)
                 pp.pprint(totals)
+
 
 
 def is_basic_value(node):
