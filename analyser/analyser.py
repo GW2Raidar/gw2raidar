@@ -131,6 +131,11 @@ class Analyser:
 
         #identify specific ones we care about
         players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
+        
+        if len(players) < 1:
+            raise EvtcAnalysisException("No players found in this log")
+        elif len(players) > 50:
+            raise EvtcAnalysisException("Too many players found in this log: {0}".format(len(agents)))
 
         if not players[players.party == 0].empty:
             for player in players.index.values:
@@ -509,6 +514,7 @@ class Analyser:
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
             phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            destination_collector.set_context_value(ContextType.DURATION, phase[2] - phase[1])
             destination_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_source, phase_data)
             
     def collect_incoming_buffs(self, collector, buff_data):
@@ -520,6 +526,7 @@ class Analyser:
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
             phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            source_collector.set_context_value(ContextType.DURATION, phase[2] - phase[1])
             source_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
 
     def collect_buffs_by_target(self, collector, buff_data):
