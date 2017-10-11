@@ -320,36 +320,38 @@ class Command(BaseCommand):
 
                             if phase == 'All':
                                 profile_output = navigate_to_profile_outputs(totals, participation, encounter, boss)
-                                stats_in_phase_events = player_stats['Metrics']['events']
+                                stats_in_phase_events = _safe_get(lambda: player_stats['Metrics']['events'], None)
+                                if stats_in_phase_events is not None:
 
-                                calculate(profile_output.all, count)
-                                calculate(profile_output.encounter_stats, average_stats, 'success_percentage', 100 if encounter.success else 0)
 
-                                if(encounter.success):
-                                    calculate_standard_stats(
-                                        all_stats,
-                                        player_stats,
-                                        profile_output.breakdown,
-                                        [],
-                                        map(lambda a: navigate(a, 'outgoing'), profile_output.breakdown))
+                                    calculate(profile_output.all, count)
+                                    calculate(profile_output.encounter_stats, average_stats, 'success_percentage', 100 if encounter.success else 0)
 
-                                    dead_percentage = 100 * _safe_get(lambda: stats_in_phase_events['dead_time']) / duration
-                                    down_percentage = 100 * _safe_get(lambda: stats_in_phase_events['down_time']) / duration
-                                    disconnect_percentage = 100 * _safe_get(lambda: stats_in_phase_events['disconnect_time']) / duration
+                                    if(encounter.success):
+                                        calculate_standard_stats(
+                                            all_stats,
+                                            player_stats,
+                                            profile_output.breakdown,
+                                            [],
+                                            map(lambda a: navigate(a, 'outgoing'), profile_output.breakdown))
 
-                                    calculate(profile_output.all, average_stats, 'dead_percentage', dead_percentage)
-                                    calculate(profile_output.all, average_stats, 'down_percentage', down_percentage)
-                                    calculate(profile_output.all, average_stats, 'disconnect_percentage', disconnect_percentage)
+                                        dead_percentage = 100 * _safe_get(lambda: stats_in_phase_events['dead_time']) / duration
+                                        down_percentage = 100 * _safe_get(lambda: stats_in_phase_events['down_time']) / duration
+                                        disconnect_percentage = 100 * _safe_get(lambda: stats_in_phase_events['disconnect_time']) / duration
 
-                                    """global_encounter_build_root = navigate(global_stats,
-                                                      'encounter', encounter.area_id,
-                                                      'archetype', participation.archetype,
-                                                      'profession', participation.character.profession,
-                                                      'elite', participation.elite)
-                                    targets = [global_encounter_build_root]
-                                    calculate(targets, get_and_add, 'count', 1)
-                                    calculate(targets, advanced_stats, 'dps', dps)
-                                    calculate(targets, advanced_stats, 'boss_dps', boss_dps)"""
+                                        calculate(profile_output.all, average_stats, 'dead_percentage', dead_percentage)
+                                        calculate(profile_output.all, average_stats, 'down_percentage', down_percentage)
+                                        calculate(profile_output.all, average_stats, 'disconnect_percentage', disconnect_percentage)
+
+                                        """global_encounter_build_root = navigate(global_stats,
+                                                          'encounter', encounter.area_id,
+                                                          'archetype', participation.archetype,
+                                                          'profession', participation.character.profession,
+                                                          'elite', participation.elite)
+                                        targets = [global_encounter_build_root]
+                                        calculate(targets, get_and_add, 'count', 1)
+                                        calculate(targets, advanced_stats, 'dps', dps)
+                                        calculate(targets, advanced_stats, 'boss_dps', boss_dps)"""
                 except:
                     raise RestatException("Error in %s" % encounter)
 
