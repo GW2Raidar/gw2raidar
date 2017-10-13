@@ -298,6 +298,13 @@ class Encounter(models.Model):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
 
+    def diskname(self):
+        if hasattr(settings, 'UPLOAD_DIR'):
+            upload_dir = settings.UPLOAD_DIR
+        else:
+            upload_dir = 'uploads'
+        return path_join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
+
     @property
     def tagstring(self):
         return ','.join(self.tags.names())
@@ -327,12 +334,16 @@ class Encounter(models.Model):
             ('area', 'account_hash', 'started_at_half'),
         )
 
-def _delete_gdrive_file(sender, instance, using, **kwargs):
+def _delete_encounter_file(sender, instance, using, **kwargs):
     if gdrive_service and instance.gdrive_id:
         gdrive_service.files().delete(
                 fileId=instance.gdrive_id).execute()
+    try:
+        os.remove(instance.diskname())
+    except FileNotFoundError:
+        pass
 
-post_delete.connect(_delete_gdrive_file, sender=Encounter)
+post_delete.connect(_delete_encounter_file, sender=Encounter)
 
 
 class Participation(models.Model):
