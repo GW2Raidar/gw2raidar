@@ -196,6 +196,7 @@ class Command(BaseCommand):
                 file = open(diskname, 'rb')
 
             evtc_encounter = EvtcEncounter(file)
+
             analyser = Analyser(evtc_encounter)
 
             dump = analyser.data
@@ -237,6 +238,8 @@ class Command(BaseCommand):
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
+                    if not zipfile:
+                        encounter.filename += ".zip"
                     encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
@@ -247,6 +250,18 @@ class Command(BaseCommand):
                         started_at_full=started_at_full, started_at_half=started_at_half,
                         account_hash=account_hash
                     )
+
+                file.close()
+                file = None
+                new_diskname = encounter.diskname()
+                os.makedirs(os.path.dirname(new_diskname), exist_ok=True)
+                if zipfile:
+                    zipfile.close()
+                    zipfile = None
+                    os.rename(diskname, new_diskname)
+                else:
+                    with ZipFile(new_diskname, 'w') as zipfile_out:
+                        zipfile_out.write(diskname)
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
@@ -289,7 +304,7 @@ class Command(BaseCommand):
                 })
 
             if self.gdrive_service:
-                media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
+                media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
                 try:
                     if encounter.gdrive_id:
                         result = self.gdrive_service.files().update(
@@ -337,11 +352,11 @@ class Command(BaseCommand):
             })
 
         finally:
-            if zipfile:
-                zipfile.close()
-
             if file:
                 file.close()
+
+            if zipfile:
+                zipfile.close()
 
             upload.delete()
 
