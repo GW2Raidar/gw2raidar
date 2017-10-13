@@ -107,22 +107,29 @@ def _html_response(request, page, data={}):
         })
 
 @require_GET
-def download(request, id=None):
+def download(request, url_id=None):
     if not hasattr(settings, 'UPLOAD_DIR'):
         return Http404("Not allowed")
 
-    encounter = Encounter.objects.get(pk=id)
+    encounter = Encounter.objects.get(url_id=url_id)
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
         user=request.user)]
     dump = json_loads(encounter.dump)
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
-    if not allowed:
-        raise Http404("Not allowed")
 
-    path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
-    if isfile(path):
+    encounter_showable = True
+    for member in members:
+        is_self = member['account'] in own_account_names
+
+        user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
+        if user_profile:
+            privacy = user_profile[0].privacy
+            if not is_self and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                encounter_showable = False
+
+    path = encounter.diskname()
+    if isfile(path) and (encounter_showable or request.user.is_staff):
         response = HttpResponse(open(path, 'rb'), content_type='application/vnd.ms-excel')
         response['Content-Disposition'] = 'attachment; filename="%s"' % encounter.filename
         return response
@@ -202,6 +209,8 @@ def encounter(request, url_id=None, json=None):
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
+
+    encounter_showable = True
     for party_no, party in parties.items():
         for member in party['members']:
             if member['account'] in own_account_names:
@@ -225,6 +234,7 @@ def encounter(request, url_id=None, json=None):
                 if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
                     member['name'] = ''
                     member['account'] = ''
+                    encounter_showable = False
 
     data = {
         "encounter": {
@@ -260,13 +270,14 @@ def encounter(request, url_id=None, json=None):
             "parties": parties,
         }
     }
-    if encounter.gdrive_url:
-        data['encounter']['evtc_url'] = encounter.gdrive_url;
-    # XXX relic TODO remove once we fully cross to GDrive?
-    if hasattr(settings, 'UPLOAD_DIR'):
-        path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
-        if isfile(path):
-            data['encounter']['downloadable'] = True
+    if encounter_showable or request.user.is_staff:
+        if encounter.gdrive_url:
+            data['encounter']['evtc_url'] = encounter.gdrive_url;
+        # XXX relic TODO remove once we fully cross to GDrive?
+        if hasattr(settings, 'UPLOAD_DIR'):
+            path = encounter.diskname()
+            if isfile(path):
+                data['encounter']['downloadable'] = True
 
     if json:
         return JsonResponse(data)
