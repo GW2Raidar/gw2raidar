@@ -276,6 +276,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "shielded").run(self.collect_incoming_damage, player_dst_events[player_dst_events.is_shields != 0])
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_outgoing_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
