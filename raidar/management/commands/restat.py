@@ -220,17 +220,11 @@ class Command(BaseCommand):
             default=False,
             help='Force calculation even if no new Encounters')
 
-        parser.add_argument('-g', '--global',
-                            action='store_true',
-                            dest='calculate_global',
-                            default=False,
-                            help='Calculates global statistics in greater detail')
-
         parser.add_argument('-p', '--percentile_samples',
                             action='store',
                             dest='percentile_samples',
                             type=int,
-                            default=100,
+                            default=1000,
                             help='Indicates the maximum number of samples to store for percentile sampling')
 
     def handle(self, *args, **options):
@@ -254,6 +248,7 @@ class Command(BaseCommand):
             }
             print(options['percentile_samples'])
             era_queryset = era.encounters.all().order_by('?')
+            totals_in_era = {}
             for encounter in queryset_iterator(era_queryset):
                 boss = BOSSES[encounter.area_id]
                 try:
@@ -265,35 +260,26 @@ class Command(BaseCommand):
                     for phase, stats_in_phase in phases.items():
                         squad_stats = stats_in_phase['Subgroup']['*All']
 
-                        """high_detail_stat_targets = []
-                        if phase == 'All':
-                            #Encounter stats
-                            if encounter.success:
-                                global_encounter_root = navigate(global_stats, 'encounter', encounter.area_id)
-                                get_and_add(global_encounter_root, 'count', 1)
-                                high_detail_stat_targets += [global_encounter_root]
-                                
-
-                        calculate(high_detail_stat_targets, advanced_stats, 'time', duration)
-                        calculate(high_detail_stat_targets, advanced_stats, 'dps',
-                                  _safe_get(lambda: stats_in_phase_to_all['dps']))
-                        calculate(high_detail_stat_targets, advanced_stats, 'boss_dps',
-                                  _safe_get(lambda: stats_in_phase_to_boss['dps']))"""
-
                         group_totals = navigate(totals_in_area, phase, 'group')
                         buffs_by_party = navigate(group_totals, 'buffs')
                         buffs_out_by_party = navigate(group_totals, 'buffs_out')
 
+                        group_totals_era = navigate(totals_in_era, phase, 'group')
+                        buffs_by_party_era = navigate(group_totals_era, 'buffs')
+                        buffs_out_by_party_era = navigate(group_totals_era, 'buffs_out')
+
 
                         if(encounter.success):
+                            calculate([group_totals, group_totals_era], count)
                             calculate_standard_stats(
                                 advanced_stats(options['percentile_samples']),
                                 squad_stats,
-                                [group_totals],
-                                [buffs_by_party],
-                                [buffs_out_by_party])
+                                [group_totals, group_totals_era],
+                                [buffs_by_party, buffs_by_party_era],
+                                [buffs_out_by_party, buffs_out_by_party_era])
 
                         individual_totals = navigate(totals_in_area, phase, 'individual')
+                        individual_totals_era = navigate(totals_in_era, phase, 'individual')
                         participations = encounter.participations.select_related('character', 'character__account').all()
                         for participation in participations:
                             # XXX in case player did not actually participate (hopefully fix in analyser)
@@ -310,13 +296,22 @@ class Command(BaseCommand):
                             buffs_by_build = navigate(totals_by_build, 'buffs')
                             buffs_out_by_build = navigate(totals_by_build, 'buffs_out')
 
+                            totals_by_build_era = navigate(totals_in_era, phase, 'build', prof, elite, arch)
+                            totals_by_archetype_era = navigate(totals_in_era, phase, 'build', 'All', 'All', arch)
+                            totals_by_spec_era = navigate(totals_in_era, phase, 'build', prof, elite, 'All')
+                            buffs_by_build_era = navigate(totals_by_build_era, 'buffs')
+                            buffs_out_by_build_era = navigate(totals_by_build_era, 'buffs_out')
+
                             if(encounter.success):
+                                calculate([totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
+                                     totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era], count)
                                 calculate_standard_stats(
                                     advanced_stats(options['percentile_samples']),
                                     player_stats,
-                                    [totals_by_build, totals_by_archetype, totals_by_spec, individual_totals],
-                                    [buffs_by_build],
-                                    [buffs_out_by_build])
+                                    [totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
+                                     totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era],
+                                    [buffs_by_build, buffs_by_build_era],
+                                    [buffs_out_by_build, buffs_out_by_build_era])
 
                             if phase == 'All':
                                 profile_output = navigate_to_profile_outputs(totals, participation, encounter, boss)
@@ -342,16 +337,6 @@ class Command(BaseCommand):
                                         calculate(profile_output.all, average_stats, 'dead_percentage', dead_percentage)
                                         calculate(profile_output.all, average_stats, 'down_percentage', down_percentage)
                                         calculate(profile_output.all, average_stats, 'disconnect_percentage', disconnect_percentage)
-
-                                        """global_encounter_build_root = navigate(global_stats,
-                                                          'encounter', encounter.area_id,
-                                                          'archetype', participation.archetype,
-                                                          'profession', participation.character.profession,
-                                                          'elite', participation.elite)
-                                        targets = [global_encounter_build_root]
-                                        calculate(targets, get_and_add, 'count', 1)
-                                        calculate(targets, advanced_stats, 'dps', dps)
-                                        calculate(targets, advanced_stats, 'boss_dps', boss_dps)"""
                 except:
                     raise RestatException("Error in %s" % encounter)
 
@@ -366,6 +351,10 @@ class Command(BaseCommand):
                 EraUserStore.objects.update_or_create(
                         era=era, user_id=user_id, defaults={ "val": totals_for_player })
 
+            finalise_stats(totals_in_era)
+            era.val=totals_in_era
+            #Era.objects.update_or_create(era)
+            era.save()
 
             if options['verbosity'] >= 2:
                 flattened = flatten(totals)

@@ -349,6 +349,20 @@ ${rectSvg.join("\n")}
         });
       });
     },
+    global_stats: page => {
+      r.set({
+        loading: true,
+      });
+      $.get({
+        url: 'global_stats.json',
+      }).then(setData).then(() => {
+        let eras = r.get('global_stats.eras');
+        let latest = eras[eras.length - 1];
+        r.set({
+          'page.global_era': latest,
+        });
+      });
+    },
   };
 
   $(window).on('popstate', evt => {

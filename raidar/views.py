@@ -171,6 +171,23 @@ def profile(request):
         }
     return JsonResponse(result)
 
+@require_GET
+def global_stats(request):
+    queryset = Era.objects.all()
+    try:
+        eras = [{
+                'name': era.name,
+                'started_at': era.started_at,
+                'description': era.description,
+                'data': era.val['All'],
+            } for era in queryset]
+    except Era.DoesNotExist:
+        eras = []
+
+    result = {'global_stats': {
+        'eras': eras,
+    }}
+    return JsonResponse(result)
 
 
 @require_GET
