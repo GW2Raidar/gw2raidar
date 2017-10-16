@@ -90,6 +90,21 @@
     });
     return keys;
   };
+  helpers.flattenStats = (build) => {
+    let all = [];
+    Object.keys(build).forEach((professionId) => {
+      Object.keys(build[professionId]).forEach((eliteId) => {
+        Object.keys(build[professionId][eliteId]).forEach((archetypeId) => {
+          all.push({
+            'professionId':professionId,
+            'eliteId': eliteId,
+            'archetypeId': archetypeId
+          });
+        });
+      });
+    });
+    return all
+  }
   helpers.formatDate = timestamp => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);

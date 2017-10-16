@@ -14,58 +14,34 @@
     </div>
   </div>
 
-  <div class="uk-margin">
-    <div uk-grid class="uk-grid-small">
-      [[#each keysWithAllLast(encounter, data.areas)]]
-        [[#with {encounterId: .}]]
-          [[#with encounter[encounterId].archetype.All.profession.All.elite.All]]
-            <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent link" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })" class-all="[[encounterId.match(/^All \w+ bosses$/)]]">
-              <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
-              [[encounterId.match(/^All \w+ bosses$/) ? encounterId : data.areas[encounterId]]]
-              ([[count]])
-            </div>
-          [[/with]]
-        [[/with]]
-      [[/each]]
-    </div>
-  </div>
-
   [[#with stats]]
     <div class="uk-margin">
       <div uk-grid class="uk-grid-small">
-          <table class="uk-table uk-table-striped uk-table-small">
-            <thead>
-              <tr class="uk-background-secondary">
-                <th>Specialisation</th>
-                <th>Archetype</th>
-                <th>Count </th>
-              </tr>
-            </thead>
-            <tbody>
-              [[#each Object.keys(build)]]
-                [[#with {professionId: ., profession: build[.]}]]
-                  [[#each Object.keys(profession)]]
-                    [[#with {eliteId: ., elite: profession[.]}]]
-                      [[#each Object.keys(elite)]]
-                        [[#with {archetypeId: ., archetype: elite[.]}]]
-                          [[#if professionId != 'All' && eliteId != 'All' && archetypeId != 'All']]
-                            <tr>
-                              <td>
-                                <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
-                                [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
-                                [[professionId + "," + eliteId + "," + archetypeId]]
-                              </td>
-                              <td>[[data.archetypes[archetypeId]]]</td>
-                              <td>[[archetype.count]]</td>
-                            </tr>
-                          [[/if]]
-                        [[/with]]
-                      [[/each]]
-                    [[/with]]
-                  [[/each]]
-                [[/with]]
-              [[/each]]
-            </tbody>
+        <table class="uk-table uk-table-striped uk-table-small">
+          <thead>
+            <tr class="uk-background-secondary">
+              <th>Specialisation</th>
+              <th>Archetype</th>
+              <th>Count</th>
+            </tr>
+          </thead>
+          <tbody>
+            [[#each flattenStats(build)]]
+              [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
+                [[#if professionId != 'All' && eliteId != 'All' && archetypeId != 'All']]
+                  <tr>
+                    <td>
+                      <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
+                      [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
+                      [[professionId + "," + eliteId + "," + archetypeId]]
+                    </td>
+                    <td>[[data.archetypes[archetypeId]]]</td>
+                    <td>[[(lineStats.count/group.count).toFixed(2)]]</td>
+                  </tr>
+                [[/if]]
+              [[/with]]
+            [[/each]]
+          </tbody>
         </table>
       </div>
     </div>
