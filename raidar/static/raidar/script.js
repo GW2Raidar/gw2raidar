@@ -248,7 +248,7 @@ ${rectSvg.join("\n")}
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
-  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact', 'global_stats'];
   if (!window.raidar_data.username) {
     if (!initialPage.name) {
       loggedInPage = { name: 'info-releasenotes' };
@@ -307,6 +307,9 @@ ${rectSvg.join("\n")}
   function URLForPage(page) {
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
+    if (page.era_started_at) url += '/' + page.era_started_at;
+    if (page.area_id) url += '/area-' + page.area_id;
+    console.log(url)
     return url;
   }
 
@@ -354,14 +357,8 @@ ${rectSvg.join("\n")}
         loading: true,
       });
       $.get({
-        url: 'global_stats.json',
-      }).then(setData).then(() => {
-        let eras = r.get('global_stats.eras');
-        let latest = eras[eras.length - 1];
-        r.set({
-          'page.global_era': latest,
-        });
-      });
+        url: URLForPage(page).substring(1) + '.json',
+      }).then(setData);
     },
   };
 

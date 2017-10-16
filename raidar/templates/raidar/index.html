@@ -90,6 +90,10 @@
 
             {% include 'raidar/info_about.html' %}
 
+          [[elseif page.name == "global_stats"]]
+
+            {% include 'raidar/global_stats.html' %}
+
           [[elseif username]]
 
             [[#if page.name == "encounters"]]
@@ -105,10 +109,6 @@
             [[elseif page.name == "profile"]]
 
               {% include 'raidar/profile.html' %}
-
-            [[elseif page.name == "global_stats"]]
-
-              {% include 'raidar/global_stats.html' %}
 
             [[elseif page.name == "uploads"]]
 

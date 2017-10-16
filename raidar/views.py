@@ -172,20 +172,51 @@ def profile(request):
     return JsonResponse(result)
 
 @require_GET
-def global_stats(request):
-    queryset = Era.objects.all()
+def global_stats(request, era_started_at=None, area_id=None, json=None):
+    if not json:
+        return _html_response(request, {
+            "name": "global_stats",
+            "era_started_at": era_started_at,
+            "area_id": area_id
+        })
     try:
+        era_query = Era.objects.all()
         eras = [{
                 'name': era.name,
                 'started_at': era.started_at,
-                'description': era.description,
-                'data': era.val['All'],
-            } for era in queryset]
+                'description': era.description
+            } for era in era_query]
     except Era.DoesNotExist:
         eras = []
 
+    try:
+        area_query = Area.objects.all()
+        areas = [{
+                'name': area.name,
+                'id': area.id,
+            } for area in area_query]
+    except Area.DoesNotExist:
+        areas = []
+
+    try:
+        if era_started_at is None:
+            era_started_at = eras[-1]['started_at']
+        era = Era.objects.get(started_at=era_started_at)
+        if area_id is None:
+            raw_data = era.val
+        else:
+            area = Area.objects.get(id=area_id)
+            raw_data = EraAreaStore.objects.get(era=era, area=area).val
+        stats = raw_data['All']
+    except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
+        stats = {}
+
+
+
     result = {'global_stats': {
         'eras': eras,
+        'areas': areas,
+        'stats': stats
     }}
     return JsonResponse(result)
 

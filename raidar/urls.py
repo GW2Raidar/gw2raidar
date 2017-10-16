@@ -5,7 +5,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|global_stats|reset_pw|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
+    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
     url(r'^initial.json$', views.initial, name = "initial"),
     url(r'^login.json$', views.login, name = "login"),
     url(r'^logout.json$', views.logout, name = "logout"),
@@ -28,5 +28,5 @@ urlpatterns = [
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
     url(r'^$', views.index, name = "index"),
-    url(r'^global_stats.json$', views.global_stats, name = "global_stats"),
+    url(r'^global_stats(?:/(?P<era_started_at>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]

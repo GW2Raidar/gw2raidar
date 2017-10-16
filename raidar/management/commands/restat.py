@@ -296,6 +296,7 @@ class Command(BaseCommand):
                             buffs_by_build = navigate(totals_by_build, 'buffs')
                             buffs_out_by_build = navigate(totals_by_build, 'buffs_out')
 
+                            #todo: add these only if in phase "all"
                             totals_by_build_era = navigate(totals_in_era, phase, 'build', prof, elite, arch)
                             totals_by_archetype_era = navigate(totals_in_era, phase, 'build', 'All', 'All', arch)
                             totals_by_spec_era = navigate(totals_in_era, phase, 'build', prof, elite, 'All')
@@ -303,6 +304,7 @@ class Command(BaseCommand):
                             buffs_out_by_build_era = navigate(totals_by_build_era, 'buffs_out')
 
                             if(encounter.success):
+
                                 calculate([totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
                                      totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era], count)
                                 calculate_standard_stats(
