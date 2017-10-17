@@ -831,7 +831,7 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
-    chart: function chart(evt, archetype, profession, elite, stat) {
+    chart: function chart(evt, archetype, profession, elite, stat, statName) {
       let era = r.get('page.era');
       let eras = r.get('profile.eras');
       let eraId = era.id;
@@ -882,7 +882,7 @@ ${rectSvg.join("\n")}
           datasets.push(graphLineDataset('avg', globals.avg, undefined, "rgba(255, 255, 255, 0)", "rgba(255, 0, 255, 1)", data));
         }
         datasets.push({
-          label: 'DPS',
+          label: statName,
           data: data,
           backgroundColor: "rgba(0, 0, 0, 0.05)",
           borderColor: "rgba(0, 0, 0, 1)",
@@ -897,7 +897,7 @@ ${rectSvg.join("\n")}
           },
           options: {
             title: {
-              text: `${charDescription} DPS on ${areaName}`,
+              text: `${charDescription} ${statName} on ${areaName}`,
               display: true,
             },
             scales: {
