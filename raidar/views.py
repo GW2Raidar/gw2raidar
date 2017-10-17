@@ -478,7 +478,7 @@ def profile_graph(request):
                 'avg': requested['avg_' + stat],
                 'max': requested['max_' + stat],
                 'min': requested['min_' + stat],
-                'per': list(np.frombuffer(base64.b64decode(requested['per_' + stat].encode('utf-8')), dtype=float)),
+                'per': list(np.frombuffer(base64.b64decode(requested['per_' + stat].encode('utf-8')), dtype=np.float32).astype(float)),
             }
     except KeyError:
         requested = None # XXX fill out in restat
