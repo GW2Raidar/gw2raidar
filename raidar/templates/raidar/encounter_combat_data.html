@@ -11,6 +11,7 @@
           <th>DPS to Boss</th>
           <th>DPS Received</th>
           <th>Dmg Received</th>
+          <th>Shielded</th>
           <th>Crit</th>
           <th>Seaweed</th>
           <th>Scholar</th>
@@ -54,6 +55,16 @@
               </td>
             [[else]]
               <td></td>
+              <td></td>
+            [[/with]]
+            [[#with shielded]]
+              <td style="[[#if group && group.avg_total_shielded]][[bar(total, group.avg_total_shielded, group.min_total_shielded, group.max_total_shielded, group.max_total_shielded)]][[else]][[bar1(total, total)]][[/if]]">
+                <span>[[total]]</span>
+                [[#if group && group.avg_total_shielded]]
+                <span class="expected">[[Math.round(group.avg_total_shielded)]]</span>
+                [[/if]]
+              </td>
+            [[else]]
               <td></td>
             [[/with]]
             [[#with actual]]
@@ -109,6 +120,13 @@
                 </td>
               [[else]]
                 <td></td>
+                <td></td>
+              [[/with]]
+              [[#with shielded]]
+                <td style="[[bar1(total, group ? group.max_total_shielded : encounter.phases[page.phase].shielded.total)]]">
+                  <span>[[total]]</span>
+                </td>
+              [[else]]
                 <td></td>
               [[/with]]
               [[#with actual]]
@@ -189,6 +207,16 @@
                   </td>
                 [[else]]
                   <td>0</td>
+                  <td>0</td>
+                [[/with]]
+                [[#with shielded]]
+                  <td style="[[#if archetype.avg_total_shielded]][[bar(total, archetype.avg_total_shielded, archetype.min_total_shielded, archetype.max_total_shielded, encounter.phases[page.phase].individual.max_total_shielded)]][[else]][[bar1(total, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_total_shielded || 0)]][[/if]]">
+                    <span>[[total]]</span>
+                    [[#if archetype.avg_total_shielded]]
+                      <span class="expected">[[Math.round(archetype.avg_total_shielded)]]</span>
+                    [[/if]]
+                  </td>
+                [[else]]
                   <td>0</td>
                 [[/with]]
                 [[#with actual]]
