@@ -30,6 +30,8 @@ from datetime import datetime
 from re import match, sub
 from time import time
 import logging
+import numpy as np
+import base64
 
 
 logger = logging.getLogger(__name__)
@@ -470,16 +472,29 @@ def profile_graph(request):
     if elite_id != 'All':
         participations = participations.filter(elite=elite_id)
 
-    requested = _safe_get(lambda: store['All']['build'][profession_id][elite_id][archetype_id], {})
+    try:
+        requested = store['All']['build'][profession_id][elite_id][archetype_id]
+        requested = {
+                'avg': requested['avg_' + stat],
+                'max': requested['max_' + stat],
+                'min': requested['min_' + stat],
+                'per': list(np.frombuffer(base64.b64decode(requested['per_' + stat].encode('utf-8')), dtype=float)),
+            }
+    except KeyError:
+        requested = None # XXX fill out in restat
     MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
     db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character__name', 'encounter__started_at', 'encounter__value')
-    debug = str(participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].query)
     data = []
     times = []
-    target = '*Boss' if stat == 'dps_boss' else 'All'
+
+    if stat == 'dps_boss':
+        target = '*Boss'
+        stat = 'dps'
+    else:
+        target = 'All'
     for name, started_at, json in reversed(db_data):
         dump = json_loads(json)
-        datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target]['dps'], 0)
+        datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target][stat], 0)
         data.append(datum)
         times.append(started_at)
 
@@ -487,7 +502,6 @@ def profile_graph(request):
         'globals': requested,
         'data': data,
         'times': times,
-        'debug': debug,
     }
     return JsonResponse(result)
 

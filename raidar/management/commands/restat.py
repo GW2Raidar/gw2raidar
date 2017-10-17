@@ -125,7 +125,7 @@ def finalise_stats(node):
                     return n"""
                 #node['n_' + sections[1]] = len(values)
                 b = np.percentile(values, q = range(0,100)).astype(np.float32).tobytes()
-                node['per_' + sections[1]] = str(base64.b64encode(b))
+                node['per_' + sections[1]] = base64.b64encode(b).decode('utf-8')
                 #node['per_a_' + sections[1]] = np.frombuffer(b, np.float32).tolist()
                 del node['values|' + sections[1]]
             elif key in node:
@@ -252,7 +252,6 @@ class Command(BaseCommand):
                 "area": {},
                 "user": {}
             }
-            print(options['percentile_samples'])
             era_queryset = era.encounters.all().order_by('?')
             for encounter in queryset_iterator(era_queryset):
                 boss = BOSSES[encounter.area_id]

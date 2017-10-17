@@ -584,7 +584,7 @@ ${rectSvg.join("\n")}
     return ary;
   }
 
-  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor) {
+  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor, data) {
     return {
       label: label,
       data: graphLine(value, data),
@@ -593,7 +593,7 @@ ${rectSvg.join("\n")}
       pointRadius: 0,
       backgroundColor: backgroundColor,
       borderColor: borderColor,
-      borderWidth: 1,
+      borderWidth: 2,
     };
   };
 
@@ -852,9 +852,13 @@ ${rectSvg.join("\n")}
         },
       }).then(payload => {
         let {globals, data, times} = payload;
-        console.log(globals);
         times = times.map(time => helpers.formatDate(time));
-        charDescription = "(DUMMY - global data not implemented yet) " + charDescription; // XXX
+        let pointRadius = 4;
+        if (data.length == 1) {
+          data = [data[0], data[0], data[0]];
+          times = ['', times[0], ''];
+          pointRadius = [0, pointRadius, 0];
+        }
 
         let height = Math.round(window.innerHeight * 0.80);
         let width = Math.round(window.innerWidth * 0.80);
@@ -869,13 +873,21 @@ ${rectSvg.join("\n")}
         dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
         let ctx = dialog.$el.find('canvas');
         let datasets = [];
-        // for every global graph line:
-        // datasets.push(graphLineDataset('P99', 41900, [10, 10], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)"));
+        if (globals) {
+          datasets.push(graphLineDataset('min', globals.min, undefined, "rgba(255, 255, 255, 0)", "rgba(255, 0, 0, 1)", data));
+          datasets.push(graphLineDataset('max', globals.max, undefined, "rgba(255, 255, 255, 0)", "rgba(0, 255, 0, 1)", data));
+          datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P90', globals.per[90], [4, 4], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P50', globals.per[50], [7, 7], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('avg', globals.avg, undefined, "rgba(255, 255, 255, 0)", "rgba(255, 0, 255, 1)", data));
+        }
         datasets.push({
           label: 'DPS',
           data: data,
           backgroundColor: "rgba(0, 0, 0, 0.05)",
           borderColor: "rgba(0, 0, 0, 1)",
+          pointBackgroundColor: "rgba(255, 255, 255, 1)",
+          pointRadius: pointRadius,
         });
         let chart = new Chart(ctx, {
           type: 'line',
