@@ -831,7 +831,7 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
-    chart: function chart(evt, archetype, profession, elite, stats) {
+    chart: function chart(evt, archetype, profession, elite, stat) {
       let era = r.get('page.era');
       let eras = r.get('profile.eras');
       let eraId = era.id;
@@ -848,7 +848,7 @@ ${rectSvg.join("\n")}
           archetype: archetype,
           profession: profession,
           elite: elite,
-          stat: 'dps_boss',
+          stat: stat,
         },
       }).then(payload => {
         let {globals, data, times} = payload;

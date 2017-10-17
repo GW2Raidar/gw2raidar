@@ -491,7 +491,7 @@ def profile_graph(request):
         target = '*Boss'
         stat = 'dps'
     else:
-        target = 'All'
+        target = '*All'
     for name, started_at, json in reversed(db_data):
         dump = json_loads(json)
         datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target][stat], 0)

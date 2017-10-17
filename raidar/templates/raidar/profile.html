@@ -90,6 +90,8 @@
                 <th>Encounters</th>
                 <th>Avg DPS</th>
                 <th>Max DPS</th>
+                <th>Avg Boss DPS</th>
+                <th>Max Boss DPS</th>
                 <th>Down</th>
                 <th>Dead</th>
               </tr>
@@ -100,7 +102,7 @@
                   [[#each keysWithAllLast(profession.elite)]]
                     [[#with {eliteId: ., elite: profession.elite[.]}]]
                       [[#with elite]]
-                        <tr class="[[professionId === 'All' ? 'all' : '']] link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, .)">
+                        <tr class="[[professionId === 'All' ? 'all' : '']]">
                           <th>
                             [[#if professionId !== 'All']]
                               <img alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png"/>
@@ -110,11 +112,17 @@
                           <td>
                             [[.count]]
                           </td>
-                          <td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps')">
                             [[.avg_dps !== undefined ? Math.round(.avg_dps) : '']]
                           </td>
-                          <td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps')">
                             [[.max_dps !== undefined ? Math.round(.max_dps) : '']]
+                          </td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss')">
+                            [[.avg_dps_boss !== undefined ? Math.round(.avg_dps_boss) : '']]
+                          </td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss')">
+                            [[.max_dps_boss !== undefined ? Math.round(.max_dps_boss) : '']]
                           </td>
                           <td>
                             [[.avg_down_percentage !== undefined ? .avg_down_percentage.toPrecision(3) + '%' : '']]
