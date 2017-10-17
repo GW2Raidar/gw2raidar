@@ -47,6 +47,16 @@
     };
   };
 
+  const lightbox = (() => {
+    let lightboxNode = document.getElementById('lightbox');
+    let items = [{source: "#", type: "", content: "<div/>"}];
+    let lightbox = UIkit.lightbox(lightboxNode, {preload: 0, items: items});
+    return lightbox;
+  })();
+  const setLightbox = (content, width, height) => {
+    lightbox.setItem(lightbox.getItem(), content, width, height);
+  }
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -283,6 +293,7 @@ ${rectSvg.join("\n")}
     { boon: 'alacrity' },
     { boon: 'protection' },
     { boon: 'retaliation' },
+    { boon: 'regen' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
     { boon: 'gotl', stacks: 5 },
@@ -453,6 +464,15 @@ ${rectSvg.join("\n")}
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at < f);
           }
+        }
+        if (filters.category !== null) {
+          let f = filters.category;
+          if (!f) f = null;
+          encounters = encounters.filter(e => e.category === f);
+        }
+        if (filters.tag) {
+          let f = filters.tag.toLowerCase();
+          encounters = encounters.filter(e => e.tags.some(t => t.toLowerCase().startsWith(f)));
         }
         return encounters;
       },
@@ -782,6 +802,7 @@ ${rectSvg.join("\n")}
     },
     set_tags_cat: function setTags(evt) {
       let encounter = r.get('encounter');
+
       $.post({
         url: 'set_tags_cat.json',
         data: {
@@ -790,6 +811,12 @@ ${rectSvg.join("\n")}
           category: encounter.category,
         },
       }).done(() => {
+        let eRowId = r.get('encounters').findIndex(e => e.id == encounter.id);
+        let eRow = r.get('encounters.' + eRowId);
+        eRow.category = encounter.category;
+        eRow.tags = encounter.tags.split(',');
+        r.update('encounters.' + eRowId);
+
         notification('Category and tags saved.', 'success');
       });
       return false;
