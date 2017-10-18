@@ -58,7 +58,7 @@
               <td></td>
             [[/with]]
             [[#with shielded]]
-              <td style="[[#if group && group.avg_total_shielded]][[bar(total, group.avg_total_shielded, group.min_total_shielded, group.max_total_shielded, group.max_total_received)]][[else]][[bar1(total, total)]][[/if]]">
+              <td style="[[#if group && group.avg_total_shielded]][[bar(total, group.avg_total_shielded, group.min_total_shielded, group.max_total_shielded, group.max_total_received)]][[else]][[bar1(total, received.total)]][[/if]]">
                 <span>[[total]]</span>
                 [[#if group && group.avg_total_shielded]]
                 <span class="expected">[[Math.round(group.avg_total_shielded)]]</span>
