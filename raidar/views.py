@@ -479,8 +479,6 @@ def profile_graph(request):
         requested = store['All']['build'][profession_id][elite_id][archetype_id]
         requested = {
                 'avg': requested['avg_' + stat],
-                'max': requested['max_' + stat],
-                'min': requested['min_' + stat],
                 'per': list(np.frombuffer(base64.b64decode(requested['per_' + stat].encode('utf-8')), dtype=np.float32).astype(float)),
             }
     except KeyError:
