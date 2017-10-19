@@ -131,6 +131,11 @@ class Analyser:
 
         #identify specific ones we care about
         players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
+        
+        if len(players) < 1:
+            raise EvtcAnalysisException("No players found in this log")
+        elif len(players) > 50:
+            raise EvtcAnalysisException("Too many players found in this log: {0}".format(len(agents)))
 
         if not players[players.party == 0].empty:
             for player in players.index.values:
@@ -241,7 +246,7 @@ class Analyser:
 
         #set up data structures
         events = assign_event_types(encounter.events)
-        if (encounter.version < '20170922'
+        if (encounter.version < '20170923'
             and not events[(events.state_change == parser.StateChange.GW_BUILD)
                 & (events.src_agent >= 82356)].empty):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
@@ -271,6 +276,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "shielded").run(self.collect_incoming_damage, player_dst_events[player_dst_events.is_shields != 0])
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_outgoing_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
@@ -509,6 +515,7 @@ class Analyser:
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
             phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            destination_collector.set_context_value(ContextType.DURATION, phase[2] - phase[1])
             destination_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_source, phase_data)
             
     def collect_incoming_buffs(self, collector, buff_data):
@@ -520,6 +527,7 @@ class Analyser:
         for i in range(0, len(self.phases)):
             phase = self.phases[i]
             phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
+            source_collector.set_context_value(ContextType.DURATION, phase[2] - phase[1])
             source_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_target, phase_data)
 
     def collect_buffs_by_target(self, collector, buff_data):

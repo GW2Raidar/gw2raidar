@@ -5,7 +5,7 @@ from django.contrib.auth import views as auth_views
 from . import views
 
 urlpatterns = [
-    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
+    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
     url(r'^initial.json$', views.initial, name = "initial"),
     url(r'^login.json$', views.login, name = "login"),
     url(r'^logout.json$', views.logout, name = "logout"),
@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^upload.json$', views.upload, name = "upload"),
     url(r'^api/upload.json$', views.api_upload, name = "api_upload"),
     url(r'^privacy.json$', views.privacy, name = "privacy"),
+    url(r'^profile_graph.json$', views.profile_graph, name = "profile_graph"),
     url(r'^set_tags_cat.json$', views.set_tags_cat, name = "set_tags_cat"),
     url(r'^contact.json$', views.contact, name = "contact"),
     url(r'^poll.json$', views.poll, name = "poll"),
@@ -25,6 +26,6 @@ urlpatterns = [
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
-    url(r'^download/(?P<id>\d+)?$', views.download, name="download"),
+    url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
     url(r'^$', views.index, name = "index"),
 ]
