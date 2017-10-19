@@ -47,15 +47,6 @@
     };
   };
 
-  const lightbox = (() => {
-    let lightboxNode = document.getElementById('lightbox');
-    let items = [{source: "#", type: "", content: "<div/>"}];
-    let lightbox = UIkit.lightbox(lightboxNode, {preload: 0, items: items});
-    return lightbox;
-  })();
-  const setLightbox = (content, width, height) => {
-    lightbox.setItem(lightbox.getItem(), content, width, height);
-  }
 
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
@@ -257,7 +248,7 @@ ${rectSvg.join("\n")}
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
-  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact', 'thank-you'];
   if (!window.raidar_data.username) {
     if (!initialPage.name) {
       loggedInPage = { name: 'info-releasenotes' };
@@ -587,6 +578,25 @@ ${rectSvg.join("\n")}
     }
   }
 
+  function graphLine(value, data) {
+    let ary = Array(data.length);
+    ary[0] = ary[data.length - 1] = value;
+    return ary;
+  }
+
+  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor, data) {
+    return {
+      label: label,
+      data: graphLine(value, data),
+      spanGaps: true,
+      borderDash: borderDash,
+      pointRadius: 0,
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      borderWidth: 2,
+    };
+  };
+
   const ascSort = (prop) => (a, b) =>
     a[prop] > b[prop] ? 1 :
     a[prop] < b[prop] ? -1 : 0;
@@ -821,6 +831,84 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
+    chart: function chart(evt, archetype, profession, elite, stat, statName) {
+      let era = r.get('page.era');
+      let eras = r.get('profile.eras');
+      let eraId = era.id;
+      let areaId = r.get('page.area');
+      let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
+      let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
+      let areaName = r.get('data.areas')[areaId] || areaId;
+
+      $.post({
+        url: 'profile_graph.json',
+        data: {
+          era: eraId,
+          area: areaId,
+          archetype: archetype,
+          profession: profession,
+          elite: elite,
+          stat: stat,
+        },
+      }).then(payload => {
+        let {globals, data, times} = payload;
+        times = times.map(time => helpers.formatDate(time));
+        let pointRadius = 4;
+        if (data.length == 1) {
+          data = [data[0], data[0], data[0]];
+          times = ['', times[0], ''];
+          pointRadius = [0, pointRadius, 0];
+        }
+
+        let height = Math.round(window.innerHeight * 0.80);
+        let width = Math.round(window.innerWidth * 0.80);
+        let dialog = UIkit.modal.dialog(`
+<button class="uk-modal-close-outside" uk-transition-hide type="button" uk-close></button>
+<div>
+<canvas height="${height}" width="${width}"/>
+</div>
+            `, {center: true});
+        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        dialog.panel.css({width: width, height: height});
+        dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
+        let ctx = dialog.$el.find('canvas');
+        let datasets = [];
+        if (globals) {
+          datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P90', globals.per[90], [4, 4], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P50', globals.per[50], [7, 7], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('avg', globals.avg, undefined, "rgba(255, 255, 255, 0)", "rgba(255, 0, 255, 1)", data));
+        }
+        datasets.push({
+          label: statName,
+          data: data,
+          backgroundColor: "rgba(0, 0, 0, 0.05)",
+          borderColor: "rgba(0, 0, 0, 1)",
+          pointBackgroundColor: "rgba(255, 255, 255, 1)",
+          pointRadius: pointRadius,
+        });
+        let chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: times,
+            datasets: datasets,
+          },
+          options: {
+            title: {
+              text: `${charDescription} ${statName} on ${areaName}`,
+              display: true,
+            },
+            scales: {
+              yAxes: [{
+                ticks: {
+                  beginAtZero: true
+                }
+              }]
+            }
+          }
+        });
+      });
+    },
   });
 
 
@@ -885,7 +973,7 @@ ${rectSvg.join("\n")}
     if (!entry) return;
 
     let form = new FormData();
-    form.append(entry.name, entry.file);
+    form.append('file', entry.file);
     return $.ajax({
       url: 'upload.json',
       data: form,
