@@ -24,6 +24,9 @@ def yes_cm(events):
 def cairn_cm_detector(events):
     return len(events[events.skillid == 38098]) > 0
 
+def samarog_cm_detector(events):
+    return len(events[(events.skillid == 37966)&(events.time - events.time.min() < 10000)]) > 0
+
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
         self.name = name
@@ -234,7 +237,7 @@ BOSS_ARRAY = [
         Metric('Small Friend', 'Small Friend', MetricType.COUNT, True, True),
         Metric('Big Friend', 'Big Friend', MetricType.COUNT, True, True),
         Metric('Spear Impact', 'Spear Impacts', MetricType.COUNT, True, True)
-    ]),
+    ], cm_detector = samarog_cm_detector),
     Boss('Deimos', Kind.RAID, [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
