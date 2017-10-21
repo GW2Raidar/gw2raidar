@@ -295,7 +295,7 @@ ${body}
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
-  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact', 'global_stats'];
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact', 'global_stats', 'thank-you'];
   if (!window.raidar_data.username) {
     if (!initialPage.name) {
       loggedInPage = { name: 'info-releasenotes' };
@@ -331,6 +331,7 @@ ${body}
     { boon: 'alacrity' },
     { boon: 'protection' },
     { boon: 'retaliation' },
+    { boon: 'regen' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
     { boon: 'gotl', stacks: 5 },
@@ -641,7 +642,7 @@ ${body}
     return ary;
   }
 
-  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor) {
+  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor, data) {
     return {
       label: label,
       data: graphLine(value, data),
@@ -650,7 +651,7 @@ ${body}
       pointRadius: 0,
       backgroundColor: backgroundColor,
       borderColor: borderColor,
-      borderWidth: 1,
+      borderWidth: 2,
     };
   };
 
@@ -888,7 +889,7 @@ ${body}
       });
       return false;
     },
-    chart: function chart(evt, archetype, profession, elite, stats) {
+    chart: function chart(evt, archetype, profession, elite, stat, statName) {
       let era = r.get('page.era');
       let eras = r.get('profile.eras');
       let eraId = era.id;
@@ -905,13 +906,17 @@ ${body}
           archetype: archetype,
           profession: profession,
           elite: elite,
-          stat: 'dps_boss',
+          stat: stat,
         },
       }).then(payload => {
         let {globals, data, times} = payload;
-        console.log(globals);
         times = times.map(time => helpers.formatDate(time));
-        charDescription = "(DUMMY - global data not implemented yet) " + charDescription; // XXX
+        let pointRadius = 4;
+        if (data.length == 1) {
+          data = [data[0], data[0], data[0]];
+          times = ['', times[0], ''];
+          pointRadius = [0, pointRadius, 0];
+        }
 
         let height = Math.round(window.innerHeight * 0.80);
         let width = Math.round(window.innerWidth * 0.80);
@@ -926,13 +931,19 @@ ${body}
         dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
         let ctx = dialog.$el.find('canvas');
         let datasets = [];
-        // for every global graph line:
-        // datasets.push(graphLineDataset('P99', 41900, [10, 10], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)"));
+        if (globals) {
+          datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P90', globals.per[90], [4, 4], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P50', globals.per[50], [7, 7], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('avg', globals.avg, undefined, "rgba(255, 255, 255, 0)", "rgba(255, 0, 255, 1)", data));
+        }
         datasets.push({
-          label: 'DPS',
+          label: statName,
           data: data,
           backgroundColor: "rgba(0, 0, 0, 0.05)",
           borderColor: "rgba(0, 0, 0, 1)",
+          pointBackgroundColor: "rgba(255, 255, 255, 1)",
+          pointRadius: pointRadius,
         });
         let chart = new Chart(ctx, {
           type: 'line',
@@ -942,7 +953,7 @@ ${body}
           },
           options: {
             title: {
-              text: `${charDescription} DPS on ${areaName}`,
+              text: `${charDescription} ${statName} on ${areaName}`,
               display: true,
             },
             scales: {

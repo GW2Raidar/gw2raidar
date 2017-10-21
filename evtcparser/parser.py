@@ -139,6 +139,7 @@ EVENT_DTYPE = np.dtype([
         ('is_moving', np.uint8),
         ('state_change', np.uint8),
         ('is_flanking', np.uint8),
+        ('is_shields', np.uint8),
         ('result_local', np.uint8),
         ('ident_local', np.uint8),
     ], True)

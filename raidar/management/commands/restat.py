@@ -125,7 +125,7 @@ def finalise_stats(node):
                     return n"""
                 #node['n_' + sections[1]] = len(values)
                 b = np.percentile(values, q = range(0,100)).astype(np.float32).tobytes()
-                node['per_' + sections[1]] = str(base64.b64encode(b))
+                node['per_' + sections[1]] = base64.b64encode(b).decode('utf-8')
                 #node['per_a_' + sections[1]] = np.frombuffer(b, np.float32).tolist()
                 del node['values|' + sections[1]]
             elif key in node:
@@ -148,6 +148,7 @@ def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets,
     stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'])
     stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'])
     stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'])
+    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'])
     outgoing_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['To']['*All'], {})
     incoming_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['From']['*All'], {})
 
@@ -156,6 +157,7 @@ def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets,
     calculate(main_stat_targets, f, 'dps_boss', _safe_get(lambda: stats_in_phase_to_boss['dps']))
     calculate(main_stat_targets, f, 'dps_received', _safe_get(lambda: stats_in_phase_from_all['dps']))
     calculate(main_stat_targets, f, 'total_received', _safe_get(lambda: stats_in_phase_from_all['total']))
+    calculate(main_stat_targets, f, 'total_shielded', _safe_get(lambda: shielded_in_phase_from_all['total']))
 
     for buff, value in incoming_buff_stats.items():
         calculate(incoming_buff_targets, f, buff, value)
@@ -246,7 +248,6 @@ class Command(BaseCommand):
                 "area": {},
                 "user": {}
             }
-            print(options['percentile_samples'])
             era_queryset = era.encounters.all().order_by('?')
             totals_in_era = {}
             for encounter in queryset_iterator(era_queryset):

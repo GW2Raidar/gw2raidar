@@ -5,6 +5,46 @@
   <span class="ignore">released on</span>
   [[formatDate(data.version.timestamp)]]
 </h4>
+<p>This major release marks a massive milestone for GW2Raidar. Massive thanks to the community for your support, patience and feedback!</p>
+<ul>
+  <li>Added performance graphs to profile page. Clicking on a number in the table will now display a graph showing historical performance vs global metrics for that encounter / archetype combination</li>
+  <li>Added global reporting page. Global reporting will allow any user of the website to view global metrics of all encounters.</li>
+  <li>Added category filter and tag search to encounter list. Encounters page will now display horizontal scroll bar if table does not fit on screen.</li>
+  <li>Added damage absorbed by barrier to combat stats table. Any logs uploaded prior to this release will need to be uploaded again for this feature.</li>
+  <li>Added Regeneration to boon tracking table. Any logs uploaded prior to this release will need to be uploaded again for this feature.</li>
+  <li>Added API endpoint to allow uploading of files directly to the server. Details below:
+    <ul>
+      <li><b>Method</b>: HTTP POST</li>
+      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/upload.json</li>
+      <li><b>Parameters</b>:
+        <ul>
+          <li><i>username</i> - GW2Raidar Username</li>
+          <li><i>password</i> - GW2Raidar Password</li>
+          <li><i>file</i> - The log file</li>
+        </ul>
+      </li>
+      <li><b>Responses</b>:
+        <ul>
+          <li><i>200</i> - Successful Upload</li>
+        </ul>
+      </li>
+      <li><b>Example</b>:
+        <pre><code>curl -F "username=[USERNAME]" -F "password=[PASSWORD]" -F "file=@[FILEPATH]" https://www.gw2raidar.com/api/upload.json</code></pre>
+      </li>
+    </ul>
+  </li>
+  <li>Added Boon Output tracking output to encounters. Any logs uploaded prior to this release will need to be uploaded again for this feature. Intensity will show average numbers of stacks provided while duration will show average uptime provided for example:
+    <uL>
+      <li>75 might on the boon output table indicates and average of 75 stacks were given to everyone by that player during the fight. In a party of 5, that would be 75 / 5 which equals 15 stacks of might uptime for 5 players. </li>
+      <li>500% alacrity on the boon output table indicates an average of 500% alacrity uptime was provided by that player to the rest of the party. In a party of 5, that would be 500 / 5 which equals 100% alacrity uptime for 5 players.</li>
+    </ul>
+  </li>
+  <li>Re-enabled log archiving. Logs can be redownloaded by clicking on the filename in the top right corner of the encounter page. Privacy options will disable this feature if any player in the squad is deemed private to the user.</li>
+  <li>Many minor fixes to logs not being processed. Most logs impacted have been fed back through for processing.</li>
+  <li>Fixed a server crash.</li>
+  <li>If you love this site and can't live without it, consider <a href="info-about" on-click="@this.page('info-about')">a small donation</a> to help support the running costs and invest in better infrastructure for more features!</li>
+</ul>
+<h4>Version 0.9.7</h4>
 <ul>
   <li>Added game build check for compatible ARC versions. GW2Raidar will now reject logs using game builds where ARC is not functioning properly (latest only).</li>
   <li>Added Fractal CM support for Nightmare and Shattered Observatory</li>
