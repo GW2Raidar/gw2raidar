@@ -6,8 +6,19 @@
       <h2 class="uk-margin-remove">The [[page.global_era.name]] Era</h2>
     </div>
     <div class="uk-float-right uk-text-right">
-      <select class="uk-select" value='[[page.global_era]]'>
+      <select id="era-selector" class="uk-select" value='[[page.selected_era]]'>
         [[#each eras]]
+          <option value='[[this]]'>[[name]]</option>
+        [[/each]]
+      </select>
+    </div>
+
+    <div class="uk-float-left">
+      <h2 class="uk-margin-remove">The [[page.global_era.name]] Era</h2>
+    </div>
+    <div class="uk-float-right uk-text-right">
+      <select id="area-selector" class="uk-select" value='[[page.selected_area]]'>
+        [[#each areas]]
           <option value='[[this]]'>[[name]]</option>
         [[/each]]
       </select>
@@ -15,28 +26,39 @@
   </div>
 
   [[#with stats]]
-    <div class="uk-margin">
-      <div uk-grid class="uk-grid-small">
+    <div id="content" class="uk-margin">
+      <div id="specialisation-stats" uk-grid class="uk-grid-small">
         <table class="uk-table uk-table-striped uk-table-small">
           <thead>
             <tr class="uk-background-secondary">
               <th>Specialisation</th>
               <th>Archetype</th>
               <th>Count</th>
+              <th>Cleave DPS</th>
+              <th>Boss DPS</th>
+              <th>Scholar </th>
             </tr>
           </thead>
           <tbody>
             [[#each flattenStats(build)]]
               [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
                 [[#if professionId != 'All' && eliteId != 'All' && archetypeId != 'All']]
-                  <tr>
+                  <tr class="uk-margin-remove" >
                     <td>
                       <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
                       [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
-                      [[professionId + "," + eliteId + "," + archetypeId]]
                     </td>
                     <td>[[data.archetypes[archetypeId]]]</td>
                     <td>[[(lineStats.count/group.count).toFixed(2)]]</td>
+                    [[#each [
+                      {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
+                      {"percentiles": p(lineStats.per_dps_boss), "max": individual.max_dps_boss},
+                      {"percentiles": p(lineStats.per_scholar), "max": individual.max_scholar}
+                    ] ]]
+                      <td class="uk-margin-remove uk-height-2-2" style="[[p_bar(percentiles, max)]]">
+                      </td>
+                    [[/each]]
+
                   </tr>
                 [[/if]]
               [[/with]]
@@ -47,6 +69,7 @@
     </div>
   [[/with]]
 [[/with]]
+
 
 <!--
     [[#if encounter[page.area]]]

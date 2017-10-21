@@ -208,6 +208,12 @@ def global_stats(request, era_started_at=None, area_id=None, json=None):
             area = Area.objects.get(id=area_id)
             raw_data = EraAreaStore.objects.get(era=era, area=area).val
         stats = raw_data['All']
+        for prof in stats['build']:
+            for elite in stats['build'][prof]:
+                for arch in list(stats['build'][prof][elite]):
+                    vals = stats['build'][prof][elite][arch]
+                    if 'count' not in vals or vals['count'] < 10:
+                        del(stats['build'][prof][elite][arch])
     except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
         stats = {}
 

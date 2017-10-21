@@ -98,11 +98,13 @@
           all.push({
             'professionId':professionId,
             'eliteId': eliteId,
-            'archetypeId': archetypeId
+            'archetypeId': archetypeId,
+            'count': build[professionId][eliteId][archetypeId].count
           });
         });
       });
     });
+    all.sort((a,b) => {return b.count - a.count;})
     return all
   }
   helpers.formatDate = timestamp => {
@@ -259,6 +261,36 @@ ${rectSvg.join("\n")}
     let dead_perc = (events.dead_time || 0) * 100 / 1000 / numPlayers / duration;
     let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
     return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
+  }
+  helpers.p = (p) => {
+    let b64 = p.substring(2, p.length - 3);
+    let b = atob(b64);
+    let p2 = new Uint8Array(400)
+    for(var i = 0; i < 400; i++) {
+        p2[i] = b.charCodeAt(i)
+    }
+    return new Float32Array(p2.buffer )
+  }
+  helpers.p_bar = (p, max) => {
+    return helpers.svg(helpers.rectangle(0, 5, 80*p[90]/max, 30, new Colour("#bbbbdd"))
+    + helpers.rectangle(0, 35, 80*p[75]/max, 30, new Colour("#ddddbb"))
+    + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour("#ffffaa"))
+    + helpers.text(80*p[90]/max, 30, 11, p[90].toFixed(0))
+    + helpers.text(80*p[75]/max, 60, 11, p[75].toFixed(0))
+    + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)));
+  }
+  helpers.rectangle = (x, y, width, height, colour) => {
+    return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`
+  }
+  helpers.text = (x, y, size, text) => {
+    return `<text x='${x}%' y='${y}%' font-family='Verdana' font-size='${size}'>${text}</text>`
+  }
+  helpers.svg = (body) =>  {
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+${body}
+</svg>`.replace(/\n\s*/g, "");
+    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
   }
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
