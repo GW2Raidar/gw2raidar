@@ -263,8 +263,7 @@ ${rectSvg.join("\n")}
     return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
   helpers.p = (p) => {
-    let b64 = p.substring(2, p.length - 3);
-    let b = atob(b64);
+    let b = atob(p);
     let p2 = new Uint8Array(400)
     for(var i = 0; i < 400; i++) {
         p2[i] = b.charCodeAt(i)
@@ -552,6 +551,30 @@ ${body}
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
     page: setPage,
+    globalStatsPage: () => {
+
+      let era = r.get('page.selected_era.started_at')
+      let area = r.get('page.selected_area.id')
+      let page = r.get('page')
+      let current_era = r.get('page.era_started_at')
+      let current_area = r.get('page.area_id')
+
+      console.log("Asked to switch to " + era + ", " + area)
+
+      if(era != undefined && area != undefined) {
+        era = String(era);
+        area = String(area);
+        if (era != current_era || area !== current_area) {
+          console.log("Actually switching from " + current_era + ", " + current_area
+                + " to " + era + ", " + area)
+          setPage({
+            name: 'global_stats',
+            era_started_at: era,
+            area_id: area
+          })
+        }
+      }
+    }
   });
 
   r.observe('settings', (newValue, oldValue, keyPath) => {

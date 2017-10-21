@@ -6,9 +6,11 @@
       <h2 class="uk-margin-remove">The [[page.global_era.name]] Era</h2>
     </div>
     <div class="uk-float-right uk-text-right">
-      <select id="era-selector" class="uk-select" value='[[page.selected_era]]'>
+      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.selected_era]]'
+              oninput="r.globalStatsPage()">
+          <option value="null"></option>
         [[#each eras]]
-          <option value='[[this]]'>[[name]]</option>
+          <option value='[[this]]' [[#if page.era_started_at == this.started_at]]selected[[/if]]>[[name]]</option>
         [[/each]]
       </select>
     </div>
@@ -17,9 +19,11 @@
       <h2 class="uk-margin-remove">The [[page.global_era.name]] Era</h2>
     </div>
     <div class="uk-float-right uk-text-right">
-      <select id="area-selector" class="uk-select" value='[[page.selected_area]]'>
+      <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.selected_area]]'
+              oninput="r.globalStatsPage()">
+          <option value="null">All</option>
         [[#each areas]]
-          <option value='[[this]]'>[[name]]</option>
+          <option value='[[this]]' [[#if page.area_id == this.id]]selected[[/if]]>[[name]]</option>
         [[/each]]
       </select>
     </div>
@@ -27,16 +31,19 @@
 
   [[#with stats]]
     <div id="content" class="uk-margin">
-      <div id="specialisation-stats" uk-grid class="uk-grid-small">
+      <div id="specialisation-stats">
         <table class="uk-table uk-table-striped uk-table-small">
           <thead>
             <tr class="uk-background-secondary">
-              <th>Specialisation</th>
-              <th>Archetype</th>
-              <th>Count</th>
+              <th class="uk-table-shrink">Specialisation</th>
+              <th class="uk-table-shrink">Archetype</th>
+              <th class="uk-table-shrink">Count</th>
               <th>Cleave DPS</th>
               <th>Boss DPS</th>
               <th>Scholar </th>
+              <th>Buff 1 </th>
+              <th>Buff 2 </th>
+              <th>Buff 3 </th>
             </tr>
           </thead>
           <tbody>
@@ -53,7 +60,10 @@
                     [[#each [
                       {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
                       {"percentiles": p(lineStats.per_dps_boss), "max": individual.max_dps_boss},
-                      {"percentiles": p(lineStats.per_scholar), "max": individual.max_scholar}
+                      {"percentiles": p(lineStats.per_scholar), "max": individual.max_scholar},
+                      {"percentiles": p(lineStats.buffs.per_might), "max": 25},
+                      {"percentiles": p(lineStats.buffs.per_quickness), "max": 100},
+                      {"percentiles": p(lineStats.buffs.per_alacrity), "max": 100}
                     ] ]]
                       <td class="uk-margin-remove uk-height-2-2" style="[[p_bar(percentiles, max)]]">
                       </td>
