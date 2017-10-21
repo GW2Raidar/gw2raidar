@@ -107,6 +107,62 @@
     all.sort((a,b) => {return b.count - a.count;})
     return all
   }
+  helpers.buffImportanceLookup = {
+    'might': 75,
+    'fury': 10,
+    'quickness': 30,
+    'alacrity': 15,
+    'protection': 15,
+    'retaliation': 5,
+    'regen': 5,
+    'spotter': 5,
+    'glyph_of_empowerment': 10,
+    'gotl': 200,
+    'spirit_of_frost': 7.5,
+    'sun_spirit': 6,
+    'empower_allies': 5,
+    'banner_strength': 8,
+    'banner_discipline': 8,
+    'assassins_presence': 6,
+    'naturalistic_resonance': 20,
+    'pinpoint_distribution': 5,
+    'soothing_mist': 10,
+    'vampiric_presence': 5,
+  }
+  helpers.buffStackLookup = {
+    'might': 25,
+    'gotl': 5
+  }
+  helpers.buffImportance = (buff) => {
+    if(buff in helpers.buffImportanceLookup) {
+      return helpers.buffImportanceLookup[buff];
+    }
+    return 1;
+  }
+  helpers.buffMax = (buff) => {
+    if(buff in helpers.buffStackLookup) {
+      return helpers.buffStackLookup[buff];
+    }
+    return 100;
+  }
+  helpers.highestBuffs = (buffs) => {
+    let buffNames = [];
+    Object.keys(buffs).forEach((buff) => {
+        if(buff.startsWith("max_"))
+        buffNames.push(buff.substring(4))
+    });
+
+
+    buffNames.sort((a,b) => {
+      return helpers.buffImportance(b) * buffs["avg_" + b] -
+             helpers.buffImportance(a) * buffs["avg_" + a];
+      });
+    return buffNames.map((buff) => { return {
+        "percentiles": helpers.p(buffs["per_" + buff]),
+        "max": helpers.buffMax(buff) * 10,
+        "buff_name": buff
+    }});
+  }
   helpers.formatDate = timestamp => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);

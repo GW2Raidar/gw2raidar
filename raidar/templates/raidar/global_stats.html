@@ -40,16 +40,18 @@
               <th class="uk-table-shrink">Count</th>
               <th>Cleave DPS</th>
               <th>Boss DPS</th>
-              <th>Scholar </th>
               <th>Buff 1 </th>
               <th>Buff 2 </th>
               <th>Buff 3 </th>
+              <th>Buff 4 </th>
+              <th>Buff 5 </th>
             </tr>
           </thead>
           <tbody>
             [[#each flattenStats(build)]]
               [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
                 [[#if professionId != 'All' && eliteId != 'All' && archetypeId != 'All']]
+                  [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
                   <tr class="uk-margin-remove" >
                     <td>
                       <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
@@ -60,16 +62,18 @@
                     [[#each [
                       {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
                       {"percentiles": p(lineStats.per_dps_boss), "max": individual.max_dps_boss},
-                      {"percentiles": p(lineStats.per_scholar), "max": individual.max_scholar},
-                      {"percentiles": p(lineStats.buffs.per_might), "max": 25},
-                      {"percentiles": p(lineStats.buffs.per_quickness), "max": 100},
-                      {"percentiles": p(lineStats.buffs.per_alacrity), "max": 100}
+                      buffs[0],
+                      buffs[1],
+                      buffs[2],
+                      buffs[3],
+                      buffs[4]
                     ] ]]
                       <td class="uk-margin-remove uk-height-2-2" style="[[p_bar(percentiles, max)]]">
+                          <img src="{% static 'raidar/img/buff/' %}/[[buff_name]].png" title="[[buff_name]]" alt="[[buff_name]]"/>
                       </td>
                     [[/each]]
-
                   </tr>
+                  [[/with]]
                 [[/if]]
               [[/with]]
             [[/each]]
