@@ -28,6 +28,7 @@
       <p><strong>Disclaimer: The statistics displayed in this report are based off data available within GW2Raidar only, as such it is not a complete representation of the Guild Wars 2 raiding community. Efforts are made to ensure accuracy, however some anomalies may exist. Only successful runs are included and builds with fewer than 10 data points are not shown.</strong></p>
 
   [[#with stats]]
+    <div  class="uk-overflow-auto uk-margin-remove-bottom">
       <table class="uk-table uk-table-striped uk-table-small">
          <thead>
            <tr class="uk-background-secondary">
@@ -48,10 +49,7 @@
               {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
             ] ]]
               [[#if percentiles]]
-              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]]">
-                [[#if buff_image]]
-                  <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
-                [[/if]]
+              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
               </td>
               [[else]]
               <td></td>
@@ -65,14 +63,14 @@
       [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
       <h3 class="uk-margin-remove-top uk-margin-small-bottom">[[data.archetypes[archetype]]]</h3>
       <div>
-        <table class="uk-table uk-table-striped uk-table-small">
+        <table class="uk-width-1-1 uk-table uk-table-striped uk-table-small">
           <thead>
             <tr class="uk-background-secondary">
               <th class="uk-table-shrink">Specialisation</th>
               <th class="uk-table-shrink">Popularity</th>
               <th class="uk-width-1-6">Cleave DPS</th>
               <th class="uk-width-1-6">Boss DPS</th>
-              <th colspan="5">Outgoing buffs</th>
+              <th class="uk-table-expand" colspan="5">Outgoing buffs</th>
             </tr>
           </thead>
           <tbody>
@@ -96,7 +94,7 @@
                       buffs[4]
                     ] ]]
                       [[#if percentiles]]
-                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]]">
+                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
                         [[#if buff_image]]
                           <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
                         [[/if]]
@@ -116,7 +114,10 @@
         </table>
         </div>
       [[/each]]
+    </div>
+      <div>
     <p>The "Buff importance rating" shown in tooltips is used to determine which buffs to display and is not intended as a precise measure. In approximate terms, a 'buff importance rating' of 10000 (on a damage buff) equates to a 100% damage boost for one player, a 20% damage boost for 5 players, or a 10% damage boost across 10 players.</p>
+          </div>
   [[/with]]
   </div>
 [[/with]]
