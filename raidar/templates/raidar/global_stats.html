@@ -32,14 +32,14 @@
          <thead>
            <tr class="uk-background-secondary">
              <th class="uk-table-shrink"></th>
-             <th class="uk-table-expand">Duration (seconds)</th>
-             <th class="uk-table-expand">Cleave DPS</th>
-             <th class="uk-table-expand">Boss DPS</th>
-             <th class="uk-table-expand">DPS Received</th>
+             <th>Duration (seconds)</th>
+             <th>Cleave DPS</th>
+             <th>Boss DPS</th>
+             <th>DPS Received</th>
            </tr>
          </thead>
          <tbody>
-           [[#if group.per_dps]]
+           [[#if group.per_duration]]
            <td>Full group</td>
           [[#each [
               {"percentiles": p_r(group.per_duration), "max": group.max_duration},
