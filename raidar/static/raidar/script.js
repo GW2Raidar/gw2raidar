@@ -114,7 +114,6 @@
     'alacrity': 15,
     'protection': 15,
     'retaliation': 5,
-    'regen': 5,
     'spotter': 5,
     'glyph_of_empowerment': 10,
     'gotl': 200,
