@@ -100,12 +100,12 @@
             'professionId':professionId,
             'eliteId': eliteId,
             'archetypeId': archetypeId,
-            'count': build[professionId][eliteId][archetypeId].count
+            'boss_dps_percentiles': helpers.p(build[professionId][eliteId][archetypeId].per_dps_boss)
           });
         });
       });
     });
-    all.sort((a,b) => b.count - a.count)
+    all.sort((a,b) => b.boss_dps_percentiles[90] - a.boss_dps_percentiles[90])
     console.log(all);
     return all
   }
@@ -113,9 +113,9 @@
     return list.find(a => a.id == id);
   }
   helpers.buffImportanceLookup = {
-    'might': 75,
+    'might': 80,
     'fury': 10,
-    'quickness': 30,
+    'quickness': 25,
     'alacrity': 15,
     'protection': 15,
     'retaliation': 5,
@@ -188,11 +188,9 @@
         "buff_name": buff,
         "buff_image": helpers.buffImageLookup[buff] || buff,
         "importance": helpers.buffImportance(buff) * buffs["avg_" + buff]
-    }})
+    }}).filter((a) => a.importance >= 500);
 
-    buffInfo.sort((a,b) => {
-      return b.importance - a.importance;
-      });
+    buffInfo.sort((a,b) => b.importance - a.importance);
     return buffInfo;
   }
   helpers.formatDate = timestamp => {
@@ -356,20 +354,27 @@ ${rectSvg.join("\n")}
     for(var i = 0; i < 400; i++) {
         p2[i] = b.charCodeAt(i)
     }
-    return new Float32Array(p2.buffer )
+    return new Float32Array(p2.buffer)
+  }
+  helpers.p_r = (p) => {
+    let normalOrder = helpers.p(p);
+    let reversed = [normalOrder[99]]
+    for(let i = 1; i < 100; i++) {
+      reversed.push(normalOrder[100-i])
+    }
+    return reversed;
   }
   helpers.p_bar = (p, max, space_for_image) => {
     let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
 
 
-    let x = space_for_image ? 25 : 0;
-    let w = space_for_image ? 60 : 80;
-    return helpers.svg(helpers.rectangle(x, 5, w*p[90]/max, 30, new Colour(quantileColours[4]))
-    + helpers.rectangle(x, 35, w*p[75]/max, 30, new Colour(quantileColours[3]))
-    + helpers.rectangle(x, 65, w*p[50]/max, 30, new Colour(quantileColours[2]))
-    + helpers.text(x + w*p[90]/max, 30, 11, p[90].toFixed(0))
-    + helpers.text(x + w*p[75]/max, 60, 11, p[75].toFixed(0))
-    + helpers.text(x + w*p[50]/max, 90, 11, p[50].toFixed(0)));
+    return helpers.svg(helpers.rectangle(0, 5, 80*p[90]/max, 30, new Colour(quantileColours[4]))
+    + helpers.rectangle(0, 35, 80*p[75]/max, 30, new Colour(quantileColours[3]))
+    + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour(quantileColours[2]))
+    + helpers.text(80*p[90]/max, 30, 11, p[90].toFixed(0))
+    + helpers.text(80*p[75]/max, 60, 11, p[75].toFixed(0))
+    + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)))
+     + `;background-size: ${space_for_image ? 75 : 100}% 100%; background-position:${space_for_image ? 36 : 0}px 0px; background-repeat: no-repeat`;
   }
   helpers.rectangle = (x, y, width, height, colour) => {
     return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`
@@ -382,7 +387,7 @@ ${rectSvg.join("\n")}
 <svg xmlns='http://www.w3.org/2000/svg'>
 ${body}
 </svg>`.replace(/\n\s*/g, "");
-    return `background-size: contain; background: url("data:image/svg+xml;utf8,${svg}")`
+    return `background: url("data:image/svg+xml;utf8,${svg}")`
   }
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);

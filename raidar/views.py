@@ -193,7 +193,7 @@ def global_stats(request, era_id=None, area_id=None, json=None):
         eras = []
 
     try:
-        area_query = Area.objects.all()
+        area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
         areas = [{
                 'name': area.name,
                 'id': area.id,

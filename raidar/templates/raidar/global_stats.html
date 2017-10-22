@@ -4,8 +4,8 @@
   <div id="content" class="uk-margin-left uk-margin-right uk-margin-top">
   <div class="uk-clearfix">
     <div class="uk-float-left">
-      <h2 class="uk-margin-remove">[[findId(areas, page.area_id).name]]</h2>
-      <h3 class="uk-margin-remove">in the [[findId(eras, page.era_id).name]] Era</h3>
+      <h2 class="uk-margin-remove">[[page.area_id ? findId(areas, page.area_id).name : "All logs"]]</h2>
+      <h3 class="uk-margin-remove">in the [[page.era_id ? findId(eras, page.era_id).name : "most recent"]] Era</h3>
     </div>
     <div class="uk-float-right uk-text-right">
       <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.area_id]]'
@@ -23,25 +23,56 @@
         [[/each]]
       </select>
     </div>
+
   </div>
+      <p><strong>Disclaimer: The statistics displayed in this report are based off data available within GW2Raidar only, as such it is not a complete representation of the Guild Wars 2 raiding community. Efforts are made to ensure accuracy, however some anomalies may exist. Only successful runs are included and builds with fewer than 10 data points are not shown.</strong></p>
 
   [[#with stats]]
-
+      <table class="uk-table uk-table-striped uk-table-small">
+         <thead>
+           <tr class="uk-background-secondary">
+             <th class="uk-table-shrink"></th>
+             <th class="uk-table-expand">Duration (seconds)</th>
+             <th class="uk-table-expand">Cleave DPS</th>
+             <th class="uk-table-expand">Boss DPS</th>
+             <th class="uk-table-expand">DPS Received</th>
+           </tr>
+         </thead>
+         <tbody>
+           [[#if group.per_dps]]
+           <td>Full group</td>
+          [[#each [
+              {"percentiles": p_r(group.per_duration), "max": group.max_duration},
+              {"percentiles": p(group.per_dps), "max": group.max_dps},
+              {"percentiles": p(group.per_dps_boss), "max": group.max_dps_boss},
+              {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
+            ] ]]
+              [[#if percentiles]]
+              <td class="uk-margin-remove" uk-tooltip title="90th percentile: [[percentiles[90].toFixed(0)]]<br/>75th percentile: [[percentiles[75].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]]">
+                [[#if buff_image]]
+                  <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
+                [[/if]]
+              </td>
+              [[else]]
+              <td></td>
+              [[/if]]
+            [[/each]]
+           [[else]]
+              <tr><td colspan="9">Not enough data to display group statistics</td></tr>
+           [[/if]]
+         </tbody>
+      </table>
       [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
-      <h3>[[data.archetypes[archetype]]]</h3>
-      <div id="specialisation-stats">
+      <h3 class="uk-margin-remove-top uk-margin-small-bottom">[[data.archetypes[archetype]]]</h3>
+      <div>
         <table class="uk-table uk-table-striped uk-table-small">
           <thead>
             <tr class="uk-background-secondary">
               <th class="uk-table-shrink">Specialisation</th>
               <th class="uk-table-shrink">Popularity</th>
-              <th class="uk-table-expand">Cleave DPS</th>
-              <th class="uk-table-expand">Boss DPS</th>
-              <th>Buff 1 </th>
-              <th>Buff 2 </th>
-              <th>Buff 3 </th>
-              <th>Buff 4 </th>
-              <th>Buff 5 </th>
+              <th class="uk-width-1-6">Cleave DPS</th>
+              <th class="uk-width-1-6">Boss DPS</th>
+              <th colspan="5">Outgoing buffs</th>
             </tr>
           </thead>
           <tbody>
@@ -57,20 +88,22 @@
                     <td>[[(lineStats.count/group.count).toFixed(2)]]</td>
                     [[#each [
                       {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
-                      {"percentiles": p(lineStats.per_dps_boss), "max": individual.max_dps_boss},
+                      {"percentiles": boss_dps_percentiles, "max": individual.max_dps_boss},
                       buffs[0],
                       buffs[1],
-                      buffs[2],
+                      buffs[2] ,
                       buffs[3],
                       buffs[4]
                     ] ]]
-                      <td class="uk-margin-remove uk-height-2-2" style="[[p_bar(percentiles, max, buff_image)]]">
+                      [[#if percentiles]]
+                      <td class="uk-margin-remove" uk-tooltip title="90th percentile: [[percentiles[90].toFixed(0)]]<br/>75th percentile: [[percentiles[75].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]]">
                         [[#if buff_image]]
-                          <img src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" title="[[buff_name]]" alt="[[buff_name]]"/>
-                        [[else]]
-
+                          <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
                         [[/if]]
                       </td>
+                      [[else]]
+                      <td></td>
+                      [[/if]]
                     [[/each]]
                   </tr>
                   [[/with]]
@@ -83,7 +116,7 @@
         </table>
         </div>
       [[/each]]
-
+    <p>The "Buff importance rating" shown in tooltips is used to determine which buffs to display and is not intended as a precise measure. In approximate terms, a 'buff importance rating' of 10000 (on a damage buff) equates to a 100% damage boost for one player, a 20% damage boost for 5 players, or a 10% damage boost across 10 players.</p>
   [[/with]]
   </div>
 [[/with]]

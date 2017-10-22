@@ -28,6 +28,8 @@ import base64
 def single_process(name):
     try:
         pid = os.getpid()
+        #Uncomment to remove pid in case of having cancelled restat with Ctrl+C...
+        #Variable.objects.get(key='%s_pid' % name).delete()
         pid_var = Variable.objects.create(key='%s_pid' % name, val=os.getpid())
     except IntegrityError:
         # already running
@@ -260,7 +262,7 @@ class Command(BaseCommand):
 
                     for phase, stats_in_phase in phases.items():
                         squad_stats = stats_in_phase['Subgroup']['*All']
-
+                        phase_duration = data['Category']['encounter']['duration'] if phase == 'All' else _safe_get(lambda: data['Category']['encounter']['Phase'][phase]['duration'])
                         group_totals = navigate(totals_in_area, phase, 'group')
                         buffs_by_party = navigate(group_totals, 'buffs')
                         buffs_out_by_party = navigate(group_totals, 'buffs_out')
@@ -271,6 +273,10 @@ class Command(BaseCommand):
 
 
                         if(encounter.success):
+                            calculate([group_totals, group_totals_era],
+                                      advanced_stats(options['percentile_samples']),
+                                      'duration',
+                                      phase_duration)
                             calculate([group_totals, group_totals_era], count)
                             calculate_standard_stats(
                                 advanced_stats(options['percentile_samples']),
