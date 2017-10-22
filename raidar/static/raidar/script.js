@@ -96,16 +96,17 @@
     Object.keys(build || {}).forEach((professionId) => {
       Object.keys(build[professionId] || {}).forEach((eliteId) => {
         Object.keys(build[professionId][eliteId] || {}).forEach((archetypeId) => {
-          all.push({
-            'professionId':professionId,
-            'eliteId': eliteId,
-            'archetypeId': archetypeId,
-            'boss_dps_percentiles': helpers.p(build[professionId][eliteId][archetypeId].per_dps_boss)
-          });
+          if('count' in build[professionId][eliteId][archetypeId])
+            all.push({
+              'professionId':professionId,
+              'eliteId': eliteId,
+              'archetypeId': archetypeId,
+              'boss_dps_percentiles': helpers.p(build[professionId][eliteId][archetypeId].per_dps_boss)
+            });
         });
       });
     });
-    all.sort((a,b) => b.boss_dps_percentiles[90] - a.boss_dps_percentiles[90])
+    all.sort((a,b) => b.boss_dps_percentiles[99] - a.boss_dps_percentiles[99])
     console.log(all);
     return all
   }
@@ -368,11 +369,11 @@ ${rectSvg.join("\n")}
     let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
 
 
-    return helpers.svg(helpers.rectangle(0, 5, 80*p[90]/max, 30, new Colour(quantileColours[4]))
-    + helpers.rectangle(0, 35, 80*p[75]/max, 30, new Colour(quantileColours[3]))
+    return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
+    + helpers.rectangle(0, 35, 80*p[90]/max, 30, new Colour(quantileColours[3]))
     + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour(quantileColours[2]))
-    + helpers.text(80*p[90]/max, 30, 11, p[90].toFixed(0))
-    + helpers.text(80*p[75]/max, 60, 11, p[75].toFixed(0))
+    + helpers.text(80*p[99]/max, 30, 11, p[99].toFixed(0))
+    + helpers.text(80*p[90]/max, 60, 11, p[90].toFixed(0))
     + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)))
      + `;background-size: ${space_for_image ? 75 : 100}% 100%; background-position:${space_for_image ? 36 : 0}px 0px; background-repeat: no-repeat`;
   }

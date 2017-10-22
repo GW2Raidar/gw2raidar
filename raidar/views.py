@@ -211,14 +211,34 @@ def global_stats(request, era_id=None, area_id=None, json=None):
             area = Area.objects.get(id=area_id)
             raw_data = EraAreaStore.objects.get(era=era, area=area).val
         stats = raw_data['All']
-        for prof in stats['build']:
-            for elite in stats['build'][prof]:
-                for arch in list(stats['build'][prof][elite]):
-                    vals = stats['build'][prof][elite][arch]
-                    if 'count' not in vals or vals['count'] < 10:
-                        del(stats['build'][prof][elite][arch])
+
+        #reduce size of json for global stats view
+        builds = [stats['build'][prof][elite][arch]
+                  for prof in stats['build']
+                  for elite in stats['build'][prof]
+                  for arch in stats['build'][prof][elite]]
+
+        builds.append(stats['group'])
+        builds.append(stats['individual'])
+
+        for build in list(builds):
+            if 'buffs' in build:
+                del build['buffs']
+            if 'count' not in build or build['count'] < 10:
+                for key in list(build.keys()):
+                    del(build[key])
+
+            if 'buffs_out' in build:
+                for buff in list(filter(lambda a: a.startswith('max_'), build['buffs_out'].keys())):
+                    if build['buffs_out'][buff] <= 0.01:
+                        buffname = buff[4:]
+                        for key in list(filter(lambda a: a.split('_', 1)[1] == buffname,
+                                        build['buffs_out'].keys())):
+                            del(build['buffs_out'][key])
+
     except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
         stats = {}
+        raise
 
 
 

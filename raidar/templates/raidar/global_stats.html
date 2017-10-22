@@ -48,7 +48,7 @@
               {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
             ] ]]
               [[#if percentiles]]
-              <td class="uk-margin-remove" uk-tooltip title="90th percentile: [[percentiles[90].toFixed(0)]]<br/>75th percentile: [[percentiles[75].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]]">
+              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]]">
                 [[#if buff_image]]
                   <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
                 [[/if]]
@@ -96,7 +96,7 @@
                       buffs[4]
                     ] ]]
                       [[#if percentiles]]
-                      <td class="uk-margin-remove" uk-tooltip title="90th percentile: [[percentiles[90].toFixed(0)]]<br/>75th percentile: [[percentiles[75].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]]">
+                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]]">
                         [[#if buff_image]]
                           <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
                         [[/if]]
