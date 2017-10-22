@@ -3,27 +3,24 @@
 [[#with global_stats]]
   <div class="uk-clearfix">
     <div class="uk-float-left">
-      <h2 class="uk-margin-remove">The [[page.global_era.name]] Era</h2>
+      <h2 class="uk-margin-remove">The [[global_stats.eras[page.selected_era.name]]] Era</h2>
     </div>
     <div class="uk-float-right uk-text-right">
-      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.selected_era]]'
-              oninput="r.globalStatsPage()">
-          <option value="null"></option>
+      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.era_id]]'
+              on-change="refresh_page">
+          <option value="[[null]]"></option>
         [[#each eras]]
-          <option value='[[this]]' [[#if page.era_started_at == this.started_at]]selected[[/if]]>[[name]]</option>
+          <option value='[[id]]'>[[name]]</option>
         [[/each]]
       </select>
     </div>
 
-    <div class="uk-float-left">
-      <h2 class="uk-margin-remove">The [[page.global_era.name]] Era</h2>
-    </div>
     <div class="uk-float-right uk-text-right">
-      <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.selected_area]]'
-              oninput="r.globalStatsPage()">
-          <option value="null">All</option>
+      <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.area_id]]'
+              on-change="refresh_page">
+          <option value="[[null]]">All</option>
         [[#each areas]]
-          <option value='[[this]]' [[#if page.area_id == this.id]]selected[[/if]]>[[name]]</option>
+          <option value='[[id]]'>[[name]]</option>
         [[/each]]
       </select>
     </div>
