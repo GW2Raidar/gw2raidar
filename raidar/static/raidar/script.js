@@ -109,6 +109,9 @@
     console.log(all);
     return all
   }
+  helpers.findId = (list, id) => {
+    return list.find(a => a.id == id);
+  }
   helpers.buffImportanceLookup = {
     'might': 75,
     'fury': 10,
@@ -134,6 +137,32 @@
     'might': 25,
     'gotl': 5
   }
+  helpers.buffImageLookup = {
+    'might': 'Might',
+    'fury': 'Fury',
+    'quickness': 'Quickness',
+    'alacrity': 'Alacrity',
+    'protection': 'Protection',
+    'retaliation': 'Retaliation',
+    'regen': 'Regeneration',
+    'spotter': 'Spotter',
+    'glyph_of_empowerment': 'Glyph_of_Empowerment',
+    'gotl': 'Grace_of_the_Land',
+    'spirit_of_frost': 'Frost_Spirit',
+    'sun_spirit': 'Sun_Spirit',
+    'stone_spirit': 'Stone_Spirit',
+    'storm_spirit': 'Storm_Spirit',
+    'empower_allies': 'Empower_Allies',
+    'banner_strength': 'Banner_of_Strength',
+    'banner_discipline': 'Banner_of_Discipline',
+    'banner_tactics': 'Banner_of_Tactics',
+    'banner_defence': 'Banner_of_Defense',
+    'assassins_presence': 'Assassin\'s_Presence',
+    'naturalistic_resonance': 'Facet_of_Nature',
+    'pinpoint_distribution': 'Pinpoint_Distribution',
+    'soothing_mist': 'Soothing_Mist',
+    'vampiric_presence': 'Vampiric_Presence',
+  }
   helpers.buffImportance = (buff) => {
     if(buff in helpers.buffImportanceLookup) {
       return helpers.buffImportanceLookup[buff];
@@ -153,16 +182,18 @@
         buffNames.push(buff.substring(4))
     });
 
-
-    buffNames.sort((a,b) => {
-      return helpers.buffImportance(b) * buffs["avg_" + b] -
-             helpers.buffImportance(a) * buffs["avg_" + a];
-      });
-    return buffNames.map((buff) => { return {
+    let buffInfo = buffNames.map((buff) => { return {
         "percentiles": helpers.p(buffs["per_" + buff]),
         "max": helpers.buffMax(buff) * 10,
-        "buff_name": buff
-    }});
+        "buff_name": buff,
+        "buff_image": helpers.buffImageLookup[buff] || buff,
+        "importance": helpers.buffImportance(buff) * buffs["avg_" + buff]
+    }})
+
+    buffInfo.sort((a,b) => {
+      return b.importance - a.importance;
+      });
+    return buffInfo;
   }
   helpers.formatDate = timestamp => {
     if (timestamp !== undefined) {
@@ -327,13 +358,18 @@ ${rectSvg.join("\n")}
     }
     return new Float32Array(p2.buffer )
   }
-  helpers.p_bar = (p, max) => {
-    return helpers.svg(helpers.rectangle(0, 5, 80*p[90]/max, 30, new Colour("#bbbbdd"))
-    + helpers.rectangle(0, 35, 80*p[75]/max, 30, new Colour("#ddddbb"))
-    + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour("#ffffaa"))
-    + helpers.text(80*p[90]/max, 30, 11, p[90].toFixed(0))
-    + helpers.text(80*p[75]/max, 60, 11, p[75].toFixed(0))
-    + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)));
+  helpers.p_bar = (p, max, space_for_image) => {
+    let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
+
+
+    let x = space_for_image ? 25 : 0;
+    let w = space_for_image ? 60 : 80;
+    return helpers.svg(helpers.rectangle(x, 5, w*p[90]/max, 30, new Colour(quantileColours[4]))
+    + helpers.rectangle(x, 35, w*p[75]/max, 30, new Colour(quantileColours[3]))
+    + helpers.rectangle(x, 65, w*p[50]/max, 30, new Colour(quantileColours[2]))
+    + helpers.text(x + w*p[90]/max, 30, 11, p[90].toFixed(0))
+    + helpers.text(x + w*p[75]/max, 60, 11, p[75].toFixed(0))
+    + helpers.text(x + w*p[50]/max, 90, 11, p[50].toFixed(0)));
   }
   helpers.rectangle = (x, y, width, height, colour) => {
     return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`

@@ -1,20 +1,12 @@
 {% load staticfiles %}
 
 [[#with global_stats]]
+  <div id="content" class="uk-margin-left uk-margin-right uk-margin-top">
   <div class="uk-clearfix">
     <div class="uk-float-left">
-      <h2 class="uk-margin-remove">The [[global_stats.eras[page.selected_era.name]]] Era</h2>
+      <h2 class="uk-margin-remove">[[findId(areas, page.area_id).name]]</h2>
+      <h3 class="uk-margin-remove">in the [[findId(eras, page.era_id).name]] Era</h3>
     </div>
-    <div class="uk-float-right uk-text-right">
-      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.era_id]]'
-              on-change="refresh_page">
-          <option value="[[null]]"></option>
-        [[#each eras]]
-          <option value='[[id]]'>[[name]]</option>
-        [[/each]]
-      </select>
-    </div>
-
     <div class="uk-float-right uk-text-right">
       <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.area_id]]'
               on-change="refresh_page">
@@ -23,20 +15,28 @@
           <option value='[[id]]'>[[name]]</option>
         [[/each]]
       </select>
+      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.era_id]]'
+              on-change="refresh_page">
+          <option value="[[null]]">Most recent</option>
+        [[#each eras]]
+          <option value='[[id]]'>[[name]]</option>
+        [[/each]]
+      </select>
     </div>
   </div>
 
   [[#with stats]]
-    <div id="content" class="uk-margin">
+
+      [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
+      <h3>[[data.archetypes[archetype]]]</h3>
       <div id="specialisation-stats">
         <table class="uk-table uk-table-striped uk-table-small">
           <thead>
             <tr class="uk-background-secondary">
               <th class="uk-table-shrink">Specialisation</th>
-              <th class="uk-table-shrink">Archetype</th>
-              <th class="uk-table-shrink">Count</th>
-              <th>Cleave DPS</th>
-              <th>Boss DPS</th>
+              <th class="uk-table-shrink">Popularity</th>
+              <th class="uk-table-expand">Cleave DPS</th>
+              <th class="uk-table-expand">Boss DPS</th>
               <th>Buff 1 </th>
               <th>Buff 2 </th>
               <th>Buff 3 </th>
@@ -47,14 +47,13 @@
           <tbody>
             [[#each flattenStats(build)]]
               [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
-                [[#if professionId != 'All' && eliteId != 'All' && archetypeId != 'All']]
+                [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]
                   [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
                   <tr class="uk-margin-remove" >
                     <td>
                       <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
                       [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
                     </td>
-                    <td>[[data.archetypes[archetypeId]]]</td>
                     <td>[[(lineStats.count/group.count).toFixed(2)]]</td>
                     [[#each [
                       {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
@@ -65,108 +64,26 @@
                       buffs[3],
                       buffs[4]
                     ] ]]
-                      <td class="uk-margin-remove uk-height-2-2" style="[[p_bar(percentiles, max)]]">
-                          <img src="{% static 'raidar/img/buff/' %}/[[buff_name]].png" title="[[buff_name]]" alt="[[buff_name]]"/>
+                      <td class="uk-margin-remove uk-height-2-2" style="[[p_bar(percentiles, max, buff_image)]]">
+                        [[#if buff_image]]
+                          <img src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" title="[[buff_name]]" alt="[[buff_name]]"/>
+                        [[else]]
+
+                        [[/if]]
                       </td>
                     [[/each]]
                   </tr>
                   [[/with]]
                 [[/if]]
               [[/with]]
+            [[else]]
+              <tr><td colspan="9">Not enough data to display for [[data.archetypes[archetype]]] specialisations</td></tr>
             [[/each]]
           </tbody>
         </table>
-      </div>
-    </div>
-  [[/with]]
-[[/with]]
-
-
-<!--
-    [[#if encounter[page.area]]]
-      <div class="uk-text-center uk-clearfix">
-        <div class="uk-float-left uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
-            encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage,
-            encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage,
-            0)]]; width: 400px">
-            <div>Live [[
-              (100
-              - encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage
-              - encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage
-              ).toPrecision(3)]]%</div>
-          <div>Down [[encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage.toPrecision(3)]]%</div>
-          <div>Dead [[encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage.toPrecision(3)]]%</div>
         </div>
-        <div class="uk-float-right uk-flex uk-flex-between uk-padding-small" style="[[barSurvivalPerc(
-            encounter[page.area].archetype[1] ? 100 * encounter[page.area].archetype[1].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count : 0,
-            encounter[page.area].archetype[2] ? 100 * encounter[page.area].archetype[2].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count : 0,
-            0
-          )]]; width: 400px">
-          <div>Support [[encounter[page.area].archetype[5] ? (100 * encounter[page.area].archetype[5].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count).toPrecision(3) : 0]]%</div>
-          <div>Power [[encounter[page.area].archetype[1] ? (100 * encounter[page.area].archetype[1].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count).toPrecision(3) : 0]]%</div>
-          <div>Condi [[encounter[page.area].archetype[2] ? (100 * encounter[page.area].archetype[2].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count).toPrecision(3) : 0]]%</div>
-        </div>
-      </div>
-
-
-      [[#each keysWithAllLast(encounter[page.area].archetype, {1: 2, 2: 3, 5: 1})]]
-        [[#with {archetypeId: ., archetype: encounter[page.area].archetype[.]}]]
-          <h3>
-            [[#if archetypeId !== 'All']]
-              <img alt="[[data.archetypes[archetypeId]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetypeId]]].png"/>
-            [[/if]]
-            [[archetypeId === 'All' ? 'All' : data.archetypes[archetypeId]]]
-            <span class="ignore">Archetypes on</span>
-            [[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area]]]
-          </h3>
-          <table class="uk-table uk-table-striped">
-            <thead>
-              <tr class="uk-background-secondary">
-                <th>Profession</th>
-                <th>Encounters</th>
-                <th>Avg DPS</th>
-                <th>Max DPS</th>
-                <th>Down</th>
-                <th>Dead</th>
-              </tr>
-            </thead>
-            <tbody>
-              [[#each keysWithAllLast(archetype.profession)]]
-                [[#with {professionId: ., profession: archetype.profession[.]}]]
-                  [[#each keysWithAllLast(profession.elite)]]
-                    [[#with {eliteId: ., elite: profession.elite[.]}]]
-                      [[#with elite]]
-                        <tr class="[[professionId === 'All' ? 'all' : '']] link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, .)">
-                          <th>
-                            [[#if professionId !== 'All']]
-                              <img alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png"/>
-                            [[/if]]
-                            [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
-                          </th>
-                          <td>
-                            [[.count]]
-                          </td>
-                          <td>
-                            [[.avg_dps !== undefined ? Math.round(.avg_dps) : '']]
-                          </td>
-                          <td>
-                            [[.max_dps !== undefined ? Math.round(.max_dps) : '']]
-                          </td>
-                          <td>
-                            [[.avg_down_percentage !== undefined ? .avg_down_percentage.toPrecision(3) + '%' : '']]
-                          </td>
-                          <td>
-                            [[.avg_dead_percentage !== undefined ? .avg_dead_percentage.toPrecision(3) + '%' : '']]
-                          </td>
-                        </tr>
-                      [[/with]]
-                    [[/with]]
-                  [[/each]]
-                [[/with]]
-              [[/each]]
-            </tbody>
-          </table>
-        [[/with]]
       [[/each]]
-    [[/if]]
-  [[/with]] -->
+
+  [[/with]]
+  </div>
+[[/with]]
