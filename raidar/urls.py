@@ -28,5 +28,5 @@ urlpatterns = [
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
     url(r'^$', views.index, name = "index"),
-    url(r'^global_stats(?:/(?P<era_started_at>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
+    url(r'^global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]

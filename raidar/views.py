@@ -174,17 +174,18 @@ def profile(request):
     return JsonResponse(result)
 
 @require_GET
-def global_stats(request, era_started_at=None, area_id=None, json=None):
+def global_stats(request, era_id=None, area_id=None, json=None):
     if not json:
         return _html_response(request, {
             "name": "global_stats",
-            "era_started_at": era_started_at,
+            "era_id": era_id,
             "area_id": area_id
         })
     try:
         era_query = Era.objects.all()
         eras = [{
                 'name': era.name,
+                'id': era.id,
                 'started_at': era.started_at,
                 'description': era.description
             } for era in era_query]
@@ -201,9 +202,9 @@ def global_stats(request, era_started_at=None, area_id=None, json=None):
         areas = []
 
     try:
-        if era_started_at is None:
-            era_started_at = eras[-1]['started_at']
-        era = Era.objects.get(started_at=era_started_at)
+        if era_id is None:
+            era_id = eras[-1]['id']
+        era = Era.objects.get(id=era_id)
         if area_id is None:
             raw_data = era.val
         else:

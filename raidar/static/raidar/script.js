@@ -92,9 +92,10 @@
   };
   helpers.flattenStats = (build) => {
     let all = [];
-    Object.keys(build).forEach((professionId) => {
-      Object.keys(build[professionId]).forEach((eliteId) => {
-        Object.keys(build[professionId][eliteId]).forEach((archetypeId) => {
+    console.log(build);
+    Object.keys(build || {}).forEach((professionId) => {
+      Object.keys(build[professionId] || {}).forEach((eliteId) => {
+        Object.keys(build[professionId][eliteId] || {}).forEach((archetypeId) => {
           all.push({
             'professionId':professionId,
             'eliteId': eliteId,
@@ -104,7 +105,8 @@
         });
       });
     });
-    all.sort((a,b) => {return b.count - a.count;})
+    all.sort((a,b) => b.count - a.count)
+    console.log(all);
     return all
   }
   helpers.buffImportanceLookup = {
@@ -409,9 +411,8 @@ ${body}
   function URLForPage(page) {
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
-    if (page.era_started_at) url += '/' + page.era_started_at;
+    if (page.era_id) url += '/' + page.era_id;
     if (page.area_id) url += '/area-' + page.area_id;
-    console.log(url)
     return url;
   }
 
@@ -606,30 +607,6 @@ ${body}
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
     page: setPage,
-    globalStatsPage: () => {
-
-      let era = r.get('page.selected_era.started_at')
-      let area = r.get('page.selected_area.id')
-      let page = r.get('page')
-      let current_era = r.get('page.era_started_at')
-      let current_area = r.get('page.area_id')
-
-      console.log("Asked to switch to " + era + ", " + area)
-
-      if(era != undefined && area != undefined) {
-        era = String(era);
-        area = String(area);
-        if (era != current_era || area !== current_area) {
-          console.log("Actually switching from " + current_era + ", " + current_area
-                + " to " + era + ", " + area)
-          setPage({
-            name: 'global_stats',
-            era_started_at: era,
-            area_id: area
-          })
-        }
-      }
-    }
   });
 
   r.observe('settings', (newValue, oldValue, keyPath) => {
@@ -640,8 +617,11 @@ ${body}
   function setPage(page) {
     if (typeof page == "string") {
       page = { name: page };
+    } else if (typeof page == "undefined") {
+      page = r.get('page');
+    } else {
+      r.set('page', page);
     }
-    r.set('page', page);
     let url = URLForPage(page);
     history.pushState(page, null, url);
     if (pageInit[page.name]) {
@@ -747,6 +727,9 @@ ${body}
       r.set('contact.input.subject', `Error report: ${url}`);
       setPage('info-contact');
       return false;
+    },
+    refresh_page: function refreshPage(x) {
+      setPage();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;
