@@ -29,6 +29,10 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
       integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
       crossorigin="anonymous"></script>
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
+      integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
+      crossorigin="anonymous"></script>
     <link href="https://fonts.googleapis.com/css?family=Raleway|Raleway:bold" rel="stylesheet">
     <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
@@ -85,6 +89,13 @@
           [[elseif page.name == "info-about"]]
 
             {% include 'raidar/info_about.html' %}
+
+          [[elseif page.name == "global_stats"]]
+
+            {% include 'raidar/global_stats.html' %}
+          [[elseif page.name == "thank-you"]]
+
+            {% include 'raidar/thank-you.html' %}
 
           [[elseif username]]
 

@@ -90,6 +90,8 @@
                 <th>Encounters</th>
                 <th>Avg DPS</th>
                 <th>Max DPS</th>
+                <th>Avg Boss DPS</th>
+                <th>Max Boss DPS</th>
                 <th>Down</th>
                 <th>Dead</th>
               </tr>
@@ -110,11 +112,17 @@
                           <td>
                             [[.count]]
                           </td>
-                          <td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')">
                             [[.avg_dps !== undefined ? Math.round(.avg_dps) : '']]
                           </td>
-                          <td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')">
                             [[.max_dps !== undefined ? Math.round(.max_dps) : '']]
+                          </td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')">
+                            [[.avg_dps_boss !== undefined ? Math.round(.avg_dps_boss) : '']]
+                          </td>
+                          <td class="link" on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')">
+                            [[.max_dps_boss !== undefined ? Math.round(.max_dps_boss) : '']]
                           </td>
                           <td>
                             [[.avg_down_percentage !== undefined ? .avg_down_percentage.toPrecision(3) + '%' : '']]
