@@ -61,6 +61,9 @@ table.stats td, th {
 table.stats td:nth-of-type(1), table.stats th:nth-of-type(1) {
   width: 250px;
 }
+.max-content-width {
+  width: max-content;
+}
 .table-container {
   position: relative;
 }
@@ -105,4 +108,13 @@ input:invalid, textarea:invalid {
 input[readonly] + .tags-input {
   border: none;
   pointer-events: none;
+  width: inherit !important;
+}
+.tags-input.no-background {
+  background: inherit;
+  border: none;
+  width: unset;
+  padding: 0;
+  margin: -3px 0;
+  box-shadow: none;
 }
