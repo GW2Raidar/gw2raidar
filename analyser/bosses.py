@@ -30,6 +30,9 @@ def samarog_cm_detector(events, boss_instids):
 def mo_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 30000000) & (events.src_instid.isin(boss_instids))]) > 0
 
+def deimos_cm_detector(events, boss_instids):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 42000000) & (events.src_instid.isin(boss_instids))]) > 0
+
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
         self.name = name
@@ -252,7 +255,7 @@ BOSS_ARRAY = [
         Metric('Demonic Shockwave', 'Shockwave', MetricType.COUNT, True, False),
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
-    ]),
+    ], cm_detector = deimos_cm_detector),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
