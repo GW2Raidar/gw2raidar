@@ -659,7 +659,8 @@ ${body}
   function setPage(page) {
     if (typeof page == "string") {
       page = { name: page };
-    } else if (typeof page == "undefined") {
+    }
+    if (typeof page == "undefined") {
       page = r.get('page');
     } else {
       r.set('page', page);
