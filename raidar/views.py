@@ -238,9 +238,6 @@ def global_stats(request, era_id=None, area_id=None, json=None):
 
     except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
         stats = {}
-        raise
-
-
 
     result = {'global_stats': {
         'eras': eras,
