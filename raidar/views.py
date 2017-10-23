@@ -532,7 +532,7 @@ def profile_graph(request):
     stat = request.POST['stat']
 
     participations = Participation.objects.select_related('encounter').filter(
-            encounter__era_id=era_id, character__account__user=request.user)
+            encounter__era_id=era_id, character__account__user=request.user, encounter__success=True)
 
     try:
         if area_id.startswith('All'):
