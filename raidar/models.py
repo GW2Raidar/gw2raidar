@@ -177,6 +177,9 @@ class Era(models.Model):
     def by_time(started_at):
         return Era.objects.filter(started_at__lte=started_at).latest('started_at')
 
+    class Meta:
+        ordering = ('-started_at',)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
