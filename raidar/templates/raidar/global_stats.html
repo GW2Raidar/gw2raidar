@@ -1,0 +1,123 @@
+{% load staticfiles %}
+
+[[#with global_stats]]
+  <div id="content" class="uk-margin-left uk-margin-right uk-margin-top">
+  <div class="uk-clearfix">
+    <div class="uk-float-left">
+      <h2 class="uk-margin-remove">[[page.area_id ? findId(areas, page.area_id).name : "All logs"]]</h2>
+      <h3 class="uk-margin-remove">in the [[page.era_id ? findId(eras, page.era_id).name : "most recent"]] Era</h3>
+    </div>
+    <div class="uk-float-right uk-text-right">
+      <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.area_id]]'
+              on-change="refresh_page">
+          <option value="[[null]]">All</option>
+        [[#each areas]]
+          <option value='[[id]]'>[[name]]</option>
+        [[/each]]
+      </select>
+      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.era_id]]'
+              on-change="refresh_page">
+          <option value="[[null]]">Most recent</option>
+        [[#each eras]]
+          <option value='[[id]]'>[[name]]</option>
+        [[/each]]
+      </select>
+    </div>
+
+  </div>
+      <p><strong>Disclaimer: The statistics displayed in this report are based off data available within GW2Raidar only, as such it is not a complete representation of the Guild Wars 2 raiding community. Efforts are made to ensure accuracy, however some anomalies may exist. Only successful runs are included and builds with fewer than 10 data points are not shown.</strong></p>
+
+  [[#with stats]]
+    <div  class="uk-overflow-auto uk-margin-remove-bottom">
+      <table class="uk-table uk-table-striped uk-table-small">
+         <thead>
+           <tr class="uk-background-secondary">
+             <th class="uk-table-shrink"></th>
+             <th>Duration (seconds)</th>
+             <th>Cleave DPS</th>
+             <th>Boss DPS</th>
+             <th>DPS Received</th>
+           </tr>
+         </thead>
+         <tbody>
+           [[#if group.per_duration]]
+           <td>Full group</td>
+          [[#each [
+              {"percentiles": p_r(group.per_duration), "max": group.max_duration},
+              {"percentiles": p(group.per_dps), "max": group.max_dps},
+              {"percentiles": p(group.per_dps_boss), "max": group.max_dps_boss},
+              {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
+            ] ]]
+              [[#if percentiles]]
+              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
+              </td>
+              [[else]]
+              <td></td>
+              [[/if]]
+            [[/each]]
+           [[else]]
+              <tr><td colspan="9">Not enough data to display group statistics</td></tr>
+           [[/if]]
+         </tbody>
+      </table>
+      [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
+      <h3 class="uk-margin-remove-top uk-margin-small-bottom">[[data.archetypes[archetype]]]</h3>
+      <div>
+        <table class="uk-width-1-1 uk-table uk-table-striped uk-table-small">
+          <thead>
+            <tr class="uk-background-secondary">
+              <th class="uk-table-shrink">Specialisation</th>
+              <th class="uk-table-shrink">Popularity</th>
+              <th class="uk-width-1-6">Cleave DPS</th>
+              <th class="uk-width-1-6">Boss DPS</th>
+              <th class="uk-table-expand" colspan="5">Outgoing buffs</th>
+            </tr>
+          </thead>
+          <tbody>
+            [[#each flattenStats(build)]]
+              [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
+                [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]
+                  [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
+                  <tr class="uk-margin-remove" >
+                    <td>
+                      <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
+                      [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
+                    </td>
+                    <td>[[(lineStats.count/group.count).toFixed(2)]]</td>
+                    [[#each [
+                      {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
+                      {"percentiles": boss_dps_percentiles, "max": individual.max_dps_boss},
+                      buffs[0],
+                      buffs[1],
+                      buffs[2] ,
+                      buffs[3],
+                      buffs[4]
+                    ] ]]
+                      [[#if percentiles]]
+                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
+                        [[#if buff_image]]
+                          <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
+                        [[/if]]
+                      </td>
+                      [[else]]
+                      <td></td>
+                      [[/if]]
+                    [[/each]]
+                  </tr>
+                  [[/with]]
+                [[/if]]
+              [[/with]]
+            [[else]]
+              <tr><td colspan="9">Not enough data to display for [[data.archetypes[archetype]]] specialisations</td></tr>
+            [[/each]]
+          </tbody>
+        </table>
+        </div>
+      [[/each]]
+    </div>
+      <div>
+    <p>The "Buff importance rating" shown in tooltips is used to determine which buffs to display and is not intended as a precise measure. In approximate terms, a 'buff importance rating' of 10000 (on a damage buff) equates to a 100% damage boost for one player, a 20% damage boost for 5 players, or a 10% damage boost across 10 players.</p>
+          </div>
+  [[/with]]
+  </div>
+[[/with]]

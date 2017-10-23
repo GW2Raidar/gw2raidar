@@ -173,6 +173,81 @@ def profile(request):
         }
     return JsonResponse(result)
 
+@require_GET
+def global_stats(request, era_id=None, area_id=None, json=None):
+    if not json:
+        return _html_response(request, {
+            "name": "global_stats",
+            "era_id": era_id,
+            "area_id": area_id
+        })
+    try:
+        era_query = Era.objects.all()
+        eras = [{
+                'name': era.name,
+                'id': era.id,
+                'started_at': era.started_at,
+                'description': era.description
+            } for era in era_query]
+    except Era.DoesNotExist:
+        eras = []
+
+    try:
+        area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
+        areas = [{
+                'name': area.name,
+                'id': area.id,
+            } for area in area_query]
+    except Area.DoesNotExist:
+        areas = []
+
+    try:
+        if era_id is None:
+            era_id = eras[-1]['id']
+        era = Era.objects.get(id=era_id)
+        if area_id is None:
+            raw_data = era.val
+        else:
+            area = Area.objects.get(id=area_id)
+            raw_data = EraAreaStore.objects.get(era=era, area=area).val
+        stats = raw_data['All']
+
+        #reduce size of json for global stats view
+        builds = [stats['build'][prof][elite][arch]
+                  for prof in stats['build']
+                  for elite in stats['build'][prof]
+                  for arch in stats['build'][prof][elite]]
+
+        builds.append(stats['group'])
+        builds.append(stats['individual'])
+
+        for build in list(builds):
+            if 'buffs' in build:
+                del build['buffs']
+            if 'count' not in build or build['count'] < 10:
+                for key in list(build.keys()):
+                    del(build[key])
+
+            if 'buffs_out' in build:
+                for buff in list(filter(lambda a: a.startswith('max_'), build['buffs_out'].keys())):
+                    if build['buffs_out'][buff] <= 0.01:
+                        buffname = buff[4:]
+                        for key in list(filter(lambda a: a.split('_', 1)[1] == buffname,
+                                        build['buffs_out'].keys())):
+                            del(build['buffs_out'][key])
+
+    except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
+        stats = {}
+        raise
+
+
+
+    result = {'global_stats': {
+        'eras': eras,
+        'areas': areas,
+        'stats': stats
+    }}
+    return JsonResponse(result)
 
 
 @require_GET
