@@ -36,10 +36,10 @@
           <td>Squad</td>
           [[#each data.boons]]
             [[#if encounter.phases[page.phase]]]
-              <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].buffs[boon], encounter.phases[page.phase].group.buffs['avg_' + boon], encounter.phases[page.phase].group.buffs['min_' + boon], encounter.phases[page.phase].group.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(encounter.phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
-                <span>[[encounter.phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+              <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].buffs_out[boon], encounter.phases[page.phase].group.buffs_out['avg_' + boon], encounter.phases[page.phase].group.buffs_out['min_' + boon], encounter.phases[page.phase].group.buffs_out['max_' + boon], stacks || 100)]][[else]][[bar1(encounter.phases[page.phase].buffs_out[boon], stacks || 100)]][[/if]]">
+                <span>[[encounter.phases[page.phase].buffs_out[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
                 [[#if encounter.phases[page.phase].group]]
-                  <span class="expected">[[encounter.phases[page.phase].group.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                  <span class="expected">[[encounter.phases[page.phase].group.buffs_out['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
                 [[/if]]
               </td>
             [[else]]
@@ -52,8 +52,8 @@
             <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
             [[#each data.boons]]
               [[#if phases[page.phase]]]
-                <td style="[[bar1(phases[page.phase].buffs[boon], stacks || 100)]]">
-                  <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                <td style="[[bar1(phases[page.phase].buffs_out[boon], stacks || 100)]]">
+                  <span>[[phases[page.phase].buffs_out[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
                 </td>
               [[else]]
                 <td></td>
@@ -105,10 +105,10 @@
               </td>
               [[#each data.boons]]
                 [[#if phases[page.phase]]]
-                <td style="[[#if phases[page.phase].archetype.buffs['avg_' + boon]]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
-                    <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                    [[#if phases[page.phase].archetype.buffs['avg_' + boon]]]
-                      <span class="expected">[[phases[page.phase].archetype.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                <td style="[[#if phases[page.phase].archetype.buffs_out['avg_' + boon]]][[bar(phases[page.phase].buffs_out[boon], phases[page.phase].archetype.buffs_out['avg_' + boon], phases[page.phase].archetype.buffs_out['min_' + boon], phases[page.phase].archetype.buffs_out['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs_out[boon], stacks || 100)]][[/if]]">
+                    <span>[[phases[page.phase].buffs_out[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                    [[#if phases[page.phase].archetype.buffs_out['avg_' + boon]]]
+                      <span class="expected">[[phases[page.phase].archetype.buffs_out['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
                     [[/if]]
                   </td>
                 [[else]]
