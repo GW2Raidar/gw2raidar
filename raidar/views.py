@@ -285,6 +285,7 @@ def encounter(request, url_id=None, json=None):
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
+    private = False
 
     encounter_showable = True
     for party_no, party in parties.items():
@@ -311,6 +312,7 @@ def encounter(request, url_id=None, json=None):
                 if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
                     member['name'] = ''
                     member['account'] = ''
+                    private = True
                     encounter_showable = False
 
     data = {

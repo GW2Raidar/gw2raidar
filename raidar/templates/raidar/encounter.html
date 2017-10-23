@@ -16,7 +16,7 @@
         [[elseif downloadable]]
           <a href="{% url 'download' %}[[page.no]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
         [[else]]
-          [[filename]]
+          <span [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</span>
         [[/if]]
         <span class="ignore">by</span> [[uploaded_by]]
         <span class="ignore">at</span> [[formatDate(uploaded_at)]]
