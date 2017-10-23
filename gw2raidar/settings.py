@@ -37,6 +37,8 @@ DEBUG = True
 # (it can be set in `settings_local.py`)
 ALLOWED_HOSTS = []
 
+INTERNAL_IPS = ['127.0.0.1']
+
 
 # Application definition
 
@@ -160,3 +162,8 @@ try:
     from .settings_local import *
 except ImportError:
     pass
+
+if DEBUG:
+    if importlib.util.find_spec("debug_toolbar"):
+        INSTALLED_APPS.append('debug_toolbar')
+        MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
