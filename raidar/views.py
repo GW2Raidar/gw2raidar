@@ -203,7 +203,7 @@ def global_stats(request, era_id=None, area_id=None, json=None):
 
     try:
         if era_id is None:
-            era_id = eras[-1]['id']
+            era_id = eras[0]['id']
         era = Era.objects.get(id=era_id)
         if area_id is None:
             raw_data = era.val
