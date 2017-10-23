@@ -101,3 +101,8 @@ input:invalid, textarea:invalid {
   transform: rotate(-5deg);
   display: inline-block;
 }
+
+input[readonly] + .tags-input {
+  border: none;
+  pointer-events: none;
+}

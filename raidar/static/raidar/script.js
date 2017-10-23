@@ -5,6 +5,48 @@
   const PAGE_SIZE = 10;
   const PAGINATION_WINDOW = 5;
 
+  const DEBUG = raidar_data.debug;
+  Ractive.DEBUG = DEBUG;
+
+
+  Ractive.decorators.ukUpdate = function(node) {
+    UIkit.update();
+    return {
+      teardown: () => {
+      },
+    };
+  };
+
+  // bring tagsInput into Ractive
+  Ractive.decorators.tagsInput = function(node, tagsPath) {
+    let ractive = this;
+    tagsPath = ractive.getContext(node).resolve(tagsPath);
+    let classList = Array.from(node.classList);
+    tagsInput(node);
+    node.nextSibling.setValue(ractive.get(tagsPath));
+    node.nextSibling.classList.add(...classList);
+    if (node.getAttribute('readonly')) {
+      node.nextSibling.firstChild.setAttribute('readonly', true);
+    }
+    node.addEventListener('change', function(evt) {
+      let tags = node.nextSibling.getValue();
+      if (r.get(tagsPath) != tags) {
+        ractive.set(tagsPath, node.nextSibling.getValue());
+      }
+    });
+    let observer = this.observe(tagsPath, (newValue, oldValue, keypath) => {
+      if (node.nextSibling && newValue != oldValue) {
+        node.nextSibling.setValue(newValue);
+      }
+    });
+    return {
+      teardown: () => {
+        observer.cancel();
+        node.nextSibling.remove();
+      },
+    };
+  };
+
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
   function csrfSafeMethod(method) {
@@ -203,8 +245,6 @@ ${rectSvg.join("\n")}
     return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
 
-  const DEBUG = raidar_data.debug;
-  Ractive.defaults.debug = DEBUG;
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
   const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
@@ -739,6 +779,20 @@ ${rectSvg.join("\n")}
       }).done(() => {
         notification('Privacy updated.', 'success');
       });
+    },
+    set_tags_cat: function setTags(evt) {
+      let encounter = r.get('encounter');
+      $.post({
+        url: 'set_tags_cat.json',
+        data: {
+          id: encounter.id,
+          tags: encounter.tags,
+          category: encounter.category,
+        },
+      }).done(() => {
+        notification('Category and tags saved.', 'success');
+      });
+      return false;
     },
   });
 
