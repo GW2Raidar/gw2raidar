@@ -22,7 +22,7 @@ from django.views.decorators.debug import sensitive_post_parameters, sensitive_v
 from django.views.decorators.http import require_GET, require_POST
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
-from json import dumps as json_dumps, loads as json_loads
+from json import dumps as json_dumps
 from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile, dirname
 import pytz
@@ -30,6 +30,8 @@ from datetime import datetime
 from re import match, sub
 from time import time
 import logging
+import numpy as np
+import base64
 
 
 logger = logging.getLogger(__name__)
@@ -115,7 +117,7 @@ def download(request, url_id=None):
     own_account_names = [account.name for account in Account.objects.filter(
         characters__participations__encounter_id=encounter.id,
         user=request.user)]
-    dump = json_loads(encounter.dump)
+    dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
     encounter_showable = True
@@ -151,6 +153,7 @@ def profile(request):
     queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
         eras = [{
+                'id': era_user_store.era_id,
                 'name': era_user_store.era.name,
                 'started_at': era_user_store.era.started_at,
                 'description': era_user_store.era.description,
@@ -170,6 +173,81 @@ def profile(request):
         }
     return JsonResponse(result)
 
+@require_GET
+def global_stats(request, era_id=None, area_id=None, json=None):
+    if not json:
+        return _html_response(request, {
+            "name": "global_stats",
+            "era_id": era_id,
+            "area_id": area_id
+        })
+    try:
+        era_query = Era.objects.all()
+        eras = [{
+                'name': era.name,
+                'id': era.id,
+                'started_at': era.started_at,
+                'description': era.description
+            } for era in era_query]
+    except Era.DoesNotExist:
+        eras = []
+
+    try:
+        area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
+        areas = [{
+                'name': area.name,
+                'id': area.id,
+            } for area in area_query]
+    except Area.DoesNotExist:
+        areas = []
+
+    try:
+        if era_id is None:
+            era_id = eras[-1]['id']
+        era = Era.objects.get(id=era_id)
+        if area_id is None:
+            raw_data = era.val
+        else:
+            area = Area.objects.get(id=area_id)
+            raw_data = EraAreaStore.objects.get(era=era, area=area).val
+        stats = raw_data['All']
+
+        #reduce size of json for global stats view
+        builds = [stats['build'][prof][elite][arch]
+                  for prof in stats['build']
+                  for elite in stats['build'][prof]
+                  for arch in stats['build'][prof][elite]]
+
+        builds.append(stats['group'])
+        builds.append(stats['individual'])
+
+        for build in list(builds):
+            if 'buffs' in build:
+                del build['buffs']
+            if 'count' not in build or build['count'] < 10:
+                for key in list(build.keys()):
+                    del(build[key])
+
+            if 'buffs_out' in build:
+                for buff in list(filter(lambda a: a.startswith('max_'), build['buffs_out'].keys())):
+                    if build['buffs_out'][buff] <= 0.01:
+                        buffname = buff[4:]
+                        for key in list(filter(lambda a: a.split('_', 1)[1] == buffname,
+                                        build['buffs_out'].keys())):
+                            del(build['buffs_out'][key])
+
+    except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
+        stats = {}
+        raise
+
+
+
+    result = {'global_stats': {
+        'eras': eras,
+        'areas': areas,
+        'stats': stats
+    }}
+    return JsonResponse(result)
 
 
 @require_GET
@@ -185,7 +263,7 @@ def encounter(request, url_id=None, json=None):
         characters__participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
-    dump = json_loads(encounter.dump)
+    dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
     try:
@@ -202,6 +280,7 @@ def encounter(request, url_id=None, json=None):
                             "actual": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All']),
                             "actual_boss": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss']),
                             "received": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All']),
+                            "shielded": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['shielded']['From']['*All']),
                             "buffs": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All']),
                             "buffs_out": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['To']['*All']),
                             "events": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['events']),
@@ -220,6 +299,7 @@ def encounter(request, url_id=None, json=None):
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'shielded': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['shielded']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
                     'buffs_out': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['To']['*All']),
                     'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['events']),
@@ -261,6 +341,7 @@ def encounter(request, url_id=None, json=None):
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['From']['*All']),
+                    'shielded': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['shielded']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
                     'buffs_out': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['To']['*All']),
                     'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['events']),
@@ -403,7 +484,8 @@ def _perform_upload(request):
         return _error("Only single file uploads are allowed")
 
     filename = next(iter(request.FILES))
-    file = request.FILES[filename]
+    file = request.FILES['file']
+    filename = file.name
     uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(
@@ -438,6 +520,66 @@ def api_upload(request):
     filename, upload = _perform_upload(request)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+
+@login_required
+@require_POST
+def profile_graph(request):
+    era_id = request.POST['era']
+    area_id = request.POST['area']
+    archetype_id = request.POST['archetype']
+    profession_id = request.POST['profession']
+    elite_id = request.POST['elite']
+    stat = request.POST['stat']
+
+    participations = Participation.objects.select_related('encounter').filter(
+            encounter__era_id=era_id, character__account__user=request.user)
+
+    try:
+        if area_id.startswith('All'):
+            store = Era.objects.get(pk=era_id).val[area_id]
+        else:
+            participations = participations.filter(encounter__area_id=area_id)
+            store = EraAreaStore.objects.get(era_id=era_id, area_id=area_id).val
+    except (EraAreaStore.DoesNotExist, Era.DoesNotExist, KeyError):
+        store = {}
+    if archetype_id != 'All':
+        participations = participations.filter(archetype=archetype_id)
+    if profession_id != 'All':
+        participations = participations.filter(character__profession=profession_id)
+    if elite_id != 'All':
+        participations = participations.filter(elite=elite_id)
+
+    try:
+        requested = store['All']['build'][profession_id][elite_id][archetype_id]
+        requested = {
+                'avg': requested['avg_' + stat],
+                'per': list(np.frombuffer(base64.b64decode(requested['per_' + stat].encode('utf-8')), dtype=np.float32).astype(float)),
+            }
+    except KeyError:
+        requested = None # XXX fill out in restat
+    MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
+    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character__name', 'encounter__started_at', 'encounter__value')
+    data = []
+    times = []
+
+    if stat == 'dps_boss':
+        target = '*Boss'
+        stat = 'dps'
+    else:
+        target = '*All'
+    for name, started_at, json in reversed(db_data):
+        dump = json_loads(json)
+        datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target][stat], 0)
+        data.append(datum)
+        times.append(started_at)
+
+    result = {
+        'globals': requested,
+        'data': data,
+        'times': times,
+    }
+    return JsonResponse(result)
 
 
 @require_GET

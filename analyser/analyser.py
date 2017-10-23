@@ -246,7 +246,7 @@ class Analyser:
 
         #set up data structures
         events = assign_event_types(encounter.events)
-        if (encounter.version < '20170922'
+        if (encounter.version < '20170923'
             and not events[(events.state_change == parser.StateChange.GW_BUILD)
                 & (events.src_agent >= 82356)].empty):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
@@ -276,6 +276,7 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_key_events, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_outgoing_damage, player_src_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "damage").run(self.collect_incoming_damage, player_dst_events)
+        collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "shielded").run(self.collect_incoming_damage, player_dst_events[player_dst_events.is_shields != 0])
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_incoming_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "buffs").run(self.collect_outgoing_buffs, buff_data)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
@@ -289,8 +290,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-
-
+        encounter_collector.add_data('cm', self.boss_info.cm_detector(events))
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:
