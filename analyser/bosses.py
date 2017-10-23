@@ -15,17 +15,20 @@ class Kind(IntEnum):
     DUMMY = 3
     FRACTAL = 4
 
-def no_cm(events):
+def no_cm(events, boss_instids):
     return False
 
-def yes_cm(events):
+def yes_cm(events, boss_instids):
     return True
 
-def cairn_cm_detector(events):
+def cairn_cm_detector(events, boss_instids):
     return len(events[events.skillid == 38098]) > 0
 
-def samarog_cm_detector(events):
+def samarog_cm_detector(events, boss_instids):
     return len(events[(events.skillid == 37966)&(events.time - events.time.min() < 10000)]) > 0
+
+def mo_cm_detector(events, boss_instids):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 30000000) & (events.src_instid.isin(boss_instids))]) > 0
 
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
@@ -218,7 +221,7 @@ BOSS_ARRAY = [
         Metric('Soldiers', 'Soldiers', MetricType.COUNT, False),
         Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
-    ]),
+    ], cm_detector = mo_cm_detector),
     Boss('Samarog', Kind.RAID, [0x4324], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
         Phase("First split", False, phase_end_damage_start = 10000),
