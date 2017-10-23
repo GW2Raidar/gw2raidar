@@ -92,7 +92,6 @@
   };
   helpers.flattenStats = (build) => {
     let all = [];
-    console.log(build);
     Object.keys(build || {}).forEach((professionId) => {
       Object.keys(build[professionId] || {}).forEach((eliteId) => {
         Object.keys(build[professionId][eliteId] || {}).forEach((archetypeId) => {
@@ -107,7 +106,6 @@
       });
     });
     all.sort((a,b) => b.boss_dps_percentiles[99] - a.boss_dps_percentiles[99])
-    console.log(all);
     return all
   }
   helpers.findId = (list, id) => {
