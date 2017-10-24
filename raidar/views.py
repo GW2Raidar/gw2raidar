@@ -43,9 +43,9 @@ def _safe_get(f, default=None):
     except (KeyError, TypeError):
         return default
 
-def _error(msg, **kwargs):
+def _error(msg, status=200, **kwargs):
     kwargs['error'] = str(msg)
-    return JsonResponse(kwargs)
+    return JsonResponse(kwargs, status=status)
 
 
 def _userprops(request):
@@ -373,6 +373,7 @@ def initial(request):
     return JsonResponse(response)
 
 
+@sensitive_variables('password')
 def _perform_login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
@@ -387,7 +388,6 @@ def _perform_login(request):
 
 @require_POST
 @sensitive_post_parameters('password')
-@sensitive_variables('password')
 def login(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'login' })
@@ -480,10 +480,13 @@ def logout(request):
 
 def _perform_upload(request):
     if (len(request.FILES) != 1):
-        return _error("Only single file uploads are allowed")
+        return ("Only single file uploads are allowed", None)
 
     filename = next(iter(request.FILES))
-    file = request.FILES['file']
+    if 'file' in request.FILES:
+        file = request.FILES['file']
+    else:
+        return ("Missing file attachment named `file`", None)
     filename = file.name
     uploaded_at = time()
 
@@ -511,12 +514,15 @@ def upload(request):
 
 @csrf_exempt
 @require_POST
+@sensitive_post_parameters('password')
 def api_upload(request):
     user = _perform_login(request)
     if not user:
-        return _error('Could not authenticate')
+        return _error('Could not authenticate', status=401)
     auth_login(request, user)
     filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename, status=400)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 

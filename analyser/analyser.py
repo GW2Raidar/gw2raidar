@@ -290,7 +290,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('cm', self.boss_info.cm_detector(events))
+        encounter_collector.add_data('cm', self.boss_info.cm_detector(events, self.boss_instids))
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:
