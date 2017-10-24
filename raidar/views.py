@@ -43,9 +43,9 @@ def _safe_get(f, default=None):
     except (KeyError, TypeError):
         return default
 
-def _error(msg, **kwargs):
+def _error(msg, status=200, **kwargs):
     kwargs['error'] = str(msg)
-    return JsonResponse(kwargs)
+    return JsonResponse(kwargs, status=status)
 
 
 def _userprops(request):
@@ -518,11 +518,11 @@ def upload(request):
 def api_upload(request):
     user = _perform_login(request)
     if not user:
-        return _error('Could not authenticate')
+        return _error('Could not authenticate', status=401)
     auth_login(request, user)
     filename, upload = _perform_upload(request)
     if not upload:
-        return _error(filename)
+        return _error(filename, status=400)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
