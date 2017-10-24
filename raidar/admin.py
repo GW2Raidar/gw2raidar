@@ -81,6 +81,7 @@ class EncounterAdmin(QuotedSearchModelAdmin):
 
     search_fields = ('=url_id', '=filename', '^area__name', '=characters__name', '^characters__account__name', '=characters__account__user__username', '=tags__name', '=category__name')
     list_display = ('filename', 'url_id_link', 'area', 'success', 'category', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
+    list_select_related = ('category', 'uploaded_by', 'area')
     inlines = (ParticipationInline,)
     readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_at', 'uploaded_by', 'area', 'filename')
 
