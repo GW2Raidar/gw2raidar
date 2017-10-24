@@ -598,7 +598,10 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
-    result = { "notifications": [notification.val for notification in notifications] }
+    result = {
+        "notifications": [notification.val for notification in notifications],
+        "version": settings.VERSION['id'],
+    }
     if notifications:
         result['last_id'] = notifications.last().id
     return JsonResponse(result)

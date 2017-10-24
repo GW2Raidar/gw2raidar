@@ -64,7 +64,7 @@
   });
   $(document).ajaxError((evt, xhr, settings, err) => {
     console.error(err);
-    error("Error communicating to server")
+    error("Error communicating to server");
   })
 
   function f0X(x) {
@@ -1193,6 +1193,21 @@ ${body}
     handler(notification);
   }
 
+  function upgradeClient() {
+    notification('Server was upgraded, client will restart in <span id="upgrade-countdown"></span>s', { status: 'warning', timeout: 10000 });
+    let count = 8;
+    let cdEl = document.getElementById('upgrade-countdown');
+    let loop = () => {
+      cdEl.textContent = --count;
+      if (count) {
+        setTimeout(loop, 1000);
+      } else {
+        window.location.reload(true);
+      }
+    };
+    setTimeout(loop, 1000);
+  }
+
   const POLL_TIME = 10000;
   function pollNotifications() {
     if (r.get('username')) {
@@ -1208,7 +1223,10 @@ ${body}
           lastNotificationId = data.last_id;
         }
         data.notifications.forEach(handleNotification);
-      }).then(() => {
+        if (data.version != r.get('data.version.id')) {
+          upgradeClient();
+        }
+      }).always(() => {
         setTimeout(pollNotifications, POLL_TIME);
       });
     } else {
