@@ -114,9 +114,12 @@ def download(request, url_id=None):
         return Http404("Not allowed")
 
     encounter = Encounter.objects.get(url_id=url_id)
-    own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
-        user=request.user)]
+    if request.user.is_authenticated:
+        own_account_names = [account.name for account in Account.objects.filter(
+            characters__participations__encounter_id=encounter.id,
+            user=request.user)]
+    else:
+        own_account_names = []
     dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
