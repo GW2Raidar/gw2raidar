@@ -509,6 +509,8 @@ def _perform_upload(request):
 @require_POST
 def upload(request):
     filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
