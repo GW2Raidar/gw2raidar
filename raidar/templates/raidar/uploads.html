@@ -1,3 +1,13 @@
+<div class="uk-margin-small uk-flex uk-flex-bottom">
+  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[upload.category]]">
+    <option value="[[null]]">No category</option>
+    [[#each data.categories:id]]
+      <option value="[[id]]">[[.]]</option>
+    [[/each]]
+  </select>
+  <input class="uk-flex-auto uk-margin-small" placeholder="Tags" as-tagsInput="'upload.tags'">
+</div>
+
 <table class="uk-table uk-table-striped">
   <thead>
     <tr>
@@ -13,7 +23,7 @@
     </tr>
   </thead>
   <tbody>
-    [[#each upload]]
+    [[#each uploads]]
       <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterUrlId })"[[/if]]>
         <td class="[[success === true ? 'uk-text-success' : success === false ? 'uk-text-danger' : '']]">
           [[name]]

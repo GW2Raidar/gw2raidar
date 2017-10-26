@@ -43,6 +43,25 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 
 User._meta.get_field('email')._unique = True
 
+
+
+class ValueModel(models.Model):
+    value = models.TextField(default="{}", editable=False)
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+    class Meta:
+        abstract = True
+
+
+
+
 class UserProfile(models.Model):
     PRIVATE = 1
     SQUAD = 2
@@ -156,19 +175,10 @@ class Character(models.Model):
         ordering = ('name',)
 
 
-class Era(models.Model):
+class Era(ValueModel):
     started_at = models.IntegerField(db_index=True)
     name = models.CharField(max_length=255, null=True)
     description = models.TextField(null=True)
-    value = models.TextField(default="{}")
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
 
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
@@ -191,7 +201,7 @@ class Category(models.Model):
         verbose_name_plural = "categories"
 
 
-class Upload(models.Model):
+class Upload(ValueModel):
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
     uploaded_by = models.ForeignKey(User, related_name='unprocessed_uploads')
@@ -219,34 +229,16 @@ def _delete_upload_file(sender, instance, using, **kwargs):
 post_delete.connect(_delete_upload_file, sender=Upload)
 
 
-class Notification(models.Model):
+class Notification(ValueModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    value = models.TextField(default="{}")
     created_at = models.IntegerField(db_index=True, default=time)
 
-    @property
-    def val(self):
-        return json_loads(self.value)
 
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
-
-
-class Variable(models.Model):
+class Variable(ValueModel):
     key = models.CharField(max_length=255, primary_key=True)
-    value = models.TextField(null=True)
 
     def __str__(self):
         return '%s=%s' % (self.key, self.val)
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
 
     def get(name):
         return Variable.objects.get(key=name).val
@@ -264,7 +256,7 @@ def _dictionary():
 def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
-class Encounter(models.Model):
+class Encounter(ValueModel):
     url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
@@ -276,7 +268,6 @@ class Encounter(models.Model):
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True)
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
-    value = models.TextField(editable=False)
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
@@ -285,14 +276,6 @@ class Encounter(models.Model):
     gdrive_id = models.CharField(max_length=255, editable=False, null=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True)
     tags = TaggableManager(blank=True)
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -395,29 +378,11 @@ class Participation(models.Model):
         unique_together = ('encounter', 'character')
 
 
-class EraAreaStore(models.Model):
+class EraAreaStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
-    value = models.TextField(default="{}")
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
 
 
-class EraUserStore(models.Model):
+class EraUserStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
-    value = models.TextField(default="{}")
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
