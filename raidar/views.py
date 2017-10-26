@@ -485,17 +485,26 @@ def _perform_upload(request):
     if (len(request.FILES) != 1):
         return ("Only single file uploads are allowed", None)
 
-    filename = next(iter(request.FILES))
     if 'file' in request.FILES:
         file = request.FILES['file']
     else:
         return ("Missing file attachment named `file`", None)
     filename = file.name
+
+    category_id = request.POST.get('category', None);
+    tagstring = request.POST.get('tags', '');
+
     uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(
             filename=filename, uploaded_by=request.user,
-            defaults={ "uploaded_at": time() })
+            defaults={
+                "uploaded_at": time(),
+                "val": {
+                    "category_id": category_id,
+                    "tagstring": tagstring,
+                }
+            })
 
     diskname = upload.diskname()
     makedirs(dirname(diskname), exist_ok=True)
@@ -531,6 +540,11 @@ def api_upload(request):
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
+@csrf_exempt
+def api_categories(request):
+    categories = Category.objects.all()
+    result = { category.id: category.name for category in categories }
+    return JsonResponse(result)
 
 @login_required
 @require_POST
