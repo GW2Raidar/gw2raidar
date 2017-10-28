@@ -122,3 +122,6 @@ input[readonly] + .tags-input {
   margin: -3px 0;
   box-shadow: none;
 }
+.uk-text-white, .uk-text-white a {
+  color: #fff !important;
+}
