@@ -72,7 +72,6 @@
                           [[else]]
                             <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="uk-margin-small-right" uk-icon="icon: sign-in"></i> Login</a></li>
                             <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
-                            <li class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('reset_pw')">Reset Password</a></li>
                           [[/if]]
                         </ul>
                       </div>
@@ -83,7 +82,7 @@
         </div>
 
 
-        <div class="uk-container uk-background-muted">
+        <div class="uk-container uk-background-muted uk-margin-bottom">
             <div class="uk-grid uk-margin-remove-top">
               <div class="uk-width-1-1">
               {% include 'raidar/navbar.html' %}
@@ -165,7 +164,7 @@
                     </div>
                     <div class="uk-margin">
                       <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required>
-                      <p class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('reset_pw')">Forgot Password?</a></p>
+                      <p class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a class="uk-text-small" href="#" on-click="@this.page('reset_pw')">Forgot Password?</a></p>
                     </div>
                     <div class="uk-margin">
                       <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login">Login</button><br>
@@ -230,16 +229,25 @@
     <footer class="uk-heading uk-padding uk-light uk-background-secondary">
         <div class="uk-container">
           <div class="uk-grid">
-              <ul class="uk-nav uk-width-1-4">
+              <ul class="uk-nav uk-width-1-6">
                   <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
                   <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
               </ul>
-              <ul class="uk-nav uk-width-1-4">
+              <ul class="uk-nav uk-width-1-6">
                   <li><a href="#" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
                   <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
               </ul>
-              <div class="uk-width-1-2">
-                  <p>GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet. All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
+              <div class="uk-width-2-3">
+              <p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
+              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="3KAQWB87RUXZ2">
+                <input type="image" src="https://www.paypalobjects.com/en_AU/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
+                <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
+              </form>
+              </div>
+              <div class="uk-width-1-1 uk-padding uk-padding-remove-bottom">
+                  <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
               </div>
           </div>
         </div>

@@ -94,6 +94,9 @@ input[type="date"] {
 .uk-table tr.all *, div.all {
   font-weight: bold;
 }
+.uk-table td, .uk-table th {
+  padding: 8px 8px;
+}
 .main {
   margin: 0 2%;
 }
