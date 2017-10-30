@@ -32,6 +32,7 @@ class StateChange(IntEnum):
     LANGUAGE = 14
     GW_BUILD = 15
     SHARD_ID = 16
+    REWARD = 17
 
 #Change to another data type - it's not really an enum?
 class AgentType(IntEnum):
@@ -46,7 +47,6 @@ class AgentType(IntEnum):
     MESMER = 7
     NECROMANCER = 8
     REVENANT = 9
-    MURSAAT_OVERSEER = 17172
 
     def is_player(self):
         return AgentType.GUARDIAN <= self <= AgentType.REVENANT
@@ -139,12 +139,15 @@ EVENT_DTYPE = np.dtype([
         ('is_moving', np.uint8),
         ('state_change', np.uint8),
         ('is_flanking', np.uint8),
+        ('is_shields', np.uint8),
         ('result_local', np.uint8),
         ('ident_local', np.uint8),
     ], True)
 
 class Encounter:
     def _read_header(self, file):
+        if len(file.peek(16)) < 16:
+            raise EvtcParseException("Not an EVTC file")
         evtc, version, self.area_id = struct.unpack("<4s9sHx", file.read(16))
         if evtc != b"EVTC":
             raise EvtcParseException("Not an EVTC file")
@@ -155,9 +158,13 @@ class Encounter:
         agents_string = file.read(AGENT_DTYPE.itemsize * num_agents)
         self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=AGENT_DTYPE, count=num_agents))
         split = self.agents.name.str.split(b'\x00:?', expand=True)
-        self.agents['name'] = split[0].str.decode(ENCODING)
-        self.agents['account'] = split[1].str.decode(ENCODING)
-        self.agents['party'] = split[2].fillna(0).astype(np.uint8)
+        if len(split.columns) > 1:
+            self.agents['name'] = split[0].str.decode(ENCODING)
+            self.agents['account'] = split[1].str.decode(ENCODING)
+            self.agents['party'] = split[2].fillna(0).astype(np.uint8)
+        else:
+            self.agents['account'] = None
+            self.agents['party'] = 0
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
@@ -173,6 +180,9 @@ class Encounter:
                     'skar','skar_aly','skar_use_alt','result_local','ident_local']:
             del self.events[name]
 
+        if len(self.events[self.events.state_change == StateChange.LOG_END]) == 0:
+            raise EvtcParseException('EVTC missing end event')
+        
         self.log_started_at = self.events[self.events.state_change == StateChange.LOG_START]['value'].iloc[0]
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
@@ -193,7 +203,7 @@ class Encounter:
         agent_map = agent_map.sort_values(by='time')
         agent_map.drop_duplicates(subset='addr',inplace=True)
         agent_map.insert(0, 'new_id', range(1, 1 + len(agent_map)))
-        
+
         del self.events['src_instid']
         del self.events['dst_instid']
         self.events = pd.merge(left=self.events,right=agent_map[['addr', 'new_id']].rename(columns={'addr' : 'src_agent', 'new_id' : 'src_instid'}), how='left', left_on='src_agent', right_on='src_agent')
@@ -215,7 +225,8 @@ class Encounter:
     def __init__(self, file):
         try:
             self._read_header(file)
-            if self.version <= "20170214":
+
+            if self.version < "20170419":
                 raise EvtcParseException('Unsupported EVTC version')
             self._read_agents(file)
             self._read_skills(file)
@@ -223,3 +234,5 @@ class Encounter:
             self._add_inst_id_to_agents()
         except UnsupportedOperation:
             raise EvtcParseException('Bad EVTC file')
+        except ValueError:
+            raise EvtcParseException('Bad or truncated EVTC file')

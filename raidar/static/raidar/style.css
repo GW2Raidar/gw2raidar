@@ -61,6 +61,9 @@ table.stats td, th {
 table.stats td:nth-of-type(1), table.stats th:nth-of-type(1) {
   width: 250px;
 }
+.max-content-width {
+  width: max-content;
+}
 .table-container {
   position: relative;
 }
@@ -83,4 +86,40 @@ input[type="date"] {
 
 .link {
   cursor: pointer;
+}
+.uk-table tr.all *, div.all {
+  font-weight: bold;
+}
+.main {
+  margin: 0 2%;
+}
+
+input:invalid, textarea:invalid {
+  border: 1px dashed red !important;
+}
+
+.private {
+  background-color: #000000;
+  color: #ffffff;
+  transform: rotate(-5deg);
+  display: inline-block;
+}
+
+select[readonly] {
+  pointer-events: none;
+  background-image: none !important;
+}
+input[readonly] + .tags-input {
+  pointer-events: none;
+  border: none;
+  box-shadow: none;
+  width: inherit !important;
+}
+.tags-input.no-background {
+  background: inherit;
+  border: none;
+  width: unset;
+  padding: 0;
+  margin: -3px 0;
+  box-shadow: none;
 }

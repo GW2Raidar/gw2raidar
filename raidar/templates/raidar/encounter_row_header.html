@@ -1,5 +1,5 @@
 {% load staticfiles %}
-<table class="uk-table stats row-header">
+<table class="uk-table uk-position-z-index stats row-header">
   <tbody>
     <tr>
       <th>Totals</th>
@@ -46,10 +46,20 @@
             <div>
               <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
               <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
-              [[name]]
+              [[#if name]]
+                [[name]]
+              [[else]]
+                <span class="private">PRIVATE</span>
+              [[/if]]
             </div>
             <div uk-dropdown="pos: right-center; delay-hide: 0">
-              <strong>[[account]]</strong><br>
+              <strong>
+                [[#if account]]
+                  [[account]]
+                [[else]]
+                  <span class="private">PRIVATE</span>
+                [[/if]]
+              </strong><br>
               [[#with phases[page.phase].events]]
                 Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
                 Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>

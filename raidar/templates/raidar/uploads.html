@@ -1,3 +1,13 @@
+<div class="uk-margin-small uk-flex uk-flex-bottom">
+  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[upload.category]]">
+    <option value="[[null]]">No category</option>
+    [[#each data.categories:id]]
+      <option value="[[id]]">[[.]]</option>
+    [[/each]]
+  </select>
+  <input class="uk-flex-auto uk-margin-small" placeholder="Tags" as-tagsInput="'upload.tags'">
+</div>
+
 <table class="uk-table uk-table-striped">
   <thead>
     <tr>
@@ -13,7 +23,7 @@
     </tr>
   </thead>
   <tbody>
-    [[#each upload]]
+    [[#each uploads]]
       <tr [[#if success]]class="link" on-click="@this.page({ name: 'encounter', no: encounterUrlId })"[[/if]]>
         <td class="[[success === true ? 'uk-text-success' : success === false ? 'uk-text-danger' : '']]">
           [[name]]
@@ -47,7 +57,9 @@
   from ARCDPS. While they're being uploaded, you can continue to browse around
   the website. Click on any log file marked green to view the results.
 </p>
-
-<p><strong>
+<p>
+  Processing may take a few minutes, however once a log is in a status of "Analysing", it will be processed even if you leave the website.
+</p>
+<p><strong><font color=red>
   Note that refreshing or closing the page will cancel any pending uploads.
-</strong></p>
+  </font></strong></p>
