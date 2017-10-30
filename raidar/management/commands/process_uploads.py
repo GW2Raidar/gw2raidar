@@ -253,9 +253,10 @@ class Command(BaseCommand):
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
-                        tagstring=tagstring, category_id=category_id,
+                        category_id=category_id,
                         account_hash=account_hash
                     )
+                    encounter.tagstring = tagstring
 
                 file.close()
                 file = None
