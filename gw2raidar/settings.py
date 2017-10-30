@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '0.9.6',
-        'timestamp': 1505738116, # date +%s
+        'id': '1.0.1',
+        'timestamp': 1508830887, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -36,6 +36,8 @@ DEBUG = True
 # ALLOWED_HOSTS = ['gw2raidar.example.com']
 # (it can be set in `settings_local.py`)
 ALLOWED_HOSTS = []
+
+INTERNAL_IPS = ['127.0.0.1']
 
 
 # Application definition
@@ -160,3 +162,8 @@ try:
     from .settings_local import *
 except ImportError:
     pass
+
+if DEBUG:
+    if importlib.util.find_spec("debug_toolbar"):
+        INSTALLED_APPS.append('debug_toolbar')
+        MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')

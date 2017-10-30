@@ -47,15 +47,6 @@
     };
   };
 
-  const lightbox = (() => {
-    let lightboxNode = document.getElementById('lightbox');
-    let items = [{source: "#", type: "", content: "<div/>"}];
-    let lightbox = UIkit.lightbox(lightboxNode, {preload: 0, items: items});
-    return lightbox;
-  })();
-  const setLightbox = (content, width, height) => {
-    lightbox.setItem(lightbox.getItem(), content, width, height);
-  }
 
   let csrftoken = $('[name="csrfmiddlewaretoken"]').val();
 
@@ -73,7 +64,7 @@
   });
   $(document).ajaxError((evt, xhr, settings, err) => {
     console.error(err);
-    error("Error communicating to server")
+    error("Error communicating to server");
   })
 
   function f0X(x) {
@@ -99,6 +90,108 @@
     });
     return keys;
   };
+  helpers.flattenStats = (build) => {
+    let all = [];
+    Object.keys(build || {}).forEach((professionId) => {
+      Object.keys(build[professionId] || {}).forEach((eliteId) => {
+        Object.keys(build[professionId][eliteId] || {}).forEach((archetypeId) => {
+          if('count' in build[professionId][eliteId][archetypeId])
+            all.push({
+              'professionId':professionId,
+              'eliteId': eliteId,
+              'archetypeId': archetypeId,
+              'boss_dps_percentiles': helpers.p(build[professionId][eliteId][archetypeId].per_dps_boss)
+            });
+        });
+      });
+    });
+    all.sort((a,b) => b.boss_dps_percentiles[99] - a.boss_dps_percentiles[99])
+    return all
+  }
+  helpers.findId = (list, id) => {
+    return list.find(a => a.id == id);
+  }
+  helpers.buffImportanceLookup = {
+    'might': 80,
+    'fury': 10,
+    'quickness': 25,
+    'alacrity': 15,
+    'protection': 15,
+    'retaliation': 5,
+    'spotter': 5,
+    'glyph_of_empowerment': 10,
+    'gotl': 200,
+    'spirit_of_frost': 7.5,
+    'sun_spirit': 6,
+    'empower_allies': 5,
+    'banner_strength': 8,
+    'banner_discipline': 8,
+    'assassins_presence': 6,
+    'naturalistic_resonance': 20,
+    'pinpoint_distribution': 5,
+    'soothing_mist': 10,
+    'vampiric_presence': 5,
+  }
+  helpers.buffStackLookup = {
+    'might': 25,
+    'gotl': 5
+  }
+  helpers.buffImageLookup = {
+    'might': 'Might',
+    'fury': 'Fury',
+    'quickness': 'Quickness',
+    'alacrity': 'Alacrity',
+    'protection': 'Protection',
+    'retaliation': 'Retaliation',
+    'regen': 'Regeneration',
+    'spotter': 'Spotter',
+    'glyph_of_empowerment': 'Glyph_of_Empowerment',
+    'gotl': 'Grace_of_the_Land',
+    'spirit_of_frost': 'Frost_Spirit',
+    'sun_spirit': 'Sun_Spirit',
+    'stone_spirit': 'Stone_Spirit',
+    'storm_spirit': 'Storm_Spirit',
+    'empower_allies': 'Empower_Allies',
+    'banner_strength': 'Banner_of_Strength',
+    'banner_discipline': 'Banner_of_Discipline',
+    'banner_tactics': 'Banner_of_Tactics',
+    'banner_defence': 'Banner_of_Defense',
+    'assassins_presence': 'Assassin\'s_Presence',
+    'naturalistic_resonance': 'Facet_of_Nature',
+    'pinpoint_distribution': 'Pinpoint_Distribution',
+    'soothing_mist': 'Soothing_Mist',
+    'vampiric_presence': 'Vampiric_Presence',
+  }
+  helpers.buffImportance = (buff) => {
+    if(buff in helpers.buffImportanceLookup) {
+      return helpers.buffImportanceLookup[buff];
+    }
+    return 1;
+  }
+  helpers.buffMax = (buff) => {
+    if(buff in helpers.buffStackLookup) {
+      return helpers.buffStackLookup[buff];
+    }
+    return 100;
+  }
+  helpers.highestBuffs = (buffs) => {
+    let buffNames = [];
+    Object.keys(buffs).forEach((buff) => {
+        if(buff.startsWith("max_"))
+        buffNames.push(buff.substring(4))
+    });
+
+    let buffInfo = buffNames.map((buff) => { return {
+        "percentiles": helpers.p(buffs["per_" + buff]),
+        "max": helpers.buffMax(buff) * 10,
+        "buff_name": buff,
+        "buff_image": helpers.buffImageLookup[buff] || buff,
+        "importance": helpers.buffImportance(buff) * buffs["avg_" + buff]
+    }}).filter((a) => a.importance >= 500);
+
+    buffInfo.sort((a,b) => b.importance - a.importance);
+    return buffInfo;
+  }
   helpers.formatDate = timestamp => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
@@ -254,10 +347,51 @@ ${rectSvg.join("\n")}
     let disconnect_perc = (events.disconnect_time || 0) * 100 / 1000 / numPlayers / duration;
     return helpers.barSurvivalPerc(down_perc, dead_perc, disconnect_perc);
   }
+  helpers.p = (p) => {
+    let b = atob(p);
+    let p2 = new Uint8Array(400)
+    for(var i = 0; i < 400; i++) {
+        p2[i] = b.charCodeAt(i)
+    }
+    return new Float32Array(p2.buffer)
+  }
+  helpers.p_r = (p) => {
+    let normalOrder = helpers.p(p);
+    let reversed = [normalOrder[99]]
+    for(let i = 1; i < 100; i++) {
+      reversed.push(normalOrder[100-i])
+    }
+    return reversed;
+  }
+  helpers.p_bar = (p, max, space_for_image) => {
+    let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
+
+
+    return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
+    + helpers.rectangle(0, 35, 80*p[90]/max, 30, new Colour(quantileColours[3]))
+    + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour(quantileColours[2]))
+    + helpers.text(80*p[99]/max, 30, 11, p[99].toFixed(0))
+    + helpers.text(80*p[90]/max, 60, 11, p[90].toFixed(0))
+    + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)))
+     + `;background-size: ${space_for_image ? 75 : 100}% 100%; background-position:${space_for_image ? 36 : 0}px 0px; background-repeat: no-repeat`;
+  }
+  helpers.rectangle = (x, y, width, height, colour) => {
+    return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`
+  }
+  helpers.text = (x, y, size, text) => {
+    return `<text x='${x}%' y='${y}%' font-family='Verdana' font-size='${size}'>${text}</text>`
+  }
+  helpers.svg = (body) =>  {
+    let svg = `
+<svg xmlns='http://www.w3.org/2000/svg'>
+${body}
+</svg>`.replace(/\n\s*/g, "");
+    return `background: url("data:image/svg+xml;utf8,${svg}")`
+  }
 
   let loggedInPage = Object.assign({}, window.raidar_data.page);
   let initialPage = loggedInPage;
-  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact'];
+  const PERMITTED_PAGES = ['encounter', 'index', 'login', 'register', 'reset_pw', 'info-about', 'info-help', 'info-releasenotes', 'info-contact', 'global_stats', 'thank-you'];
   if (!window.raidar_data.username) {
     if (!initialPage.name) {
       loggedInPage = { name: 'info-releasenotes' };
@@ -279,7 +413,7 @@ ${rectSvg.join("\n")}
     settings: {
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
-    upload: [],
+    uploads: [],
   };
   let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
@@ -293,6 +427,7 @@ ${rectSvg.join("\n")}
     { boon: 'alacrity' },
     { boon: 'protection' },
     { boon: 'retaliation' },
+    { boon: 'regen' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
     { boon: 'gotl', stacks: 5 },
@@ -316,6 +451,8 @@ ${rectSvg.join("\n")}
   function URLForPage(page) {
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
+    if (page.era_id) url += '/' + page.era_id;
+    if (page.area_id) url += '/area-' + page.area_id;
     return url;
   }
 
@@ -357,6 +494,14 @@ ${rectSvg.join("\n")}
           'page.era': latest,
         });
       });
+    },
+    global_stats: page => {
+      r.set({
+        loading: true,
+      });
+      $.get({
+        url: URLForPage(page).substring(1) + '.json',
+      }).then(setData);
     },
   };
 
@@ -513,7 +658,11 @@ ${rectSvg.join("\n")}
     if (typeof page == "string") {
       page = { name: page };
     }
-    r.set('page', page);
+    if (typeof page == "undefined") {
+      page = r.get('page');
+    } else {
+      r.set('page', page);
+    }
     let url = URLForPage(page);
     history.pushState(page, null, url);
     if (pageInit[page.name]) {
@@ -586,6 +735,25 @@ ${rectSvg.join("\n")}
     }
   }
 
+  function graphLine(value, data) {
+    let ary = Array(data.length);
+    ary[0] = ary[data.length - 1] = value;
+    return ary;
+  }
+
+  function graphLineDataset(label, value, borderDash, backgroundColor, borderColor, data) {
+    return {
+      label: label,
+      data: graphLine(value, data),
+      spanGaps: true,
+      borderDash: borderDash,
+      pointRadius: 0,
+      backgroundColor: backgroundColor,
+      borderColor: borderColor,
+      borderWidth: 2,
+    };
+  };
+
   const ascSort = (prop) => (a, b) =>
     a[prop] > b[prop] ? 1 :
     a[prop] < b[prop] ? -1 : 0;
@@ -600,6 +768,9 @@ ${rectSvg.join("\n")}
       r.set('contact.input.subject', `Error report: ${url}`);
       setPage('info-contact');
       return false;
+    },
+    refresh_page: function refreshPage(x) {
+      setPage();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;
@@ -820,6 +991,84 @@ ${rectSvg.join("\n")}
       });
       return false;
     },
+    chart: function chart(evt, archetype, profession, elite, stat, statName) {
+      let era = r.get('page.era');
+      let eras = r.get('profile.eras');
+      let eraId = era.id;
+      let areaId = r.get('page.area');
+      let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
+      let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
+      let areaName = r.get('data.areas')[areaId] || areaId;
+
+      $.post({
+        url: 'profile_graph.json',
+        data: {
+          era: eraId,
+          area: areaId,
+          archetype: archetype,
+          profession: profession,
+          elite: elite,
+          stat: stat,
+        },
+      }).then(payload => {
+        let {globals, data, times} = payload;
+        times = times.map(time => helpers.formatDate(time));
+        let pointRadius = 4;
+        if (data.length == 1) {
+          data = [data[0], data[0], data[0]];
+          times = ['', times[0], ''];
+          pointRadius = [0, pointRadius, 0];
+        }
+
+        let height = Math.round(window.innerHeight * 0.80);
+        let width = Math.round(window.innerWidth * 0.80);
+        let dialog = UIkit.modal.dialog(`
+<button class="uk-modal-close-outside" uk-transition-hide type="button" uk-close></button>
+<div>
+<canvas height="${height}" width="${width}"/>
+</div>
+            `, {center: true});
+        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        dialog.panel.css({width: width, height: height});
+        dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
+        let ctx = dialog.$el.find('canvas');
+        let datasets = [];
+        if (globals) {
+          datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P90', globals.per[90], [4, 4], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('P50', globals.per[50], [7, 7], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
+          datasets.push(graphLineDataset('avg', globals.avg, undefined, "rgba(255, 255, 255, 0)", "rgba(255, 0, 255, 1)", data));
+        }
+        datasets.push({
+          label: statName,
+          data: data,
+          backgroundColor: "rgba(0, 0, 0, 0.05)",
+          borderColor: "rgba(0, 0, 0, 1)",
+          pointBackgroundColor: "rgba(255, 255, 255, 1)",
+          pointRadius: pointRadius,
+        });
+        let chart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: times,
+            datasets: datasets,
+          },
+          options: {
+            title: {
+              text: `${charDescription} ${statName} on ${areaName}`,
+              display: true,
+            },
+            scales: {
+              yAxes: [{
+                ticks: {
+                  beginAtZero: true
+                }
+              }]
+            }
+          }
+        });
+      });
+    },
   });
 
 
@@ -829,7 +1078,7 @@ ${rectSvg.join("\n")}
     //if (evt.loaded == evt.total) {
     //}
     entry.progress = progress;
-    r.update('upload');
+    r.update('uploads');
   }
   let uploadProgressDone = (entry, data) => {
     if (data.error) {
@@ -839,7 +1088,7 @@ ${rectSvg.join("\n")}
       entry.upload_id = data.upload_id;
     }
     delete entry.file;
-    r.update('upload');
+    r.update('uploads');
     startUpload(true);
   }
 
@@ -858,14 +1107,14 @@ ${rectSvg.join("\n")}
     //   entry.encounterId = data.id;
     //   entry.success = true;
     //   delete entry.file;
-    //   r.update('upload');
+    //   r.update('uploads');
     //   startUpload(true);
     // }
 
   let uploadProgressFail = entry => {
     entry.success = false;
     delete entry.file;
-    r.update('upload');
+    r.update('uploads');
     startUpload(true);
   }
 
@@ -879,12 +1128,20 @@ ${rectSvg.join("\n")}
   function startUpload(previousIsFinished) {
     if (uploading && !previousIsFinished) return;
 
-    let entry = r.get('upload').find(entry => !("progress" in entry));
+    let entry = r.get('uploads').find(entry => !("progress" in entry));
     uploading = entry;
     if (!entry) return;
 
     let form = new FormData();
-    form.append(entry.name, entry.file);
+    form.set('file', entry.file);
+    let category = r.get('upload.category');
+    if (category) {
+      form.set('category', category);
+    }
+    let tags = r.get('upload.tags');
+    if (tags) {
+      form.set('tags', r.get('upload.tags'));
+    }
     return $.ajax({
       url: 'upload.json',
       data: form,
@@ -900,7 +1157,7 @@ ${rectSvg.join("\n")}
   const notificationHandlers = {
     upload: notification => {
       //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
-      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let entry = r.get('uploads').find(entry => entry.name == notification.filename);
       let newEntry = {
         name: notification.filename,
         progress: 100,
@@ -912,9 +1169,9 @@ ${rectSvg.join("\n")}
       };
       if (entry) {
         Object.assign(entry, newEntry);
-        r.update('upload');
+        r.update('uploads');
       } else {
-        r.push('upload', newEntry);
+        r.push('uploads', newEntry);
       }
 
       let encounters = r.get('encounters');
@@ -925,12 +1182,12 @@ ${rectSvg.join("\n")}
       updateRactiveFromResponse({ encounters: encounters });
     },
     upload_error: notification => {
-      let uploads = r.get('upload');
+      let uploads = r.get('uploads');
       let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
       if (entry) {
         entry.success = false;
         entry.error = notification.error;
-        r.update('upload');
+        r.update('uploads');
       }
     },
   };
@@ -942,6 +1199,21 @@ ${rectSvg.join("\n")}
       return;
     }
     handler(notification);
+  }
+
+  function upgradeClient() {
+    notification('Server was upgraded, client will restart in <span id="upgrade-countdown"></span>s', { status: 'warning', timeout: 10000 });
+    let count = 8;
+    let cdEl = document.getElementById('upgrade-countdown');
+    let loop = () => {
+      cdEl.textContent = --count;
+      if (count) {
+        setTimeout(loop, 1000);
+      } else {
+        window.location.reload(true);
+      }
+    };
+    setTimeout(loop, 1000);
   }
 
   const POLL_TIME = 10000;
@@ -959,7 +1231,10 @@ ${rectSvg.join("\n")}
           lastNotificationId = data.last_id;
         }
         data.notifications.forEach(handleNotification);
-      }).then(() => {
+        if (data.version != r.get('data.version.id')) {
+          upgradeClient();
+        }
+      }).always(() => {
         setTimeout(pollNotifications, POLL_TIME);
       });
     } else {
@@ -988,14 +1263,14 @@ ${rectSvg.join("\n")}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-        let entry = r.get('upload').find(entry => entry.name == file.name);
+        let entry = r.get('uploads').find(entry => entry.name == file.name);
         if (entry) {
           delete entry.success;
           delete entry.progress;
           entry.file = file;
-          r.update('upload');
+          r.update('uploads');
         } else {
-          r.push('upload', {
+          r.push('uploads', {
             name: file.name,
             file: file,
             uploaded_by: r.get('username'),

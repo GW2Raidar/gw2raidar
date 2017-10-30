@@ -105,9 +105,14 @@ input:invalid, textarea:invalid {
   display: inline-block;
 }
 
-input[readonly] + .tags-input {
-  border: none;
+select[readonly] {
   pointer-events: none;
+  background-image: none !important;
+}
+input[readonly] + .tags-input {
+  pointer-events: none;
+  border: none;
+  box-shadow: none;
   width: inherit !important;
 }
 .tags-input.no-background {
