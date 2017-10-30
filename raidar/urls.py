@@ -14,6 +14,7 @@ urlpatterns = [
     url(r'^reset_pw.json$', views.reset_pw, name = "reset_pw"),
     url(r'^upload.json$', views.upload, name = "upload"),
     url(r'^api/upload.json$', views.api_upload, name = "api_upload"),
+    url(r'^api/categories.json$', views.api_categories, name = "api_categories"),
     url(r'^privacy.json$', views.privacy, name = "privacy"),
     url(r'^profile_graph.json$', views.profile_graph, name = "profile_graph"),
     url(r'^set_tags_cat.json$', views.set_tags_cat, name = "set_tags_cat"),

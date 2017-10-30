@@ -205,6 +205,9 @@ class Command(BaseCommand):
             started_at = dump['Category']['encounter']['start']
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
+            upload_val = upload.val
+            category_id = upload_val.get('category_id', None)
+            tagstring = upload_val.get('tagstring', '')
             if duration < 60:
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
@@ -238,6 +241,8 @@ class Command(BaseCommand):
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
+                    encounter.category_id = category_id
+                    encounter.tagstring = tagstring
                     if not zipfile:
                         encounter.filename += ".zip"
                     encounter.save()
@@ -248,8 +253,10 @@ class Command(BaseCommand):
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
+                        category_id=category_id,
                         account_hash=account_hash
                     )
+                    encounter.tagstring = tagstring
 
                 file.close()
                 file = None
