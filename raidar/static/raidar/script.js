@@ -64,7 +64,7 @@
   });
   $(document).ajaxError((evt, xhr, settings, err) => {
     console.error(err);
-    error("Error communicating to server")
+    error("Error communicating to server");
   })
 
   function f0X(x) {
@@ -413,7 +413,7 @@ ${body}
     settings: {
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
-    upload: [],
+    uploads: [],
   };
   let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
@@ -1078,7 +1078,7 @@ ${body}
     //if (evt.loaded == evt.total) {
     //}
     entry.progress = progress;
-    r.update('upload');
+    r.update('uploads');
   }
   let uploadProgressDone = (entry, data) => {
     if (data.error) {
@@ -1088,7 +1088,7 @@ ${body}
       entry.upload_id = data.upload_id;
     }
     delete entry.file;
-    r.update('upload');
+    r.update('uploads');
     startUpload(true);
   }
 
@@ -1107,14 +1107,14 @@ ${body}
     //   entry.encounterId = data.id;
     //   entry.success = true;
     //   delete entry.file;
-    //   r.update('upload');
+    //   r.update('uploads');
     //   startUpload(true);
     // }
 
   let uploadProgressFail = entry => {
     entry.success = false;
     delete entry.file;
-    r.update('upload');
+    r.update('uploads');
     startUpload(true);
   }
 
@@ -1128,12 +1128,20 @@ ${body}
   function startUpload(previousIsFinished) {
     if (uploading && !previousIsFinished) return;
 
-    let entry = r.get('upload').find(entry => !("progress" in entry));
+    let entry = r.get('uploads').find(entry => !("progress" in entry));
     uploading = entry;
     if (!entry) return;
 
     let form = new FormData();
-    form.append('file', entry.file);
+    form.set('file', entry.file);
+    let category = r.get('upload.category');
+    if (category) {
+      form.set('category', category);
+    }
+    let tags = r.get('upload.tags');
+    if (tags) {
+      form.set('tags', r.get('upload.tags'));
+    }
     return $.ajax({
       url: 'upload.json',
       data: form,
@@ -1149,7 +1157,7 @@ ${body}
   const notificationHandlers = {
     upload: notification => {
       //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
-      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let entry = r.get('uploads').find(entry => entry.name == notification.filename);
       let newEntry = {
         name: notification.filename,
         progress: 100,
@@ -1161,9 +1169,9 @@ ${body}
       };
       if (entry) {
         Object.assign(entry, newEntry);
-        r.update('upload');
+        r.update('uploads');
       } else {
-        r.push('upload', newEntry);
+        r.push('uploads', newEntry);
       }
 
       let encounters = r.get('encounters');
@@ -1174,12 +1182,12 @@ ${body}
       updateRactiveFromResponse({ encounters: encounters });
     },
     upload_error: notification => {
-      let uploads = r.get('upload');
+      let uploads = r.get('uploads');
       let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
       if (entry) {
         entry.success = false;
         entry.error = notification.error;
-        r.update('upload');
+        r.update('uploads');
       }
     },
   };
@@ -1191,6 +1199,21 @@ ${body}
       return;
     }
     handler(notification);
+  }
+
+  function upgradeClient() {
+    notification('Server was upgraded, client will restart in <span id="upgrade-countdown"></span>s', { status: 'warning', timeout: 10000 });
+    let count = 8;
+    let cdEl = document.getElementById('upgrade-countdown');
+    let loop = () => {
+      cdEl.textContent = --count;
+      if (count) {
+        setTimeout(loop, 1000);
+      } else {
+        window.location.reload(true);
+      }
+    };
+    setTimeout(loop, 1000);
   }
 
   const POLL_TIME = 10000;
@@ -1208,7 +1231,10 @@ ${body}
           lastNotificationId = data.last_id;
         }
         data.notifications.forEach(handleNotification);
-      }).then(() => {
+        if (data.version != r.get('data.version.id')) {
+          upgradeClient();
+        }
+      }).always(() => {
         setTimeout(pollNotifications, POLL_TIME);
       });
     } else {
@@ -1237,14 +1263,14 @@ ${body}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-        let entry = r.get('upload').find(entry => entry.name == file.name);
+        let entry = r.get('uploads').find(entry => entry.name == file.name);
         if (entry) {
           delete entry.success;
           delete entry.progress;
           entry.file = file;
-          r.update('upload');
+          r.update('uploads');
         } else {
-          r.push('upload', {
+          r.push('uploads', {
             name: file.name,
             file: file,
             uploaded_by: r.get('username'),
