@@ -1,8 +1,14 @@
 __author__ = "Toeofdoom"
 
+import time
 import sys
+import os.path
 from evtcparser import *
 from analyser import *
+from enum import IntEnum
+import json
+from zipfile import ZipFile
+import argparse
 
 def is_basic_value(node):
     try:
@@ -12,7 +18,7 @@ def is_basic_value(node):
         return True
 
 def flatten(root):
-    nodes = dict((key, dict(node)) for key,node in root)
+    nodes = dict((key, dict(node)) for key,node in root.items())
     stack = list(nodes.keys())
     for node_name in stack:
         node = nodes[node_name]
@@ -23,28 +29,78 @@ def flatten(root):
                 stack.append(full_child_name)
             except TypeError:
                 pass
+            except ValueError:
+                pass
     return nodes
 
-def print_node(key, node):
-    basic_values = filter(lambda key:is_basic_value(key[1]), node.items())
-    print("{0}: {1}".format(key, ", ".join(
-        ["{0}:{1}".format(name, value) for name,value in basic_values])))
+def format_value(value):
+    if isinstance(value, IntEnum):
+        return value.name
+    else:
+        return value
+
+def print_node(key, node, f=None):
+    basic_values = list(filter(lambda key:is_basic_value(key[1]), node.items()))
+    if basic_values:
+        output_string = "{0}: {1}".format(key, ", ".join(
+            ["{0}:{1}".format(name, format_value(value)) for name,value in basic_values]))
+        print(output_string, file=f)
 
 def main():
-    filename = sys.argv[1]
 
-    print("Parsing {0}".format(filename))
-    with open(sys.argv[1], mode='rb') as file:
-        e = parser.Encounter(file)
-        a = analyser.Analyser(e)
-        metrics = a.compute_all_metrics()
-        flattened = flatten(metrics)
-        for key in flattened:
-            print_node(key, flattened[key])
-        #for skill in e.skills:
-        #    print("Skill \"{0}\"".format(skill.name))
-        #for event in e.events:
-            #print("Skill \"{0}\"".format(event.src_agent))
+
+    zipfile = None
+
+    argparser = argparse.ArgumentParser(description='Process some integers.')
+    argparser.add_argument('filenames', metavar='N', type=str, nargs='+',
+                        help='the files to load')
+    argparser.add_argument('-s', dest='silent', action='store_true',
+                            help='silent mode, no output dump')
+    argparser.add_argument('--no-json', dest='json', action='store_false',
+                            help='disable json output')
+
+    args = argparser.parse_args()
+    start_all = time.clock()
+    print("Parsing {0}".format(args.filenames))
+    for filename in args.filenames:
+        print("Loading {0}".format(filename))
+        with open(filename, mode='rb') as file:
+
+            if filename.endswith('.evtc.zip'):
+                zipfile = ZipFile(file)
+                contents = zipfile.infolist()
+                if len(contents) == 1:
+                    file = zipfile.open(contents[0].filename)
+                else:
+                    print('Only single-file ZIP archives are allowed', file=sys.stderr)
+                    sys.exit(1)
+
+            start = time.clock()
+            e = parser.Encounter(file)
+            print("Parsing took {0} seconds".format(time.clock() - start))
+            print("Evtc version {0}".format(e.version))
+
+            start = time.clock()
+            a = analyser.Analyser(e)
+            print("Analyser took {0} seconds".format(time.clock() - start))
+
+            start = time.clock()
+            with open('Output/'+os.path.basename(filename)+'.txt','w') as output_file:
+                flattened = flatten(a.data)
+                for key in sorted(flattened.keys()):
+                    if not args.silent:
+                        print_node(key, flattened[key])
+                    print_node(key, flattened[key], output_file)
+            print("Completed parsing {0} - Success: {1}".format(
+                  list(a.data['Category']['boss']['Boss'].keys())[0],
+                  a.data['Category']['encounter']['success']))
+            print("Readable dump took {0} seconds".format(time.clock() - start))
+
+            if "--no-json" not in sys.argv:
+                start = time.clock()
+                print(json.dumps(a.data), file=open('output.json','w'))
+                print("JSon dump took {0} seconds".format(time.clock() - start))
+    print("Analysing all took {0} seconds".format(time.clock() - start_all))
 
 if __name__ == "__main__":
     main()
