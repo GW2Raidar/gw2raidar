@@ -114,9 +114,12 @@ def download(request, url_id=None):
         return Http404("Not allowed")
 
     encounter = Encounter.objects.get(url_id=url_id)
-    own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
-        user=request.user)]
+    if request.user.is_authenticated:
+        own_account_names = [account.name for account in Account.objects.filter(
+            characters__participations__encounter_id=encounter.id,
+            user=request.user)]
+    else:
+        own_account_names = []
     dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
@@ -482,17 +485,26 @@ def _perform_upload(request):
     if (len(request.FILES) != 1):
         return ("Only single file uploads are allowed", None)
 
-    filename = next(iter(request.FILES))
     if 'file' in request.FILES:
         file = request.FILES['file']
     else:
         return ("Missing file attachment named `file`", None)
     filename = file.name
+
+    category_id = request.POST.get('category', None);
+    tagstring = request.POST.get('tags', '');
+
     uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(
             filename=filename, uploaded_by=request.user,
-            defaults={ "uploaded_at": time() })
+            defaults={
+                "uploaded_at": time(),
+                "val": {
+                    "category_id": category_id,
+                    "tagstring": tagstring,
+                }
+            })
 
     diskname = upload.diskname()
     makedirs(dirname(diskname), exist_ok=True)
@@ -509,6 +521,8 @@ def _perform_upload(request):
 @require_POST
 def upload(request):
     filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
@@ -526,6 +540,11 @@ def api_upload(request):
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
+@csrf_exempt
+def api_categories(request):
+    categories = Category.objects.all()
+    result = { category.id: category.name for category in categories }
+    return JsonResponse(result)
 
 @login_required
 @require_POST
@@ -598,7 +617,10 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
-    result = { "notifications": [notification.val for notification in notifications] }
+    result = {
+        "notifications": [notification.val for notification in notifications],
+        "version": settings.VERSION['id'],
+    }
     if notifications:
         result['last_id'] = notifications.last().id
     return JsonResponse(result)

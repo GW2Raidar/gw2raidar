@@ -47,7 +47,7 @@ class Metric:
         return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
-    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm):
+    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False):
         self.name = name
         self.kind = kind
         self.boss_ids = boss_ids
@@ -59,6 +59,7 @@ class Boss:
         self.has_structure_boss = has_structure_boss
         self.success_health_limit = success_health_limit
         self.cm_detector = cm_detector
+        self.force_single_party = force_single_party
 
 class Phase:
     def __init__(self, name, important,
@@ -270,14 +271,14 @@ BOSS_ARRAY = [
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
         Phase("Second split", False, phase_end_damage_start = 15000),
         Phase("Phase 3", True, phase_end_health=1)
-    ], cm_detector = yes_cm),
+    ], cm_detector = yes_cm, force_single_party = True),
     Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
         Phase("First split", False, phase_end_damage_start = 10000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
         Phase("Second split", False, phase_end_damage_start = 10000),
         Phase("Phase 3", True, phase_end_health=1)
-    ], cm_detector = yes_cm),
+    ], cm_detector = yes_cm, force_single_party = True),
     Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
         Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000),
         Phase("First orb", False, phase_end_damage_start = 10000),
@@ -290,7 +291,7 @@ BOSS_ARRAY = [
         Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000),
         Phase("Third orb", False, phase_end_damage_start = 10000),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
-    ], cm_detector = yes_cm),
+    ], cm_detector = yes_cm, force_single_party = True),
     Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000),
         Phase("First split", False, phase_end_damage_start = 3000),
@@ -299,14 +300,14 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000),
         Phase("Second split", False, phase_end_damage_start = 3000),
         Phase("Phase 4", True, phase_end_health=1)
-    ], cm_detector = yes_cm),
+    ], cm_detector = yes_cm, force_single_party = True),
     Boss('Siax (CM)', Kind.FRACTAL,[0x4284], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
         Phase("First split", False, phase_end_damage_start = 15000),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
         Phase("Second split", False, phase_end_damage_start = 15000),
         Phase("Phase 3", True, phase_end_health=1)
-    ], cm_detector = yes_cm),
+    ], cm_detector = yes_cm, force_single_party = True),
     Boss('Ensolyss (CM)', Kind.FRACTAL,[0x4234], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
         Phase("First split", False, phase_end_damage_start = 15000),
@@ -314,6 +315,6 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 15000),
         Phase("Phase 3", True, phase_end_health=15),
         Phase("Phase 4", True, phase_end_health=1)
-    ], cm_detector = yes_cm)
+    ], cm_detector = yes_cm, force_single_party = True)
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}

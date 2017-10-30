@@ -26,7 +26,7 @@
 </div>
 
 <form class="uk-margin-small uk-flex uk-flex-bottom" on-submit="set_tags_cat">
-  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[encounter.category]]" [[#if encounter.participated]]readonly[[/if]]>
+  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
     <option value="[[null]]">No category</option>
     [[#each data.categories:id]]
       <option value="[[id]]">[[.]]</option>
