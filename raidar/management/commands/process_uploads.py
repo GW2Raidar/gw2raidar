@@ -6,7 +6,6 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2raidar import settings
-from json import loads as json_loads, dumps as json_dumps
 from raidar.models import *
 from sys import exit, stderr
 from time import time
@@ -197,6 +196,7 @@ class Command(BaseCommand):
                 file = open(diskname, 'rb')
 
             evtc_encounter = EvtcEncounter(file)
+
             analyser = Analyser(evtc_encounter)
 
             dump = analyser.data
@@ -205,6 +205,9 @@ class Command(BaseCommand):
             started_at = dump['Category']['encounter']['start']
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
+            upload_val = upload.val
+            category_id = upload_val.get('category_id', None)
+            tagstring = upload_val.get('tagstring', '')
             if duration < 60:
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
@@ -234,20 +237,38 @@ class Command(BaseCommand):
                     encounter.uploaded_by = upload.uploaded_by
                     encounter.duration = duration
                     encounter.success = success
-                    encounter.dump = json_dumps(dump)
+                    encounter.val = dump
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
+                    encounter.category_id = category_id
+                    encounter.tagstring = tagstring
+                    if not zipfile:
+                        encounter.filename += ".zip"
                     encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
                         filename=upload.filename,
                         uploaded_at=upload.uploaded_at, uploaded_by=upload.uploaded_by,
-                        duration=duration, success=success, dump=json_dumps(dump),
+                        duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
+                        category_id=category_id,
                         account_hash=account_hash
                     )
+                    encounter.tagstring = tagstring
+
+                file.close()
+                file = None
+                new_diskname = encounter.diskname()
+                os.makedirs(os.path.dirname(new_diskname), exist_ok=True)
+                if zipfile:
+                    zipfile.close()
+                    zipfile = None
+                    os.rename(diskname, new_diskname)
+                else:
+                    with ZipFile(new_diskname, 'w') as zipfile_out:
+                        zipfile_out.write(diskname)
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
@@ -290,7 +311,7 @@ class Command(BaseCommand):
                 })
 
             if self.gdrive_service:
-                media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
+                media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
                 try:
                     if encounter.gdrive_id:
                         result = self.gdrive_service.files().update(
@@ -338,11 +359,11 @@ class Command(BaseCommand):
             })
 
         finally:
-            if zipfile:
-                zipfile.close()
-
             if file:
                 file.close()
+
+            if zipfile:
+                zipfile.close()
 
             upload.delete()
 
