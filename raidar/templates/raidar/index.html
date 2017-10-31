@@ -62,11 +62,34 @@
                   <div class="uk-width-1-2">
                     <nav class="uk-navbar uk-navbar-container uk-navbar-transparent">
                       <div class="uk-navbar-right">
-                        <ul class="uk-navbar-nav uk-text-white">
+                        <ul class="uk-navbar-nav">
                           [[#if username]]
                             [[#if is_staff]]
                               <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
                             [[/if]]
+                            <li class="uk-inline">
+                              <a href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#fff" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#fff" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#fff" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                              </a>
+                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                <p class="uk-text-center">No notifications.</p>
+                              </div>
+                            </li>
+                            <li class="uk-inline">
+                              <a href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#32d296" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#32d296" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#32d296" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                              </a>
+                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                <dl class="uk-description-list uk-description-list-divider">
+                                    <dt><a href="">Description term</a></dt>
+                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                    <dt><a href="">Description term</a></dt>
+                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                    <dt><a href="">Description term</a></dt>
+                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                              </dl>
+                              </div>
+                            </li>
                             <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')"><i class="uk-margin-small-right" uk-icon="icon: user"></i> Account</a></li>
                             <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout"><i class="uk-margin-small-right" uk-icon="icon: sign-out"></i> Logout</a></li>
                           [[else]]
