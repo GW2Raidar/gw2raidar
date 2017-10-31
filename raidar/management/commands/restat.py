@@ -145,10 +145,10 @@ def calculate(l, f, *args):
         f(t, *args)
 
 def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets, outgoing_buff_targets):
-    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'])
-    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'])
-    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'])
-    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'])
+    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'], {})
+    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'], {})
+    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'], {})
     outgoing_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['To']['*All'], {})
     incoming_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['From']['*All'], {})
 
