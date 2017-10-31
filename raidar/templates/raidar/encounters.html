@@ -1,6 +1,52 @@
 {% load staticfiles %}
 <div class="table-container">
-
+  <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom">
+    <button class="uk-button uk-button-primary">All (45)</button>
+    <div class="uk-inline">
+        <button class="uk-button uk-button-default uk-button-nor">Raids (20)</button>
+        <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+            <div class="uk-width-1 uk-grid">
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Spirit Vale - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li title="Success: 20%" uk-tooltip>
+                            <a href="#">Vale Guardian (2)</a>
+                            <svg class="uk-width-1" xmlns='http://www.w3.org/2000/svg' style="height:6px;"><rect x='0%' y='20%' height='70%' width='20.689655172413794%' fill='rgba(224, 255, 224, 1)'/><rect x='20.689655172413794%' y='20%' height='70%' width='79.3103448275862%' fill='rgba(255, 224, 224, 1)'/></svg>
+                        </li>
+                        <li><a href="#">Gorseval (1)</a></li>
+                        <li><a href="#">Sabetha (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Salvation Pass - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Slothasor (2)</a></li>
+                        <li><a href="#">Trio (1)</a></li>
+                        <li><a href="#">Matthias (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Keep Construct (2)</a></li>
+                        <li><a href="#">Xera (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Cairn (2)</a></li>
+                        <li><a href="#">Mursaat Overseer (2)</a></li>
+                        <li><a href="#">Samarog (1)</a></li>
+                        <li><a href="#">Deimos (1)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="uk-button uk-button-default">Fractals (20)</button>
+    <button class="uk-button uk-button-default">Dummy Golem (5)</button>
+  </div>
   <div class="uk-overflow-auto">
     <table class="uk-table uk-table-striped encounters">
       <thead>
