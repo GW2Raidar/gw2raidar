@@ -247,6 +247,7 @@ class Command(BaseCommand):
                     encounter.started_at_half = started_at_half
                     encounter.category_id = category_id
                     encounter.tagstring = tagstring
+                    encounter.has_evtc = True
                     encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
@@ -255,7 +256,7 @@ class Command(BaseCommand):
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
-                        category_id=category_id,
+                        category_id=category_id, has_evtc=True,
                         account_hash=account_hash
                     )
                     encounter.tagstring = tagstring
