@@ -226,13 +226,17 @@ class Command(BaseCommand):
                 # uniqueness (along with some fuzzing to started_at)
                 started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
                 account_hash = Encounter.calculate_account_hash(account_names)
+                filename = upload.filename
+                orig_filename = filename
+                if not zipfile:
+                    filename += ".zip"
                 try:
                     encounter = Encounter.objects.get(
                         Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
                         area=area, account_hash=account_hash
                     )
                     encounter.era = era
-                    encounter.filename = upload.filename
+                    encounter.filename = filename
                     encounter.uploaded_at = upload.uploaded_at
                     encounter.uploaded_by = upload.uploaded_by
                     encounter.duration = duration
@@ -243,17 +247,16 @@ class Command(BaseCommand):
                     encounter.started_at_half = started_at_half
                     encounter.category_id = category_id
                     encounter.tagstring = tagstring
-                    if not zipfile:
-                        encounter.filename += ".zip"
+                    encounter.has_evtc = True
                     encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
-                        filename=upload.filename,
+                        filename=filename,
                         uploaded_at=upload.uploaded_at, uploaded_by=upload.uploaded_by,
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
-                        category_id=category_id,
+                        category_id=category_id, has_evtc=True,
                         account_hash=account_hash
                     )
                     encounter.tagstring = tagstring
@@ -268,7 +271,7 @@ class Command(BaseCommand):
                     os.rename(diskname, new_diskname)
                 else:
                     with ZipFile(new_diskname, 'w') as zipfile_out:
-                        zipfile_out.write(diskname)
+                        zipfile_out.write(diskname, orig_filename)
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
