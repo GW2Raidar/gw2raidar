@@ -81,16 +81,21 @@ class Phase:
         if self.phase_end_health is not None:
             relevant_health_updates = health_updates[(health_updates.time >= current_time) &
                                                      (health_updates.dst_agent >= self.phase_end_health * 100)]
+            print(relevant_health_updates[['time', 'dst_agent']])
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
             print("{0}: Detected health below {1} at time {2}".format(self.name, self.phase_end_health, current_time))
 
         if self.phase_end_damage_stop is not None:
-            relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
+            relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
+            print(relevant_gaps[['time', 'previous', 'delta']])
             if not relevant_gaps.empty:
-                end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+                gap_start = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+                if gap_start > current_time:
+                    current_time = gap_start
+                end_time = current_time
             elif len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time:
                 end_time = current_time = int(damage_gaps.time.iloc[-1])
             else:
