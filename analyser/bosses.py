@@ -81,7 +81,7 @@ class Phase:
         if self.phase_end_health is not None:
             relevant_health_updates = health_updates[(health_updates.time >= current_time) &
                                                      (health_updates.dst_agent >= self.phase_end_health * 100)]
-            print(relevant_health_updates[['time', 'dst_agent']])
+            #print(relevant_health_updates[['time', 'dst_agent']])
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
@@ -90,7 +90,7 @@ class Phase:
         if self.phase_end_damage_stop is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
-            print(relevant_gaps[['time', 'previous', 'delta']])
+            #print(relevant_gaps[['time', 'previous', 'delta']])
             if not relevant_gaps.empty:
                 gap_start = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
                 if gap_start > current_time:
@@ -278,24 +278,24 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 6000),
+        Phase("First split", False, phase_end_damage_start = 6000),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 6000),
+        Phase("Second split", False, phase_end_damage_start = 6000),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
-        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000),
-        Phase("First orb", False, phase_end_damage_start = 10000),
-        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000),
-        Phase("Archdiviner", False, phase_end_damage_start = 10000),
-        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000),
-        Phase("Second orb", False, phase_end_damage_start = 10000),
-        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000),
-        Phase("Gladiator", False, phase_end_damage_start = 10000),
-        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000),
-        Phase("Third orb", False, phase_end_damage_start = 10000),
-        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
+        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 6000),
+        Phase("First orb", False, phase_end_damage_start = 6000),
+        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 6000),
+        Phase("Archdiviner", False, phase_end_damage_start = 6000),
+        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 6000),
+        Phase("Second orb", False, phase_end_damage_start = 6000),
+        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 6000),
+        Phase("Gladiator", False, phase_end_damage_start = 6000),
+        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 6000),
+        Phase("Third orb", False, phase_end_damage_start = 6000),
+        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 6000)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000),

@@ -175,11 +175,11 @@ class Analyser:
         previous = boss_power_events.time.shift(1)
         deltas = boss_power_events.time - previous
         boss_power_events = boss_power_events.assign(delta = deltas, previous = previous)
-        print_frame(boss_power_events[boss_power_events.delta >= 1000][['time','previous','delta']])
+        #print_frame(boss_power_events[boss_power_events.delta >= 1000][['time','previous','delta']])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
         & (from_boss_events.dst_agent > 0)]
-        print_frame(health_updates[['time','dst_agent']])
+        #print_frame(health_updates[['time','dst_agent']])
 
         #construct frame of all boss skill activations
         boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
