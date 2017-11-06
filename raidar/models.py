@@ -276,6 +276,7 @@ class Encounter(ValueModel):
     gdrive_id = models.CharField(max_length=255, editable=False, null=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True)
     tags = TaggableManager(blank=True)
+    has_evtc = models.BooleanField(default=True)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -290,6 +291,10 @@ class Encounter(ValueModel):
         else:
             upload_dir = 'uploads'
         return path_join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
+
+    def update_has_evtc(self):
+        self.has_evtc = os.path.isfile(self.diskname())
+        self.save()
 
     @property
     def tagstring(self):

@@ -214,7 +214,7 @@
                       buffs[4]
                     ] ]]
                       [[#if percentiles]]
-                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
+                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
                         [[#if buff_image]]
                           <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
                         [[/if]]
@@ -236,9 +236,6 @@
         </div>
       [[/each]]
     </div>
-      <div>
-    <p>The "Buff importance rating" shown in tooltips is used to determine which buffs to display and is not intended as a precise measure. In approximate terms, a 'buff importance rating' of 10000 (on a damage buff) equates to a 100% damage boost for one player, a 20% damage boost for 5 players, or a 10% damage boost across 10 players.</p>
-          </div>
   [[/with]]
   </div>
 [[/with]]

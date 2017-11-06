@@ -9,6 +9,17 @@
   Ractive.DEBUG = DEBUG;
 
 
+  const inputDateAvailable = (() => {
+    const smiley = '1)';
+    const type = 'date';
+    let input = document.createElement('input');
+    input.setAttribute('type', type);
+    input.value = smiley;
+    return input.type === type && 'style' in input && input.value !== smiley;
+  })();
+  console.log(inputDateAvailable);
+
+
   Ractive.decorators.ukUpdate = function(node) {
     UIkit.update();
     return {
