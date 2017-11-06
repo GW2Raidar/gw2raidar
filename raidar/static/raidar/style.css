@@ -139,7 +139,7 @@ input[readonly] + .tags-input {
 .uk-button-group .uk-button:first-child {
   border-radius: 4px 0 0 4px;
 }
-.uk-button-group .uk-button:last-child {
+.uk-button-group .uk-button:last-child, .uk-button-group .uk-inline:last-child .uk-button {
   border-radius: 0 4px 4px 0;
 }
 .uk-button-nor, .uk-button-group .uk-button.uk-button-nor {

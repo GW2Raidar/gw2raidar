@@ -1,5 +1,6 @@
 from ._qsetiter import queryset_iterator
 from collections import defaultdict
+from functools import partial
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -90,10 +91,7 @@ def bound_stats(output, name, value):
     if minprop not in output or value < output[minprop]:
         output[minprop] = value
 
-def advanced_stats(maximum_percentile_samples):
-    return lambda a,b,c: advanced_stats_internal(maximum_percentile_samples, a, b, c)
-
-def advanced_stats_internal(maximum_percentile_samples, output, name, value):
+def advanced_stats(maximum_percentile_samples, output, name, value):
     bound_stats(output, name, value)
     average_stats(output, name, value)
     l = output.get('values|' + name, [])
@@ -147,19 +145,18 @@ def calculate(l, f, *args):
         f(t, *args)
 
 def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets, outgoing_buff_targets):
-    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'])
-    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'])
-    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'])
-    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'])
+    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'], {})
+    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'], {})
+    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'], {})
     outgoing_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['To']['*All'], {})
     incoming_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['From']['*All'], {})
 
     for stat in ['dps','crit','seaweed','scholar','flanking']:
-        calculate(main_stat_targets, f, stat, _safe_get(lambda: stats_in_phase_to_all[stat]))
-    calculate(main_stat_targets, f, 'dps_boss', _safe_get(lambda: stats_in_phase_to_boss['dps']))
-    calculate(main_stat_targets, f, 'dps_received', _safe_get(lambda: stats_in_phase_from_all['dps']))
-    calculate(main_stat_targets, f, 'total_received', _safe_get(lambda: stats_in_phase_from_all['total']))
-    calculate(main_stat_targets, f, 'total_shielded', _safe_get(lambda: shielded_in_phase_from_all['total']))
+        calculate(main_stat_targets, f, stat, stats_in_phase_to_all.get(stat, 0))
+    calculate(main_stat_targets, f, 'dps_boss', stats_in_phase_to_boss.get('dps', 0))
+    calculate(main_stat_targets, f, 'dps_received', stats_in_phase_from_all.get('dps', 0))
+    calculate(main_stat_targets, f, 'total_received', stats_in_phase_from_all.get('total', 0))
 
     for buff, value in incoming_buff_stats.items():
         calculate(incoming_buff_targets, f, buff, value)
@@ -234,6 +231,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with single_process('restat'), necessary(options['force']) as last_run:
             start = time()
+            self.delete_old_files(*args, **options)
             self.calculate_stats(*args, **options)
             end = time()
 
@@ -241,6 +239,30 @@ class Command(BaseCommand):
                 print()
                 print("Completed in %ss" % (end - start))
 
+
+    def delete_old_files(self, *args, **options):
+        GB = 1024 * 1024 * 1024
+        MIN_DISK_AVAIL = 10 * GB
+
+        def is_there_space_now():
+            fsdata = os.statvfs(settings.UPLOAD_DIR)
+            diskavail = fsdata.f_frsize * fsdata.f_bavail
+            return diskavail > MIN_DISK_AVAIL
+
+        if is_there_space_now():
+            return
+
+        encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
+        for encounter in queryset_iterator(encounter_queryset):
+            filename = encounter.diskname()
+            try:
+                os.unlink(filename)
+            except FileNotFoundError:
+                pass
+            encounter.has_evtc = False
+            encounter.save()
+            if is_there_space_now():
+                return
 
 
     def calculate_stats(self, *args, **options):
@@ -250,7 +272,7 @@ class Command(BaseCommand):
                 "area": {},
                 "user": {}
             }
-            era_queryset = era.encounters.all().order_by('?')
+            era_queryset = era.encounters.prefetch_related('participations__character', 'participations__character__account').all().order_by('?')
             totals_in_era = {}
             for encounter in queryset_iterator(era_queryset):
                 boss = BOSSES[encounter.area_id]
@@ -260,6 +282,7 @@ class Command(BaseCommand):
                     phases = data['Category']['combat']['Phase']
                     totals_in_area = navigate(totals['area'], encounter.area_id)
 
+                    participations = encounter.participations.all()
                     for phase, stats_in_phase in phases.items():
                         squad_stats = stats_in_phase['Subgroup']['*All']
                         phase_duration = data['Category']['encounter']['duration'] if phase == 'All' else _safe_get(lambda: data['Category']['encounter']['Phase'][phase]['duration'])
@@ -274,12 +297,12 @@ class Command(BaseCommand):
 
                         if(encounter.success):
                             calculate([group_totals, group_totals_era],
-                                      advanced_stats(options['percentile_samples']),
+                                      partial(advanced_stats, options['percentile_samples']),
                                       'duration',
                                       phase_duration)
                             calculate([group_totals, group_totals_era], count)
                             calculate_standard_stats(
-                                advanced_stats(options['percentile_samples']),
+                                partial(advanced_stats, options['percentile_samples']),
                                 squad_stats,
                                 [group_totals, group_totals_era],
                                 [buffs_by_party, buffs_by_party_era],
@@ -287,7 +310,6 @@ class Command(BaseCommand):
 
                         individual_totals = navigate(totals_in_area, phase, 'individual')
                         individual_totals_era = navigate(totals_in_era, phase, 'individual')
-                        participations = encounter.participations.select_related('character', 'character__account').all()
                         for participation in participations:
                             # XXX in case player did not actually participate (hopefully fix in analyser)
                             if (participation.character.name not in stats_in_phase['Player']):
@@ -315,7 +337,7 @@ class Command(BaseCommand):
                                 calculate([totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
                                      totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era], count)
                                 calculate_standard_stats(
-                                    advanced_stats(options['percentile_samples']),
+                                    partial(advanced_stats, options['percentile_samples']),
                                     player_stats,
                                     [totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
                                      totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era],
@@ -337,11 +359,11 @@ class Command(BaseCommand):
                                             player_stats,
                                             profile_output.breakdown,
                                             [],
-                                            map(lambda a: navigate(a, 'outgoing'), profile_output.breakdown))
+                                            [navigate(a, 'outgoing') for a in profile_output.breakdown])
 
-                                        dead_percentage = 100 * _safe_get(lambda: stats_in_phase_events['dead_time']) / duration
-                                        down_percentage = 100 * _safe_get(lambda: stats_in_phase_events['down_time']) / duration
-                                        disconnect_percentage = 100 * _safe_get(lambda: stats_in_phase_events['disconnect_time']) / duration
+                                        dead_percentage = 100 * stats_in_phase_events.get('dead_time', 0) / duration
+                                        down_percentage = 100 * stats_in_phase_events.get('down_time', 0) / duration
+                                        disconnect_percentage = 100 * stats_in_phase_events.get('disconnect_time', 0) / duration
 
                                         calculate(profile_output.all, average_stats, 'dead_percentage', dead_percentage)
                                         calculate(profile_output.all, average_stats, 'down_percentage', down_percentage)
