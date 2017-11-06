@@ -20,7 +20,7 @@ def portion_of(f, name):
                                         else float(value)/float(context[name]))
 def portion_of2(f, name1, name2):
     return Filter(f, lambda value,context: 0
-                                        if float(context[name1]) < 0.001 and float(context[name2]) < 0.001
+                                        if (float(context[name1]) < 0.001) | (float(context[name2]) < 0.001)
                                         else float(value)/float(context[name1])/float(context[name2]))
 
 def percentage_of(name):
