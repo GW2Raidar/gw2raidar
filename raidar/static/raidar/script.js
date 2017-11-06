@@ -122,13 +122,21 @@
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
   }
-  // from https://stackoverflow.com/a/2901298/240443, assuming d <= 3
-  // num(1234.5):    1,234.5
-  // num(1234.5, 2): 1,234.50
-  // num(1234.5, 0): 1,234
+  // adapted from https://stackoverflow.com/a/2901298/240443
+  // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
+  // num(1234.5):     1,234.5
+  // num(1234.5, 2):  1,234.50
+  // num(1234.5, 0):  1,234
+  // num(0.1234567):  0.123,4567
+  // num(0.12345678): 0.123,456,78
+  let digitGrouper = ' ';
+  let decimalSeparator = '.';
   helpers.num = (n, d) => {
     let s = d == null ? n.toString() : n.toFixed(d);
-    return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+    let p = s.split('.');
+    p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, digitGrouper);
+    if (p[1] && digitGrouper == ' ') p[1] = p[1].replace(/(\d{3})(?!\d$)\B/g, '$1' + digitGrouper);
+    return p.join(decimalSeparator);
   }
   // special for percentages, defaults to 2 decimal digits (`null` is natural formatting)
   // perc(23.2):     23.20%
