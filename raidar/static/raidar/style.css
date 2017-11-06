@@ -136,7 +136,7 @@ input[readonly] + .tags-input {
 .uk-button-group>.uk-button {
   border-radius: 0;
 }
-.uk-button-group .uk-button:first-child {
+.uk-button-group .uk-button:first-child, .uk-button-group .uk-inline:first-child .uk-button {
   border-radius: 4px 0 0 4px;
 }
 .uk-button-group .uk-button:last-child, .uk-button-group .uk-inline:last-child .uk-button {
