@@ -127,8 +127,15 @@
   // num(1234.5, 2): 1,234.50
   // num(1234.5, 0): 1,234
   helpers.num = (n, d) => {
-    let s = d === undefined ? n.toString() : n.toFixed(d);
+    let s = d == null ? n.toString() : n.toFixed(d);
     return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
+  // special for percentages, defaults to 2 decimal digits (`null` is natural formatting)
+  // perc(23.2):     23.20%
+  // perc(23.2, 0):  23%
+  // perc(23.2):     23.2%
+  helpers.perc = (n, d) => {
+    return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
   helpers.buffImportanceLookup = {
     'might': 80,
