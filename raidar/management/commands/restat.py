@@ -145,10 +145,10 @@ def calculate(l, f, *args):
         f(t, *args)
 
 def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets, outgoing_buff_targets):
-    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'])
-    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'])
-    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'])
-    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'])
+    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'], {})
+    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'], {})
+    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'], {})
     outgoing_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['To']['*All'], {})
     incoming_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['From']['*All'], {})
 
@@ -231,6 +231,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         with single_process('restat'), necessary(options['force']) as last_run:
             start = time()
+            self.delete_old_files(*args, **options)
             self.calculate_stats(*args, **options)
             end = time()
 
@@ -238,6 +239,30 @@ class Command(BaseCommand):
                 print()
                 print("Completed in %ss" % (end - start))
 
+
+    def delete_old_files(self, *args, **options):
+        GB = 1024 * 1024 * 1024
+        MIN_DISK_AVAIL = 10 * GB
+
+        def is_there_space_now():
+            fsdata = os.statvfs(settings.UPLOAD_DIR)
+            diskavail = fsdata.f_frsize * fsdata.f_bavail
+            return diskavail > MIN_DISK_AVAIL
+
+        if is_there_space_now():
+            return
+
+        encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
+        for encounter in queryset_iterator(encounter_queryset):
+            filename = encounter.diskname()
+            try:
+                os.unlink(filename)
+            except FileNotFoundError:
+                pass
+            encounter.has_evtc = False
+            encounter.save()
+            if is_there_space_now():
+                return
 
 
     def calculate_stats(self, *args, **options):
