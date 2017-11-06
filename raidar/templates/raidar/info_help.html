@@ -13,7 +13,7 @@
   <li>See what the top group metrics and what professions are most popular for each encounter</li>
   <li>Upload 1 log per encounter and have everyone in the squad access the encounter automatically via their GW2 Raidar account</li>
   <li>Link multiple Guild Wars 2 accounts to a single GW2 Raidar account for a consolidated single view across all your raid characters</li>
-  <li>See your personal raid statistics as a whole</li>
+  <li>See global and your personal raid statistics compared to global metrics</li>
   <li>Redownload previous encounter log files to parse through another website or application.</li>
 </ul>
 
@@ -21,7 +21,7 @@
 
 <p>Getting started is easy. Simply create a new account on the website. You will need to provide in addition to your desired login credentials, your Guild Wars 2 API Key to confirm your ownership of a Guild Wars 2 Account.</p>
 
-<p>GW2 Raidar will automatically get your GW2 account name and associated characters. Any encounters that have been uploaded with your GW2 account in them will show up straight away in your encounters page. </p>
+<p>GW2 Raidar will automatically get your GW2 account name and associated characters. Any encounters that have been uploaded with your GW2 account in them will show up straight away in your Encounters page. </p>
 
 <h2>Uploading Logs</h2>
 
@@ -29,7 +29,7 @@
 
 <p>Due to the need to update global statistics, GW2 Raidar utilises a batch processing system. As such, analysing may take a few minutes, however once a log is uploaded, it will always be analysed, even if you leave the website! </p>
 
-<h2>Interpreting the numbers</h2>
+<h2>Encounters</h2>
 
 <p>On each Encounter page, you’ll be shown a few different sections of statistics as per below. For all statistics (with the exception of Party stats), the following colour codes apply:</p>
 
@@ -54,6 +54,68 @@
 <p>Shows individual values. The first number denotes individual values with the second number denoting the current global average. All averages are based on the detected archetype e.g. a Support Druid will have different averages compared to a Condi Druid.</p>
 
 <p>Individual archetypes are denoted by the icon to the left of the profession icon.</p>
+
+<h3>Boon Output</h3>
+
+TO DO: Add screenshot of boon output numbers somewhere
+
+<p>Boon output is shown in the Boon Outputs tab in encounter view as well as in the Global Stats view. Boon output in general is defined as the total amount of boons applied by a player (including to themselves). There are two measurments of boon output depending on the type of boon measured:
+  
+  <ul>
+    <li><b>Intensity</b>: E.g. Might. Intensity boons are measured by a stack count. So a boon output of 100 might would mean on average, across the entire fight, the player was able to maintain 20 stacks of might on 5 players or 10 stacks of might on 10 players or any other combination.</li>
+    <li><b>Duration</b>: E.g. Quickness. Duration boons are measured by a uptime percentage. So a boon output of 500% quickness would mean on average, across the entire fight, the player was able to maintain 100% quickness on 5 players or 50% quickness on 10 players or any other combination</li>
+</ul>
+
+<h2>Personal Stats</h2>
+
+TO DO: Personal Stats Page Screenshot
+
+<p>The Personal Stats page allows you to review your overall raid performance based on specific archetype roles you play in raids across all your characters. So for example if you have 2 power tempests, across two accounts, they'll be combined into a single power tempest view on this page.</p>
+
+<p>Stats are filterable down at various levels and allows you to compare yourself against the global metrics. Selecting an encounter on each filter will show you your overall performance on that encounter according to DPS. Clicking on a value in the table will bring up a graph showing your performance over time compared to the global average and multiple increasing percentiles for that particular archetype and encounter combination. All stats are seggregated by Eras which is used to denote major changes to the Meta.</p>
+
+TO DO : Graph Image
+
+<h2>Global Stats</h2>
+
+TO DO: Screenshot
+
+<p>The Global Stats allows you to view global metrics for every encounter recorded in GW2Raidar. You can see at a glance, which DPS classes are most effective on each boss and performance of these classes according to average number and top tier players. Simply select the encounter you're interested in and the data will update accordingly. All stats are seggregated by Eras which is used to denote major changes to the Meta.</p>
+  
+  
+<h2>API</h2>
+
+<p>GW2 Raidar provides a functional API to allow you to automatically upload files to the GW2Raidar servers for processing from anywhere. Details of the API are below:</p>
+
+<h3>Upload Files</h3>
+    <ul>
+      <li><b>Method</b>: HTTP POST</li>
+      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/upload.json</li>
+      <li><b>Parameters</b>:
+        <ul>
+          <li><i>username</i> - GW2Raidar Username</li>
+          <li><i>password</i> - GW2Raidar Password</li>
+          <li><i>file</i> - The log file</li>
+          <li><i>category</i> - (Optional) Category the encounter should be filed under </li>
+          <li><i>tag</i> - (Optional) Tags to assign to the encounter. Comma delimited.</li>
+        </ul>
+      </li>
+      <li><b>Responses</b>:
+        <ul>
+          <li><i>200</i> - Successful Upload</li>
+        </ul>
+      </li>
+      <li><b>Example</b>:
+        <pre><code>curl -F "username=<em>USERNAME</em>" -F "password=<em>PASSWORD</em>" -F "file=@<em>FILEPATH</em>" https://www.gw2raidar.com/api/upload.json</code></pre>
+      </li>
+    </ul>
+
+<h3>Encounter Categories</h3>
+ <ul>
+      <li><b>Method</b>: HTTP GET</li>
+      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/categories.json</li>
+      <li><b>Returns</b>: List of encounter categories 
+ </ul>
 
 <h2>FAQ</h2>
 <h3>How do I get GW2 API Key?</h3>
