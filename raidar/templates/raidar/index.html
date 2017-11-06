@@ -91,7 +91,7 @@
                               </dl>
                               </div>
                             </li>-->
-                            <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')"><i class="uk-margin-small-right" uk-icon="icon: user"></i> Account</a></li>
+                            <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')"><i class="uk-margin-small-right" uk-icon="icon: user"></i> [[username]]</a></li>
                             <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout"><i class="uk-margin-small-right" uk-icon="icon: sign-out"></i> Logout</a></li>
                           [[else]]
                             <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="uk-margin-small-right" uk-icon="icon: sign-in"></i> Login</a></li>
