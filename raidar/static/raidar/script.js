@@ -122,6 +122,14 @@
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
   }
+  // from https://stackoverflow.com/a/2901298/240443, assuming d <= 3
+  // num(1234.5):    1,234.5
+  // num(1234.5, 2): 1,234.50
+  // num(1234.5, 0): 1,234
+  helpers.num = (n, d) => {
+    let s = d === undefined ? n.toString() : n.toFixed(d);
+    return s.replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  }
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,
