@@ -82,9 +82,13 @@ class Phase:
             relevant_health_updates = health_updates[(health_updates.time >= current_time) &
                                                      (health_updates.dst_agent >= self.phase_end_health * 100)]
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
+                if health_updates['dst_agent'].min() < (self.phase_end_health + 2) * 100:
+                    print("Detected skipped phase")
+                    return current_time
+                print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
-            print("{0}: Detected health below {1} at time {2}".format(self.name, self.phase_end_health, current_time))
+            print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
 
         if self.phase_end_damage_stop is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
