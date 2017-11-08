@@ -276,7 +276,7 @@ class Encounter(ValueModel):
     gdrive_id = models.CharField(max_length=255, editable=False, null=True, blank=True)
     gdrive_url = models.CharField(max_length=255, editable=False, null=True, blank=True)
     tags = TaggableManager(blank=True)
-    has_evtc = models.BooleanField(default=True)
+    has_evtc = models.BooleanField(default=True, editable=False)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
