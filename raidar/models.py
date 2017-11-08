@@ -72,7 +72,7 @@ class UserProfile(models.Model):
             (SQUAD, 'Squad'),
             (PUBLIC, 'Public')
         )
-    portrait_url = models.URLField(null=True) # XXX not using... delete?
+    portrait_url = models.URLField(null=True, blank=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
     privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
@@ -177,8 +177,8 @@ class Character(models.Model):
 
 class Era(ValueModel):
     started_at = models.IntegerField(db_index=True)
-    name = models.CharField(max_length=255, null=True)
-    description = models.TextField(null=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
 
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
@@ -266,15 +266,15 @@ class Encounter(ValueModel):
     uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
     # Google Drive
-    gdrive_id = models.CharField(max_length=255, editable=False, null=True)
-    gdrive_url = models.CharField(max_length=255, editable=False, null=True)
+    gdrive_id = models.CharField(max_length=255, editable=False, null=True, blank=True)
+    gdrive_url = models.CharField(max_length=255, editable=False, null=True, blank=True)
     tags = TaggableManager(blank=True)
     has_evtc = models.BooleanField(default=True)
 
