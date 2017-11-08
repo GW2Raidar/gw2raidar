@@ -8018,6 +8018,13 @@
 		"oAP": "\/raidar\/migrations\/0029_upload_value.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0030_encounter_has_evtc.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0030_encounter_has_evtc.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8248,6 +8255,16 @@
 		"oA": 0,
 		"oAP": "\/raidar\/models.py",
 		"oF": 0
+		},
+	"\/raidar\/static\/raidar\/css\/raidar.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-min.css",
+		"oF": 0,
+		"oS": 3
 		},
 	"\/raidar\/static\/raidar\/css\/uikit.min.css": {
 		"aP": 1,
