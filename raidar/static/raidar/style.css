@@ -1,3 +1,8 @@
+html {
+  -webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 .uk-badge.uploading {
   background-color:#4282bb;
   background-image:-webkit-linear-gradient(top,#569fd2,#346fac);
