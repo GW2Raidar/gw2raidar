@@ -16,11 +16,6 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/ractive/1.0.0-build-9/ractive.min.js"
       integrity="sha256-tV9zrfcixE5yg4K2R/dTFr5mXOmVLNwkGryU5OAGM+Q="
       crossorigin="anonymous"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/css/uikit.min.css"
-      integrity="sha256-Y26f+YUup4fXzkyNHh6TYAc5jwy5abdgKSx3NBNE0AQ="
-      crossorigin="anonymous" />
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit.min.js"
       integrity="sha256-HM5Ln23ZwUKUp2XJmTYmSVWc7Ymwdbt8YyQX/k3fsY4="
@@ -33,8 +28,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
       integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
       crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css?family=Raleway|Raleway:bold" rel="stylesheet">
-    <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
+    <link href="{% static 'raidar/css/raidar.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
       window.raidar_data = {{ userprops|safe }};
