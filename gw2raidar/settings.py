@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '0.9.3',
-        'timestamp': 1504619292, # date +%s
+        'id': '1.0.3',
+        'timestamp': 1510196685, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -37,6 +37,8 @@ DEBUG = True
 # (it can be set in `settings_local.py`)
 ALLOWED_HOSTS = []
 
+INTERNAL_IPS = ['127.0.0.1']
+
 
 # Application definition
 
@@ -48,6 +50,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'taggit',
 ]
 
 import importlib
@@ -159,3 +162,8 @@ try:
     from .settings_local import *
 except ImportError:
     pass
+
+if DEBUG:
+    if importlib.util.find_spec("debug_toolbar"):
+        INSTALLED_APPS.append('debug_toolbar')
+        MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')

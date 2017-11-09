@@ -1,10 +1,137 @@
 <h2>Release Notes</h2>
+
+<p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+  <input type="hidden" name="cmd" value="_s-xclick">
+  <input type="hidden" name="hosted_button_id" value="3KAQWB87RUXZ2">
+  <input type="image" src="https://www.paypalobjects.com/en_AU/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
+  <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
+</form>
+
 <h4>
   <span class="ignore">Version</span>
   [[data.version.id]]
   <span class="ignore">released on</span>
   [[formatDate(data.version.timestamp)]]
 </h4>
+<ul>
+  <li>UI Changes:
+    <ul>
+      <li>Typography:
+        <ul>
+          <li>Typography changed to Source Sans Pro and Source Code Pro for table headers.</li>
+        </ul>
+      </li>
+      <li>Navigation:
+        <ul>
+          <li>Moved Account specific navigation to the top right section of the site.</li>
+          <li>Moved Upload/Help info to the right side of the navigation.</li>
+          <li>Renamed ‘Profile’ to ‘Personal Stats’.</li>
+          <li>Moved most of Info tabs into footer, except for “Help” which also is accessible in the top right side.</li>
+          <li>Moved “Reset Password” into login page.</li>
+          <li>Added icons to some navigation items.</li>
+        </ul>
+      </li>
+      <li>Layout:
+        <ul>
+          <li>Reworked encounter filter on Personal Stats page.</li>
+          <li>Removed some space from tables.</li>
+          <li>Moved Donation Call to Action to the footer.</li>
+          <li>Moved Popularity to the right hand side of table.</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Amended phase detection to prevent skipping of phases from the parser resulting in false fails.</li>
+  <li>Updated Help Page to include new features and API information.</li>
+  <li>Fixed a server crash.</li>
+</ul>
+<h4>Version 1.0.2</h4>
+<ul>
+  <li>Force-reload client when server is updated</li>
+  <li>Added the category and tags fields to the Uploads page</li>
+  <li>Added <code>category</code> (id) and <code>tags</code> (comma-separated) fields to <code>api/upload.json</code> endpoint</li>
+  <li>Implemented a new <code>api/categories.json</code> endpoint to list the defined categories</li>
+</ul>
+<h4>Version 1.0.1</h4>
+<ul>
+  <li>Added code in preparation for detection of Raid Challenge Mode instances</li>
+  <li>Changed response status code to 4xx for erroneous API upload requests</li>
+</ul>
+<h4>Version 1.0.0</h4>
+<p>This major release marks a massive milestone for GW2Raidar. Massive thanks to the community for your support, patience and feedback!</p>
+<ul>
+  <li>Added performance graphs to profile page. Clicking on a number in the table will now display a graph showing historical performance vs global metrics for that encounter / archetype combination</li>
+  <li>Added global reporting page. Global reporting will allow any user of the website to view global metrics of all encounters.</li>
+  <li>Added category filter and tag search to encounter list. Encounters page will now display horizontal scroll bar if table does not fit on screen.</li>
+  <li>Added damage absorbed by barrier to combat stats table. Any logs uploaded prior to this release will need to be uploaded again for this feature.</li>
+  <li>Added Regeneration to boon tracking table. Any logs uploaded prior to this release will need to be uploaded again for this feature.</li>
+  <li>Added API endpoint to allow uploading of files directly to the server. Details below:
+    <ul>
+      <li><b>Method</b>: HTTP POST</li>
+      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/upload.json</li>
+      <li><b>Parameters</b>:
+        <ul>
+          <li><i>username</i> - GW2Raidar Username</li>
+          <li><i>password</i> - GW2Raidar Password</li>
+          <li><i>file</i> - The log file</li>
+        </ul>
+      </li>
+      <li><b>Responses</b>:
+        <ul>
+          <li><i>200</i> - Successful Upload</li>
+        </ul>
+      </li>
+      <li><b>Example</b>:
+        <pre><code>curl -F "username=<em>USERNAME</em>" -F "password=<em>PASSWORD</em>" -F "file=@<em>FILEPATH</em>" https://www.gw2raidar.com/api/upload.json</code></pre>
+      </li>
+    </ul>
+  </li>
+  <li>Added Boon Output tracking output to encounters. Any logs uploaded prior to this release will need to be uploaded again for this feature. Intensity will show average numbers of stacks provided while duration will show average uptime provided for example:
+    <ul>
+      <li>75 might on the boon output table indicates and average of 75 stacks were given to everyone by that player during the fight. In a party of 5, that would be 75 / 5 which equals 15 stacks of might uptime for 5 players. </li>
+      <li>500% alacrity on the boon output table indicates an average of 500% alacrity uptime was provided by that player to the rest of the party. In a party of 5, that would be 500 / 5 which equals 100% alacrity uptime for 5 players.</li>
+    </ul>
+  </li>
+  <li>Re-enabled log archiving. Logs can be redownloaded by clicking on the filename in the top right corner of the encounter page. Privacy options will disable this feature if any player in the squad is deemed private to the user.</li>
+  <li>Many minor fixes to logs not being processed. Most logs impacted have been fed back through for processing.</li>
+  <li>Fixed a server crash.</li>
+  <li>If you love this site and can't live without it, consider <a href="info-about" on-click="@this.page('info-about')">a small donation</a> to help support the running costs and invest in better infrastructure for more features!</li>
+</ul>
+<h4>Version 0.9.7</h4>
+<ul>
+  <li>Added game build check for compatible ARC versions. GW2Raidar will now reject logs using game builds where ARC is not functioning properly (latest only).</li>
+  <li>Added Fractal CM support for Nightmare and Shattered Observatory</li>
+  <li>Added basic functionality to categorise raid encounter in preparation for website statistics reporting. </li>
+  <li>Added basic functionality to add custom user tags to encounters. Tags will be editable by all participants. </li>
+</ul>
+<h4>Version 0.9.6</h4>
+<ul>
+  <li>Added more robust success detection. Applies to logs uploaded using ARC version 20170905 or higher</li>
+  <li>Updated 'classic' Xera success detection to minimise occurence of false successes.</li>
+  <li>Added Path of Fire Era. PoF Era will apply to all encounters starting from 22nd September 9AM GMT -7</li>
+</ul>
+<h4>Version 0.9.5</h4>
+<ul>
+  <li>Added privacy options for GW2R Accounts. You can now select between one of the following options:
+    <ol>
+      <li><strong>Private</strong>: Display your account and character names to no-one but yourself</li>
+      <li><strong>Squad</strong>: Display your account and character names only to participants in your specific encounter</li>
+      <li><strong>Public</strong>: Show your account and character names to everyone</li>
+    </ol>
+    Privacy options will apply to all accounts and characters linked to your GW2R account.</li>
+</ul>
+<h4>Version 0.9.4</h4>
+<ul>
+  <li>Added basic Kitty Golem log support.</li>
+  <li>Added additional aggregation groups (Raids, Golems)</li>
+  <li>Tweaked log processor to make it more robust.</li>
+  <li>Modified Deimos success detector.</li>
+  <li>Fixed tiny Deimos Phase 2 bars.</li>
+  <li>Removed some less than desirable words from URL wordlist.</li>
+  <li>Fixed a server crash.</li>
+</ul>
+<h4>Version 0.9.3</h4>
 <ul>
   <li>Added support for non-English GW2 clients</li>
   <li>From now on, GW2 API key used to authenticate accounts needs to have "gw2raidar" in its name</li>

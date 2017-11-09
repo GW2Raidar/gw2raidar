@@ -10,6 +10,7 @@ from gw2raidar import settings
 from os.path import join as path_join
 from functools import lru_cache
 from time import time
+from taggit.managers import TaggableManager
 import random
 import os
 import re
@@ -42,10 +43,39 @@ if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 
 User._meta.get_field('email')._unique = True
 
+
+
+class ValueModel(models.Model):
+    value = models.TextField(default="{}", editable=False)
+
+    @property
+    def val(self):
+        return json_loads(self.value)
+
+    @val.setter
+    def val(self, value):
+        self.value = json_dumps(value)
+
+    class Meta:
+        abstract = True
+
+
+
+
 class UserProfile(models.Model):
-    portrait_url = models.URLField(null=True) # XXX not using... delete?
+    PRIVATE = 1
+    SQUAD = 2
+    PUBLIC = 3
+
+    PRIVACY_CHOICES = (
+            (PRIVATE, 'Private'),
+            (SQUAD, 'Squad'),
+            (PUBLIC, 'Public')
+        )
+    portrait_url = models.URLField(null=True, blank=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
+    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
 
     def __str__(self):
         return self.user.username
@@ -145,10 +175,10 @@ class Character(models.Model):
         ordering = ('name',)
 
 
-class Era(models.Model):
+class Era(ValueModel):
     started_at = models.IntegerField(db_index=True)
-    name = models.CharField(max_length=255, null=True)
-    description = models.TextField(null=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
 
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
@@ -157,8 +187,21 @@ class Era(models.Model):
     def by_time(started_at):
         return Era.objects.filter(started_at__lte=started_at).latest('started_at')
 
+    class Meta:
+        ordering = ('-started_at',)
 
-class Upload(models.Model):
+
+class Category(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name_plural = "categories"
+
+
+class Upload(ValueModel):
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
     uploaded_by = models.ForeignKey(User, related_name='unprocessed_uploads')
@@ -186,34 +229,16 @@ def _delete_upload_file(sender, instance, using, **kwargs):
 post_delete.connect(_delete_upload_file, sender=Upload)
 
 
-class Notification(models.Model):
+class Notification(ValueModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
-    value = models.TextField(default="{}")
     created_at = models.IntegerField(db_index=True, default=time)
 
-    @property
-    def val(self):
-        return json_loads(self.value)
 
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
-
-
-class Variable(models.Model):
+class Variable(ValueModel):
     key = models.CharField(max_length=255, primary_key=True)
-    value = models.TextField(null=True)
 
     def __str__(self):
         return '%s=%s' % (self.key, self.val)
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
 
     def get(name):
         return Variable.objects.get(key=name).val
@@ -231,7 +256,7 @@ def _dictionary():
 def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
-class Encounter(models.Model):
+class Encounter(ValueModel):
     url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
@@ -241,15 +266,17 @@ class Encounter(models.Model):
     uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)
     characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
-    dump = models.TextField(editable=False)
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
     # Google Drive
-    gdrive_id = models.CharField(max_length=255, editable=False, null=True)
-    gdrive_url = models.CharField(max_length=255, editable=False, null=True)
+    gdrive_id = models.CharField(max_length=255, editable=False, null=True, blank=True)
+    gdrive_url = models.CharField(max_length=255, editable=False, null=True, blank=True)
+    tags = TaggableManager(blank=True)
+    has_evtc = models.BooleanField(default=True, editable=False)
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -257,6 +284,25 @@ class Encounter(models.Model):
     def save(self, *args, **kwargs):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
+
+    def diskname(self):
+        if hasattr(settings, 'UPLOAD_DIR'):
+            upload_dir = settings.UPLOAD_DIR
+        else:
+            upload_dir = 'uploads'
+        return path_join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
+
+    def update_has_evtc(self):
+        self.has_evtc = os.path.isfile(self.diskname())
+        self.save()
+
+    @property
+    def tagstring(self):
+        return ','.join(self.tags.names())
+
+    @tagstring.setter
+    def tagstring(self, value):
+        self.tags.set(*value.split(','))
 
     @staticmethod
     def calculate_account_hash(account_names):
@@ -279,12 +325,16 @@ class Encounter(models.Model):
             ('area', 'account_hash', 'started_at_half'),
         )
 
-def _delete_gdrive_file(sender, instance, using, **kwargs):
+def _delete_encounter_file(sender, instance, using, **kwargs):
     if gdrive_service and instance.gdrive_id:
         gdrive_service.files().delete(
                 fileId=instance.gdrive_id).execute()
+    try:
+        os.remove(instance.diskname())
+    except FileNotFoundError:
+        pass
 
-post_delete.connect(_delete_gdrive_file, sender=Encounter)
+post_delete.connect(_delete_encounter_file, sender=Encounter)
 
 
 class Participation(models.Model):
@@ -325,35 +375,19 @@ class Participation(models.Model):
                 'elite': self.elite,
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
+                'category': self.encounter.category_id,
+                'tags': list(self.encounter.tags.names()),
             }
 
     class Meta:
         unique_together = ('encounter', 'character')
 
 
-class EraAreaStore(models.Model):
+class EraAreaStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
-    value = models.TextField(default="{}")
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)
 
 
-class EraUserStore(models.Model):
+class EraUserStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
-    value = models.TextField(default="{}")
-
-    @property
-    def val(self):
-        return json_loads(self.value)
-
-    @val.setter
-    def val(self, value):
-        self.value = json_dumps(value)

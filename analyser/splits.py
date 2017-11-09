@@ -25,6 +25,7 @@ class ContextType:
     AGENT_NAME = "Agent Name"
     PROFESSION_NAME = "Profession Name"
     BUFF_TYPE = "Buff"
+    DESTINATIONS = "Destinations"
 
 def split_duration_event_by_phase(collector, method, events, phases):
     def collect_phase(name, phase_events):
@@ -67,14 +68,14 @@ def split_duration_event_by_phase(collector, method, events, phases):
             collect_phase(phase[0], events)
                 
 def split_by_phase(collector, method, events, phases):
-    def collect_phase(name, phase_events):
-        duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
+    def collect_phase(name, phase_events, duration):
+        #duration = float(phase_events['time'].max() - phase_events['time'].min())/1000.0
         if not duration > 0.001:
             duration = 0
         collector.set_context_value(ContextType.DURATION, duration)
         collector.with_key(Group.PHASE, name).run(method, phase_events)
 
-    collect_phase("All", events)
+    collect_phase("All", events, float(events['time'].max() - events['time'].min()) / 1000.0)
 
     #Yes, this lists each phase individually even if there is only one
     #That's for consistency for things like:
@@ -84,13 +85,15 @@ def split_by_phase(collector, method, events, phases):
     for i in range(0,len(phases)):
         phase = phases[i]
         phase_events = events[(events.time >= phase[1]) & (events.time <= phase[2])]
-        collect_phase(phase[0], phase_events)
+        collect_phase(phase[0], phase_events, (phase[2] - phase[1]) / 1000.0)
 
 def split_by_player_groups(collector, method, events, player_column, subgroups, players):
+    collector.set_context_value(ContextType.DESTINATIONS, len(players))
     collector.with_key(Group.SUBGROUP, "*All").run(method, events)
     for subgroup in subgroups:
         subgroup_players = subgroups[subgroup]
         subgroup_events = events[events[player_column].isin(subgroup_players)]
+        collector.set_context_value(ContextType.DESTINATIONS, len(subgroup_players))
         collector.with_key(Group.SUBGROUP, "{0}".format(subgroup)).run(
             method, subgroup_events)
     split_by_player(collector, method, events, player_column, players)
@@ -98,6 +101,7 @@ def split_by_player_groups(collector, method, events, player_column, subgroups, 
 def split_by_player(collector, method, events, player_column, players):
     for character in players.groupby('name').groups.items():
         characters = players[players['name'] == character[0]]
+        collector.set_context_value(ContextType.DESTINATIONS, 1)
         collector.with_key(Group.PLAYER, character[0]).run(method,events[events[player_column].isin(characters.index)]) 
 
 def split_by_agent(collector, method, events, group, enemy_column, bosses, players):

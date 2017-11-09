@@ -1,5 +1,4 @@
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
-from Crypto import Random
 from multiprocessing import Queue, Process, log_to_stderr
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
@@ -7,7 +6,6 @@ from django.db import transaction
 from django.db.utils import IntegrityError
 from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2raidar import settings
-from json import loads as json_loads, dumps as json_dumps
 from raidar.models import *
 from sys import exit, stderr
 from time import time
@@ -153,17 +151,22 @@ class Command(BaseCommand):
         from django import db
         db.connections.close_all()
 
-        process_pool = []
-        for i in range(options['processes']):
-            process = Process(target=self.analyse_upload_worker, args=(queue,))
-            process_pool.append(process)
-            process.start()
+        if options['processes'] > 1:
+            process_pool = []
+            for i in range(options['processes']):
+                process = Process(target=self.analyse_upload_worker, args=(queue,))
+                process_pool.append(process)
+                process.start()
 
-        for process in process_pool:
-            process.join()
+            for process in process_pool:
+                process.join()
+        else:
+            self.analyse_upload_worker(queue, False)
 
-    def analyse_upload_worker(self, queue):
-        Random.atfork()
+    def analyse_upload_worker(self, queue, multi=True):
+        if multi:
+            from Crypto import Random
+            Random.atfork()
         self.gdrive_service = get_gdrive_service()
         try:
             while True:
@@ -183,13 +186,17 @@ class Command(BaseCommand):
                 zipfile = ZipFile(diskname)
                 contents = zipfile.infolist()
                 if len(contents) == 1:
-                    file = zipfile.open(contents[0].filename)
+                    try:
+                        file = zipfile.open(contents[0].filename)
+                    except RuntimeError as e:
+                        raise EvtcAnalysisException(e)
                 else:
                     raise EvtcParseException('Only single-file ZIP archives are allowed')
             else:
                 file = open(diskname, 'rb')
 
             evtc_encounter = EvtcEncounter(file)
+
             analyser = Analyser(evtc_encounter)
 
             dump = analyser.data
@@ -198,13 +205,15 @@ class Command(BaseCommand):
             started_at = dump['Category']['encounter']['start']
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
+            upload_val = upload.val
+            category_id = upload_val.get('category_id', None)
+            tagstring = upload_val.get('tagstring', '')
             if duration < 60:
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
             era = Era.by_time(started_at)
-            area = Area.objects.get(id=evtc_encounter.area_id)
-            if not area:
-                raise EvtcAnalysisException('Unknown area')
+            area, _ = Area.objects.get_or_create(id=evtc_encounter.area_id,
+                    defaults={ "name": analyser.boss_info.name })
 
             status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
@@ -217,31 +226,52 @@ class Command(BaseCommand):
                 # uniqueness (along with some fuzzing to started_at)
                 started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
                 account_hash = Encounter.calculate_account_hash(account_names)
+                filename = upload.filename
+                orig_filename = filename
+                if not zipfile:
+                    filename += ".zip"
                 try:
                     encounter = Encounter.objects.get(
                         Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
                         area=area, account_hash=account_hash
                     )
                     encounter.era = era
-                    encounter.filename = upload.filename
+                    encounter.filename = filename
                     encounter.uploaded_at = upload.uploaded_at
                     encounter.uploaded_by = upload.uploaded_by
                     encounter.duration = duration
                     encounter.success = success
-                    encounter.dump = json_dumps(dump)
+                    encounter.val = dump
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
+                    encounter.category_id = category_id
+                    encounter.tagstring = tagstring
+                    encounter.has_evtc = True
                     encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
-                        filename=upload.filename,
+                        filename=filename,
                         uploaded_at=upload.uploaded_at, uploaded_by=upload.uploaded_by,
-                        duration=duration, success=success, dump=json_dumps(dump),
+                        duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
+                        category_id=category_id, has_evtc=True,
                         account_hash=account_hash
                     )
+                    encounter.tagstring = tagstring
+
+                file.close()
+                file = None
+                new_diskname = encounter.diskname()
+                os.makedirs(os.path.dirname(new_diskname), exist_ok=True)
+                if zipfile:
+                    zipfile.close()
+                    zipfile = None
+                    os.rename(diskname, new_diskname)
+                else:
+                    with ZipFile(new_diskname, 'w') as zipfile_out:
+                        zipfile_out.write(diskname, orig_filename)
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
@@ -284,7 +314,7 @@ class Command(BaseCommand):
                 })
 
             if self.gdrive_service:
-                media = MediaFileUpload(diskname, mimetype='application/prs.evtc')
+                media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
                 try:
                     if encounter.gdrive_id:
                         result = self.gdrive_service.files().update(
@@ -332,11 +362,11 @@ class Command(BaseCommand):
             })
 
         finally:
-            if zipfile:
-                zipfile.close()
-
             if file:
                 file.close()
+
+            if zipfile:
+                zipfile.close()
 
             upload.delete()
 
