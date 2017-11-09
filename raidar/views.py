@@ -89,7 +89,10 @@ def _html_response(request, page, data={}):
         # No Google Analytics, it's fine
         pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
-    response['areas'] = {area.id: area.name for area in Area.objects.all()}
+    response['areas'] = {id: {
+            "name": boss.name,
+            "kind": boss.kind,
+        } for id, boss in BOSSES.items()}
     response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['page'] = page

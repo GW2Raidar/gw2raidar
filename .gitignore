@@ -26,3 +26,5 @@
 
 # secret stuff
 /credentials
+
+.DS_Store
