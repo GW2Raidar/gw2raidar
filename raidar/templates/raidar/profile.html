@@ -30,6 +30,130 @@
 
 
   [[#with page.era.profile]]
+    <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top">
+      {# <button class="uk-button uk-button-default">All (45)</button> #}
+      <div class="uk-inline">
+          [[#with {active: page.area == 'All raid bosses' || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]]
+            <button class="uk-button uk-button-default uk-button-nor" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] - [[/if]]Raids <i uk-icon="chevron-down"></i></button>
+          [[/with]]
+          <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+              <div class="uk-width-1 uk-grid">
+                  <div class="uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                        <li on-click="@.set({'page.area': 'All raid bosses'})" class-uk-active="page.area === 'All raid bosses'">
+                          <a href="#">All Raids Encounters ([["All raid bosses" in encounter ? encounter["All raid bosses"].archetype.All.profession.All.elite.All.count : 0]])</a>
+                        </li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Spirit Vale</li>
+                          <li on-click="@.set({'page.area': '15438'})" class-uk-active="page.area === '15438'"><a href="#">[[data.areas[15438].name]] ([[encounter[15438].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '15429'})" class-uk-active="page.area === '15429'"><a href="#">[[data.areas[15429].name]] ([[encounter[15429].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '15375'})" class-uk-active="page.area === '15375'"><a href="#">[[data.areas[15375].name]] ([[encounter[15375].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Salvation Pass</li>
+                          <li on-click="@.set({'page.area': '16123'})" class-uk-active="page.area === '16123'"><a href="#">[[data.areas[16123].name]] ([[encounter[16123].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16088'})" class-uk-active="page.area === '16088'"><a href="#">[[data.areas[16088].name]] ([[encounter[16088].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16115'})" class-uk-active="page.area === '16115'"><a href="#">[[data.areas[16115].name]] ([[encounter[16115].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Stronghold of the Faithful</li>
+                          <li on-click="@.set({'page.area': '16235'})" class-uk-active="page.area === '16235'"><a href="#">[[data.areas[16235].name]] ([[encounter[16235].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16246'})" class-uk-active="page.area === '16246'"><a href="#">[[data.areas[16246].name]] ([[encounter[16246].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Bastion of the Forgotten</li>
+                          <li on-click="@.set({'page.area': '17194'})" class-uk-active="page.area === '17194'"><a href="#">[[data.areas[17194].name]] ([[encounter[17194].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '17172'})" class-uk-active="page.area === '17172'"><a href="#">[[data.areas[17172].name]] ([[encounter[17172].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '17188'})" class-uk-active="page.area === '17188'"><a href="#">[[data.areas[17188].name]] ([[encounter[17188].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '17154'})" class-uk-active="page.area === '17154'"><a href="#">[[data.areas[17154].name]] ([[encounter[17154].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div class="uk-inline">
+          [[#with {active: page.area == 'All fractal bosses' || page.area in data.areas && data.areas[page.area].kind == 4}]]
+            <button class="uk-button uk-button-default uk-button-nor" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] - [[/if]]Fractals CM <i uk-icon="chevron-down"></i></button>
+          [[/with]]
+          <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+              <div class="uk-width-1 uk-grid">
+                  <div class="uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                        <li on-click="@.set({'page.area': 'All fractal bosses'})" class-uk-active="page.area === 'All fractal bosses'">
+                          <a href="#">All Fractal CM Encounters ([["All fractal bosses" in encounter ? encounter["All fractal bosses"].archetype.All.profession.All.elite.All.count : 0]])</a>
+                        </li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Nightmare</li>
+                          <li on-click="@.set({'page.area': '17021'})" class-uk-active="page.area === '17021'"><a href="#">[[data.areas[17021].name]] ([[encounter[17021].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '17028'})" class-uk-active="page.area === '17028'"><a href="#">[[data.areas[17028].name]] ([[encounter[17028].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16948'})" class-uk-active="page.area === '16948'"><a href="#">[[data.areas[16948].name]] ([[encounter[16948].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Shattered Observatory</li>
+                          <li on-click="@.set({'page.area': '17632'})" class-uk-active="page.area === '17632'"><a href="#">[[data.areas[17632].name]] ([[encounter[17632].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '17949'})" class-uk-active="page.area === '17949'"><a href="#">[[data.areas[17949].name]] ([[encounter[17949].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '17759'})" class-uk-active="page.area === '17759'"><a href="#">[[data.areas[17759].name]] ([[encounter[17759].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+      <div class="uk-inline">
+          [[#with {active: page.area == 'All golem bosses' || page.area in data.areas && data.areas[page.area].kind == 3}]]
+            <button class="uk-button uk-button-default uk-button-nor" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] - [[/if]]Golems <i uk-icon="chevron-down"></i></button>
+          [[/with]]
+          <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+              <div class="uk-width-1 uk-grid">
+                  <div class="uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                        <li on-click="@.set({'page.area': 'All fractal bosses'})" class-uk-active="page.area === 'All fractal bosses'">
+                          <a href="#">All Golem Encounters ([["All dummy bosses" in encounter ? encounter["All dummy bosses"].archetype.All.profession.All.elite.All.count : 0]])</a>
+                        </li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Massive</li>
+                          <li on-click="@.set({'page.area': '16178'})" class-uk-active="page.area === '16178'"><a href="#">[[data.areas[16178].name]] ([[encounter[16178].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16202'})" class-uk-active="page.area === '16202'"><a href="#">[[data.areas[16202].name]] ([[encounter[16202].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16169'})" class-uk-active="page.area === '16169'"><a href="#">[[data.areas[16169].name]] ([[encounter[16169].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Normal</li>
+                          <li on-click="@.set({'page.area': '16199'})" class-uk-active="page.area === '16199'"><a href="#">[[data.areas[16199].name]] ([[encounter[16199].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16177'})" class-uk-active="page.area === '16177'"><a href="#">[[data.areas[16177].name]] ([[encounter[16177].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16198'})" class-uk-active="page.area === '16198'"><a href="#">[[data.areas[16198].name]] ([[encounter[16198].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+                  <div class="uk-width-1-4@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                          <li class="uk-nav-header">Special</li>
+                          <li on-click="@.set({'page.area': '16176'})" class-uk-active="page.area === '16176'"><a href="#">[[data.areas[16176].name]] ([[encounter[16176].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                          <li on-click="@.set({'page.area': '16174'})" class-uk-active="page.area === '16174'"><a href="#">[[data.areas[16174].name]] ([[encounter[16174].archetype.All.profession.All.elite.All.count || 0]])</a></li>
+                      </ul>
+                  </div>
+              </div>
+          </div>
+      </div>
+    </div>
+
+  {% comment %}
     <div class="uk-margin">
       <div uk-grid class="uk-grid-small">
         [[#each keysWithAllLast(encounter, data.areas)]]
@@ -45,6 +169,7 @@
         [[/each]]
       </div>
     </div>
+  {% endcomment %}
 
 
     [[#if encounter[page.area]]]
@@ -81,7 +206,7 @@
             [[/if]]
             [[archetypeId === 'All' ? 'All' : data.archetypes[archetypeId]]]
             <span class="ignore">Archetypes on</span>
-            [[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area]]]
+            [[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area].name]]
           </h3>
           <table class="uk-table uk-table-striped">
             <thead>
