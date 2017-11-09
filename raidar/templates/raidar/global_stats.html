@@ -173,7 +173,7 @@
               {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
             ] ]]
               [[#if percentiles]]
-              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
+              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
               </td>
               [[else]]
               <td></td>
