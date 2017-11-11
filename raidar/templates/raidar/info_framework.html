@@ -1,0 +1,160 @@
+{% load staticfiles %}
+<div class="uk-column-1-2">
+  <h1>Heading</h1>
+  <h2>Heading</h2>
+  <h3>Heading</h3>
+  <h4>Heading</h4>
+  <h5>Heading</h5>
+  <h6>Heading</h6>
+  <h1 class="uk-font-family-secondary">Heading</h1>
+  <h2 class="uk-font-family-secondary">Heading</h2>
+  <h3 class="uk-font-family-secondary">Heading</h3>
+  <h4 class="uk-font-family-secondary">Heading</h4>
+  <h5 class="uk-font-family-secondary">Heading</h5>
+  <h6 class="uk-font-family-secondary">Heading</h6>
+</div>
+
+
+
+
+<p>With the advent and increased usage of DPS meters, there have been a number of different parsers released to analyse, in detail, combat statistics and logs for post review.</p>
+
+<p>While current encounter reports are great, they currently lack one thing, context. GW2 Raidar’s approach to log parsing is slightly different. By retaining high level data about uploaded encounters, GW2 Raidar will allow you compare your individual and squad performance against everyone else’s as an average which will allow you to further analyse your post fight logs.</p>
+
+<p>With GW2 Raidar you can:</p>
+
+<ul>
+  <li>See at a top level your performance and your squad’s performance at a glance</li>
+  <li>See how your and your squads metrics compare to current averages</li>
+  <li>See what the top group metrics and what professions are most popular for each encounter</li>
+  <li>Upload 1 log per encounter and have everyone in the squad access the encounter automatically via their GW2 Raidar account</li>
+  <li>Link multiple Guild Wars 2 accounts to a single GW2 Raidar account for a consolidated single view across all your raid characters</li>
+  <li>See global and your personal raid statistics compared to global metrics</li>
+  <li>Redownload previous encounter log files to parse through another website or application.</li>
+</ul>
+
+
+<div class="uk-child-width-1-2@s uk-text-center" uk-grid>
+    <div>
+        <div class="uk-background-default uk-padding uk-panel">
+            <p class="uk-h4">Default</p>
+        </div>
+    </div>
+    <div>
+        <div class="uk-background-muted uk-padding uk-panel">
+            <p class="uk-h4">Muted</p>
+        </div>
+    </div>
+    <div>
+        <div class="uk-background-primary uk-light uk-padding uk-panel">
+            <p class="uk-h4">Primary</p>
+        </div>
+    </div>
+    <div>
+        <div class="uk-background-secondary uk-light uk-padding uk-panel">
+            <p class="uk-h4">Secondary</p>
+        </div>
+    </div>
+</div>
+
+<form>
+    <fieldset class="uk-fieldset">
+
+        <legend class="uk-legend">Legend</legend>
+
+        <div class="uk-margin">
+            <input class="uk-input" type="text" placeholder="Input">
+        </div>
+
+        <div class="uk-margin">
+            <select class="uk-select">
+                <option>Option 01</option>
+                <option>Option 02</option>
+            </select>
+        </div>
+
+        <div class="uk-margin">
+            <textarea class="uk-textarea" rows="5" placeholder="Textarea"></textarea>
+        </div>
+
+        <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
+            <label><input class="uk-radio" type="radio" name="radio2" checked> A</label>
+            <label><input class="uk-radio" type="radio" name="radio2"> B</label>
+        </div>
+
+        <div class="uk-margin uk-grid-small uk-child-width-auto uk-grid">
+            <label><input class="uk-checkbox" type="checkbox" checked> A</label>
+            <label><input class="uk-checkbox" type="checkbox"> B</label>
+        </div>
+
+        <div class="uk-margin">
+            <input class="uk-range" type="range" value="2" min="0" max="10" step="0.1">
+        </div>
+        <div class="uk-margin">
+            <input class="uk-input uk-form-danger uk-form-width-medium" type="text" placeholder="form-danger" value="form-danger">
+        </div>
+
+        <div class="uk-margin">
+            <input class="uk-input uk-form-success uk-form-width-medium" type="text" placeholder="form-success" value="form-success">
+        </div>
+
+        <div class="uk-margin">
+            <input class="uk-input uk-form-width-medium" type="text" placeholder="disabled" value="disabled" disabled>
+        </div>
+
+        <div class="uk-margin">
+            <input class="uk-input uk-form-width-medium uk-form-large" type="text" placeholder="Large">
+        </div>
+
+        <div class="uk-margin">
+            <input class="uk-input uk-form-width-medium" type="text" placeholder="Default">
+        </div>
+
+        <div class="uk-margin">
+            <input class="uk-input uk-form-width-medium uk-form-small" type="text" placeholder="Small">
+        </div>
+        <div class="uk-margin">
+            <div uk-form-custom="target: true">
+                <select>
+                    <option value="1">Option 01</option>
+                    <option value="2">Option 02</option>
+                    <option value="3">Option 03</option>
+                    <option value="4">Option 04</option>
+                </select>
+                <span></span>
+            </div>
+        </div>
+
+        <div class="uk-margin">
+            <div uk-form-custom="target: > * > span:last-child">
+                <select>
+                    <option value="1">Option 01</option>
+                    <option value="2">Option 02</option>
+                    <option value="3">Option 03</option>
+                    <option value="4">Option 04</option>
+                </select>
+                <span class="uk-link">
+                    <span uk-icon="icon: pencil"></span>
+                    <span></span>
+                </span>
+            </div>
+        </div>
+
+        <div class="uk-margin">
+            <div uk-form-custom="target: > * > span:first-child">
+                <select>
+                    <option value="">Please select...</option>
+                    <option value="1">Option 01</option>
+                    <option value="2">Option 02</option>
+                    <option value="3">Option 03</option>
+                    <option value="4">Option 04</option>
+                </select>
+                <button class="uk-button uk-button-default" type="button" tabindex="-1">
+                    <span></span>
+                    <span uk-icon="icon: chevron-down"></span>
+                </button>
+            </div>
+        </div>
+
+    </fieldset>
+</form>

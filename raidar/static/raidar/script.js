@@ -398,7 +398,7 @@ ${rectSvg.join("\n")}
     return reversed;
   }
   helpers.p_bar = (p, max, space_for_image) => {
-    let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
+    let quantileColours = ['#d7191c', '#fdae61', '#2D81C6', '#BF326D', '#7B09C9']
 
 
     return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
@@ -413,7 +413,7 @@ ${rectSvg.join("\n")}
     return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`
   }
   helpers.text = (x, y, size, text) => {
-    return `<text x='${x}%' y='${y}%' font-family='Verdana' font-size='${size}'>${text}</text>`
+    return `<text x='${x}%' y='${y}%' font-family='Source Sans Pro' fill='#FCF1E2' font-size='${size}'>${text}</text>`
   }
   helpers.svg = (body) =>  {
     let svg = `

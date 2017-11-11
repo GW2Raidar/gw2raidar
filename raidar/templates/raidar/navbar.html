@@ -1,4 +1,4 @@
-<nav class="uk-navbar uk-navbar-container">
+<nav class="uk-navbar uk-navbar-transparent uk-light uk-navbar-container">
   <div class="uk-navbar-left">
     <ul class="uk-navbar-nav">
       <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>
@@ -11,9 +11,9 @@
   <div class="uk-navbar-right">
      <ul class="uk-navbar-nav">
        [[#if username]]
-         <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')"><i class="uk-margin-small-right" uk-icon="icon: upload"></i>Upload</a></li>
+         <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')"><i class="material-icons uk-margin-small-right">file_upload</i>Upload</a></li>
        [[/if]]
-       <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('info-help')"><i class="uk-margin-small-right" uk-icon="icon: question"></i>Help</a></li>
+       <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('info-help')"><i class="material-icons uk-margin-small-right">help_outline</i>Help</a></li>
      </ul>
    </div>
 </nav>

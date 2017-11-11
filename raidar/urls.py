@@ -6,7 +6,7 @@ import importlib
 from . import views
 
 urlpatterns = [
-    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
+    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about|framework))(?:/(?P<no>\w+))?$', views.named, name = "named"),
     url(r'^initial.json$', views.initial, name = "initial"),
     url(r'^login.json$', views.login, name = "login"),
     url(r'^logout.json$', views.logout, name = "logout"),

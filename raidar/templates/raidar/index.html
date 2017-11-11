@@ -21,14 +21,12 @@
       integrity="sha256-HM5Ln23ZwUKUp2XJmTYmSVWc7Ymwdbt8YyQX/k3fsY4="
       crossorigin="anonymous"></script>
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
-      integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
-      crossorigin="anonymous"></script>
-    <script
       src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
       integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
       crossorigin="anonymous"></script>
     <link href="{% static 'raidar/css/raidar.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
       window.raidar_data = {{ userprops|safe }};
@@ -47,65 +45,67 @@
 
     <script id="template" type="text/ractive">
         {# Logo #}
-        <div class="uk-background-secondary uk-light">
-            <div class="uk-container">
-                <header class="uk-grid ">
-                  <div class="uk-width-1-2">
-                    <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal uk-light">GW2 Raidar</h1>
-                  </div>
-                  <div class="uk-width-1-2">
-                    <nav class="uk-navbar uk-navbar-container uk-navbar-transparent">
-                      <div class="uk-navbar-right">
-                        <ul class="uk-navbar-nav">
-                          [[#if username]]
-                            [[#if is_staff]]
-                              <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
+        <div class="custom-header">
+          <div class="uk-light">
+              <div class="uk-container">
+                  <header class="uk-grid ">
+                    <div class="uk-width-1-2">
+                      <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal uk-light">GW2 Raidar</h1>
+                    </div>
+                    <div class="uk-width-1-2">
+                      <nav class="uk-navbar uk-navbar-container uk-navbar-transparent">
+                        <div class="uk-navbar-right">
+                          <ul class="uk-navbar-nav">
+                            [[#if username]]
+                              [[#if is_staff]]
+                                <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
+                              [[/if]]
+                              <!-- Uncomment this to enable notifications.
+                              <li class="uk-inline">
+                                <a href="#">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#fff" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#fff" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#fff" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                                </a>
+                                <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                  <p class="uk-text-center">No notifications.</p>
+                                </div>
+                              </li>
+                              <li class="uk-inline">
+                                <a href="#">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#32d296" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#32d296" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#32d296" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                                </a>
+                                <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                  <dl class="uk-description-list uk-description-list-divider">
+                                      <dt><a href="">Description term</a></dt>
+                                      <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                      <dt><a href="">Description term</a></dt>
+                                      <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                      <dt><a href="">Description term</a></dt>
+                                      <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                </dl>
+                                </div>
+                              </li>-->
+                              <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+                              <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip><i class="material-icons uk-margin-small-right">exit_to_app</i> </a></li>
+                            [[else]]
+                              <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">person_add</i> Login</a></li>
+                              <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
                             [[/if]]
-                            <!-- Uncomment this to enable notifications.
-                            <li class="uk-inline">
-                              <a href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#fff" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#fff" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#fff" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
-                              </a>
-                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
-                                <p class="uk-text-center">No notifications.</p>
-                              </div>
-                            </li>
-                            <li class="uk-inline">
-                              <a href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#32d296" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#32d296" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#32d296" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
-                              </a>
-                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
-                                <dl class="uk-description-list uk-description-list-divider">
-                                    <dt><a href="">Description term</a></dt>
-                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
-                                    <dt><a href="">Description term</a></dt>
-                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
-                                    <dt><a href="">Description term</a></dt>
-                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
-                              </dl>
-                              </div>
-                            </li>-->
-                            <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')"><i class="uk-margin-small-right" uk-icon="icon: user"></i> [[username]]</a></li>
-                            <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout"><i class="uk-margin-small-right" uk-icon="icon: sign-out"></i> Logout</a></li>
-                          [[else]]
-                            <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="uk-margin-small-right" uk-icon="icon: sign-in"></i> Login</a></li>
-                            <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
-                          [[/if]]
-                        </ul>
-                      </div>
-                    </nav>
-                  </div>
-                </header>
-            </div>
-        </div>
-
-
-        <div class="uk-container uk-background-muted uk-margin-bottom">
-            <div class="uk-grid uk-margin-remove-top">
-              <div class="uk-width-1-1">
-              {% include 'raidar/navbar.html' %}
+                          </ul>
+                        </div>
+                      </nav>
+                    </div>
+                  </header>
               </div>
-            </div>
+          </div>
+
+
+          <div class="uk-container uk-margin-bottom">
+              <div class="uk-grid uk-margin-remove-top">
+                <div class="uk-width-1-1">
+                {% include 'raidar/navbar.html' %}
+                </div>
+              </div>
+          </div>
         </div>
     <div class="uk-container">
         <div class="uk-height-viewport uk-flex uk-flex-column">
@@ -145,6 +145,10 @@
               [[elseif page.name == "thank-you"]]
 
                 {% include 'raidar/thank-you.html' %}
+
+              [[elseif page.name == "info-framework"]]
+
+                {% include 'raidar/info_framework.html' %}
 
               [[elseif username]]
 
