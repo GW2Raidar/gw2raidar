@@ -292,10 +292,10 @@ BOSS_ARRAY = [
     Boss('Resistant Kitty Golem', Kind.DUMMY, [16176]),
     Boss('Tough Kitty Golem', Kind.DUMMY, [16174]),
     Boss('Skorvald the Shattered (CM)', Kind.FRACTAL,[0x44E0], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("First split", False, phase_end_damage_start = 15000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
