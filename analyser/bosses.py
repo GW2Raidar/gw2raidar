@@ -65,12 +65,14 @@ class Phase:
     def __init__(self, name, important,
                  phase_end_damage_stop=None,
                  phase_end_damage_start=None,
-                 phase_end_health=None):
+                 phase_end_health=None,
+                 phase_skip_health=None):
         self.name = name
         self.important = important
         self.phase_end_damage_stop = phase_end_damage_stop
         self.phase_end_damage_start = phase_end_damage_start
         self.phase_end_health = phase_end_health
+        self.phase_skip_health = phase_skip_health
 
     def find_end_time(self,
                       current_time,
@@ -78,37 +80,58 @@ class Phase:
                       health_updates,
                       skill_activations):
         end_time = None
+        if self.phase_skip_health is not None:
+            skip_point = self.phase_skip_health
+        elif self.phase_end_health is not None:
+            skip_point = self.phase_end_health
+            
+        relevant_health_updates = health_updates[(health_updates.time >= current_time)]
+        if skip_point is not None:
+            if (not relevant_health_updates.empty) & (relevant_health_updates['dst_agent'].max() < skip_point * 100):
+                print("Detected skipped phase")
+                return current_time
+                
         if self.phase_end_health is not None:
-            relevant_health_updates = health_updates[(health_updates.time >= current_time) &
-                                                     (health_updates.dst_agent >= self.phase_end_health * 100)]
+            relevant_health_updates = relevant_health_updates[(health_updates.dst_agent >= self.phase_end_health * 100)]
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
-                if health_updates['dst_agent'].min() < (self.phase_end_health + 2) * 100:
-                    print("Detected skipped phase")
-                    return current_time
                 print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
             print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
+            
+            if self.phase_end_damage_stop is not None:
+                relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
+                                            (damage_gaps.delta > self.phase_end_damage_stop)]
+                
+                if relevant_gaps.empty & (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
+                    gap_time = int(damage_gaps.time.iloc[-1])
+   
+                if not relevant_gaps.empty:
+                    gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+            
+                if gap_time is not None:
+                    relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
+                    if (skip_point is not None) & (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
+                        print("Damage passed skip point, skipping wait for pause")
+                    else:    
+                        end_time = gap_time
+                        print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, gap_time))
 
-        if self.phase_end_damage_stop is not None:
-            relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
-                                        (damage_gaps.delta > self.phase_end_damage_stop)]
-            if not relevant_gaps.empty:
-                end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
-            elif len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time:
-                end_time = current_time = int(damage_gaps.time.iloc[-1])
-            else:
-                return None
-
-            print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, current_time))
-
-        if self.phase_end_damage_start is not None:
+        elif self.phase_end_damage_start is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_start)]
             if relevant_gaps.empty:
+                if (skip_point is not None) & (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
+                    print("Damage passed skip point, skipping")
+                    return current_time
                 return None
-            end_time = current_time = int(relevant_gaps['time'].iloc[0])
-            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, current_time))
+                        
+            end_time = int(relevant_gaps['time'].iloc[0])
+            relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
+            if (skip_point is not None) & (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
+                print("Damage passed skip point, skipping")
+                return current_time
+            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, end_time))
         return end_time
 
 BOSS_ARRAY = [
@@ -285,15 +308,15 @@ BOSS_ARRAY = [
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
         Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000),
-        Phase("First orb", False, phase_end_damage_start = 10000),
+        Phase("First orb", False, phase_end_damage_start = 10000, phase_skip_health = 70),
         Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000),
-        Phase("Archdiviner", False, phase_end_damage_start = 10000),
+        Phase("Archdiviner", False, phase_end_damage_start = 10000, phase_skip_health = 50),
         Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000),
-        Phase("Second orb", False, phase_end_damage_start = 10000),
+        Phase("Second orb", False, phase_end_damage_start = 10000, phase_skip_health = 40),
         Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000),
-        Phase("Gladiator", False, phase_end_damage_start = 10000),
+        Phase("Gladiator", False, phase_end_damage_start = 10000, phase_skip_health = 30),
         Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000),
-        Phase("Third orb", False, phase_end_damage_start = 10000),
+        Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 0),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
