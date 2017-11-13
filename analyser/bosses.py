@@ -135,10 +135,10 @@ class Phase:
 
 BOSS_ARRAY = [
     Boss('Vale Guardian', Kind.RAID, [0x3C4E], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True)
     ], metrics = [
         Metric('Blue Guardian Invulnerability Time', 'Blue Invuln', MetricType.TIME, False),
@@ -146,10 +146,10 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleported', MetricType.COUNT)
     ]),
     Boss('Gorseval', Kind.RAID, [0x3C45], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First souls", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second souls", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First souls", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second souls", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True)
     ], metrics = [
         Metric('Unmitigated Spectral Impacts', 'Slammed', MetricType.COUNT, True, True),
@@ -157,27 +157,27 @@ BOSS_ARRAY = [
         Metric('Spectral Darkness', 'Tainted', MetricType.TIME)
     ]),
     Boss('Sabetha', Kind.RAID, [0x3C0F], phases = [
-        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),
-        Phase("Kernan", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000),
-        Phase("Knuckles", False, phase_end_damage_start = 10000),
-        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000),
-        Phase("Karde", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000, phase_skip_health = 50),
+        Phase("Kernan", False, phase_end_damage_start = 10000, phase_skip_health = 50),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000, phase_skip_health = 25),
+        Phase("Knuckles", False, phase_end_damage_start = 10000, phase_skip_health = 25),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Karde", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 4", True)
     ], metrics = [
         Metric('Heavy Bombs Undefused', 'Heavy Bombs', MetricType.COUNT, False)
     ]),
     Boss('Slothasor', Kind.RAID, [0x3EFB], phases = [
-        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
-        Phase("Break 1", False, phase_end_damage_start = 1000),
-        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000),
-        Phase("Break 2", False, phase_end_damage_start = 1000),
-        Phase("Phase 3", True, phase_end_health = 40, phase_end_damage_stop = 1000),
-        Phase("Break 3", False, phase_end_damage_start = 1000),
-        Phase("Phase 4", True, phase_end_health = 20, phase_end_damage_stop = 1000),
-        Phase("Break 4", False, phase_end_damage_start = 1000),
-        Phase("Phase 5", True, phase_end_health = 10, phase_end_damage_stop = 1000),
-        Phase("Break 5", False, phase_end_damage_start = 1000),
+        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000, phase_skip_health = 60),
+        Phase("Break 1", False, phase_end_damage_start = 1000, phase_skip_health = 60),
+        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000, phase_skip_health = 40),
+        Phase("Break 2", False, phase_end_damage_start = 1000, phase_skip_health = 40),
+        Phase("Phase 3", True, phase_end_health = 40, phase_end_damage_stop = 1000, phase_skip_health = 20),
+        Phase("Break 3", False, phase_end_damage_start = 1000, phase_skip_health = 20),
+        Phase("Phase 4", True, phase_end_health = 20, phase_end_damage_stop = 1000, phase_skip_health = 10),
+        Phase("Break 4", False, phase_end_damage_start = 1000, phase_skip_health = 10),
+        Phase("Phase 5", True, phase_end_health = 10, phase_end_damage_stop = 1000, phase_skip_health = 1),
+        Phase("Break 5", False, phase_end_damage_start = 1000, phase_skip_health = 1),
         Phase("Phase 6", True)
     ], metrics = [
         Metric('Tantrum Knockdowns', 'Tantrumed', MetricType.COUNT),
@@ -215,14 +215,14 @@ BOSS_ARRAY = [
         # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
         Phase("Pre-burn 1", True, phase_end_damage_stop = 15000),
         Phase("Split 1", False, phase_end_damage_start = 15000),
-        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("Pacman 1", False, phase_end_damage_start = 15000),
-        Phase("Pre-burn 2", True, phase_end_damage_stop = 15000),
-        Phase("Split 2", False, phase_end_damage_start = 15000),
-        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Pacman 2", False, phase_end_damage_start = 15000),
-        Phase("Pre-burn 3", True, phase_end_damage_stop = 18000),
-        Phase("Split 3", False, phase_end_damage_start = 18000),
+        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("Pacman 1", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Pre-burn 2", True, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("Split 2", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 1),
+        Phase("Pacman 2", False, phase_end_damage_start = 15000, phase_skip_health = 1),
+        Phase("Pre-burn 3", True, phase_end_damage_stop = 18000, phase_skip_health = 1),
+        Phase("Split 3", False, phase_end_damage_start = 18000, phase_skip_health = 1),
         Phase("Burn 3", True)
     ], metrics = [
         Metric('Correct Orb', 'Correct Orbs', MetricType.COUNT),
@@ -253,10 +253,10 @@ BOSS_ARRAY = [
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
     ], cm_detector = mo_cm_detector),
     Boss('Samarog', Kind.RAID, [0x4324], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], metrics = [
         Metric('Claw', 'Claw', MetricType.COUNT, True, True),
@@ -299,10 +299,10 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
@@ -314,32 +314,32 @@ BOSS_ARRAY = [
         Phase("Second orb", False, phase_end_damage_start = 10000, phase_skip_health = 40),
         Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000, phase_skip_health = 30),
         Phase("Gladiator", False, phase_end_damage_start = 10000, phase_skip_health = 30),
-        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000, phase_skip_health = 0),
-        Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 0),
+        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
-        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000),
-        Phase("First split", False, phase_end_damage_start = 3000),
-        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000),
-        Phase("Second split", False, phase_end_damage_start = 3000),
-        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000),
-        Phase("Second split", False, phase_end_damage_start = 3000),
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000, phase_skip_health = 50),
+        Phase("First split", False, phase_end_damage_start = 3000, phase_skip_health = 50),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000, phase_skip_health = 25),
+        Phase("Second split", False, phase_end_damage_start = 3000, phase_skip_health = 50),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 3000, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Siax (CM)', Kind.FRACTAL,[0x4284], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("First split", False, phase_end_damage_start = 15000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 13000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 13000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 13000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 13000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Ensolyss (CM)', Kind.FRACTAL,[0x4234], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("First split", False, phase_end_damage_start = 15000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Second split", False, phase_end_damage_start = 15000),
-        Phase("Phase 3", True, phase_end_health=15),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 15),
+        Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 15),
+        Phase("Phase 3", True, phase_end_health=15, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True)
 ]
