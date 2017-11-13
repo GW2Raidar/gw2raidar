@@ -91,7 +91,7 @@ class Phase:
                 print("Detected skipped phase")
                 return current_time
             
-            relevant_health_updates = relevant_health_updates[(health_updates.dst_agent >= self.phase_end_health * 100)]
+            relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
                 print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
                 return None

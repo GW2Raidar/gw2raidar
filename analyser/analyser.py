@@ -217,6 +217,9 @@ class Analyser:
         self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
         print("Important phases:")
         list(map(print_phase, self.phases))
+        
+        if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
+            raise EvtcAnalysisException("Initial phase missing or skipped")
 
         return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
 
