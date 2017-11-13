@@ -4,7 +4,7 @@ from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from hashlib import md5
-from analyser.analyser import Archetype, Elite
+from analyser.analyser import Profession, Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
 from gw2raidar import settings
 from os.path import join as path_join
@@ -115,66 +115,6 @@ class Account(models.Model):
         ordering = ('name',)
 
 
-class Character(models.Model):
-    GUARDIAN = 1
-    WARRIOR = 2
-    ENGINEER = 3
-    RANGER = 4
-    THIEF = 5
-    ELEMENTALIST = 6
-    MESMER = 7
-    NECROMANCER = 8
-    REVENANT = 9
-
-    PROFESSION_CHOICES = (
-            (GUARDIAN, 'Guardian'),
-            (WARRIOR, 'Warrior'),
-            (ENGINEER, 'Engineer'),
-            (RANGER, 'Ranger'),
-            (THIEF, 'Thief'),
-            (ELEMENTALIST, 'Elementalist'),
-            (MESMER, 'Mesmer'),
-            (NECROMANCER, 'Necromancer'),
-            (REVENANT, 'Revenant'),
-        )
-
-    SPECIALISATIONS = { (id, 0): name for id, name in PROFESSION_CHOICES }
-    SPECIALISATIONS.update({
-        (GUARDIAN, 1): 'Dragonhunter',
-        (WARRIOR, 1): 'Berserker',
-        (ENGINEER, 1): 'Scrapper',
-        (RANGER, 1): 'Druid',
-        (THIEF, 1): 'Daredevil',
-        (ELEMENTALIST, 1): 'Tempest',
-        (MESMER, 1): 'Chronomancer',
-        (NECROMANCER, 1): 'Reaper',
-        (REVENANT, 1): 'Herald',
-
-        (GUARDIAN, 2): 'Firebrand',
-        (WARRIOR, 2): 'Spellbreaker',
-        (ENGINEER, 2): 'Holosmith',
-        (RANGER, 2): 'Soulbeast',
-        (THIEF, 2): 'Deadeye',
-        (ELEMENTALIST, 2): 'Weaver',
-        (MESMER, 2): 'Mirage',
-        (NECROMANCER, 2): 'Scourge',
-        (REVENANT, 2): 'Renegade',
-    })
-
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
-    name = models.CharField(max_length=64, db_index=True)
-    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
-    verified_at = models.DateTimeField(auto_now_add=True) # XXX don't remember this... delete?
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        # name is not necessarily unique, just unique at a time
-        unique_together = ('name', 'account', 'profession')
-        ordering = ('name',)
-
-
 class Era(ValueModel):
     started_at = models.IntegerField(db_index=True)
     name = models.CharField(max_length=255)
@@ -267,7 +207,7 @@ class Encounter(ValueModel):
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)
-    characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
+    accounts = models.ManyToManyField(Account, through='Participation', related_name='encounters')
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
@@ -338,6 +278,18 @@ post_delete.connect(_delete_encounter_file, sender=Encounter)
 
 
 class Participation(models.Model):
+    PROFESSION_CHOICES = (
+            (int(Profession.GUARDIAN), 'Guardian'),
+            (int(Profession.WARRIOR), 'Warrior'),
+            (int(Profession.ENGINEER), 'Engineer'),
+            (int(Profession.RANGER), 'Ranger'),
+            (int(Profession.THIEF), 'Thief'),
+            (int(Profession.ELEMENTALIST), 'Elementalist'),
+            (int(Profession.MESMER), 'Mesmer'),
+            (int(Profession.NECROMANCER), 'Necromancer'),
+            (int(Profession.REVENANT), 'Revenant'),
+        )
+
     ARCHETYPE_CHOICES = (
             (int(Archetype.POWER), "Power"),
             (int(Archetype.CONDI), "Condi"),
@@ -353,13 +305,15 @@ class Participation(models.Model):
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
-    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='participations')
+    character = models.CharField(max_length=64, db_index=True)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='participations')
+    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):
-        return '%s in %s' % (self.character, self.encounter)
+        return '%s (%s) in %s' % (self.character, self.account.name, self.encounter)
 
     def data(self):
         return {
@@ -368,8 +322,8 @@ class Participation(models.Model):
                 'area': self.encounter.area.name,
                 'started_at': self.encounter.started_at,
                 'duration': self.encounter.duration,
-                'character': self.character.name,
-                'account': self.character.account.name,
+                'character': self.character_name,
+                'account': self.account.name,
                 'profession': self.character.profession,
                 'archetype': self.archetype,
                 'elite': self.elite,
@@ -380,7 +334,7 @@ class Participation(models.Model):
             }
 
     class Meta:
-        unique_together = ('encounter', 'character')
+        unique_together = ('encounter', 'account')
 
 
 class EraAreaStore(ValueModel):

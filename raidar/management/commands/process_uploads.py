@@ -276,16 +276,12 @@ class Command(BaseCommand):
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
                         name=player['account'])
-                    character, _ = Character.objects.get_or_create(
-                        name=name, account=account,
-                        defaults={
-                            'profession': player['profession']
-                        }
-                    )
                     participation, _ = Participation.objects.update_or_create(
-                        character=character, encounter=encounter,
+                        account=account, encounter=encounter,
                         defaults={
+                            'character': name,
                             'archetype': player['archetype'],
+                            'profession': player['profession'],
                             'party': player['party'],
                             'elite': player['elite']
                         }

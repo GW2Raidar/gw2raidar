@@ -175,10 +175,10 @@ def navigate_to_profile_outputs(totals, participation, encounter, boss):
             return navigate(totals_for_player,
                             'encounter', encounter.area_id if split_encounter else 'All %s bosses' % boss.kind.name.lower(),
                             'archetype', participation.archetype if split_archetype else 'All',
-                            'profession', participation.character.profession if split_profession else 'All',
+                            'profession', participation.profession if split_profession else 'All',
                             'elite', participation.elite if split_profession else 'All')
 
-    user_id = participation.character.account.user_id
+    user_id = participation.account.user_id
 
     if not user_id:
         return ProfileOutputs([],[],[])
@@ -272,7 +272,7 @@ class Command(BaseCommand):
                 "area": {},
                 "user": {}
             }
-            era_queryset = era.encounters.prefetch_related('participations__character', 'participations__character__account').all().order_by('?')
+            era_queryset = era.encounters.prefetch_related('participations__account').all().order_by('?')
             totals_in_era = {}
             for encounter in queryset_iterator(era_queryset):
                 boss = BOSSES[encounter.area_id]
@@ -312,11 +312,11 @@ class Command(BaseCommand):
                         individual_totals_era = navigate(totals_in_era, phase, 'individual')
                         for participation in participations:
                             # XXX in case player did not actually participate (hopefully fix in analyser)
-                            if (participation.character.name not in stats_in_phase['Player']):
+                            if (participation.character not in stats_in_phase['Player']):
                                 continue
-                            player_stats = stats_in_phase['Player'][participation.character.name]
+                            player_stats = stats_in_phase['Player'][participation.character]
 
-                            prof = participation.character.profession
+                            prof = participation.profession
                             arch = participation.archetype
                             elite = participation.elite
                             totals_by_build = navigate(totals_in_area, phase, 'build', prof, elite, arch)
