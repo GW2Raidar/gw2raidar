@@ -27,8 +27,6 @@
 # secret stuff
 /credentials
 
-<<<<<<< HEAD
+
 config.codekit3
-=======
->>>>>>> develop
 .DS_Store
