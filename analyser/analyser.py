@@ -128,26 +128,25 @@ class Analyser:
             ['dst_instid']].groupby('dst_instid').size().rename('hit_count')
         agents = agents.join(agents_that_get_hit_a_lot)
         agents.hit_count.fillna(0, inplace=True)
-
+        
+        #Fix player parties
+        if (self.boss_info.force_single_party) | (not agents[(agents.prof >= 1) & (agents.prof <= 9) & (agents.party == 0)].empty):
+            agents.loc[(agents.prof >= 1) & (agents.prof <= 9), 'party'] = 1
+        
         #identify specific ones we care about
         players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
-        
+                
         if len(players) < 1:
             raise EvtcAnalysisException("No players found in this log")
         elif len(players) > 50:
             raise EvtcAnalysisException("Too many players found in this log: {0}".format(len(agents)))
-
-        if not players[players.party == 0].empty:
-            for player in players.index.values:
-                agents.loc[player, 'party'] = 1
-                players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
 
         bosses = agents[(agents.prof.isin(self.boss_info.boss_ids)) |
                         (self.boss_info.has_structure_boss
                          & (agents.prof < 0)
                          & (agents.hit_count >= 100))]
         final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
-
+        
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
 
@@ -157,7 +156,7 @@ class Analyser:
         print(self.boss_instids)
         self.final_boss_instids = final_bosses.index.values
         collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
-        return players, bosses, final_bosses
+        return agents, players, bosses, final_bosses
 
     def preprocess_events(self, events):
         #experimental phase calculations
@@ -246,14 +245,21 @@ class Analyser:
 
         #set up data structures
         events = assign_event_types(encounter.events)
-        if (encounter.version < '20170923'
-            and not events[(events.state_change == parser.StateChange.GW_BUILD)
-                & (events.src_agent >= 82356)].empty):
+
+        gw_build_event = events[events.state_change == parser.StateChange.GW_BUILD]
+        if gw_build_event.empty:
+            gw_build = 0
+        else:
+            gw_build = gw_build_event['src_agent'].iloc[0]
+
+        if (       (encounter.version < '20170923' and gw_build >= 82356)
+                or (encounter.version < '20171107' and gw_build >= 83945)
+                ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
         agents = encounter.agents
         skills = encounter.skills
-        players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
+        agents, players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
 
         self.preprocess_skills(skills, collector)
         self.players = players
@@ -290,7 +296,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('cm', self.boss_info.cm_detector(events))
+        encounter_collector.add_data('cm', self.boss_info.cm_detector(events, self.boss_instids))
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:

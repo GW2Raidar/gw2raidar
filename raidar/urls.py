@@ -1,6 +1,7 @@
 from django.conf import settings
-from django.conf.urls import url
+from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
+import importlib
 
 from . import views
 
@@ -13,6 +14,7 @@ urlpatterns = [
     url(r'^reset_pw.json$', views.reset_pw, name = "reset_pw"),
     url(r'^upload.json$', views.upload, name = "upload"),
     url(r'^api/upload.json$', views.api_upload, name = "api_upload"),
+    url(r'^api/categories.json$', views.api_categories, name = "api_categories"),
     url(r'^privacy.json$', views.privacy, name = "privacy"),
     url(r'^profile_graph.json$', views.profile_graph, name = "profile_graph"),
     url(r'^set_tags_cat.json$', views.set_tags_cat, name = "set_tags_cat"),
@@ -28,4 +30,11 @@ urlpatterns = [
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
     url(r'^$', views.index, name = "index"),
+    url(r'^global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]
+
+if settings.DEBUG and importlib.util.find_spec('debug_toolbar'):
+    import debug_toolbar
+    urlpatterns = [
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns

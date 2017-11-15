@@ -33,7 +33,7 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
       integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
       crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css?family=Raleway|Raleway:bold" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,700" rel="stylesheet">
     <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
@@ -52,145 +52,230 @@
 
 
     <script id="template" type="text/ractive">
-      <div class="main uk-height-viewport uk-flex uk-flex-column">
         {# Logo #}
-        <header class="uk-grid">
-          <div class="uk-width-1-1">
-            <h1 class="uk-heading-large uk-padding-small uk-light uk-background-primary">GW2 Raidar</h1>
-          </div>
-        </header>
-
-        {% include 'raidar/navbar.html' %}
-
-        {# content #}
-        <div class="uk-flex-1">
-          [[#if loading]]
-
-            <center class="uk-margin-large-top">
-              <div uk-spinner></div>
-            </center>
-
-          [[elseif page.name == "encounter"]]
-
-            {% include 'raidar/encounter.html' %}
-
-          [[elseif page.name == "info-help"]]
-
-            {% include 'raidar/info_help.html' %}
-
-          [[elseif page.name == "info-releasenotes"]]
-
-            {% include 'raidar/info_releasenotes.html' %}
-
-          [[elseif page.name == "info-contact"]]
-
-            {% include 'raidar/info_contact.html' %}
-
-          [[elseif page.name == "info-about"]]
-
-            {% include 'raidar/info_about.html' %}
-
-          [[elseif page.name == "thank-you"]]
-
-            {% include 'raidar/thank-you.html' %}
-
-          [[elseif username]]
-
-            [[#if page.name == "encounters"]]
-
-              [[#if encounters.length]]
-                {% include 'raidar/encounters.html' %}
-              [[else]]
-                <p>
-                  Drag and drop evtc files to this window to upload.
-                </p>
-              [[/if]]
-
-            [[elseif page.name == "profile"]]
-
-              {% include 'raidar/profile.html' %}
-
-            [[elseif page.name == "uploads"]]
-
-              {% include 'raidar/uploads.html' %}
-
-            [[elseif page.name == "account"]]
-
-              {% include 'raidar/account.html' %}
-
-            [[/if]]
-
-          [[else]]{# username #}
-
-            [[#if page.name == "login"]]
-
-              <form class="uk-form-stacked uk-padding-large uk-text-center">
-                <div class="uk-margin">
-                  <input id="login_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username (or Email)" required>
-                </div>
-                <div class="uk-margin">
-                  <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required>
-                </div>
-                <div class="uk-margin">
-                  <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login">Login</button><br>
-                </div>
-              </form>
-
-            [[elseif page.name == "register"]]
-
-              <form class="uk-form-stacked uk-padding-large uk-text-center">
-                <div class="uk-margin">
-                  <input id="register_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username" pattern="[\w.@+-]+" required on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use letters, numbers, and ._+-@')">
-                </div>
-                <div class="uk-margin">
-                  <input id="register_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" type="email" placeholder="Email" required>
-                </div>
-                <div class="uk-margin">
-                  <input id="register_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required pattern=".{8,}" on-input="@this.set('auth.passpattern', @node.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')), @node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')">
-                </div>
-                <div class="uk-margin">
-                  <input id="register_password2" class="uk-input uk-form-width-medium" value="[[auth.input.password2]]" placeholder="Again" type="password" required on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please make sure the password fields match')">
-                </div>
-                <div class="uk-margin">
-                  <div class="uk-inline">
-                    <a class="uk-form-icon uk-form-icon-flip" href="https://account.arena.net/applications" uk-icon="icon: link" target="gw2apps"></a>
-                    <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="'gw2raidar' API key" autocomplete="off" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')">
+        <div class="uk-background-secondary uk-light">
+            <div class="uk-container">
+                <header class="uk-grid ">
+                  <div class="uk-width-1-2">
+                    <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal uk-light">GW2 Raidar</h1>
                   </div>
-                </div>
-                <div class="uk-margin">
-                  <button id="register_submit" class="uk-button uk-button-default" on-click="auth_register" >Register</button><br>
-                </div>
-              </form>
-
-              <p>
-                For security reasons, please make sure that you use an API key specifically generated for GW2Raidar: the key needs to contain "<em>GW2Raidar</em>" (case insensitive) in its name. For example, here are some valid API key names: "The key for GW2Raidar", "http://gw2raidar.com/", "GW2Raidar".
-              </p>
-
-            [[elseif page.name == "reset_pw"]]
-
-              <form class="uk-form-stacked uk-padding-large uk-text-center">
-                <div class="uk-margin">
-                  <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email" type="email" required>
-                </div>
-                <div class="uk-margin">
-                  <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw">Reset password</button><br>
-                </div>
-              </form>
-
-            [[else]]
-
-              TODO
-              {#% include 'raidar/intro.html' %#}
-
-            [[/if]]
-
-          [[/if]]{# username #}
+                  <div class="uk-width-1-2">
+                    <nav class="uk-navbar uk-navbar-container uk-navbar-transparent">
+                      <div class="uk-navbar-right">
+                        <ul class="uk-navbar-nav">
+                          [[#if username]]
+                            [[#if is_staff]]
+                              <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
+                            [[/if]]
+                            <!-- Uncomment this to enable notifications.
+                            <li class="uk-inline">
+                              <a href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#fff" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#fff" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#fff" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                              </a>
+                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                <p class="uk-text-center">No notifications.</p>
+                              </div>
+                            </li>
+                            <li class="uk-inline">
+                              <a href="#">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#32d296" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#32d296" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#32d296" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                              </a>
+                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                <dl class="uk-description-list uk-description-list-divider">
+                                    <dt><a href="">Description term</a></dt>
+                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                    <dt><a href="">Description term</a></dt>
+                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                    <dt><a href="">Description term</a></dt>
+                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                              </dl>
+                              </div>
+                            </li>-->
+                            <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')"><i class="uk-margin-small-right" uk-icon="icon: user"></i> [[username]]</a></li>
+                            <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout"><i class="uk-margin-small-right" uk-icon="icon: sign-out"></i> Logout</a></li>
+                          [[else]]
+                            <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="uk-margin-small-right" uk-icon="icon: sign-in"></i> Login</a></li>
+                            <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
+                          [[/if]]
+                        </ul>
+                      </div>
+                    </nav>
+                  </div>
+                </header>
+            </div>
         </div>
 
-        <footer class="uk-heading uk-padding-small uk-light uk-background-secondary">
-          GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet. All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.
-        </footer>
-      </div>
+
+        <div class="uk-container uk-background-muted uk-margin-bottom">
+            <div class="uk-grid uk-margin-remove-top">
+              <div class="uk-width-1-1">
+              {% include 'raidar/navbar.html' %}
+              </div>
+            </div>
+        </div>
+    <div class="uk-container">
+        <div class="uk-height-viewport uk-flex uk-flex-column">
+
+
+            {# content #}
+            <div class="uk-flex-1">
+              [[#if loading]]
+
+                <center class="uk-margin-large-top">
+                  <div uk-spinner></div>
+                </center>
+
+              [[elseif page.name == "encounter"]]
+
+                {% include 'raidar/encounter.html' %}
+
+              [[elseif page.name == "info-help"]]
+
+                {% include 'raidar/info_help.html' %}
+
+              [[elseif page.name == "info-releasenotes"]]
+
+                {% include 'raidar/info_releasenotes.html' %}
+
+              [[elseif page.name == "info-contact"]]
+
+                {% include 'raidar/info_contact.html' %}
+
+              [[elseif page.name == "info-about"]]
+
+                {% include 'raidar/info_about.html' %}
+
+              [[elseif page.name == "global_stats"]]
+
+                {% include 'raidar/global_stats.html' %}
+              [[elseif page.name == "thank-you"]]
+
+                {% include 'raidar/thank-you.html' %}
+
+              [[elseif username]]
+
+                [[#if page.name == "encounters"]]
+
+                  [[#if encounters.length]]
+                    {% include 'raidar/encounters.html' %}
+                  [[else]]
+                    <p>
+                      Drag and drop evtc files to this window to upload.
+                    </p>
+                  [[/if]]
+
+                [[elseif page.name == "profile"]]
+
+                  {% include 'raidar/profile.html' %}
+
+                [[elseif page.name == "uploads"]]
+
+                  {% include 'raidar/uploads.html' %}
+
+                [[elseif page.name == "account"]]
+
+                  {% include 'raidar/account.html' %}
+
+                [[/if]]
+
+              [[else]]{# username #}
+
+                [[#if page.name == "login"]]
+
+                  <form class="uk-form-stacked uk-padding-large uk-text-center">
+                    <div class="uk-margin">
+                      <input id="login_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username (or Email)" required>
+                    </div>
+                    <div class="uk-margin">
+                      <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required>
+                      <p class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a class="uk-text-small" href="#" on-click="@this.page('reset_pw')">Forgot Password?</a></p>
+                    </div>
+                    <div class="uk-margin">
+                      <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login">Login</button><br>
+                    </div>
+                  </form>
+
+
+                [[elseif page.name == "register"]]
+
+                  <form class="uk-form-stacked uk-padding-large uk-text-center">
+                    <div class="uk-margin">
+                      <input id="register_username" class="uk-input uk-form-width-medium" value="[[auth.input.username]]" placeholder="Username" pattern="[\w.@+-]+" required on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use letters, numbers, and ._+-@')">
+                    </div>
+                    <div class="uk-margin">
+                      <input id="register_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" type="email" placeholder="Email" required>
+                    </div>
+                    <div class="uk-margin">
+                      <input id="register_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required pattern=".{8,}" on-input="@this.set('auth.passpattern', @node.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')), @node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')">
+                    </div>
+                    <div class="uk-margin">
+                      <input id="register_password2" class="uk-input uk-form-width-medium" value="[[auth.input.password2]]" placeholder="Again" type="password" required on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please make sure the password fields match')">
+                    </div>
+                    <div class="uk-margin">
+                      <div class="uk-inline">
+                        <a class="uk-form-icon uk-form-icon-flip" href="https://account.arena.net/applications" uk-icon="icon: link" target="gw2apps"></a>
+                        <input id="register_api_key" class="uk-input uk-form-width-medium" value="[[auth.input.api_key]]" placeholder="'gw2raidar' API key" autocomplete="off" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')">
+                      </div>
+                    </div>
+                    <div class="uk-margin">
+                      <button id="register_submit" class="uk-button uk-button-default" on-click="auth_register" >Register</button><br>
+                    </div>
+                  </form>
+
+                  <p>
+                    For security reasons, please make sure that you use an API key specifically generated for GW2Raidar: the key needs to contain "<em>GW2Raidar</em>" (case insensitive) in its name. For example, here are some valid API key names: "The key for GW2Raidar", "http://gw2raidar.com/", "GW2Raidar".
+                  </p>
+
+                [[elseif page.name == "reset_pw"]]
+
+                  <form class="uk-form-stacked uk-padding-large uk-text-center">
+                    <div class="uk-margin">
+                      <input id="reset_pw_email" class="uk-input uk-form-width-medium" value="[[auth.input.email]]" placeholder="Email" type="email" required>
+                    </div>
+                    <div class="uk-margin">
+                      <button id="reset_pw_submit" class="uk-button uk-button-default" on-click="auth_reset_pw">Reset password</button><br>
+                    </div>
+                  </form>
+
+                [[else]]
+
+                  TODO
+                  {#% include 'raidar/intro.html' %#}
+
+                [[/if]]
+
+              [[/if]]{# username #}
+            </div>
+
+
+          </div>
+    </div>
+    <footer class="uk-heading uk-padding uk-light uk-background-secondary">
+        <div class="uk-container">
+          <div class="uk-grid">
+              <ul class="uk-nav uk-width-1-6">
+                  <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
+                  <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
+              </ul>
+              <ul class="uk-nav uk-width-1-6">
+                  <li><a href="#" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
+                  <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
+              </ul>
+              <div class="uk-width-2-3">
+              <p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
+              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top">
+                <input type="hidden" name="cmd" value="_s-xclick">
+                <input type="hidden" name="hosted_button_id" value="3KAQWB87RUXZ2">
+                <input type="image" src="https://www.paypalobjects.com/en_AU/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
+                <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
+              </form>
+              </div>
+              <div class="uk-width-1-1 uk-padding uk-padding-remove-bottom">
+                  <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
+              </div>
+          </div>
+        </div>
+    </footer>
     </script>
   </head>
   <body class="uk-height-viewport">

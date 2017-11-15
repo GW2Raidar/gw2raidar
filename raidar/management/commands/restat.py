@@ -1,5 +1,6 @@
 from ._qsetiter import queryset_iterator
 from collections import defaultdict
+from functools import partial
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
@@ -28,6 +29,8 @@ import base64
 def single_process(name):
     try:
         pid = os.getpid()
+        #Uncomment to remove pid in case of having cancelled restat with Ctrl+C...
+        #Variable.objects.get(key='%s_pid' % name).delete()
         pid_var = Variable.objects.create(key='%s_pid' % name, val=os.getpid())
     except IntegrityError:
         # already running
@@ -88,10 +91,7 @@ def bound_stats(output, name, value):
     if minprop not in output or value < output[minprop]:
         output[minprop] = value
 
-def advanced_stats(maximum_percentile_samples):
-    return lambda a,b,c: advanced_stats_internal(maximum_percentile_samples, a, b, c)
-
-def advanced_stats_internal(maximum_percentile_samples, output, name, value):
+def advanced_stats(maximum_percentile_samples, output, name, value):
     bound_stats(output, name, value)
     average_stats(output, name, value)
     l = output.get('values|' + name, [])
@@ -145,19 +145,18 @@ def calculate(l, f, *args):
         f(t, *args)
 
 def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets, outgoing_buff_targets):
-    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'])
-    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'])
-    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'])
-    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'])
+    stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'], {})
+    stats_in_phase_to_boss = _safe_get(lambda: stats['Metrics']['damage']['To']['*Boss'], {})
+    stats_in_phase_from_all = _safe_get(lambda: stats['Metrics']['damage']['From']['*All'], {})
+    shielded_in_phase_from_all = _safe_get(lambda: stats['Metrics']['shielded']['From']['*All'], {})
     outgoing_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['To']['*All'], {})
     incoming_buff_stats = _safe_get(lambda: stats['Metrics']['buffs']['From']['*All'], {})
 
     for stat in ['dps','crit','seaweed','scholar','flanking']:
-        calculate(main_stat_targets, f, stat, _safe_get(lambda: stats_in_phase_to_all[stat]))
-    calculate(main_stat_targets, f, 'dps_boss', _safe_get(lambda: stats_in_phase_to_boss['dps']))
-    calculate(main_stat_targets, f, 'dps_received', _safe_get(lambda: stats_in_phase_from_all['dps']))
-    calculate(main_stat_targets, f, 'total_received', _safe_get(lambda: stats_in_phase_from_all['total']))
-    calculate(main_stat_targets, f, 'total_shielded', _safe_get(lambda: shielded_in_phase_from_all['total']))
+        calculate(main_stat_targets, f, stat, stats_in_phase_to_all.get(stat, 0))
+    calculate(main_stat_targets, f, 'dps_boss', stats_in_phase_to_boss.get('dps', 0))
+    calculate(main_stat_targets, f, 'dps_received', stats_in_phase_from_all.get('dps', 0))
+    calculate(main_stat_targets, f, 'total_received', stats_in_phase_from_all.get('total', 0))
 
     for buff, value in incoming_buff_stats.items():
         calculate(incoming_buff_targets, f, buff, value)
@@ -222,22 +221,17 @@ class Command(BaseCommand):
             default=False,
             help='Force calculation even if no new Encounters')
 
-        parser.add_argument('-g', '--global',
-                            action='store_true',
-                            dest='calculate_global',
-                            default=False,
-                            help='Calculates global statistics in greater detail')
-
         parser.add_argument('-p', '--percentile_samples',
                             action='store',
                             dest='percentile_samples',
                             type=int,
-                            default=100,
+                            default=1000,
                             help='Indicates the maximum number of samples to store for percentile sampling')
 
     def handle(self, *args, **options):
         with single_process('restat'), necessary(options['force']) as last_run:
             start = time()
+            self.delete_old_files(*args, **options)
             self.calculate_stats(*args, **options)
             end = time()
 
@@ -245,6 +239,30 @@ class Command(BaseCommand):
                 print()
                 print("Completed in %ss" % (end - start))
 
+
+    def delete_old_files(self, *args, **options):
+        GB = 1024 * 1024 * 1024
+        MIN_DISK_AVAIL = 10 * GB
+
+        def is_there_space_now():
+            fsdata = os.statvfs(settings.UPLOAD_DIR)
+            diskavail = fsdata.f_frsize * fsdata.f_bavail
+            return diskavail > MIN_DISK_AVAIL
+
+        if is_there_space_now():
+            return
+
+        encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
+        for encounter in queryset_iterator(encounter_queryset):
+            filename = encounter.diskname()
+            try:
+                os.unlink(filename)
+            except FileNotFoundError:
+                pass
+            encounter.has_evtc = False
+            encounter.save()
+            if is_there_space_now():
+                return
 
 
     def calculate_stats(self, *args, **options):
@@ -254,7 +272,8 @@ class Command(BaseCommand):
                 "area": {},
                 "user": {}
             }
-            era_queryset = era.encounters.all().order_by('?')
+            era_queryset = era.encounters.prefetch_related('participations__character', 'participations__character__account').all().order_by('?')
+            totals_in_era = {}
             for encounter in queryset_iterator(era_queryset):
                 boss = BOSSES[encounter.area_id]
                 try:
@@ -263,39 +282,34 @@ class Command(BaseCommand):
                     phases = data['Category']['combat']['Phase']
                     totals_in_area = navigate(totals['area'], encounter.area_id)
 
+                    participations = encounter.participations.all()
                     for phase, stats_in_phase in phases.items():
                         squad_stats = stats_in_phase['Subgroup']['*All']
-
-                        """high_detail_stat_targets = []
-                        if phase == 'All':
-                            #Encounter stats
-                            if encounter.success:
-                                global_encounter_root = navigate(global_stats, 'encounter', encounter.area_id)
-                                get_and_add(global_encounter_root, 'count', 1)
-                                high_detail_stat_targets += [global_encounter_root]
-                                
-
-                        calculate(high_detail_stat_targets, advanced_stats, 'time', duration)
-                        calculate(high_detail_stat_targets, advanced_stats, 'dps',
-                                  _safe_get(lambda: stats_in_phase_to_all['dps']))
-                        calculate(high_detail_stat_targets, advanced_stats, 'boss_dps',
-                                  _safe_get(lambda: stats_in_phase_to_boss['dps']))"""
-
+                        phase_duration = data['Category']['encounter']['duration'] if phase == 'All' else _safe_get(lambda: data['Category']['encounter']['Phase'][phase]['duration'])
                         group_totals = navigate(totals_in_area, phase, 'group')
                         buffs_by_party = navigate(group_totals, 'buffs')
                         buffs_out_by_party = navigate(group_totals, 'buffs_out')
 
+                        group_totals_era = navigate(totals_in_era, phase, 'group')
+                        buffs_by_party_era = navigate(group_totals_era, 'buffs')
+                        buffs_out_by_party_era = navigate(group_totals_era, 'buffs_out')
+
 
                         if(encounter.success):
+                            calculate([group_totals, group_totals_era],
+                                      partial(advanced_stats, options['percentile_samples']),
+                                      'duration',
+                                      phase_duration)
+                            calculate([group_totals, group_totals_era], count)
                             calculate_standard_stats(
-                                advanced_stats(options['percentile_samples']),
+                                partial(advanced_stats, options['percentile_samples']),
                                 squad_stats,
-                                [group_totals],
-                                [buffs_by_party],
-                                [buffs_out_by_party])
+                                [group_totals, group_totals_era],
+                                [buffs_by_party, buffs_by_party_era],
+                                [buffs_out_by_party, buffs_out_by_party_era])
 
                         individual_totals = navigate(totals_in_area, phase, 'individual')
-                        participations = encounter.participations.select_related('character', 'character__account').all()
+                        individual_totals_era = navigate(totals_in_era, phase, 'individual')
                         for participation in participations:
                             # XXX in case player did not actually participate (hopefully fix in analyser)
                             if (participation.character.name not in stats_in_phase['Player']):
@@ -311,13 +325,24 @@ class Command(BaseCommand):
                             buffs_by_build = navigate(totals_by_build, 'buffs')
                             buffs_out_by_build = navigate(totals_by_build, 'buffs_out')
 
+                            #todo: add these only if in phase "all"
+                            totals_by_build_era = navigate(totals_in_era, phase, 'build', prof, elite, arch)
+                            totals_by_archetype_era = navigate(totals_in_era, phase, 'build', 'All', 'All', arch)
+                            totals_by_spec_era = navigate(totals_in_era, phase, 'build', prof, elite, 'All')
+                            buffs_by_build_era = navigate(totals_by_build_era, 'buffs')
+                            buffs_out_by_build_era = navigate(totals_by_build_era, 'buffs_out')
+
                             if(encounter.success):
+
+                                calculate([totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
+                                     totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era], count)
                                 calculate_standard_stats(
-                                    advanced_stats(options['percentile_samples']),
+                                    partial(advanced_stats, options['percentile_samples']),
                                     player_stats,
-                                    [totals_by_build, totals_by_archetype, totals_by_spec, individual_totals],
-                                    [buffs_by_build],
-                                    [buffs_out_by_build])
+                                    [totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
+                                     totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era],
+                                    [buffs_by_build, buffs_by_build_era],
+                                    [buffs_out_by_build, buffs_out_by_build_era])
 
                             if phase == 'All':
                                 profile_output = navigate_to_profile_outputs(totals, participation, encounter, boss)
@@ -334,25 +359,15 @@ class Command(BaseCommand):
                                             player_stats,
                                             profile_output.breakdown,
                                             [],
-                                            map(lambda a: navigate(a, 'outgoing'), profile_output.breakdown))
+                                            [navigate(a, 'outgoing') for a in profile_output.breakdown])
 
-                                        dead_percentage = 100 * _safe_get(lambda: stats_in_phase_events['dead_time']) / duration
-                                        down_percentage = 100 * _safe_get(lambda: stats_in_phase_events['down_time']) / duration
-                                        disconnect_percentage = 100 * _safe_get(lambda: stats_in_phase_events['disconnect_time']) / duration
+                                        dead_percentage = 100 * stats_in_phase_events.get('dead_time', 0) / duration
+                                        down_percentage = 100 * stats_in_phase_events.get('down_time', 0) / duration
+                                        disconnect_percentage = 100 * stats_in_phase_events.get('disconnect_time', 0) / duration
 
                                         calculate(profile_output.all, average_stats, 'dead_percentage', dead_percentage)
                                         calculate(profile_output.all, average_stats, 'down_percentage', down_percentage)
                                         calculate(profile_output.all, average_stats, 'disconnect_percentage', disconnect_percentage)
-
-                                        """global_encounter_build_root = navigate(global_stats,
-                                                          'encounter', encounter.area_id,
-                                                          'archetype', participation.archetype,
-                                                          'profession', participation.character.profession,
-                                                          'elite', participation.elite)
-                                        targets = [global_encounter_build_root]
-                                        calculate(targets, get_and_add, 'count', 1)
-                                        calculate(targets, advanced_stats, 'dps', dps)
-                                        calculate(targets, advanced_stats, 'boss_dps', boss_dps)"""
                 except:
                     raise RestatException("Error in %s" % encounter)
 
@@ -367,6 +382,10 @@ class Command(BaseCommand):
                 EraUserStore.objects.update_or_create(
                         era=era, user_id=user_id, defaults={ "val": totals_for_player })
 
+            finalise_stats(totals_in_era)
+            era.val=totals_in_era
+            #Era.objects.update_or_create(era)
+            era.save()
 
             if options['verbosity'] >= 2:
                 flattened = flatten(totals)
