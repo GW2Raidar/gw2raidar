@@ -2,7 +2,6 @@
 
 [[#with global_stats]]
   <div id="content" class="uk-margin-top">
-{% comment %}
     <!--
 
     Encounter Filter Notes:
@@ -10,9 +9,8 @@
 
     -->
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom">
-        <button class="uk-button uk-button-default">All (45)</button>
         <div class="uk-inline">
-            <button class="uk-button uk-button-default uk-button-nor">Raids (20) <i uk-icon="chevron-down"></i></button>
+            <button class="uk-button uk-button-large uk-button-nor">Raids (20) <i class="material-icons">keyboard_arrow_down</i></button>
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
                 <div class="uk-width-1 uk-grid">
                     <div class="uk-width-1">
@@ -58,7 +56,7 @@
             </div>
         </div>
         <div class="uk-inline">
-            <button class="uk-button uk-button-default uk-button-nor  uk-button-primary">Mama - Fractals CM (20) <i uk-icon="chevron-down"></i></button>
+            <button class="uk-button uk-button-large uk-button-nor  uk-button-primary">Mama - Fractals CM (20) <i class="material-icons">keyboard_arrow_down</i></button>
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
                 <div class="uk-width-1 uk-grid">
                     <div class="uk-width-1">
@@ -88,7 +86,7 @@
             </div>
         </div>
         <div class="uk-inline">
-            <button class="uk-button uk-button-default">Golem (20) <i uk-icon="chevron-down"></i></button>
+            <button class="uk-button uk-button-large">Golem (20) <i class="material-icons">keyboard_arrow_down</i></button>
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
                 <div class="uk-width-1 uk-grid">
                     <div class="uk-width-1">
@@ -124,7 +122,6 @@
             </div>
         </div>
       </div>
-{% endcomment %}
 
   <div class="uk-clearfix">
     <div class="uk-float-left">
@@ -157,8 +154,8 @@
       <div class="r-global-stats-container r-global-group-stats-container">
         <div class="r-global-stats-row r-stats-header uk-visible@l">
           <div>Duration</div>
-          <div>Damage Done</div>
-          <div>Damage Recieved</div>
+          <div>Damage Per Second</div>
+          <div>Damage Per Second Recieved</div>
         </div>
         <div class="r-global-stats-row">
           <div class="r-buff">
@@ -230,7 +227,7 @@
       <div class="r-global-stats-container">
         <div class="r-global-stats-row r-stats-header uk-visible@l">
           <div></div>
-          <div>Damage</div>
+          <div>Damage Per Second</div>
           <div>Buffs</div>
         </div>
         <div class="r-global-stats-row">
@@ -242,7 +239,7 @@
             <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
           </div>
           <div class="r-global-stats-damage">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage</h6>
+            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
             <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="36px" width="100%">
               <!--
               Overlapping charts for Boss and Cleave damage
