@@ -149,7 +149,7 @@ def create_mapping(df, column):
     return unique_names(df.to_dict()[column])
 
 def filter_damage_events(events):
-    damage_events = events[(events.type == LogType.POWER) |(events.type == LogType.CONDI)]
+    damage_events = events[(events.state_change == 0)&((events.type == LogType.POWER)|(events.type == LogType.CONDI))]
     damage_events = damage_events.assign(damage =
                                          np.where(damage_events.type == LogType.POWER,
                                                   damage_events['value'],
@@ -202,6 +202,11 @@ class Analyser:
         return agents, players, bosses, final_bosses
 
     def preprocess_events(self, events):
+        #prevent log start event shenanigans
+        events.loc[events.state_change == 9, 'ult_src_instid'] = -1
+        events.loc[events.state_change == 9, 'src_instid'] = -1
+        events.loc[events.state_change == 9, 'src_master_instid'] = -1
+
         #experimental phase calculations
         events['ult_src_instid'] = events.src_master_instid.where(
             events.src_master_instid != 0, events.src_instid)
