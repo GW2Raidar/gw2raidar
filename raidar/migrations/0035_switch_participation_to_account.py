@@ -8,7 +8,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('raidar', '0033_add_account_to_participation'),
+        ('raidar', '0034_fill_in_participation_fields'),
     ]
 
     operations = [
@@ -23,7 +23,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AlterUniqueTogether(
             name='participation',
-            unique_together=set([('encounter', 'account')]),
+            unique_together=set([('encounter', 'account', 'character_name')]),
         ),
         migrations.RemoveField(
             model_name='participation',

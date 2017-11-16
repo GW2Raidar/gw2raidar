@@ -6,16 +6,6 @@ from django.db import migrations, models
 import django.db.models.deletion
 
 
-
-def set_account_and_char_name(apps, schema_editor):
-    Participation = apps.get_model('raidar', 'Participation')
-    for participation in Participation.objects.all().select_related('character').iterator():
-        participation.account_id = participation.character.account_id
-        participation.character_name = participation.character.name
-        participation.profession = participation.character.profession
-        participation.save()
-
-
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -26,20 +16,19 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='participation',
             name='account',
-            field=models.ForeignKey(default=0, on_delete=django.db.models.deletion.CASCADE, related_name='participations', to='raidar.Account'),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.SET_NULL, related_name='participations', to='raidar.Account', null=True),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='participation',
             name='character_name',
-            field=models.CharField(db_index=True, default='', max_length=64),
+            field=models.CharField(db_index=True, default='', max_length=64, null=True),
             preserve_default=False,
         ),
         migrations.AddField(
             model_name='participation',
             name='profession',
-            field=models.PositiveSmallIntegerField(choices=[(1, 'Guardian'), (2, 'Warrior'), (3, 'Engineer'), (4, 'Ranger'), (5, 'Thief'), (6, 'Elementalist'), (7, 'Mesmer'), (8, 'Necromancer'), (9, 'Revenant')], db_index=True, default=0),
+            field=models.PositiveSmallIntegerField(choices=[(1, 'Guardian'), (2, 'Warrior'), (3, 'Engineer'), (4, 'Ranger'), (5, 'Thief'), (6, 'Elementalist'), (7, 'Mesmer'), (8, 'Necromancer'), (9, 'Revenant')], db_index=True, null=True),
             preserve_default=False,
         ),
-        migrations.RunPython(set_account_and_char_name, migrations.RunPython.noop)
     ]

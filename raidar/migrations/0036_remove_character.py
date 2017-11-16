@@ -8,7 +8,7 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('raidar', '0034_switch_participation_to_account'),
+        ('raidar', '0035_switch_participation_to_account'),
     ]
 
     operations = [
