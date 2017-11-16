@@ -33,6 +33,49 @@ class Elite(IntEnum):
     HEART_OF_THORNS = 1
     PATH_OF_FIRE = 2
 
+class Profession(IntEnum):
+    GUARDIAN = 1
+    WARRIOR = 2
+    ENGINEER = 3
+    RANGER = 4
+    THIEF = 5
+    ELEMENTALIST = 6
+    MESMER = 7
+    NECROMANCER = 8
+    REVENANT = 9
+
+SPECIALISATIONS = {
+    (Profession.GUARDIAN, 0): "Guardian",
+    (Profession.WARRIOR, 0): "Warrior",
+    (Profession.ENGINEER, 0): "Engineer",
+    (Profession.RANGER, 0): "Ranger",
+    (Profession.THIEF, 0): "Thief",
+    (Profession.ELEMENTALIST, 0): "Elementalist",
+    (Profession.MESMER, 0): "Mesmer",
+    (Profession.NECROMANCER, 0): "Necromancer",
+    (Profession.REVENANT, 0): "Revenant",
+
+    (Profession.GUARDIAN, 1): 'Dragonhunter',
+    (Profession.WARRIOR, 1): 'Berserker',
+    (Profession.ENGINEER, 1): 'Scrapper',
+    (Profession.RANGER, 1): 'Druid',
+    (Profession.THIEF, 1): 'Daredevil',
+    (Profession.ELEMENTALIST, 1): 'Tempest',
+    (Profession.MESMER, 1): 'Chronomancer',
+    (Profession.NECROMANCER, 1): 'Reaper',
+    (Profession.REVENANT, 1): 'Herald',
+
+    (Profession.GUARDIAN, 2): 'Firebrand',
+    (Profession.WARRIOR, 2): 'Spellbreaker',
+    (Profession.ENGINEER, 2): 'Holosmith',
+    (Profession.RANGER, 2): 'Soulbeast',
+    (Profession.THIEF, 2): 'Deadeye',
+    (Profession.ELEMENTALIST, 2): 'Weaver',
+    (Profession.MESMER, 2): 'Mirage',
+    (Profession.NECROMANCER, 2): 'Scourge',
+    (Profession.REVENANT, 2): 'Renegade',
+}
+
 class Specialization(IntEnum):
     NONE = 0
     DRUID = 5
@@ -217,6 +260,9 @@ class Analyser:
         self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
         print("Important phases:")
         list(map(print_phase, self.phases))
+        
+        if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
+            raise EvtcAnalysisException("Initial phase missing or skipped")
 
         return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
 
