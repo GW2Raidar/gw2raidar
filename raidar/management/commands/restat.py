@@ -171,12 +171,10 @@ def navigate_to_profile_outputs(totals_for_player, participation, boss):
             return navigate(totals_for_player,
                             'encounter', participation.encounter.area_id if split_encounter else 'All %s bosses' % boss.kind.name.lower(),
                             'archetype', participation.archetype if split_archetype else 'All',
-                            # TODO participation.profession
-                            'profession', participation.character.profession if split_profession else 'All',
+                            'profession', participation.profession if split_profession else 'All',
                             'elite', participation.elite if split_profession else 'All')
 
-    # TODO: participation.account.user_id
-    user_id = participation.character.account.user_id
+    user_id = participation.account.user_id
 
     if not user_id:
         return ProfileOutputs([],[],[])
@@ -308,13 +306,11 @@ class Command(BaseCommand):
                     individual_totals_era = navigate(totals_in_era, phase, 'individual')
                     for participation in participations:
                         # XXX in case player did not actually participate (hopefully fix in analyser)
-                        # TODO participation.character
-                        if (participation.character.name not in stats_in_phase['Player']):
+                        if (participation.character not in stats_in_phase['Player']):
                             continue
-                        player_stats = stats_in_phase['Player'][participation.character.name]
+                        player_stats = stats_in_phase['Player'][participation.character]
 
-                        # TODO participation.profession
-                        prof = participation.character.profession
+                        prof = participation.profession
                         arch = participation.archetype
                         elite = participation.elite
                         totals_by_build = navigate(totals_in_area, phase, 'build', prof, elite, arch)
@@ -352,8 +348,7 @@ class Command(BaseCommand):
                 data = encounter.val
                 duration = data['Category']['encounter']['duration'] * 1000
                 stats_in_phase = data['Category']['combat']['Phase']['All']
-                # TODO: participation.character
-                player_stats = stats_in_phase['Player'][participation.character.name]
+                player_stats = stats_in_phase['Player'][participation.character]
 
                 profile_output = navigate_to_profile_outputs(totals_for_player, participation, boss)
                 stats_in_phase_events = _safe_get(lambda: player_stats['Metrics']['events'], None)
@@ -409,8 +404,7 @@ class Command(BaseCommand):
 
             area_queryset = Area.objects.all()
             for area in area_queryset.iterator():
-                # TODO change to just participations__account
-                encounter_queryset = era.encounters.prefetch_related('participations__character', 'participations__character__account').filter(area=area).order_by('?')
+                encounter_queryset = era.encounters.prefetch_related('participations__account').filter(area=area).order_by('?')
                 totals_in_area = initialise_era_area_stats(encounter_queryset.count())
                 for encounter in encounter_queryset.iterator():
                     add_encounter_to_era_area_stats(encounter, totals_in_area, totals_in_era)
@@ -424,8 +418,7 @@ class Command(BaseCommand):
         def calculate_user_stats(era):
             user_queryset = User.objects.all()
             for user in user_queryset.iterator():
-                # TODO change to 'account', account__user
-                participation_queryset = Participation.objects.prefetch_related('encounter', 'character', 'character__account').filter(character__account__user=user).order_by('?')
+                participation_queryset = Participation.objects.prefetch_related('encounter', 'account').filter(account__user=user).order_by('?')
                 totals_for_player = initialise_era_user_stats(participation_queryset.count())
                 for participation in participation_queryset.iterator():
                     add_participation_to_era_user_stats(participation, totals_for_player)
