@@ -22,19 +22,19 @@
     </div> -->
 
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="99check" checked>
-    <label class="r-percentile-label" for="99check"><span class="uk-badge r-bg-99">99%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="99check"><span class="uk-badge r-bg-99">99%</span></label>
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="90check" checked>
-    <label class="r-percentile-label" for="90check"><span class="uk-badge r-bg-90">90%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="90check"><span class="uk-badge r-bg-90">90%</span></label>
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="80check">
-    <label class="r-percentile-label" for="80check"><span class="uk-badge r-bg-80">80%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="80check"><span class="uk-badge r-bg-80">80%</span></label>
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="70check">
-    <label class="r-percentile-label" for="70check"><span class="uk-badge r-bg-70">70%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="70check"><span class="uk-badge r-bg-70">70%</span></label>
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="60check">
-    <label class="r-percentile-label" for="60check"><span class="uk-badge r-bg-60">60%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="60check"><span class="uk-badge r-bg-60">60%</span></label>
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="50check" checked>
-    <label class="r-percentile-label" for="50check"><span class="uk-badge r-bg-50">50%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="50check"><span class="uk-badge r-bg-50">50%</span></label>
     <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="30check">
-    <label class="r-percentile-label" for="30check"><span class="uk-badge r-bg-30">30%</span></label>
+    <label class="r-percentile-label uk-text-bold" for="30check"><span class="uk-badge r-bg-30">30%</span></label>
 
 
 
@@ -64,15 +64,12 @@
           <div>Damage Per Second Recieved</div>
         </div>
         <div class="r-global-stats-row">
-          <div class="r-buff">
-            <div class="r-buff-icon">
-              <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
+          <div class="r-duration">
+            <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-duration-item r-bg-99 chart-hover">5:35
             </div>
-            <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552%
+            <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472% quickness uptime" class="r-duration-item  r-bg-90 chart-hover">6:02
             </div>
-            <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472% quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472%
-            </div>
-            <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335% quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335%
+            <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335% quickness uptime" class="r-duration-item  r-bg-50 chart-hover">8:32
             </div>
           </div>
           <div class="r-global-stats-damage">
@@ -187,44 +184,44 @@
               <div class="r-buff-icon">
                 <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
               </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552%
+              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552<sup>%</sup>
               </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472% quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472%
+              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472<sup>%</sup>
               </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335% quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335%
+              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335<sup>%</sup>
               </div>
             </div>
             <div class="r-buff">
               <div class="r-buff-icon">
                 <img src="/static/raidar/img/buff//protection.png" alt="protection">
               </div>
-              <div class="r-buff-number chart-hover r-bg-99">30%
+              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
               </div>
-              <div class="r-buff-number chart-hover r-bg-90">30%
+              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
               </div>
-              <div class="r-buff-number chart-hover r-bg-50">30%
+              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
               </div>
             </div>
             <div class="r-buff">
               <div class="r-buff-icon">
                 <img src="/static/raidar/img/buff//fury.png" alt="fury">
               </div>
-              <div class="r-buff-number chart-hover r-bg-99">30%
+              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
               </div>
-              <div class="r-buff-number chart-hover r-bg-90">30%
+              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
               </div>
-              <div class="r-buff-number chart-hover r-bg-50">30%
+              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
               </div>
             </div>
             <div class="r-buff">
               <div class="r-buff-icon">
                 <img src="/static/raidar/img/buff//alacrity.png" alt="alacrity">
               </div>
-              <div class="r-buff-number chart-hover r-bg-99">30%
+              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
               </div>
-              <div class="r-buff-number chart-hover r-bg-90">30%
+              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
               </div>
-              <div class="r-buff-number chart-hover r-bg-50">30%
+              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
               </div>
             </div>
           </div>
