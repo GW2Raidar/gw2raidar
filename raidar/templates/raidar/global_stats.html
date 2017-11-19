@@ -2,133 +2,45 @@
 
 [[#with global_stats]]
   <div id="content" class="uk-margin-top">
-    <!--
+    {% include 'raidar/encounter_filter.html' %}
+    <!-- <select as-ukUpdate id="era-selector" class="uk-select uk-width-auto" value='[[page.era_id]]'
+            on-change="refresh_page">
+        <option value="[[null]]">Most recent</option>
+      [[#each eras]]
+        <option value='[[id]]'>[[name]]</option>
+      [[/each]]
+    </select> -->
+    <!-- Percentile Filters -->
+    <!-- <div class="uk-button-group">
+        <button class="uk-button uk-button-primary"><span class="uk-badge r-bg-99">99%</span></button>
+        <button class="uk-button uk-button-primary"><span class="uk-badge r-bg-90">90%</span></button>
+        <button class="uk-button uk-button-default"><span class="uk-badge r-bg-80">80%</span></button>
+        <button class="uk-button uk-button-default"><span class="uk-badge r-bg-70">70%</span></button>
+        <button class="uk-button uk-button-default"><span class="uk-badge r-bg-60">60%</span></button>
+        <button class="uk-button uk-button-primary"><span class="uk-badge r-bg-50">50%</span></button>
+        <button class="uk-button uk-button-default"><span class="uk-badge r-bg-30">30%</span></button>
+    </div> -->
 
-    Encounter Filter Notes:
-    Label of the button should add the encounter type to the button text. i.e. If they go to Fractals>MAMA it should say 'MAMA - FRACTALS CM' in the button after they select that .
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="99check" checked>
+    <label class="r-percentile-label" for="99check"><span class="uk-badge r-bg-99">99%</span></label>
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="90check" checked>
+    <label class="r-percentile-label" for="90check"><span class="uk-badge r-bg-90">90%</span></label>
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="80check">
+    <label class="r-percentile-label" for="80check"><span class="uk-badge r-bg-80">80%</span></label>
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="70check">
+    <label class="r-percentile-label" for="70check"><span class="uk-badge r-bg-70">70%</span></label>
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="60check">
+    <label class="r-percentile-label" for="60check"><span class="uk-badge r-bg-60">60%</span></label>
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="50check" checked>
+    <label class="r-percentile-label" for="50check"><span class="uk-badge r-bg-50">50%</span></label>
+    <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="30check">
+    <label class="r-percentile-label" for="30check"><span class="uk-badge r-bg-30">30%</span></label>
 
-    -->
-      <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom">
-        <div class="uk-inline">
-            <button class="uk-button uk-button-large uk-button-nor">Raids (20) <i class="material-icons">keyboard_arrow_down</i></button>
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-                <div class="uk-width-1 uk-grid">
-                    <div class="uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#">All Raids Encounters (20)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Spirit Vale - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li>
-                                <a href="#">Vale Guardian (2)</a>
-                            </li>
-                            <li><a href="#">Gorseval (1)</a></li>
-                            <li><a href="#">Sabetha (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Salvation Pass - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Slothasor (2)</a></li>
-                            <li><a href="#">Trio (1)</a></li>
-                            <li><a href="#">Matthias (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Keep Construct (2)</a></li>
-                            <li><a href="#">Xera (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Cairn (2)</a></li>
-                            <li><a href="#">Mursaat Overseer (2)</a></li>
-                            <li><a href="#">Samarog (1)</a></li>
-                            <li><a href="#">Deimos (1)</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="uk-inline">
-            <button class="uk-button uk-button-large uk-button-nor  uk-button-primary">Mama - Fractals CM (20) <i class="material-icons">keyboard_arrow_down</i></button>
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-                <div class="uk-width-1 uk-grid">
-                    <div class="uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#">All Challenge Mode Encounters (5)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Nightmare - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li class='uk-active'>
-                                <a href="#">MAMA (2)</a>
-                            </li>
-                            <li><a href="#">Siax (1)</a></li>
-                            <li><a href="#">Ensolyss (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Shattered Observatory - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Skovald (2)</a></li>
-                            <li><a href="#">Astrilov (1)</a></li>
-                            <li><a href="#">Arkk (1)</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="uk-inline">
-            <button class="uk-button uk-button-large">Golem (20) <i class="material-icons">keyboard_arrow_down</i></button>
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-                <div class="uk-width-1 uk-grid">
-                    <div class="uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#">All Golem Encounters (5)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Massive - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li>
-                                <a href="#">Massive Standard Kitty Golem (2)</a>
-                            </li>
-                            <li><a href="#">Massive Average Kitty Golem (1)</a></li>
-                            <li><a href="#">Massive Vital Kitty Golem (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Normal - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Standard Kitty Golem (2)</a></li>
-                            <li><a href="#">Average Kitty Golem (1)</a></li>
-                            <li><a href="#">Vital Kitty Golem (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Special - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Tough Kitty Golem (2)</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-      </div>
+
 
   <div class="uk-clearfix">
-    <div class="uk-float-left">
-      <h2 class="uk-margin-remove">[[page.area_id ? findId(areas, page.area_id).name : "All logs"]]</h2>
-      <h3 class="uk-margin-remove">in the [[page.era_id ? findId(eras, page.era_id).name : "most recent"]] Era</h3>
-    </div>
-    <div class="uk-float-right uk-text-right">
+
+    <!-- <div class="uk-float-right uk-text-right">
       <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.area_id]]'
               on-change="refresh_page">
           <option value="[[null]]">All</option>
@@ -136,14 +48,8 @@
           <option value='[[id]]'>[[name]]</option>
         [[/each]]
       </select>
-      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.era_id]]'
-              on-change="refresh_page">
-          <option value="[[null]]">Most recent</option>
-        [[#each eras]]
-          <option value='[[id]]'>[[name]]</option>
-        [[/each]]
-      </select>
-    </div>
+
+    </div> -->
 
   </div>
       <!-- <p><strong>Disclaimer: The statistics displayed in this report are based off data available within GW2Raidar only, as such it is not a complete representation of the Guild Wars 2 raiding community. Efforts are made to ensure accuracy, however some anomalies may exist. Only successful runs are included and builds with fewer than 10 data points are not shown.</strong></p> -->
@@ -177,12 +83,12 @@
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='rgba(123, 9, 201, 0.6)'/>
+              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='#9C0AFF' opacity='0.6' />
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='rgba(123, 9, 201, 1)'/>
+              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='#9C0AFF'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' fill='rgba(191, 50, 109, 0.6)'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%' fill='rgba(191, 50, 109, 1)'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' fill='rgba(45, 129, 198, 0.6)'/>
@@ -202,12 +108,12 @@
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='rgba(123, 9, 201, 0.6)'/>
+              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='#9C0AFF' opacity='0.6'/>
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='rgba(123, 9, 201, 1)'/>
+              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='#9C0AFF'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' fill='rgba(191, 50, 109, 0.6)'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%' fill='rgba(191, 50, 109, 1)'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' fill='rgba(45, 129, 198, 0.6)'/>
@@ -247,12 +153,12 @@
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='rgba(123, 9, 201, 0.6)'/>
+              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='#9C0AFF' opacity="0.6"/>
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='rgba(123, 9, 201, 1)'/>
+              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='#9C0AFF'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' fill='rgba(191, 50, 109, 0.6)'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%' fill='rgba(191, 50, 109, 1)'/>
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' fill='rgba(45, 129, 198, 0.6)'/>
