@@ -65,7 +65,7 @@ def _userprops(request):
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account')
+    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area')
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
