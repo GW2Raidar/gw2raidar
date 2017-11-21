@@ -106,6 +106,7 @@ input[type="date"] {
   margin: -8px;
   padding: 8px;
   display: block;
+  color: inherit;
 }
 .main {
   margin: 0 2%;
