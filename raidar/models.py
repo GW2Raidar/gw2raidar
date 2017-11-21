@@ -330,7 +330,8 @@ class Participation(models.Model):
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
                 'category': self.encounter.category_id,
-                'tags': list(self.encounter.tags.names()),
+                #'tags': list(self.encounter.tags.names()),
+                'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
             }
 
     class Meta:
