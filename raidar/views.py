@@ -494,8 +494,11 @@ def _perform_upload(request):
         return ("Missing file attachment named `file`", None)
     filename = file.name
 
-    category_id = request.POST.get('category', None);
-    tagstring = request.POST.get('tags', '');
+    val = {}
+    if 'category' in request.POST:
+        val['category_id'] = request.POST['category']
+    if 'tags' in request.POST:
+        val['tagstring'] = request.POST['tags']
 
     uploaded_at = time()
 
@@ -503,10 +506,7 @@ def _perform_upload(request):
             filename=filename, uploaded_by=request.user,
             defaults={
                 "uploaded_at": time(),
-                "val": {
-                    "category_id": category_id,
-                    "tagstring": tagstring,
-                }
+                "val": val,
             })
 
     diskname = upload.diskname()
