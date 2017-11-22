@@ -65,12 +65,14 @@ class Phase:
     def __init__(self, name, important,
                  phase_end_damage_stop=None,
                  phase_end_damage_start=None,
-                 phase_end_health=None):
+                 phase_end_health=None,
+                 phase_skip_health=None):
         self.name = name
         self.important = important
         self.phase_end_damage_stop = phase_end_damage_stop
         self.phase_end_damage_start = phase_end_damage_start
         self.phase_end_health = phase_end_health
+        self.phase_skip_health = phase_skip_health
 
     def find_end_time(self,
                       current_time,
@@ -78,45 +80,61 @@ class Phase:
                       health_updates,
                       skill_activations):
         end_time = None
+        relevant_health_updates = health_updates[(health_updates.time >= current_time)]
+                
         if self.phase_end_health is not None:
-            relevant_health_updates = health_updates[(health_updates.time >= current_time) &
-                                                     (health_updates.dst_agent >= self.phase_end_health * 100)]
+            if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
+                print("Detected skipped phase")
+                return current_time
+            
+            relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
             if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
-                if health_updates['dst_agent'].min() < (self.phase_end_health + 2) * 100:
-                    print("Detected skipped phase")
-                    return current_time
                 print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
                 return None
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
             print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
-
+            
         if self.phase_end_damage_stop is not None:
-            relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time) &
+            relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
-            if not relevant_gaps.empty:
-                end_time = current_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
-            elif len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time:
-                end_time = current_time = int(damage_gaps.time.iloc[-1])
-            else:
-                return None
+                
+            if relevant_gaps.empty and (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
+                gap_time = int(damage_gaps.time.iloc[-1])
+   
+            elif not relevant_gaps.empty:
+                gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+            
+            if gap_time is not None:
+                relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
+                if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
+                    print("Detected skipped next phase")
+                else:
+                    end_time = gap_time
+                    print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, gap_time))
 
-            print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, current_time))
-
-        if self.phase_end_damage_start is not None:
+        elif self.phase_end_damage_start is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_start)]
             if relevant_gaps.empty:
+                if (skip_point is not None) and (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
+                    print("Damage passed skip point, skipping")
+                    return current_time
                 return None
-            end_time = current_time = int(relevant_gaps['time'].iloc[0])
-            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, current_time))
+                        
+            end_time = int(relevant_gaps['time'].iloc[0])
+            relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
+            if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
+                print("Damage passed skip point, skipping")
+                return current_time
+            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, end_time))
         return end_time
 
 BOSS_ARRAY = [
     Boss('Vale Guardian', Kind.RAID, [0x3C4E], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True)
     ], metrics = [
         Metric('Blue Guardian Invulnerability Time', 'Blue Invuln', MetricType.TIME, False),
@@ -124,10 +142,10 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleported', MetricType.COUNT)
     ]),
     Boss('Gorseval', Kind.RAID, [0x3C45], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First souls", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second souls", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First souls", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second souls", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True)
     ], metrics = [
         Metric('Unmitigated Spectral Impacts', 'Slammed', MetricType.COUNT, True, True),
@@ -135,27 +153,27 @@ BOSS_ARRAY = [
         Metric('Spectral Darkness', 'Tainted', MetricType.TIME)
     ]),
     Boss('Sabetha', Kind.RAID, [0x3C0F], phases = [
-        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),
-        Phase("Kernan", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000),
-        Phase("Knuckles", False, phase_end_damage_start = 10000),
-        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000),
-        Phase("Karde", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000, phase_skip_health = 50),
+        Phase("Kernan", False, phase_end_damage_start = 10000, phase_skip_health = 50),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000, phase_skip_health = 25),
+        Phase("Knuckles", False, phase_end_damage_start = 10000, phase_skip_health = 25),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Karde", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 4", True)
     ], metrics = [
         Metric('Heavy Bombs Undefused', 'Heavy Bombs', MetricType.COUNT, False)
     ]),
     Boss('Slothasor', Kind.RAID, [0x3EFB], phases = [
-        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
-        Phase("Break 1", False, phase_end_damage_start = 1000),
-        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000),
-        Phase("Break 2", False, phase_end_damage_start = 1000),
-        Phase("Phase 3", True, phase_end_health = 40, phase_end_damage_stop = 1000),
-        Phase("Break 3", False, phase_end_damage_start = 1000),
-        Phase("Phase 4", True, phase_end_health = 20, phase_end_damage_stop = 1000),
-        Phase("Break 4", False, phase_end_damage_start = 1000),
-        Phase("Phase 5", True, phase_end_health = 10, phase_end_damage_stop = 1000),
-        Phase("Break 5", False, phase_end_damage_start = 1000),
+        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000, phase_skip_health = 60),
+        Phase("Break 1", False, phase_end_damage_start = 1000, phase_skip_health = 60),
+        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000, phase_skip_health = 40),
+        Phase("Break 2", False, phase_end_damage_start = 1000, phase_skip_health = 40),
+        Phase("Phase 3", True, phase_end_health = 40, phase_end_damage_stop = 1000, phase_skip_health = 20),
+        Phase("Break 3", False, phase_end_damage_start = 1000, phase_skip_health = 20),
+        Phase("Phase 4", True, phase_end_health = 20, phase_end_damage_stop = 1000, phase_skip_health = 10),
+        Phase("Break 4", False, phase_end_damage_start = 1000, phase_skip_health = 10),
+        Phase("Phase 5", True, phase_end_health = 10, phase_end_damage_stop = 1000, phase_skip_health = 1),
+        Phase("Break 5", False, phase_end_damage_start = 1000, phase_skip_health = 1),
         Phase("Phase 6", True)
     ], metrics = [
         Metric('Tantrum Knockdowns', 'Tantrumed', MetricType.COUNT),
@@ -193,14 +211,14 @@ BOSS_ARRAY = [
         # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
         Phase("Pre-burn 1", True, phase_end_damage_stop = 15000),
         Phase("Split 1", False, phase_end_damage_start = 15000),
-        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("Pacman 1", False, phase_end_damage_start = 15000),
-        Phase("Pre-burn 2", True, phase_end_damage_stop = 15000),
-        Phase("Split 2", False, phase_end_damage_start = 15000),
-        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Pacman 2", False, phase_end_damage_start = 15000),
-        Phase("Pre-burn 3", True, phase_end_damage_stop = 18000),
-        Phase("Split 3", False, phase_end_damage_start = 18000),
+        Phase("Burn 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("Pacman 1", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Pre-burn 2", True, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("Split 2", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Burn 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 1),
+        Phase("Pacman 2", False, phase_end_damage_start = 15000, phase_skip_health = 1),
+        Phase("Pre-burn 3", True, phase_end_damage_stop = 18000, phase_skip_health = 1),
+        Phase("Split 3", False, phase_end_damage_start = 18000, phase_skip_health = 1),
         Phase("Burn 3", True)
     ], metrics = [
         Metric('Correct Orb', 'Correct Orbs', MetricType.COUNT),
@@ -231,10 +249,10 @@ BOSS_ARRAY = [
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
     ], cm_detector = mo_cm_detector),
     Boss('Samarog', Kind.RAID, [0x4324], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], metrics = [
         Metric('Claw', 'Claw', MetricType.COUNT, True, True),
@@ -270,54 +288,54 @@ BOSS_ARRAY = [
     Boss('Resistant Kitty Golem', Kind.DUMMY, [16176]),
     Boss('Tough Kitty Golem', Kind.DUMMY, [16174]),
     Boss('Skorvald the Shattered (CM)', Kind.FRACTAL,[0x44E0], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("First split", False, phase_end_damage_start = 15000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000),
-        Phase("First split", False, phase_end_damage_start = 10000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000),
-        Phase("Second split", False, phase_end_damage_start = 10000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
-        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000),
-        Phase("First orb", False, phase_end_damage_start = 10000),
-        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000),
-        Phase("Archdiviner", False, phase_end_damage_start = 10000),
-        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000),
-        Phase("Second orb", False, phase_end_damage_start = 10000),
-        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000),
-        Phase("Gladiator", False, phase_end_damage_start = 10000),
-        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000),
-        Phase("Third orb", False, phase_end_damage_start = 10000),
+        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000, phase_skip_health = 70),
+        Phase("First orb", False, phase_end_damage_start = 10000, phase_skip_health = 70),
+        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000, phase_skip_health = 50),
+        Phase("Archdiviner", False, phase_end_damage_start = 10000, phase_skip_health = 50),
+        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000, phase_skip_health = 40),
+        Phase("Second orb", False, phase_end_damage_start = 10000, phase_skip_health = 40),
+        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000, phase_skip_health = 30),
+        Phase("Gladiator", False, phase_end_damage_start = 10000, phase_skip_health = 30),
+        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
-        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000),
-        Phase("First split", False, phase_end_damage_start = 3000),
-        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000),
-        Phase("Second split", False, phase_end_damage_start = 3000),
-        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000),
-        Phase("Second split", False, phase_end_damage_start = 3000),
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000, phase_skip_health = 50),
+        Phase("First split", False, phase_end_damage_start = 3000, phase_skip_health = 50),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000, phase_skip_health = 25),
+        Phase("Second split", False, phase_end_damage_start = 3000, phase_skip_health = 50),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 3000, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Siax (CM)', Kind.FRACTAL,[0x4284], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("First split", False, phase_end_damage_start = 15000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Second split", False, phase_end_damage_start = 15000),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 13000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 13000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 13000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 13000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True),
     Boss('Ensolyss (CM)', Kind.FRACTAL,[0x4234], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000),
-        Phase("First split", False, phase_end_damage_start = 15000),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000),
-        Phase("Second split", False, phase_end_damage_start = 15000),
-        Phase("Phase 3", True, phase_end_health=15),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 15),
+        Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 15),
+        Phase("Phase 3", True, phase_end_health=15, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True)
 ]

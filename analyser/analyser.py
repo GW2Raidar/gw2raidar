@@ -33,6 +33,49 @@ class Elite(IntEnum):
     HEART_OF_THORNS = 1
     PATH_OF_FIRE = 2
 
+class Profession(IntEnum):
+    GUARDIAN = 1
+    WARRIOR = 2
+    ENGINEER = 3
+    RANGER = 4
+    THIEF = 5
+    ELEMENTALIST = 6
+    MESMER = 7
+    NECROMANCER = 8
+    REVENANT = 9
+
+SPECIALISATIONS = {
+    (Profession.GUARDIAN, 0): "Guardian",
+    (Profession.WARRIOR, 0): "Warrior",
+    (Profession.ENGINEER, 0): "Engineer",
+    (Profession.RANGER, 0): "Ranger",
+    (Profession.THIEF, 0): "Thief",
+    (Profession.ELEMENTALIST, 0): "Elementalist",
+    (Profession.MESMER, 0): "Mesmer",
+    (Profession.NECROMANCER, 0): "Necromancer",
+    (Profession.REVENANT, 0): "Revenant",
+
+    (Profession.GUARDIAN, 1): 'Dragonhunter',
+    (Profession.WARRIOR, 1): 'Berserker',
+    (Profession.ENGINEER, 1): 'Scrapper',
+    (Profession.RANGER, 1): 'Druid',
+    (Profession.THIEF, 1): 'Daredevil',
+    (Profession.ELEMENTALIST, 1): 'Tempest',
+    (Profession.MESMER, 1): 'Chronomancer',
+    (Profession.NECROMANCER, 1): 'Reaper',
+    (Profession.REVENANT, 1): 'Herald',
+
+    (Profession.GUARDIAN, 2): 'Firebrand',
+    (Profession.WARRIOR, 2): 'Spellbreaker',
+    (Profession.ENGINEER, 2): 'Holosmith',
+    (Profession.RANGER, 2): 'Soulbeast',
+    (Profession.THIEF, 2): 'Deadeye',
+    (Profession.ELEMENTALIST, 2): 'Weaver',
+    (Profession.MESMER, 2): 'Mirage',
+    (Profession.NECROMANCER, 2): 'Scourge',
+    (Profession.REVENANT, 2): 'Renegade',
+}
+
 class Specialization(IntEnum):
     NONE = 0
     DRUID = 5
@@ -106,7 +149,7 @@ def create_mapping(df, column):
     return unique_names(df.to_dict()[column])
 
 def filter_damage_events(events):
-    damage_events = events[(events.type == LogType.POWER) |(events.type == LogType.CONDI)]
+    damage_events = events[(events.state_change == 0)&((events.type == LogType.POWER)|(events.type == LogType.CONDI))]
     damage_events = damage_events.assign(damage =
                                          np.where(damage_events.type == LogType.POWER,
                                                   damage_events['value'],
@@ -159,6 +202,11 @@ class Analyser:
         return agents, players, bosses, final_bosses
 
     def preprocess_events(self, events):
+        #prevent log start event shenanigans
+        events.loc[events.state_change == 9, 'ult_src_instid'] = -1
+        events.loc[events.state_change == 9, 'src_instid'] = -1
+        events.loc[events.state_change == 9, 'src_master_instid'] = -1
+
         #experimental phase calculations
         events['ult_src_instid'] = events.src_master_instid.where(
             events.src_master_instid != 0, events.src_instid)
@@ -217,6 +265,9 @@ class Analyser:
         self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
         print("Important phases:")
         list(map(print_phase, self.phases))
+        
+        if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
+            raise EvtcAnalysisException("Initial phase missing or skipped")
 
         return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
 
@@ -245,9 +296,16 @@ class Analyser:
 
         #set up data structures
         events = assign_event_types(encounter.events)
-        if (encounter.version < '20170923'
-            and not events[(events.state_change == parser.StateChange.GW_BUILD)
-                & (events.src_agent >= 82356)].empty):
+
+        gw_build_event = events[events.state_change == parser.StateChange.GW_BUILD]
+        if gw_build_event.empty:
+            gw_build = 0
+        else:
+            gw_build = gw_build_event['src_agent'].iloc[0]
+
+        if (       (encounter.version < '20170923' and gw_build >= 82356)
+                or (encounter.version < '20171107' and gw_build >= 83945)
+                ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
         agents = encounter.agents
