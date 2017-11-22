@@ -1,3 +1,8 @@
+html {
+  -webkit-font-smoothing: antialiased;
+-moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
 .uk-badge.uploading {
   background-color:#4282bb;
   background-image:-webkit-linear-gradient(top,#569fd2,#346fac);
@@ -96,6 +101,11 @@ input[type="date"] {
 }
 .uk-table td, .uk-table th {
   padding: 8px 8px;
+}
+.uk-table > a {
+  display: table-row;
+  text-decoration: none;
+  color: inherit;
 }
 .main {
   margin: 0 2%;
