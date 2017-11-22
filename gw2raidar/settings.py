@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'gw2raidar.urls'
@@ -167,7 +168,6 @@ if DEBUG:
     if importlib.util.find_spec("debug_toolbar"):
         INSTALLED_APPS.append('debug_toolbar')
         MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
-        print(MIDDLEWARE)
         DEBUG_TOOLBAR_PANELS = [
             'debug_toolbar.panels.versions.VersionsPanel',
             'debug_toolbar.panels.timer.TimerPanel',
