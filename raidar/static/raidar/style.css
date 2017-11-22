@@ -102,6 +102,12 @@ input[type="date"] {
 .uk-table td, .uk-table th {
   padding: 8px 8px;
 }
+.uk-table a.celllink {
+  margin: -8px;
+  padding: 8px;
+  display: block;
+  color: inherit;
+}
 .main {
   margin: 0 2%;
 }

@@ -206,8 +206,6 @@ class Command(BaseCommand):
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
             upload_val = upload.val
-            category_id = upload_val.get('category_id', None)
-            tagstring = upload_val.get('tagstring', '')
             if duration < 60:
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
@@ -245,10 +243,7 @@ class Command(BaseCommand):
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
-                    encounter.category_id = category_id
-                    encounter.tagstring = tagstring
                     encounter.has_evtc = True
-                    encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
                         filename=filename,
@@ -256,10 +251,13 @@ class Command(BaseCommand):
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
-                        category_id=category_id, has_evtc=True,
-                        account_hash=account_hash
+                        has_evtc=True, account_hash=account_hash
                     )
-                    encounter.tagstring = tagstring
+                if 'category_id' in upload_val:
+                    encounter.category_id = upload_val['category_id']
+                if 'tagstring' in upload_val:
+                    encounter.tagstring = upload_val['tagstring']
+                encounter.save()
 
                 file.close()
                 file = None

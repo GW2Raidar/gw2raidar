@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '1.0.4',
-        'timestamp': 1511141330, # date +%s
+        'id': '1.0.4b1',
+        'timestamp': 1511232469, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -167,6 +167,7 @@ if DEBUG:
     if importlib.util.find_spec("debug_toolbar"):
         INSTALLED_APPS.append('debug_toolbar')
         MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+        print(MIDDLEWARE)
         DEBUG_TOOLBAR_PANELS = [
             'debug_toolbar.panels.versions.VersionsPanel',
             'debug_toolbar.panels.timer.TimerPanel',
