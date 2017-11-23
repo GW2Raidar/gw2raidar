@@ -82,6 +82,11 @@ class Phase:
         end_time = None
         relevant_health_updates = health_updates[(health_updates.time >= current_time)]
                 
+        if self.phase_skip_health is not None:
+            if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_skip_health * 100):
+                print("Detected skipped phase")
+                return current_time    
+            
         if self.phase_end_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
                 print("Detected skipped phase")
