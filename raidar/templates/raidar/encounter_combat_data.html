@@ -1,7 +1,102 @@
 {% load staticfiles %}
 <div class="table-container">
   {% include 'raidar/encounter_row_header.html' %}
+  [[#each encounter.parties:partyNo]]
+  <div class="r-encounter-stats-container">
+    <div class="r-stats-row r-stats-header uk-visible@l">
+      <div>Spec</div>
+      <div>Damage Done/Second</div>
+      <div>Crit</div>
+      <div>Scholar</div>
+      <div>Flanking</div>
+      <div>Damage Recieved/Second</div>
+    </div>
+    [[#each members]]
+    <div class="r-stats-row">
+      <div class="r-encounter-player" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with encounter.phases[page.phase].events]]
+        Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
+        Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
+        Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
+      [[/with]]">
 
+        <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png" title="[[data.archetypes[archetype]]]"/>
+        <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+        [[#if name]]
+          [[name]]
+        [[else]]
+          <span class="private">PRIVATE</span>
+        [[/if]]
+      </div>
+      [[#with phases[page.phase]]]
+      <div class="r-encounter-damage">
+        <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+          [[#with actual]]
+          <!-- Total Damage -->
+          <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+            <!-- Total Damage Text -->
+          <text x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='13'>[[num(dps, 0)]]</text>
+          <!-- Next Percentile -->
+          <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(archetype.avg_dps, 0)]] Damage Per Second" x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((archetype.avg_dps)-(dps))/(archetype.avg_dps)*100), 0)]]%' fill='#9C0AFF' />
+
+            <!-- Next Percentile Text -->
+          <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='10'>[[num(archetype.avg_dps, 0)]]</text>
+            [[/with]]
+
+
+            <!-- Boss Damage -->
+          <!-- <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/> -->
+
+
+
+          </svg>
+      </div>
+        [[#with actual]]
+        <div class="r-encounter-buff">
+          <span class="r-buff-number r-bg-60">[[perc(crit)]]</span>
+          [[#if archetype.avg_crit]]
+            <span class="r-buff-number r-bg-70">[[perc(archetype.avg_crit)]]</span>
+          [[/if]]
+        </div>
+        <div class="r-encounter-buff">
+          <span class="r-buff-number r-bg-60">[[perc(scholar)]]</span>
+          [[#if archetype.avg_scholar]]
+            <span class="r-buff-number r-bg-70">[[perc(archetype.avg_scholar)]]</span>
+          [[/if]]
+        </div>
+        <div class="r-encounter-buff">
+          <span class="r-buff-number r-bg-60">[[perc(flanking)]]</span>
+          [[#if archetype.avg_flanking]]
+            <span class="r-buff-number r-bg-70">[[perc(archetype.avg_flanking)]]</span>
+          [[/if]]
+        </div>
+        [[/with]]
+        <div class="r-encounter-damage">
+          <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+            [[#with received]]
+            <!-- Total Damage -->
+            <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((archetype.avg_dps_received)/(dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+              <!-- Total Damage Text -->
+            <text x='[[num(((archetype.avg_dps_received)/(dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='13'>[[num(dps, 0)]]</text>
+            <!-- Next Percentile -->
+            <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(archetype.avg_dps_received, 0)]] Damage Per Second" x='[[num(((archetype.avg_dps_received)/(dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((dps)-(archetype.avg_dps_received))/(archetype.avg_dps_received)*100), 0)]]%' fill='#9C0AFF' />
+
+              <!-- Next Percentile Text -->
+            <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='10'>[[num(archetype.avg_dps, 0)]]</text>
+              [[/with]]
+
+
+              <!-- Boss Damage -->
+            <!-- <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/> -->
+
+
+
+            </svg>
+        </div>
+      [[/with]]
+    </div>
+    [[/each]]
+  </div>
+  [[/each]]
   <div class="uk-overflow-auto">
     <table class="uk-table stats">
       <tbody>
@@ -20,6 +115,28 @@
         <tr>
           [[#with encounter.phases[page.phase]]]
             <td>Squad</td>
+            <td>
+              <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="36px" width="100%">
+                [[#with actual]]
+                <!-- Total Damage -->
+                <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(group.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+                  <!-- Total Damage Text -->
+                <text x='[[num(((dps)/(group.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(dps, 0)]]</text>
+                <!-- Next Percentile -->
+                <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(group.avg_dps, 0)]] Damage Per Second" x='[[num(((dps)/(group.avg_dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((group.avg_dps)-(dps))/(group.avg_dps)*100), 0)]]%' fill='#9C0AFF' opacity='0.6' />
+
+                  <!-- Next Percentile Text -->
+                <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(group.avg_dps, 0)]]</text>
+                  [[/with]]
+
+
+                  <!-- Boss Damage -->
+                <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/>
+
+
+
+                </svg>
+            </td>
             [[#with actual]]
               <td style="[[#if group && group.avg_dps]][[bar(dps, group.avg_dps, group.min_dps, group.max_dps)]][[else]][[bar1(dps, dps)]][[/if]]">
                 <span>[[num(dps, 0)]]</span>
@@ -173,16 +290,30 @@
                 [[/if]]
               </td>
               [[#with phases[page.phase]]]
-                [[#with actual]]
-                  <td style="[[#if archetype.avg_dps]][[bar(dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps || 0)]][[/if]]">
-                    <span>[[num(dps, 0)]]</span>
-                    [[#if archetype.avg_dps]]
-                      <span class="expected">[[num(archetype.avg_dps, 0)]]</span>
-                    [[/if]]
-                  </td>
-                [[else]]
-                  <td>0</td>
-                [[/with]]
+              <td>
+                <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="36px" width="100%">
+                  [[#with actual]]
+                  <!-- Total Damage -->
+                  <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+                    <!-- Total Damage Text -->
+                  <text x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(dps, 0)]]</text>
+                  <!-- Next Percentile -->
+                  <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(archetype.avg_dps, 0)]] Damage Per Second" x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((archetype.avg_dps)-(dps))/(archetype.avg_dps)*100), 0)]]%' fill='#9C0AFF' opacity='0.6' />
+
+                    <!-- Next Percentile Text -->
+                  <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(archetype.avg_dps, 0)]]</text>
+                    [[/with]]
+
+
+                    <!-- Boss Damage -->
+                  <!-- <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/> -->
+
+
+
+                  </svg>
+              </td>
+
+
                 [[#with actual_boss]]
                   <td style="[[#if archetype.avg_dps_boss]][[bar(dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps || 0)]][[/if]]">
                     <span>[[num(dps, 0)]]</span>

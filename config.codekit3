@@ -8025,6 +8025,55 @@
 		"oAP": "\/raidar\/migrations\/0030_encounter_has_evtc.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0031_regular_blank_null.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0031_regular_blank_null.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0032_has_evtc_no_edit.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0032_has_evtc_no_edit.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0033_add_account_to_participation.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0033_add_account_to_participation.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0034_fill_in_participation_fields.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0034_fill_in_participation_fields.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0035_switch_participation_to_account.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0035_switch_participation_to_account.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0036_remove_character.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0036_remove_character.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0037_make_added_fields_nonnull.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0037_make_added_fields_nonnull.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8254,6 +8303,41 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/__pycache__\/0032_has_evtc_no_edit.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0033_add_account_to_participation.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0033_add_account_to_participation.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0034_fill_in_participation_fields.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0034_fill_in_participation_fields.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0035_switch_participation_to_account.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0035_switch_participation_to_account.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0036_remove_character.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0036_remove_character.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
@@ -9663,6 +9747,28 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/intro\/boons.png": {
+		"ft": 32768,
+		"iS": 39886,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/boons.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/global_stats.png": {
+		"ft": 32768,
+		"iS": 119747,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/global_stats.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/intro\/individual.png": {
 		"ft": 32768,
 		"iS": 47454,
@@ -9682,6 +9788,28 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/profile.png": {
+		"ft": 32768,
+		"iS": 70594,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/profile.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/profile_graph.png": {
+		"ft": 32768,
+		"iS": 104475,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/profile_graph.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
