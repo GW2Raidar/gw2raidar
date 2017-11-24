@@ -81,11 +81,12 @@ class Phase:
                       skill_activations):
         end_time = None
         relevant_health_updates = health_updates[(health_updates.time >= current_time)]
+                
         if self.phase_skip_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_skip_health * 100):
                 print("Detected skipped phase")
-                return current_time
-                
+                return current_time    
+            
         if self.phase_end_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
                 print("Detected skipped phase")
@@ -98,23 +99,23 @@ class Phase:
             end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
             print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
             
-            if self.phase_end_damage_stop is not None:
-                relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
-                                            (damage_gaps.delta > self.phase_end_damage_stop)]
+        if self.phase_end_damage_stop is not None:
+            relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
+                                        (damage_gaps.delta > self.phase_end_damage_stop)]
                 
-                if relevant_gaps.empty and (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
-                    gap_time = int(damage_gaps.time.iloc[-1])
+            if relevant_gaps.empty and (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
+                gap_time = int(damage_gaps.time.iloc[-1])
    
-                elif not relevant_gaps.empty:
-                    gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+            elif not relevant_gaps.empty:
+                gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
             
-                if gap_time is not None:
-                    relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
-                    if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
-                        print("Detected skipped next phase")
-                    else:
-                        end_time = gap_time
-                        print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, gap_time))
+            if gap_time is not None:
+                relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
+                if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
+                    print("Detected skipped next phase")
+                else:
+                    end_time = gap_time
+                    print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, gap_time))
 
         elif self.phase_end_damage_start is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
