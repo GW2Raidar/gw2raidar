@@ -418,7 +418,7 @@ class Command(BaseCommand):
         def calculate_user_stats(era):
             user_queryset = User.objects.all()
             for user in user_queryset.iterator():
-                participation_queryset = Participation.objects.prefetch_related('encounter', 'account').filter(account__user=user, era=era).order_by('?')
+                participation_queryset = Participation.objects.prefetch_related('encounter', 'account').filter(account__user=user, encounter__era=era).order_by('?')
                 totals_for_player = initialise_era_user_stats(participation_queryset.count())
                 for participation in participation_queryset.iterator():
                     add_participation_to_era_user_stats(participation, totals_for_player)
