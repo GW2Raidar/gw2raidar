@@ -339,15 +339,17 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration, state_events)
 
-
-
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('cm', self.boss_info.cm_detector(events, self.boss_instids))
+        is_cm = self.boss_info.cm_detector(events, self.boss_instids)
+        encounter_collector.add_data('cm', is_cm)
+                
+        if not is_cm and not self.boss_info.non_cm_allowed:
+            raise EvtcAnalysisException("Only cm encounters allowed for {}".format(self.boss_info.name))
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:
