@@ -1,5 +1,5 @@
 from .models import *
-from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
 from analyser.bosses import BOSSES
 from django.conf import settings
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
 from django.core import serializers
 from django.core.mail import EmailMessage
+from django.views.decorators.csrf import csrf_exempt
 from smtplib import SMTPException
 from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404
@@ -21,7 +22,7 @@ from django.views.decorators.debug import sensitive_post_parameters, sensitive_v
 from django.views.decorators.http import require_GET, require_POST
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
-from json import dumps as json_dumps, loads as json_loads
+from json import dumps as json_dumps
 from os import makedirs, sep as dirsep
 from os.path import join as path_join, isfile, dirname
 import pytz
@@ -29,6 +30,9 @@ from datetime import datetime
 from re import match, sub
 from time import time
 import logging
+import numpy as np
+import base64
+
 
 
 logger = logging.getLogger(__name__)
@@ -40,9 +44,9 @@ def _safe_get(f, default=None):
     except (KeyError, TypeError):
         return default
 
-def _error(msg, **kwargs):
+def _error(msg, status=200, **kwargs):
     kwargs['error'] = str(msg)
-    return JsonResponse(kwargs)
+    return JsonResponse(kwargs, status=status)
 
 
 def _userprops(request):
@@ -62,7 +66,7 @@ def _userprops(request):
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
+    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
@@ -86,8 +90,11 @@ def _html_response(request, page, data={}):
         # No Google Analytics, it's fine
         pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
-    response['areas'] = {area.id: area.name for area in Area.objects.all()}
-    response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
+    response['areas'] = {id: {
+            "name": boss.name,
+            "kind": boss.kind,
+        } for id, boss in BOSSES.items()}
+    response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['page'] = page
     response['debug'] = settings.DEBUG
@@ -106,22 +113,32 @@ def _html_response(request, page, data={}):
         })
 
 @require_GET
-def download(request, id=None):
+def download(request, url_id=None):
     if not hasattr(settings, 'UPLOAD_DIR'):
         return Http404("Not allowed")
 
-    encounter = Encounter.objects.get(pk=id)
-    own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
-        user=request.user)]
-    dump = json_loads(encounter.dump)
+    encounter = Encounter.objects.get(url_id=url_id)
+    if request.user.is_authenticated:
+        own_account_names = [account.name for account in Account.objects.filter(
+            participations__encounter_id=encounter.id,
+            user=request.user)]
+    else:
+        own_account_names = []
+    dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
-    allowed = request.user.is_staff or any(member['account'] in own_account_names for member in members)
-    if not allowed:
-        raise Http404("Not allowed")
 
-    path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
-    if isfile(path):
+    encounter_showable = True
+    for member in members:
+        is_self = member['account'] in own_account_names
+
+        user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
+        if user_profile:
+            privacy = user_profile[0].privacy
+            if not is_self and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                encounter_showable = False
+
+    path = encounter.diskname()
+    if isfile(path) and (encounter_showable or request.user.is_staff):
         response = HttpResponse(open(path, 'rb'), content_type='application/vnd.ms-excel')
         response['Content-Disposition'] = 'attachment; filename="%s"' % encounter.filename
         return response
@@ -143,6 +160,7 @@ def profile(request):
     queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
         eras = [{
+                'id': era_user_store.era_id,
                 'name': era_user_store.era.name,
                 'started_at': era_user_store.era.started_at,
                 'description': era_user_store.era.description,
@@ -162,6 +180,78 @@ def profile(request):
         }
     return JsonResponse(result)
 
+@require_GET
+def global_stats(request, era_id=None, area_id=None, json=None):
+    if not json:
+        return _html_response(request, {
+            "name": "global_stats",
+            "era_id": era_id,
+            "area_id": area_id
+        })
+    try:
+        era_query = Era.objects.all()
+        eras = [{
+                'name': era.name,
+                'id': era.id,
+                'started_at': era.started_at,
+                'description': era.description
+            } for era in era_query]
+    except Era.DoesNotExist:
+        eras = []
+
+    try:
+        area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
+        areas = [{
+                'name': area.name,
+                'id': area.id,
+            } for area in area_query]
+    except Area.DoesNotExist:
+        areas = []
+
+    try:
+        if era_id is None:
+            era_id = eras[0]['id']
+        era = Era.objects.get(id=era_id)
+        if area_id is None:
+            raw_data = era.val
+        else:
+            area = Area.objects.get(id=area_id)
+            raw_data = EraAreaStore.objects.get(era=era, area=area).val
+        stats = raw_data['All']
+
+        #reduce size of json for global stats view
+        builds = [stats['build'][prof][elite][arch]
+                  for prof in stats['build']
+                  for elite in stats['build'][prof]
+                  for arch in stats['build'][prof][elite]]
+
+        builds.append(stats['group'])
+        builds.append(stats['individual'])
+
+        for build in list(builds):
+            if 'buffs' in build:
+                del build['buffs']
+            if 'count' not in build or build['count'] < 10:
+                for key in list(build.keys()):
+                    del(build[key])
+
+            if 'buffs_out' in build:
+                for buff in list(filter(lambda a: a.startswith('max_'), build['buffs_out'].keys())):
+                    if build['buffs_out'][buff] <= 0.01:
+                        buffname = buff[4:]
+                        for key in list(filter(lambda a: a.split('_', 1)[1] == buffname,
+                                        build['buffs_out'].keys())):
+                            del(build['buffs_out'][key])
+
+    except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
+        stats = {}
+
+    result = {'global_stats': {
+        'eras': eras,
+        'areas': areas,
+        'stats': stats
+    }}
+    return JsonResponse(result)
 
 
 @require_GET
@@ -174,10 +264,10 @@ def encounter(request, url_id=None, json=None):
         else:
             raise Http404("Encounter does not exist")
     own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
+        participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
-    dump = json_loads(encounter.dump)
+    dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
     try:
@@ -194,12 +284,17 @@ def encounter(request, url_id=None, json=None):
                             "actual": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All']),
                             "actual_boss": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss']),
                             "received": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All']),
+                            "shielded": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['shielded']['From']['*All']),
                             "buffs": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All']),
+                            "buffs_out": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['To']['*All']),
                             "events": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['events']),
                             "mechanics": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['mechanics']),
                         } for phase in phases
                     }
                 } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
+    private = False
+
+    encounter_showable = True
     for party_no, party in parties.items():
         for member in party['members']:
             if member['account'] in own_account_names:
@@ -209,7 +304,9 @@ def encounter(request, url_id=None, json=None):
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
+                    'shielded': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['shielded']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
+                    'buffs_out': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['To']['*All']),
                     'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['events']),
                     'mechanics': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['mechanics']),
                     'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
@@ -222,6 +319,8 @@ def encounter(request, url_id=None, json=None):
                 if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
                     member['name'] = ''
                     member['account'] = ''
+                    private = True
+                    encounter_showable = False
 
     data = {
         "encounter": {
@@ -248,7 +347,9 @@ def encounter(request, url_id=None, json=None):
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
                     'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
                     'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['From']['*All']),
+                    'shielded': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['shielded']['From']['*All']),
                     'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
+                    'buffs_out': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['To']['*All']),
                     'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['events']),
                     'mechanics': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['mechanics']),
                 } for phase in phases
@@ -256,13 +357,14 @@ def encounter(request, url_id=None, json=None):
             "parties": parties,
         }
     }
-    if encounter.gdrive_url:
-        data['encounter']['evtc_url'] = encounter.gdrive_url;
-    # XXX relic TODO remove once we fully cross to GDrive?
-    if hasattr(settings, 'UPLOAD_DIR'):
-        path = path_join(settings.UPLOAD_DIR, encounter.uploaded_by.username.replace(dirsep, '_'), encounter.filename)
-        if isfile(path):
-            data['encounter']['downloadable'] = True
+    if encounter_showable or request.user.is_staff:
+        if encounter.gdrive_url:
+            data['encounter']['evtc_url'] = encounter.gdrive_url;
+        # XXX relic TODO remove once we fully cross to GDrive?
+        if hasattr(settings, 'UPLOAD_DIR'):
+            path = encounter.diskname()
+            if isfile(path):
+                data['encounter']['downloadable'] = True
 
     if json:
         return JsonResponse(data)
@@ -278,13 +380,8 @@ def initial(request):
     return JsonResponse(response)
 
 
-@require_POST
-@sensitive_post_parameters('password')
 @sensitive_variables('password')
-def login(request):
-    if request.method == 'GET':
-        return index(request, page={ 'name': 'login' })
-
+def _perform_login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
     # stayloggedin = request.GET.get('stayloggedin')
@@ -293,7 +390,16 @@ def login(request):
     # else:
     #     request.session.set_expiry(0)
 
-    user = authenticate(username=username, password=password)
+    return authenticate(username=username, password=password)
+
+
+@require_POST
+@sensitive_post_parameters('password')
+def login(request):
+    if request.method == 'GET':
+        return index(request, page={ 'name': 'login' })
+
+    user = _perform_login(request)
     if user is not None and user.is_active:
         return _login_successful(request, user)
     else:
@@ -379,19 +485,30 @@ def logout(request):
     return JsonResponse({})
 
 
-@login_required
-@require_POST
-def upload(request):
+def _perform_upload(request):
     if (len(request.FILES) != 1):
-        return _error("Only single file uploads are allowed")
+        return ("Only single file uploads are allowed", None)
 
-    filename = next(iter(request.FILES))
-    file = request.FILES[filename]
+    if 'file' in request.FILES:
+        file = request.FILES['file']
+    else:
+        return ("Missing file attachment named `file`", None)
+    filename = file.name
+
+    val = {}
+    if 'category' in request.POST:
+        val['category_id'] = request.POST['category']
+    if 'tags' in request.POST:
+        val['tagstring'] = request.POST['tags']
+
     uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(
             filename=filename, uploaded_by=request.user,
-            defaults={ "uploaded_at": time() })
+            defaults={
+                "uploaded_at": time(),
+                "val": val,
+            })
 
     diskname = upload.diskname()
     makedirs(dirname(diskname), exist_ok=True)
@@ -401,8 +518,96 @@ def upload(request):
             if len(buf) == 0:
                 break
             diskfile.write(buf)
+    return (filename, upload)
+
+
+@login_required
+@require_POST
+def upload(request):
+    filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+@csrf_exempt
+@require_POST
+@sensitive_post_parameters('password')
+def api_upload(request):
+    user = _perform_login(request)
+    if not user:
+        return _error('Could not authenticate', status=401)
+    auth_login(request, user)
+    filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename, status=400)
+
+    return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+@csrf_exempt
+def api_categories(request):
+    categories = Category.objects.all()
+    result = { category.id: category.name for category in categories }
+    return JsonResponse(result)
+
+@login_required
+@require_POST
+def profile_graph(request):
+    era_id = request.POST['era']
+    area_id = request.POST['area']
+    archetype_id = request.POST['archetype']
+    profession_id = request.POST['profession']
+    elite_id = request.POST['elite']
+    stat = request.POST['stat']
+
+    participations = Participation.objects.select_related('encounter').filter(
+            encounter__era_id=era_id, account__user=request.user, encounter__success=True)
+
+    try:
+        if area_id.startswith('All'):
+            store = Era.objects.get(pk=era_id).val[area_id]
+        else:
+            participations = participations.filter(encounter__area_id=area_id)
+            store = EraAreaStore.objects.get(era_id=era_id, area_id=area_id).val
+    except (EraAreaStore.DoesNotExist, Era.DoesNotExist, KeyError):
+        store = {}
+    if archetype_id != 'All':
+        participations = participations.filter(archetype=archetype_id)
+    if profession_id != 'All':
+        participations = participations.filter(profession=profession_id)
+    if elite_id != 'All':
+        participations = participations.filter(elite=elite_id)
+
+    try:
+        requested = store['All']['build'][profession_id][elite_id][archetype_id]
+        requested = {
+                'avg': requested['avg_' + stat],
+                'per': list(np.frombuffer(base64.b64decode(requested['per_' + stat].encode('utf-8')), dtype=np.float32).astype(float)),
+            }
+    except KeyError:
+        requested = None # XXX fill out in restat
+    MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
+    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character', 'encounter__started_at', 'encounter__value')
+    data = []
+    times = []
+
+    if stat == 'dps_boss':
+        target = '*Boss'
+        stat = 'dps'
+    else:
+        target = '*All'
+    for name, started_at, json in reversed(db_data):
+        dump = json_loads(json)
+        datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target][stat], 0)
+        data.append(datum)
+        times.append(started_at)
+
+    result = {
+        'globals': requested,
+        'data': data,
+        'times': times,
+    }
+    return JsonResponse(result)
 
 
 @require_GET
@@ -416,7 +621,10 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
-    result = { "notifications": [notification.val for notification in notifications] }
+    result = {
+        "notifications": [notification.val for notification in notifications],
+        "version": settings.VERSION['id'],
+    }
     if notifications:
         result['last_id'] = notifications.last().id
     return JsonResponse(result)
@@ -433,7 +641,7 @@ def privacy(request):
 @require_POST
 def set_tags_cat(request):
     encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
-    participation = encounter.participations.filter(character__account__user=request.user).exists()
+    participation = encounter.participations.filter(account__user=request.user).exists()
     if not participation:
         return _error('Not a participant')
     encounter.tagstring = request.POST.get('tags')
