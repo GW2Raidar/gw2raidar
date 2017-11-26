@@ -270,7 +270,7 @@ Label of the button should add the encounter type to the button text. i.e. If th
       </thead>
 
       [[#each encounterSlice]]
-        <tr on-click="@this.page({ name: 'encounter', no: url_id })" class="link">
+        <a on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
           <td class="[[success ? 'uk-text-success' : 'uk-text-danger']]">
             [[area]]
           </td>
@@ -303,7 +303,7 @@ Label of the button should add the encounter type to the button text. i.e. If th
               [[/each]]
             </div>
           </td>
-        </tr>
+        </a>
       [[/each]]
     </table>
   </div>

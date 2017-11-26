@@ -129,7 +129,7 @@ class EvtcAnalysisException(BaseException):
     pass
 
 def only_entry(frame):
-    return frame.iloc[0] if not frame.empty else None
+    return frame.iloc[-1] if not frame.empty else None
 
 def unique_names(dictionary):
     unique = dict()
@@ -311,17 +311,24 @@ class Analyser:
         agents = encounter.agents
         skills = encounter.skills
         agents, players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
+                
+        #time constraints
+        start_event = events[events.state_change == parser.StateChange.LOG_START]
+        start_timestamp = start_event['value'].iloc[0]
+        start_time = start_event['time'].iloc[0]
+        boss_exit_combat_events = events[events.src_instid.isin(self.final_boss_instids) & (events.state_change == 2)]
+        if len(boss_exit_combat_events) > 0:
+            encounter_end = boss_exit_combat_events.time.max()
+            events = events[events.time <= encounter_end].copy()
+        else:
+            encounter_end = events.time.max()
 
         self.preprocess_skills(skills, collector)
         self.players = players
         player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
 
-        #time constraints
-        start_event = events[events.state_change == parser.StateChange.LOG_START]
-        start_timestamp = start_event['value'].iloc[0]
-        start_time = start_event['time'].iloc[0]
-        encounter_end = events.time.max()
+        
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
@@ -339,15 +346,17 @@ class Analyser:
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_combat_events, player_only_events)
         collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "events").run(self.collect_player_state_duration, state_events)
 
-
-
         encounter_collector = collector.with_key(Group.CATEGORY, "encounter")
         encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('cm', self.boss_info.cm_detector(events, self.boss_instids))
+        is_cm = self.boss_info.cm_detector(events, self.boss_instids)
+        encounter_collector.add_data('cm', is_cm)
+                
+        if not is_cm and not self.boss_info.non_cm_allowed:
+            raise EvtcAnalysisException("Only cm encounters allowed for {}".format(self.boss_info.name))
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:
@@ -355,7 +364,7 @@ class Analyser:
             phase_collector.add_data('start_tick', phase[1], int)
             phase_collector.add_data('end_tick', phase[2], int)
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
-
+            
         success = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
         encounter_collector.add_data('success', success, bool)
 
@@ -397,7 +406,7 @@ class Analyser:
 
             data = np.c_[[player] * data.shape[0], data]
             raw_data = np.r_[raw_data, data]
-
+            
         return pd.DataFrame(columns = ['player', 'time', 'state', 'duration', 'recovered'], data = raw_data)
 
     # Note: While this is just broken into areas with comments for now, we may want
@@ -433,7 +442,7 @@ class Analyser:
     # subsection: boss stats
     def collect_individual_boss_key_events(self, collector, events):
         enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
-        death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
+        death_time = only_entry(events[events.state_change.isin([parser.StateChange.CHANGE_DEAD, parser.StateChange.EXIT_COMBAT])].time)
         collector.add_data("EnterCombat", enter_combat_time, int)
         collector.add_data("Death", death_time, int)
 
@@ -633,11 +642,16 @@ class Analyser:
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
+            interest_state_changes = end_state_changes + [parser.StateChange.CHANGE_UP]
             key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
             if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
                 print("No key NPCs died...")
-                dead_players = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
-                                                 (player_src_events.state_change.isin(end_state_changes))].src_instid.unique()
+                player_interesting_events = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
+                                                 (player_src_events.state_change.isin(interest_state_changes))]
+                values = player_interesting_events.groupby('src_instid').last().reset_index()
+                
+                dead_players = values[values.state_change.isin(end_state_changes)].src_instid.unique()
+                
                 print("These players died: {0}".format(dead_players))
                 surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))
                 print("These players survived: {0}".format(surviving_players))
