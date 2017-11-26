@@ -20,7 +20,6 @@ from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from django.views.decorators.http import require_GET, require_POST
-from django.views.decorators.gzip import gzip_page
 from gw2api.gw2api import GW2API, GW2APIException
 from itertools import groupby
 from json import dumps as json_dumps
@@ -33,6 +32,7 @@ from time import time
 import logging
 import numpy as np
 import base64
+
 
 
 logger = logging.getLogger(__name__)
@@ -147,13 +147,11 @@ def download(request, url_id=None):
 
 
 @require_GET
-@gzip_page
 def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
 @require_GET
-@gzip_page
 def profile(request):
     if not request.user.is_authenticated:
         return _error("Not authenticated")
@@ -183,7 +181,6 @@ def profile(request):
     return JsonResponse(result)
 
 @require_GET
-@gzip_page
 def global_stats(request, era_id=None, area_id=None, json=None):
     if not json:
         return _html_response(request, {
@@ -258,7 +255,6 @@ def global_stats(request, era_id=None, area_id=None, json=None):
 
 
 @require_GET
-@gzip_page
 def encounter(request, url_id=None, json=None):
     try:
         encounter = Encounter.objects.select_related('area', 'uploaded_by').get(url_id=url_id)
@@ -377,7 +373,6 @@ def encounter(request, url_id=None, json=None):
 
 
 @require_GET
-@gzip_page
 def initial(request):
     response = _userprops(request)
     if request.user.is_authenticated:
@@ -557,7 +552,6 @@ def api_categories(request):
 
 @login_required
 @require_POST
-@gzip_page
 def profile_graph(request):
     era_id = request.POST['era']
     area_id = request.POST['area']
@@ -617,7 +611,6 @@ def profile_graph(request):
 
 
 @require_GET
-@gzip_page
 def named(request, name, no):
     return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
 
@@ -704,7 +697,6 @@ def contact(request):
 
 @login_required
 @require_POST
-@gzip_page
 def add_api_key(request):
     api_key = request.POST.get('api_key').strip()
     gw2api = GW2API(api_key)
