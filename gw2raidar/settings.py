@@ -14,7 +14,7 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '1.0.5',
+        'id': '1.0.5b1',
         'timestamp': 1511683646, # date +%s
         }
 
