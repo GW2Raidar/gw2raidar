@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from .models import Era, Category, Area, Account, Character, Encounter, Participation, UserProfile
+from .models import Era, Category, Area, Account, Encounter, Participation, UserProfile
 
 
 # XXX HACK https://stackoverflow.com/q/46460800/240443
@@ -71,7 +71,7 @@ class ParticipationInline(admin.TabularInline):
     model = Participation
     extra = 10
     max_num = 10
-    readonly_fields = ('character', 'elite', 'party')
+    readonly_fields = ('account', 'elite', 'party')
 
 class EncounterAdmin(QuotedSearchModelAdmin):
     def url_id_link(self, obj):
@@ -79,8 +79,9 @@ class EncounterAdmin(QuotedSearchModelAdmin):
         return format_html("<a href='../../../encounter/{url_id}'>{url_id}</a>", url_id=obj.url_id)
     url_id_link.short_description = "Link"
 
-    search_fields = ('=url_id', '=filename', '^area__name', '=characters__name', '^characters__account__name', '=characters__account__user__username', '=tags__name', '=category__name')
+    search_fields = ('=url_id', '=filename', '^area__name', '=participations__character', '^account__name', '=participations__account__user__username', '=tags__name', '=category__name')
     list_display = ('filename', 'url_id_link', 'area', 'success', 'category', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
+    list_select_related = ('category', 'uploaded_by', 'area')
     inlines = (ParticipationInline,)
     readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_at', 'uploaded_by', 'area', 'filename')
 
@@ -88,20 +89,9 @@ class EncounterAdmin(QuotedSearchModelAdmin):
     class Media:
         css = { 'all' : ('raidar/hide_admin_original.css',) }
 
-class CharacterAdmin(QuotedSearchModelAdmin):
-    search_fields = ('=name', '^account__name', '=account__user__username')
-    list_display = ('name', 'profession', 'account')
-    readonly_fields = ('account', 'name', 'profession')
-
-class CharacterInline(admin.TabularInline):
-    model = Character
-    readonly_fields = ('name', 'profession')
-    extra = 1
-
 class AccountAdmin(QuotedSearchModelAdmin):
     search_fields = ('^name', '=user__username')
     list_display = ('name', 'user')
-    inlines = (CharacterInline,)
     readonly_fields = ('name',)
 
     # hack, but... ugly otherwise
@@ -113,6 +103,5 @@ admin.site.register(Area, AreaAdmin)
 admin.site.register(Era, EraAdmin)
 admin.site.register(Category, CategoryAdmin)
 admin.site.register(Account, AccountAdmin)
-admin.site.register(Character, CharacterAdmin)
 admin.site.register(Encounter, EncounterAdmin)
 admin.site.register(UserProfile)

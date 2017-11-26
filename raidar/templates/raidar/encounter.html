@@ -1,6 +1,6 @@
-<div class="uk-clearfix uk-padding-small">
+<div class="uk-clearfix uk-padding-remove-bottom">
   [[#with encounter]]
-    <h2 class="uk-margin-remove-bottom uk-padding-small uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
+    <h2 class="uk-margin-remove-bottom uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
       [[name]]
     </h2>
     <div class="uk-float-right uk-text-right uk-float-right">
@@ -26,7 +26,7 @@
 </div>
 
 <form class="uk-margin-small uk-flex uk-flex-bottom" on-submit="set_tags_cat">
-  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[encounter.category]]" [[#if encounter.participated]]readonly[[/if]]>
+  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
     <option value="[[null]]">No category</option>
     [[#each data.categories:id]]
       <option value="[[id]]">[[.]]</option>

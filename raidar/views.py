@@ -1,5 +1,5 @@
 from .models import *
-from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
 from analyser.bosses import BOSSES
 from django.conf import settings
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
@@ -43,9 +43,9 @@ def _safe_get(f, default=None):
     except (KeyError, TypeError):
         return default
 
-def _error(msg, **kwargs):
+def _error(msg, status=200, **kwargs):
     kwargs['error'] = str(msg)
-    return JsonResponse(kwargs)
+    return JsonResponse(kwargs, status=status)
 
 
 def _userprops(request):
@@ -65,7 +65,7 @@ def _userprops(request):
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
+    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
@@ -89,8 +89,11 @@ def _html_response(request, page, data={}):
         # No Google Analytics, it's fine
         pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
-    response['areas'] = {area.id: area.name for area in Area.objects.all()}
-    response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
+    response['areas'] = {id: {
+            "name": boss.name,
+            "kind": boss.kind,
+        } for id, boss in BOSSES.items()}
+    response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['page'] = page
     response['debug'] = settings.DEBUG
@@ -114,9 +117,12 @@ def download(request, url_id=None):
         return Http404("Not allowed")
 
     encounter = Encounter.objects.get(url_id=url_id)
-    own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
-        user=request.user)]
+    if request.user.is_authenticated:
+        own_account_names = [account.name for account in Account.objects.filter(
+            participations__encounter_id=encounter.id,
+            user=request.user)]
+    else:
+        own_account_names = []
     dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
@@ -203,7 +209,7 @@ def global_stats(request, era_id=None, area_id=None, json=None):
 
     try:
         if era_id is None:
-            era_id = eras[-1]['id']
+            era_id = eras[0]['id']
         era = Era.objects.get(id=era_id)
         if area_id is None:
             raw_data = era.val
@@ -257,7 +263,7 @@ def encounter(request, url_id=None, json=None):
         else:
             raise Http404("Encounter does not exist")
     own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
+        participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
     dump = encounter.val
@@ -373,6 +379,7 @@ def initial(request):
     return JsonResponse(response)
 
 
+@sensitive_variables('password')
 def _perform_login(request):
     username = request.POST.get('username')
     password = request.POST.get('password')
@@ -387,7 +394,6 @@ def _perform_login(request):
 
 @require_POST
 @sensitive_post_parameters('password')
-@sensitive_variables('password')
 def login(request):
     if request.method == 'GET':
         return index(request, page={ 'name': 'login' })
@@ -480,16 +486,28 @@ def logout(request):
 
 def _perform_upload(request):
     if (len(request.FILES) != 1):
-        return _error("Only single file uploads are allowed")
+        return ("Only single file uploads are allowed", None)
 
-    filename = next(iter(request.FILES))
-    file = request.FILES['file']
+    if 'file' in request.FILES:
+        file = request.FILES['file']
+    else:
+        return ("Missing file attachment named `file`", None)
     filename = file.name
+
+    category_id = request.POST.get('category', None);
+    tagstring = request.POST.get('tags', '');
+
     uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(
             filename=filename, uploaded_by=request.user,
-            defaults={ "uploaded_at": time() })
+            defaults={
+                "uploaded_at": time(),
+                "val": {
+                    "category_id": category_id,
+                    "tagstring": tagstring,
+                }
+            })
 
     diskname = upload.diskname()
     makedirs(dirname(diskname), exist_ok=True)
@@ -506,20 +524,30 @@ def _perform_upload(request):
 @require_POST
 def upload(request):
     filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
 @csrf_exempt
 @require_POST
+@sensitive_post_parameters('password')
 def api_upload(request):
     user = _perform_login(request)
     if not user:
-        return _error('Could not authenticate')
+        return _error('Could not authenticate', status=401)
     auth_login(request, user)
     filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename, status=400)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
 
+@csrf_exempt
+def api_categories(request):
+    categories = Category.objects.all()
+    result = { category.id: category.name for category in categories }
+    return JsonResponse(result)
 
 @login_required
 @require_POST
@@ -532,7 +560,7 @@ def profile_graph(request):
     stat = request.POST['stat']
 
     participations = Participation.objects.select_related('encounter').filter(
-            encounter__era_id=era_id, character__account__user=request.user)
+            encounter__era_id=era_id, account__user=request.user, encounter__success=True)
 
     try:
         if area_id.startswith('All'):
@@ -545,7 +573,7 @@ def profile_graph(request):
     if archetype_id != 'All':
         participations = participations.filter(archetype=archetype_id)
     if profession_id != 'All':
-        participations = participations.filter(character__profession=profession_id)
+        participations = participations.filter(profession=profession_id)
     if elite_id != 'All':
         participations = participations.filter(elite=elite_id)
 
@@ -558,7 +586,7 @@ def profile_graph(request):
     except KeyError:
         requested = None # XXX fill out in restat
     MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
-    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character__name', 'encounter__started_at', 'encounter__value')
+    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character', 'encounter__started_at', 'encounter__value')
     data = []
     times = []
 
@@ -592,7 +620,10 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
-    result = { "notifications": [notification.val for notification in notifications] }
+    result = {
+        "notifications": [notification.val for notification in notifications],
+        "version": settings.VERSION['id'],
+    }
     if notifications:
         result['last_id'] = notifications.last().id
     return JsonResponse(result)
@@ -609,7 +640,7 @@ def privacy(request):
 @require_POST
 def set_tags_cat(request):
     encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
-    participation = encounter.participations.filter(character__account__user=request.user).exists()
+    participation = encounter.participations.filter(account__user=request.user).exists()
     if not participation:
         return _error('Not a participant')
     encounter.tagstring = request.POST.get('tags')

@@ -9,6 +9,17 @@
   Ractive.DEBUG = DEBUG;
 
 
+  const inputDateAvailable = (() => {
+    const smiley = '1)';
+    const type = 'date';
+    let input = document.createElement('input');
+    input.setAttribute('type', type);
+    input.value = smiley;
+    return input.type === type && 'style' in input && input.value !== smiley;
+  })();
+  console.log(inputDateAvailable);
+
+
   Ractive.decorators.ukUpdate = function(node) {
     UIkit.update();
     return {
@@ -64,7 +75,7 @@
   });
   $(document).ajaxError((evt, xhr, settings, err) => {
     console.error(err);
-    error("Error communicating to server")
+    error("Error communicating to server");
   })
 
   function f0X(x) {
@@ -110,6 +121,31 @@
   }
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
+  }
+  // adapted from https://stackoverflow.com/a/2901298/240443
+  // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
+  // num(1234.5):     1,234.5
+  // num(1234.5, 2):  1,234.50
+  // num(1234.5, 0):  1,234
+  // num(0.1234567):  0.123,4567
+  // num(0.12345678): 0.123,456,78
+  let digitGrouper = ',';
+  let decimalSeparator = '.';
+  helpers.num = (n, d) => {
+    if (n === undefined) return '';
+    let s = d == null ? n.toString() : n.toFixed(d);
+    let p = s.split('.');
+    p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, digitGrouper);
+    if (p[1] && digitGrouper == ' ') p[1] = p[1].replace(/(\d{3})(?!\d$)\B/g, '$1' + digitGrouper);
+    return p.join(decimalSeparator);
+  }
+  // special for percentages, defaults to 2 decimal digits (`null` is natural formatting)
+  // perc(23.2):     23.20%
+  // perc(23.2, 0):  23%
+  // perc(23.2):     23.2%
+  helpers.perc = (n, d) => {
+    if (n === undefined) return '';
+    return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
   helpers.buffImportanceLookup = {
     'might': 80,
@@ -228,8 +264,13 @@
 
     let ignore = (actualPhase == 'All' || metricData.split_by_phase) ? '' : 'class="ignore"';
     let value = metrics[metricData.name];
-    if (metricData.data_type == 0) {
-      value = "[" + helpers.formatTime(value / 1000) + "]";
+    switch (metricData.data_type) {
+      case 0: // time
+        value = "[" + helpers.formatTime(value / 1000) + "]";
+        break;
+      case 1: // count
+        value = helpers.num(value);
+        break;
     }
     return `<td ${ignore}>${value}</td>`;
   }
@@ -370,9 +411,9 @@ ${rectSvg.join("\n")}
     return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
     + helpers.rectangle(0, 35, 80*p[90]/max, 30, new Colour(quantileColours[3]))
     + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour(quantileColours[2]))
-    + helpers.text(80*p[99]/max, 30, 11, p[99].toFixed(0))
-    + helpers.text(80*p[90]/max, 60, 11, p[90].toFixed(0))
-    + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)))
+    + helpers.text(80*p[99]/max, 30, 11, helpers.num(p[99], 0))
+    + helpers.text(80*p[90]/max, 60, 11, helpers.num(p[90], 0))
+    + helpers.text(80*p[50]/max, 90, 11, helpers.num(p[50], 0)))
      + `;background-size: ${space_for_image ? 75 : 100}% 100%; background-position:${space_for_image ? 36 : 0}px 0px; background-repeat: no-repeat`;
   }
   helpers.rectangle = (x, y, width, height, colour) => {
@@ -413,7 +454,7 @@ ${body}
     settings: {
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
-    upload: [],
+    uploads: [],
   };
   let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
@@ -1078,7 +1119,7 @@ ${body}
     //if (evt.loaded == evt.total) {
     //}
     entry.progress = progress;
-    r.update('upload');
+    r.update('uploads');
   }
   let uploadProgressDone = (entry, data) => {
     if (data.error) {
@@ -1088,7 +1129,7 @@ ${body}
       entry.upload_id = data.upload_id;
     }
     delete entry.file;
-    r.update('upload');
+    r.update('uploads');
     startUpload(true);
   }
 
@@ -1107,14 +1148,14 @@ ${body}
     //   entry.encounterId = data.id;
     //   entry.success = true;
     //   delete entry.file;
-    //   r.update('upload');
+    //   r.update('uploads');
     //   startUpload(true);
     // }
 
   let uploadProgressFail = entry => {
     entry.success = false;
     delete entry.file;
-    r.update('upload');
+    r.update('uploads');
     startUpload(true);
   }
 
@@ -1128,12 +1169,20 @@ ${body}
   function startUpload(previousIsFinished) {
     if (uploading && !previousIsFinished) return;
 
-    let entry = r.get('upload').find(entry => !("progress" in entry));
+    let entry = r.get('uploads').find(entry => !("progress" in entry));
     uploading = entry;
     if (!entry) return;
 
     let form = new FormData();
-    form.append('file', entry.file);
+    form.set('file', entry.file);
+    let category = r.get('upload.category');
+    if (category) {
+      form.set('category', category);
+    }
+    let tags = r.get('upload.tags');
+    if (tags) {
+      form.set('tags', r.get('upload.tags'));
+    }
     return $.ajax({
       url: 'upload.json',
       data: form,
@@ -1149,7 +1198,7 @@ ${body}
   const notificationHandlers = {
     upload: notification => {
       //let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
-      let entry = r.get('upload').find(entry => entry.name == notification.filename);
+      let entry = r.get('uploads').find(entry => entry.name == notification.filename);
       let newEntry = {
         name: notification.filename,
         progress: 100,
@@ -1161,9 +1210,9 @@ ${body}
       };
       if (entry) {
         Object.assign(entry, newEntry);
-        r.update('upload');
+        r.update('uploads');
       } else {
-        r.push('upload', newEntry);
+        r.push('uploads', newEntry);
       }
 
       let encounters = r.get('encounters');
@@ -1174,12 +1223,12 @@ ${body}
       updateRactiveFromResponse({ encounters: encounters });
     },
     upload_error: notification => {
-      let uploads = r.get('upload');
+      let uploads = r.get('uploads');
       let entry = uploads.find(entry => entry.upload_id == notification.upload_id);
       if (entry) {
         entry.success = false;
         entry.error = notification.error;
-        r.update('upload');
+        r.update('uploads');
       }
     },
   };
@@ -1191,6 +1240,21 @@ ${body}
       return;
     }
     handler(notification);
+  }
+
+  function upgradeClient() {
+    notification('Server was upgraded, client will restart in <span id="upgrade-countdown"></span>s', { status: 'warning', timeout: 10000 });
+    let count = 8;
+    let cdEl = document.getElementById('upgrade-countdown');
+    let loop = () => {
+      cdEl.textContent = --count;
+      if (count) {
+        setTimeout(loop, 1000);
+      } else {
+        window.location.reload(true);
+      }
+    };
+    setTimeout(loop, 1000);
   }
 
   const POLL_TIME = 10000;
@@ -1208,7 +1272,10 @@ ${body}
           lastNotificationId = data.last_id;
         }
         data.notifications.forEach(handleNotification);
-      }).then(() => {
+        if (data.version != r.get('data.version.id')) {
+          upgradeClient();
+        }
+      }).always(() => {
         setTimeout(pollNotifications, POLL_TIME);
       });
     } else {
@@ -1237,14 +1304,14 @@ ${body}
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
         if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
-        let entry = r.get('upload').find(entry => entry.name == file.name);
+        let entry = r.get('uploads').find(entry => entry.name == file.name);
         if (entry) {
           delete entry.success;
           delete entry.progress;
           entry.file = file;
-          r.update('upload');
+          r.update('uploads');
         } else {
-          r.push('upload', {
+          r.push('uploads', {
             name: file.name,
             file: file,
             uploaded_by: r.get('username'),

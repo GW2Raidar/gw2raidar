@@ -1,7 +1,131 @@
 {% load staticfiles %}
 
 [[#with global_stats]]
-  <div id="content" class="uk-margin-left uk-margin-right uk-margin-top">
+  <div id="content" class="uk-margin-top">
+{% comment %}
+    <!--
+
+    Encounter Filter Notes:
+    Label of the button should add the encounter type to the button text. i.e. If they go to Fractals>MAMA it should say 'MAMA - FRACTALS CM' in the button after they select that .
+
+    -->
+      <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom">
+        <button class="uk-button uk-button-default">All (45)</button>
+        <div class="uk-inline">
+            <button class="uk-button uk-button-default uk-button-nor">Raids (20) <i uk-icon="chevron-down"></i></button>
+            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+                <div class="uk-width-1 uk-grid">
+                    <div class="uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li><a href="#">All Raids Encounters (20)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Spirit Vale - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li>
+                                <a href="#">Vale Guardian (2)</a>
+                            </li>
+                            <li><a href="#">Gorseval (1)</a></li>
+                            <li><a href="#">Sabetha (1)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Salvation Pass - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li><a href="#">Slothasor (2)</a></li>
+                            <li><a href="#">Trio (1)</a></li>
+                            <li><a href="#">Matthias (1)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li><a href="#">Keep Construct (2)</a></li>
+                            <li><a href="#">Xera (1)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li><a href="#">Cairn (2)</a></li>
+                            <li><a href="#">Mursaat Overseer (2)</a></li>
+                            <li><a href="#">Samarog (1)</a></li>
+                            <li><a href="#">Deimos (1)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-inline">
+            <button class="uk-button uk-button-default uk-button-nor  uk-button-primary">Mama - Fractals CM (20) <i uk-icon="chevron-down"></i></button>
+            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+                <div class="uk-width-1 uk-grid">
+                    <div class="uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li><a href="#">All Challenge Mode Encounters (5)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Nightmare - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li class='uk-active'>
+                                <a href="#">MAMA (2)</a>
+                            </li>
+                            <li><a href="#">Siax (1)</a></li>
+                            <li><a href="#">Ensolyss (1)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Shattered Observatory - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li><a href="#">Skovald (2)</a></li>
+                            <li><a href="#">Astrilov (1)</a></li>
+                            <li><a href="#">Arkk (1)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="uk-inline">
+            <button class="uk-button uk-button-default">Golem (20) <i uk-icon="chevron-down"></i></button>
+            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+                <div class="uk-width-1 uk-grid">
+                    <div class="uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li><a href="#">All Golem Encounters (5)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Massive - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li>
+                                <a href="#">Massive Standard Kitty Golem (2)</a>
+                            </li>
+                            <li><a href="#">Massive Average Kitty Golem (1)</a></li>
+                            <li><a href="#">Massive Vital Kitty Golem (1)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Normal - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li><a href="#">Standard Kitty Golem (2)</a></li>
+                            <li><a href="#">Average Kitty Golem (1)</a></li>
+                            <li><a href="#">Vital Kitty Golem (1)</a></li>
+                        </ul>
+                    </div>
+                    <div class="uk-width-1-4@m uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header">Special - <a class="uk-display-inline" href="#">All (4)</a></li>
+                            <li><a href="#">Tough Kitty Golem (2)</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+{% endcomment %}
+
   <div class="uk-clearfix">
     <div class="uk-float-left">
       <h2 class="uk-margin-remove">[[page.area_id ? findId(areas, page.area_id).name : "All logs"]]</h2>
@@ -49,7 +173,7 @@
               {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
             ] ]]
               [[#if percentiles]]
-              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
+              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
               </td>
               [[else]]
               <td></td>
@@ -67,10 +191,10 @@
           <thead>
             <tr class="uk-background-secondary">
               <th class="uk-table-shrink">Specialisation</th>
-              <th class="uk-table-shrink">Popularity</th>
               <th class="uk-width-1-6">Cleave DPS</th>
               <th class="uk-width-1-6">Boss DPS</th>
               <th class="uk-table-expand" colspan="5">Outgoing buffs</th>
+              <th class="uk-table-shrink">Popularity</th>
             </tr>
           </thead>
           <tbody>
@@ -83,7 +207,6 @@
                       <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
                       [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
                     </td>
-                    <td>[[(lineStats.count/group.count).toFixed(2)]]</td>
                     [[#each [
                       {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
                       {"percentiles": boss_dps_percentiles, "max": individual.max_dps_boss},
@@ -94,7 +217,7 @@
                       buffs[4]
                     ] ]]
                       [[#if percentiles]]
-                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[percentiles[99].toFixed(0)]]<br/>90th percentile: [[percentiles[90].toFixed(0)]]<br/>median: [[percentiles[50].toFixed(0)]][[importance ? '<br/>buff importance rating: ' + importance.toFixed(0): '']]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
+                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
                         [[#if buff_image]]
                           <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
                         [[/if]]
@@ -103,6 +226,7 @@
                       <td></td>
                       [[/if]]
                     [[/each]]
+                    <td>[[num(lineStats.count/group.count, 2)]]</td>
                   </tr>
                   [[/with]]
                 [[/if]]
@@ -115,9 +239,6 @@
         </div>
       [[/each]]
     </div>
-      <div>
-    <p>The "Buff importance rating" shown in tooltips is used to determine which buffs to display and is not intended as a precise measure. In approximate terms, a 'buff importance rating' of 10000 (on a damage buff) equates to a 100% damage boost for one player, a 20% damage boost for 5 players, or a 10% damage boost across 10 players.</p>
-          </div>
   [[/with]]
   </div>
 [[/with]]

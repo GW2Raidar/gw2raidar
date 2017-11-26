@@ -33,6 +33,49 @@ class Elite(IntEnum):
     HEART_OF_THORNS = 1
     PATH_OF_FIRE = 2
 
+class Profession(IntEnum):
+    GUARDIAN = 1
+    WARRIOR = 2
+    ENGINEER = 3
+    RANGER = 4
+    THIEF = 5
+    ELEMENTALIST = 6
+    MESMER = 7
+    NECROMANCER = 8
+    REVENANT = 9
+
+SPECIALISATIONS = {
+    (Profession.GUARDIAN, 0): "Guardian",
+    (Profession.WARRIOR, 0): "Warrior",
+    (Profession.ENGINEER, 0): "Engineer",
+    (Profession.RANGER, 0): "Ranger",
+    (Profession.THIEF, 0): "Thief",
+    (Profession.ELEMENTALIST, 0): "Elementalist",
+    (Profession.MESMER, 0): "Mesmer",
+    (Profession.NECROMANCER, 0): "Necromancer",
+    (Profession.REVENANT, 0): "Revenant",
+
+    (Profession.GUARDIAN, 1): 'Dragonhunter',
+    (Profession.WARRIOR, 1): 'Berserker',
+    (Profession.ENGINEER, 1): 'Scrapper',
+    (Profession.RANGER, 1): 'Druid',
+    (Profession.THIEF, 1): 'Daredevil',
+    (Profession.ELEMENTALIST, 1): 'Tempest',
+    (Profession.MESMER, 1): 'Chronomancer',
+    (Profession.NECROMANCER, 1): 'Reaper',
+    (Profession.REVENANT, 1): 'Herald',
+
+    (Profession.GUARDIAN, 2): 'Firebrand',
+    (Profession.WARRIOR, 2): 'Spellbreaker',
+    (Profession.ENGINEER, 2): 'Holosmith',
+    (Profession.RANGER, 2): 'Soulbeast',
+    (Profession.THIEF, 2): 'Deadeye',
+    (Profession.ELEMENTALIST, 2): 'Weaver',
+    (Profession.MESMER, 2): 'Mirage',
+    (Profession.NECROMANCER, 2): 'Scourge',
+    (Profession.REVENANT, 2): 'Renegade',
+}
+
 class Specialization(IntEnum):
     NONE = 0
     DRUID = 5
@@ -106,7 +149,7 @@ def create_mapping(df, column):
     return unique_names(df.to_dict()[column])
 
 def filter_damage_events(events):
-    damage_events = events[(events.type == LogType.POWER) |(events.type == LogType.CONDI)]
+    damage_events = events[(events.state_change == 0)&((events.type == LogType.POWER)|(events.type == LogType.CONDI))]
     damage_events = damage_events.assign(damage =
                                          np.where(damage_events.type == LogType.POWER,
                                                   damage_events['value'],
@@ -128,26 +171,25 @@ class Analyser:
             ['dst_instid']].groupby('dst_instid').size().rename('hit_count')
         agents = agents.join(agents_that_get_hit_a_lot)
         agents.hit_count.fillna(0, inplace=True)
-
+        
+        #Fix player parties
+        if (self.boss_info.force_single_party) | (not agents[(agents.prof >= 1) & (agents.prof <= 9) & (agents.party == 0)].empty):
+            agents.loc[(agents.prof >= 1) & (agents.prof <= 9), 'party'] = 1
+        
         #identify specific ones we care about
         players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
-        
+                
         if len(players) < 1:
             raise EvtcAnalysisException("No players found in this log")
         elif len(players) > 50:
             raise EvtcAnalysisException("Too many players found in this log: {0}".format(len(agents)))
-
-        if not players[players.party == 0].empty:
-            for player in players.index.values:
-                agents.loc[player, 'party'] = 1
-                players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
 
         bosses = agents[(agents.prof.isin(self.boss_info.boss_ids)) |
                         (self.boss_info.has_structure_boss
                          & (agents.prof < 0)
                          & (agents.hit_count >= 100))]
         final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
-
+        
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
 
@@ -157,9 +199,14 @@ class Analyser:
         print(self.boss_instids)
         self.final_boss_instids = final_bosses.index.values
         collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
-        return players, bosses, final_bosses
+        return agents, players, bosses, final_bosses
 
     def preprocess_events(self, events):
+        #prevent log start event shenanigans
+        events.loc[events.state_change == 9, 'ult_src_instid'] = -1
+        events.loc[events.state_change == 9, 'src_instid'] = -1
+        events.loc[events.state_change == 9, 'src_master_instid'] = -1
+
         #experimental phase calculations
         events['ult_src_instid'] = events.src_master_instid.where(
             events.src_master_instid != 0, events.src_instid)
@@ -218,6 +265,9 @@ class Analyser:
         self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
         print("Important phases:")
         list(map(print_phase, self.phases))
+        
+        if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
+            raise EvtcAnalysisException("Initial phase missing or skipped")
 
         return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
 
@@ -246,14 +296,21 @@ class Analyser:
 
         #set up data structures
         events = assign_event_types(encounter.events)
-        if (encounter.version < '20170923'
-            and not events[(events.state_change == parser.StateChange.GW_BUILD)
-                & (events.src_agent >= 82356)].empty):
+
+        gw_build_event = events[events.state_change == parser.StateChange.GW_BUILD]
+        if gw_build_event.empty:
+            gw_build = 0
+        else:
+            gw_build = gw_build_event['src_agent'].iloc[0]
+
+        if (       (encounter.version < '20170923' and gw_build >= 82356)
+                or (encounter.version < '20171107' and gw_build >= 83945)
+                ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
         agents = encounter.agents
         skills = encounter.skills
-        players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
+        agents, players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
 
         self.preprocess_skills(skills, collector)
         self.players = players
@@ -290,7 +347,7 @@ class Analyser:
         encounter_collector.add_data('start_tick', start_time, int)
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('cm', self.boss_info.cm_detector(events))
+        encounter_collector.add_data('cm', self.boss_info.cm_detector(events, self.boss_instids))
 
         encounter_collector.add_data('phase_order', [name for name,start,end in self.phases])
         for phase in self.phases:
