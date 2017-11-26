@@ -57,7 +57,7 @@
     'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
     })(window,document,'script','dataLayer','GTM-TJZK4W9');</script>
     <!-- End Google Tag Manager -->
-    
+
     <script id="template" type="text/ractive">
         {# Logo #}
         <div class="uk-background-secondary uk-light">
@@ -270,13 +270,13 @@
               </ul>
               <div class="uk-width-2-3">
               <p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
-              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" >
+              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="uk-width-auto uk-inline">
                 <input type="hidden" name="cmd" value="_s-xclick">
                 <input type="hidden" name="hosted_button_id" value="3KAQWB87RUXZ2">
-                <input type="image" src="https://www.paypalobjects.com/en_AU/i/btn/btn_donate_SM.gif" border="0" name="submit" alt="PayPal – The safer, easier way to pay online!">
+                <button class="uk-button" style="background-color:#003087;" type="submit" border="0" name="submit" value="submit">Donate with Paypal</button>
                 <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
               </form>
-              <a href="https://www.patreon.com/bePatron?u=7921847" data-patreon-widget-type="become-patron-button" onClick="ga(‘send’, ‘event’, ‘Donations’, ‘Click’, ‘Patreon’);"><img src="{% static 'raidar/img/patreon/become_a_patron_button.png' %}" alt="Become a Patron!"/></a>
+              <a class="uk-button" style="background-color:#fc674e;" href="https://www.patreon.com/bePatron?u=7921847" data-patreon-widget-type="become-patron-button" onClick="ga(‘send’, ‘event’, ‘Donations’, ‘Click’, ‘Patreon’);">Become a Patron!</a>
               </div>
               <div class="uk-width-1-1 uk-padding uk-padding-remove-bottom">
                   <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
@@ -288,12 +288,12 @@
   </head>
   <body class="uk-height-viewport">
     {% csrf_token %}
-    
+
     <!-- Google Tag Manager (noscript) -->
     <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TJZK4W9"
     height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
     <!-- End Google Tag Manager (noscript) -->
-    
+
     <div id="container" class="uk-height-viewport">
     </div>
     <script src="{% static 'raidar/script.js' %}"></script>
