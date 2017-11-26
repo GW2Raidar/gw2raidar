@@ -79,7 +79,7 @@ class EncounterAdmin(QuotedSearchModelAdmin):
         return format_html("<a href='../../../encounter/{url_id}'>{url_id}</a>", url_id=obj.url_id)
     url_id_link.short_description = "Link"
 
-    search_fields = ('=url_id', '=filename', '^area__name', '=participations__character', '^account__name', '=participations__account__user__username', '=tags__name', '=category__name')
+    search_fields = ('=url_id', '=filename', '^area__name', '=participations__character', '^participations__account__name', '=participations__account__user__username', '=tags__name', '=category__name')
     list_display = ('filename', 'url_id_link', 'area', 'success', 'category', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
     list_select_related = ('category', 'uploaded_by', 'area')
     inlines = (ParticipationInline,)
