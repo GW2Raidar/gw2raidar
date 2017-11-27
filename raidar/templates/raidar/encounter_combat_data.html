@@ -29,9 +29,11 @@
       </div>
       [[#with phases[page.phase]]]
       <div class="r-encounter-damage">
+        <!-- Overall size of the graph can be controlled by width of the svg wrapper below. -->
         <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
           [[#with actual]]
-          <!-- Total Damage -->
+          <!-- Total Damage
+          -->
           <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
             <!-- Total Damage Text -->
           <text x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='13'>[[num(dps, 0)]]</text>

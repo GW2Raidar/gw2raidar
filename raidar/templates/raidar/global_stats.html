@@ -79,23 +79,26 @@
 
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
 
+              Classes assign colors: r-bg-{Percentile} will add the color to that element.
+
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='#9C0AFF' opacity='0.6' />
+              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' opacity='0.6' />
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='#9C0AFF'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' fill='rgba(191, 50, 109, 0.6)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%' fill='rgba(191, 50, 109, 1)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' fill='rgba(45, 129, 198, 0.6)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='24px' height='8px' width='39.44386649328132%' fill='rgba(45, 129, 198, 1)'/>
+              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%'/>
+              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' opacity='0.6'/>
+              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%'/>
+              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' opacity="0.6"/>
+              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='24px' height='8px' width='39.44386649328132%'/>
               <!--
               Text with some custom adjustments to deal with alignment issues.
               -->
               <text x='100%' y='12px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>36432</text>
               <text x='65%' y='24px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>32721</text>
-              <text x='48.44386649328132%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>22352</text></svg>
+              <text x='48.44386649328132%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>22352</text>
+            </svg>
           </div>
           <div class="r-global-stats-damageIn">
             <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="36px" width="100%">
@@ -104,17 +107,19 @@
 
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
 
+              Classes assign colors: r-bg-{Percentile} will add the color to that element.
+
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='#9C0AFF' opacity='0.6'/>
+              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' opacity='0.6' />
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='#9C0AFF'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' fill='rgba(191, 50, 109, 0.6)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%' fill='rgba(191, 50, 109, 1)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' fill='rgba(45, 129, 198, 0.6)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='24px' height='8px' width='39.44386649328132%' fill='rgba(45, 129, 198, 1)'/>
+              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%'/>
+              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' opacity='0.6'/>
+              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%'/>
+              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' opacity="0.6"/>
+              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='24px' height='8px' width='39.44386649328132%'/>
               <!--
               Text with some custom adjustments to deal with alignment issues.
               -->
@@ -149,17 +154,19 @@
 
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
 
+              Classes assign colors: r-bg-{Percentile} will add the color to that element.
+
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' fill='#9C0AFF' opacity="0.6"/>
+              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='0' height='8px' width='100%' opacity='0.6' />
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%' fill='#9C0AFF'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' fill='rgba(191, 50, 109, 0.6)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%' fill='rgba(191, 50, 109, 1)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' fill='rgba(45, 129, 198, 0.6)'/>
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='24px' height='8px' width='39.44386649328132%' fill='rgba(45, 129, 198, 1)'/>
+              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='0' height='8px' width='85%'/>
+              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='12px' height='8px' width='65%' opacity='0.6'/>
+              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='12px' height='8px' width='55.9176428058626%'/>
+              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='24px' height='8px' width='48.44386649328132%' opacity="0.6"/>
+              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='24px' height='8px' width='39.44386649328132%'/>
               <!--
               Text with some custom adjustments to deal with alignment issues.
               -->
