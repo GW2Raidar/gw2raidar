@@ -6124,6 +6124,16 @@
 		"oS": 0,
 		"uL": 1
 		},
+	"\/node_modules\/uikit\/src\/scss\/raidar.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar.css",
+		"oF": 0,
+		"oS": 3
+		},
 	"\/node_modules\/uikit\/src\/scss\/raidar.scss": {
 		"aP": 0,
 		"bl": 0,
@@ -6131,9 +6141,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
-		"oF": 3,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
