@@ -102,11 +102,15 @@ svg:not(:root).chart {
     grid-template-columns: 160px repeat(auto-fit, minmax(100px, 1fr));
     grid-template-rows: 2fr;
     grid-gap: 8px; }
+  .r-encounter-stats-container .r-stats-row .compare {
+    visibility: hidden; }
+  .r-encounter-stats-container .r-stats-row:hover .compare {
+    visibility: visible; }
 
 @media (min-width: 1200px) {
   .r-encounter-stats-container .r-stats-row {
     display: grid;
-    grid-template-columns: 160px 3fr repeat(4, 1fr);
+    grid-template-columns: 160px 3fr repeat(4, 1fr) 2fr;
     grid-gap: 16px; } }
 
 .r-encounter-stats-container .r-encounter-player {
@@ -116,7 +120,7 @@ svg:not(:root).chart {
 
 .r-encounter-stats-container .r-encounter-buff {
   display: grid;
-  grid-template-columns: repeat(2, minmax(max-content, 44px));
+  grid-template-rows: repeat(2, minmax(max-content, 44px));
   grid-gap: 4px;
   align-items: center; }
   .r-encounter-stats-container .r-encounter-buff .r-buff-number {
@@ -451,43 +455,53 @@ svg:not(:root).chart {
 
 .r-bg-70 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-71 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-72 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-73 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-74 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-75 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-76 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-77 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-78 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-79 {
   background-color: #EAC10B !important;
-  fill: #EAC10B; }
+  fill: #EAC10B;
+  text-shadow: 0 0 2px #584804; }
 
 .r-bg-80 {
   background-color: #CF890F !important;

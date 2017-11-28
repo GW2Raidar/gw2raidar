@@ -6141,9 +6141,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 2,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar.scss",
-		"oF": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
+		"oF": 3,
 		"oS": 0,
 		"uL": 1
 		},
@@ -9831,6 +9831,17 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/patreon\/become_a_patron_button.png": {
+		"ft": 32768,
+		"iS": 3086,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/patreon\/become_a_patron_button.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
