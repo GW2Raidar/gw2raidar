@@ -63,6 +63,94 @@ BUFF_TYPES = [
     ]
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }
+BUFF_TABS = [
+    {
+        'name': 'Overview',
+        'order': [
+            'might',
+            'fury',
+            'quickness',
+            'alacrity',
+        ],
+    },
+    {
+        'name': 'Offensive Boons',
+        'order': [
+            'might',
+            'fury',
+            'quickness',
+            'retaliation',
+        ],
+    },
+    {
+        'name': 'Supportive Boons',
+        'order': [
+            'protection',
+            'aegis',
+            'regen',
+            'swiftness',
+            'vigor',
+            'resistance',
+            'stability',
+        ],
+    },
+    {
+        'name': 'Offensive Buffs',
+        'order': [
+            'alacrity',
+            'spirit_of_frost',
+            'sun_spirit',
+            'spotter',
+            'banner_strength',
+            'banner_discipline',
+            'empower_allies',
+            'glyph_of_empowerment',
+            'assassins_presence',
+            'pinpoint_distribution',
+        ],
+    },
+    {
+        'name': 'Supportive Buffs',
+        'order': [
+            'stone_spirit',
+            'banner_tactics',
+            'banner_defense',
+            'storm_spirit',
+            'facet_of_nature',
+            'soothing_mist',
+            'vampiric_presence',
+        ],
+    },
+    {
+        'name': 'All buffs', # XXX For now; delete when support for tabs arrives
+        'order': [
+            'might',
+            'fury',
+            'quickness',
+            'alacrity',
+            'protection',
+            'retaliation',
+            'regen',
+            'spotter',
+            'glyph_of_empowerment',
+            'gotl',
+            'spirit_of_frost',
+            'sun_spirit',
+            'stone_spirit',
+            'storm_spirit',
+            'empower_allies',
+            'banner_strength',
+            'banner_discipline',
+            'banner_tactics',
+            'banner_defence',
+            'assassins_presence',
+            'naturalistic_resonance',
+            'pinpoint_distribution',
+            'soothing_mist',
+            'vampiric_presence',
+        ],
+    },
+]
 
 class BuffTrackIntensity:
     def __init__(self, buff_type, dst_instid, src_instids, encounter_start, encounter_end):
