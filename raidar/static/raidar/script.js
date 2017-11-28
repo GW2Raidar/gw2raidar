@@ -461,32 +461,6 @@ ${body}
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
-  initData.data.boons = [
-    { boon: 'might', stacks: 25 },
-    { boon: 'fury' },
-    { boon: 'quickness' },
-    { boon: 'alacrity' },
-    { boon: 'protection' },
-    { boon: 'retaliation' },
-    { boon: 'regen' },
-    { boon: 'spotter' },
-    { boon: 'glyph_of_empowerment' },
-    { boon: 'gotl', stacks: 5 },
-    { boon: 'spirit_of_frost' },
-    { boon: 'sun_spirit' },
-    { boon: 'stone_spirit' },
-    { boon: 'storm_spirit' },
-    { boon: 'empower_allies' },
-    { boon: 'banner_strength' },
-    { boon: 'banner_discipline' },
-    { boon: 'banner_tactics' },
-    { boon: 'banner_defence' },
-    { boon: 'assassins_presence' },
-    { boon: 'naturalistic_resonance' },
-    { boon: 'pinpoint_distribution' },
-    { boon: 'soothing_mist' },
-    { boon: 'vampiric_presence' },
-  ];
   delete window.raidar_data;
 
   function URLForPage(page) {
