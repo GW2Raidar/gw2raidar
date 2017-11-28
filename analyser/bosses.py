@@ -33,6 +33,10 @@ def mo_cm_detector(events, boss_instids):
 def deimos_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 42000000) & (events.src_instid.isin(boss_instids))]) > 0
 
+def skorvald_cm_detector(events, boss_instids):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
+
+
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
         self.name = name
@@ -47,7 +51,7 @@ class Metric:
         return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
-    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False):
+    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True):
         self.name = name
         self.kind = kind
         self.boss_ids = boss_ids
@@ -60,6 +64,7 @@ class Boss:
         self.success_health_limit = success_health_limit
         self.cm_detector = cm_detector
         self.force_single_party = force_single_party
+        self.non_cm_allowed = non_cm_allowed
 
 class Phase:
     def __init__(self, name, important,
@@ -284,6 +289,51 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
+    Boss('Cairn (CM)', Kind.RAID, [0xFF432A], metrics = [
+        Metric('Displacement', 'Teleported', MetricType.COUNT),
+        Metric('Meteor Swarm', 'Shard Hits', MetricType.COUNT),
+        Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
+        Metric('Shared Agony', 'Agony', MetricType.COUNT)
+    ], cm_detector = cairn_cm_detector),
+    Boss('Mursaat Overseer (CM)', Kind.RAID, [0xFF4314], metrics = [
+        Metric('Protect', 'Protector', MetricType.COUNT),
+        Metric('Claim', 'Claimer', MetricType.COUNT),
+        Metric('Dispel', 'Dispeller', MetricType.COUNT),
+        Metric('Soldiers', 'Soldiers', MetricType.COUNT, False),
+        Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
+        Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
+    ], cm_detector = mo_cm_detector),
+    Boss('Samarog (CM)', Kind.RAID, [0xFF4324], phases = [
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
+        Phase("Phase 3", True, phase_end_health=1)
+    ], metrics = [
+        Metric('Claw', 'Claw', MetricType.COUNT, True, True),
+        Metric('Shockwave', 'Shockwave', MetricType.COUNT, True, True),
+        Metric('Prisoner Sweep', 'Sweep', MetricType.COUNT, True, True),
+        Metric('Charge', 'Charge', MetricType.COUNT, True, False),
+        Metric('Anguished Bolt', 'Guldhem Stun', MetricType.COUNT, True, False),
+        Metric('Inevitable Betrayal', 'Chose Poorly', MetricType.COUNT, True, False),
+        Metric('Bludgeon', 'Bludgeon', MetricType.COUNT, True, False),
+        Metric('Fixate', 'Fixate', MetricType.COUNT, True, True),
+        Metric('Small Friend', 'Small Friend', MetricType.COUNT, True, True),
+        Metric('Big Friend', 'Big Friend', MetricType.COUNT, True, True),
+        Metric('Spear Impact', 'Spear Impacts', MetricType.COUNT, True, True)
+    ], cm_detector = samarog_cm_detector),
+    Boss('Deimos (CM)', Kind.RAID, [0xFF4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
+        Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
+        Phase("Phase 2", True)
+    ], metrics = [
+        Metric('Annihilate', 'Slammed', MetricType.COUNT, True, False),
+        Metric('Soul Feast', 'Hand Touches', MetricType.COUNT, True, False),
+        Metric('Mind Crush', 'Mind Crush', MetricType.COUNT, True, False),
+        Metric('Rapid Decay', 'Black', MetricType.COUNT, True, False),
+        Metric('Demonic Shockwave', 'Shockwave', MetricType.COUNT, True, False),
+        Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
+        Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
+    ], cm_detector = deimos_cm_detector),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
@@ -292,21 +342,21 @@ BOSS_ARRAY = [
     Boss('Massive Vital Kitty Golem', Kind.DUMMY, [16169]),
     Boss('Resistant Kitty Golem', Kind.DUMMY, [16176]),
     Boss('Tough Kitty Golem', Kind.DUMMY, [16174]),
-    Boss('Skorvald the Shattered (CM)', Kind.FRACTAL,[0x44E0], phases = [
+    Boss('Skorvald the Shattered', Kind.FRACTAL,[0x44E0], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
-    ], cm_detector = yes_cm, force_single_party = True),
-    Boss('Artsariiv (CM)', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
+    ], cm_detector = skorvald_cm_detector, force_single_party = True, non_cm_allowed = False),
+    Boss('Artsariiv', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
-    ], cm_detector = yes_cm, force_single_party = True),
-    Boss('Arkk (CM)', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
+    ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
+    Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
         Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000, phase_skip_health = 70),
         Phase("First orb", False, phase_end_damage_start = 10000, phase_skip_health = 70),
         Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000, phase_skip_health = 50),
@@ -318,8 +368,8 @@ BOSS_ARRAY = [
         Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000, phase_skip_health = 1),
         Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 1),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
-    ], cm_detector = yes_cm, force_single_party = True),
-    Boss('MAMA (CM)', Kind.FRACTAL, [0x427d], phases = [
+    ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
+    Boss('MAMA', Kind.FRACTAL, [0x427d], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000, phase_skip_health = 50),
         Phase("First split", False, phase_end_damage_start = 3000, phase_skip_health = 50),
         Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000, phase_skip_health = 25),
@@ -327,21 +377,21 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 3000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 3000, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
-    ], cm_detector = yes_cm, force_single_party = True),
-    Boss('Siax (CM)', Kind.FRACTAL,[0x4284], phases = [
+    ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
+    Boss('Siax', Kind.FRACTAL,[0x4284], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 13000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 13000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 13000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 13000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
-    ], cm_detector = yes_cm, force_single_party = True),
-    Boss('Ensolyss (CM)', Kind.FRACTAL,[0x4234], phases = [
+    ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
+    Boss('Ensolyss', Kind.FRACTAL,[0x4234], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 15),
         Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 15),
         Phase("Phase 3", True, phase_end_health=15, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
-    ], cm_detector = yes_cm, force_single_party = True)
+    ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False)
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
