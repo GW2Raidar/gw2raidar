@@ -6,10 +6,11 @@
     <div class="r-stats-row r-stats-header uk-visible@l">
       <div>Spec</div>
       <div>Damage Done/Second</div>
-      <div>Might</div>
-      <div>Fury</div>
-      <div>Quickness</div>
-      <div>Alacrity</div>
+      [[#each data.buff_tabs[0].order]]
+        [[#with { buff: data.buffs[.] } ]]
+          <div><img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/></div>
+        [[/with]]
+      [[/each]]
       <div>Damage Recieved/Second</div>
     </div>
     [[#each members]]
@@ -66,31 +67,23 @@
             <span class="r-buff-number r-bg-60 uk-badge">Flanking: [[perc(flanking)]]</span>
           [[/with]]
       </div>
+        [[#each data.buff_tabs[0].order]]
+          [[#with { buff: data.buffs[.], code: . } ]]
+            [[#if encounter.phases[page.phase]]]
+              <div class="r-encounter-buff">
+                [[#with { format: buff.stacks ? num : perc } ]]
+                  <span class="r-buff-number r-bg-60">[[format(encounter.phases[page.phase].buffs[code], 2)]]</span>
+                  [[#if encounter.phases[page.phase].group]]
+                    <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 2)]]</span>
+                  [[/if]]
+                [[/with]]
+              </div>
+            [[else]]
+              <div></div>
+            [[/if]]
+          [[/with]]
+        [[/each]]
         [[#with actual]]
-        <div class="r-encounter-buff">
-          <span class="r-buff-number r-bg-60">[[perc(crit)]]</span>
-          [[#if archetype.avg_crit]]
-            <span class="r-buff-number r-bg-70 compare">[[perc(archetype.avg_crit)]]</span>
-          [[/if]]
-        </div>
-        <div class="r-encounter-buff">
-          <span class="r-buff-number r-bg-60">[[perc(scholar)]]</span>
-          [[#if archetype.avg_scholar]]
-            <span class="r-buff-number r-bg-70 compare">[[perc(archetype.avg_scholar)]]</span>
-          [[/if]]
-        </div>
-        <div class="r-encounter-buff">
-          <span class="r-buff-number r-bg-60">[[perc(flanking)]]</span>
-          [[#if archetype.avg_flanking]]
-            <span class="r-buff-number r-bg-70 compare">[[perc(archetype.avg_flanking)]]</span>
-          [[/if]]
-        </div>
-        <div class="r-encounter-buff">
-          <span class="r-buff-number r-bg-60">[[perc(flanking)]]</span>
-          [[#if archetype.avg_flanking]]
-            <span class="r-buff-number r-bg-70 compare">[[perc(archetype.avg_flanking)]]</span>
-          [[/if]]
-        </div>
         [[/with]]
         <div class="r-encounter-damage">
           <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
