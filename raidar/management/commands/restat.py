@@ -238,10 +238,15 @@ class Command(BaseCommand):
         GB = 1024 * 1024 * 1024
         MIN_DISK_AVAIL = 10 * GB
 
-        def is_there_space_now():
-            fsdata = os.statvfs(settings.UPLOAD_DIR)
-            diskavail = fsdata.f_frsize * fsdata.f_bavail
-            return diskavail > MIN_DISK_AVAIL
+        if hasattr(os, 'statvfs'):
+            def is_there_space_now():
+                fsdata = os.statvfs(settings.UPLOAD_DIR)
+                diskavail = fsdata.f_frsize * fsdata.f_bavail
+                return diskavail > MIN_DISK_AVAIL
+        else:
+            def is_there_space_now():
+                # No protection from full disk on Windows
+                return True
 
         if is_there_space_now():
             return
@@ -418,7 +423,7 @@ class Command(BaseCommand):
         def calculate_user_stats(era):
             user_queryset = User.objects.all()
             for user in user_queryset.iterator():
-                participation_queryset = Participation.objects.prefetch_related('encounter', 'account').filter(account__user=user, era=era).order_by('?')
+                participation_queryset = Participation.objects.prefetch_related('encounter', 'account').filter(account__user=user, encounter__era=era).order_by('?')
                 totals_for_player = initialise_era_user_stats(participation_queryset.count())
                 for participation in participation_queryset.iterator():
                     add_participation_to_era_user_stats(participation, totals_for_player)
