@@ -6105,9 +6105,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/mixins-theme.css",
-		"oF": 1,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/mixins-theme.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6118,23 +6118,33 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/mixins.css",
-		"oF": 1,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/mixins.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
-	"\/node_modules\/uikit\/src\/scss\/raidar.scss": {
+	"\/node_modules\/uikit\/src\/scss\/raidar.css": {
 		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar.css",
+		"oF": 0,
+		"oS": 3
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar.scss": {
+		"aP": 0,
 		"bl": 0,
 		"dP": 10,
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
-		"oF": 3,
-		"oS": 3,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar.scss",
+		"oF": 0,
+		"oS": 0,
 		"uL": 1
 		},
 	"\/node_modules\/uikit\/src\/scss\/theme\/_import.scss": {
@@ -6146,7 +6156,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/_import.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6159,7 +6169,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/accordion.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6172,7 +6182,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/alert.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6185,7 +6195,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/align.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6198,7 +6208,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/animation.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6211,7 +6221,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/article.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6224,7 +6234,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/background.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6237,7 +6247,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/badge.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6250,7 +6260,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/base.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6263,7 +6273,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/breadcrumb.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6276,7 +6286,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/button.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6289,7 +6299,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/card.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6302,7 +6312,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/close.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6315,7 +6325,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/column.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6328,7 +6338,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/comment.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6341,7 +6351,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/container.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6354,7 +6364,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/countdown.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6367,7 +6377,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/description-list.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6380,7 +6390,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/divider.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6393,7 +6403,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/dotnav.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6406,7 +6416,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/drop.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6419,7 +6429,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/dropdown.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6432,7 +6442,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/form-range.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6445,7 +6455,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/form.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6458,7 +6468,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/grid.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6471,7 +6481,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/heading.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6484,7 +6494,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/icon.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6497,7 +6507,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/iconnav.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6510,7 +6520,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/inverse.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6523,7 +6533,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/label.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6536,7 +6546,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/lightbox.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6549,7 +6559,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/link.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6562,7 +6572,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/list.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6575,7 +6585,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/margin.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6588,7 +6598,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/marker.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6601,7 +6611,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/modal.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6614,7 +6624,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/nav.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6627,7 +6637,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/navbar.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6640,7 +6650,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/notification.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6653,7 +6663,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/offcanvas.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6666,7 +6676,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/overlay.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6679,7 +6689,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/padding.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6692,7 +6702,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/pagination.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6705,7 +6715,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/placeholder.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6718,7 +6728,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/position.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6731,7 +6741,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/progress.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6744,7 +6754,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/search.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6757,7 +6767,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/section.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6770,7 +6780,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/slidenav.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6783,7 +6793,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/sortable.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6796,7 +6806,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/spinner.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6809,7 +6819,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/sticky.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6822,7 +6832,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/subnav.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6835,7 +6845,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/tab.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6848,7 +6858,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/table.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6861,7 +6871,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/text.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6874,7 +6884,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/tile.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6887,7 +6897,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/tooltip.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6900,7 +6910,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/totop.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6913,7 +6923,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/transition.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6926,7 +6936,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/utility.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6939,7 +6949,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/variables.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6952,7 +6962,7 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/width.scss",
-		"oF": 1,
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6963,9 +6973,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/uikit-theme.css",
-		"oF": 3,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/uikit-theme.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6976,9 +6986,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/uikit.css",
-		"oF": 3,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/uikit.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -6989,9 +6999,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/variables-theme.css",
-		"oF": 1,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/variables-theme.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -7002,9 +7012,9 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 0,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/variables.css",
-		"oF": 1,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/variables.scss",
+		"oF": 0,
 		"oS": 0,
 		"uL": 1
 		},
@@ -8025,6 +8035,55 @@
 		"oAP": "\/raidar\/migrations\/0030_encounter_has_evtc.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0031_regular_blank_null.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0031_regular_blank_null.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0032_has_evtc_no_edit.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0032_has_evtc_no_edit.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0033_add_account_to_participation.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0033_add_account_to_participation.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0034_fill_in_participation_fields.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0034_fill_in_participation_fields.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0035_switch_participation_to_account.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0035_switch_participation_to_account.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0036_remove_character.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0036_remove_character.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0037_make_added_fields_nonnull.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0037_make_added_fields_nonnull.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8254,6 +8313,41 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/__pycache__\/0032_has_evtc_no_edit.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0033_add_account_to_participation.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0033_add_account_to_participation.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0034_fill_in_participation_fields.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0034_fill_in_participation_fields.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0035_switch_participation_to_account.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0035_switch_participation_to_account.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0036_remove_character.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0036_remove_character.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
@@ -9336,12 +9430,12 @@
 		},
 	"\/raidar\/static\/raidar\/img\/background\/header-concept.jpg": {
 		"ft": 16384,
-		"iS": 359308,
+		"iS": 356717,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
-		"oF": 1,
+		"oF": 0,
 		"oIPL": 0,
-		"opt": 1,
+		"opt": 0,
 		"q": 100
 		},
 	"\/raidar\/static\/raidar\/img\/buff\/20px-Resistance_40px.png": {
@@ -9663,6 +9757,28 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/intro\/boons.png": {
+		"ft": 32768,
+		"iS": 39886,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/boons.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/global_stats.png": {
+		"ft": 32768,
+		"iS": 119747,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/global_stats.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/intro\/individual.png": {
 		"ft": 32768,
 		"iS": 47454,
@@ -9682,6 +9798,28 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/profile.png": {
+		"ft": 32768,
+		"iS": 70594,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/profile.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/profile_graph.png": {
+		"ft": 32768,
+		"iS": 104475,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/profile_graph.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},

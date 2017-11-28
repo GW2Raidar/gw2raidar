@@ -1,15 +1,72 @@
 {% load staticfiles %}
 <div class="table-container">
   {% include 'raidar/encounter_row_header.html' %}
-
+  <!-- <div class="r-encounter-stats-container">
+    <div class="r-stats-row r-stats-header r-buff-stats uk-visible@l">
+      <div></div>
+      <div><img src="{% static 'raidar/img/buff/Might.png' %}" uk-tooltip title="Might" alt="Might"/></div>
+      <div><img src="{% static 'raidar/img/buff/Fury.png' %}" uk-tooltip title="Fury" alt="Fury"/></div>
+      <div><img src="{% static 'raidar/img/buff/Quickness.png' %}" uk-tooltip title="Quickness" alt="Quickness"/></div>
+      <div><img src="{% static 'raidar/img/buff/Alacrity.png' %}" uk-tooltip title="Alacrity" alt="Alacrity"/></div>
+      <div><img src="{% static 'raidar/img/buff/Protection.png' %}" uk-tooltip title="Protection" alt="Protection"/></div>
+      <div><img src="{% static 'raidar/img/buff/Retaliation.png' %}" uk-tooltip title="Retaliation" alt="Retaliation"/></div>
+      <div><img src="{% static 'raidar/img/buff/Regeneration.png' %}" uk-tooltip title="Regeneration" alt="Regeneration"/></div>
+      <div><img src="{% static 'raidar/img/buff/Spotter.png' %}" uk-tooltip title="Spotter" alt="Spotter"/></div>
+      <div><img src="{% static 'raidar/img/buff/Glyph_of_Empowerment.png' %}" uk-tooltip title="Glyph of Empowerment" alt="Glyph of Empowerment"/></div>
+      <div><img src="{% static 'raidar/img/buff/Grace_of_the_Land.png' %}" uk-tooltip title="Grace of the Land" alt="Grace of the Land"/></div>
+      <div><img src="{% static 'raidar/img/buff/Frost_Spirit.png' %}" uk-tooltip title="Frost Spirit" alt="Frost Spirit"/></div>
+      <div><img src="{% static 'raidar/img/buff/Sun_Spirit.png' %}" uk-tooltip title="Sun Spirit" alt="Sun Spirit"/></div>
+      <div><img src="{% static 'raidar/img/buff/Stone_Spirit.png' %}" uk-tooltip title="Stone Spirit" alt="Stone Spirit"/></div>
+      <div><img src="{% static 'raidar/img/buff/Storm_Spirit.png' %}" uk-tooltip title="Storm Spirit" alt="Storm Spirit"/></div>
+      <div><img src="{% static 'raidar/img/buff/Empower_Allies.png' %}" uk-tooltip title="Empower Allies" alt="Empower Allies"/></div>
+      <div><img src="{% static 'raidar/img/buff/Banner_of_Strength.png' %}" uk-tooltip title="Banner of Strength" alt="Banner of Strength"/></div>
+      <div><img src="{% static 'raidar/img/buff/Banner_of_Discipline.png' %}" uk-tooltip title="Banner of Discipline" alt="Banner of Discipline"/></div>
+      <div><img src="{% static 'raidar/img/buff/Banner_of_Tactics.png' %}" uk-tooltip title="Banner of Tactics" alt="Banner of Tactics"/></div>
+      <div><img src="{% static 'raidar/img/buff/Banner_of_Defense.png' %}" uk-tooltip title="Banner of Defense" alt="Banner of Defense"/></div>
+      <div><img src="{% static 'raidar/img/buff/Assassin\'s_Presence.png' %}" uk-tooltip title="Assassin's Presence" alt="Assassin's Presence"/></div>
+      <div><img src="{% static 'raidar/img/buff/Facet_of_Nature.png' %}" uk-tooltip title="Naturalistic Resonance" alt="Naturalistic Resonance"/></div>
+      <div><img src="{% static 'raidar/img/buff/Pinpoint_Distribution.png' %}" uk-tooltip title="Pinpoint Distribution" alt="Pinpoint Distribution"/></div>
+      <div><img src="{% static 'raidar/img/buff/Soothing_Mist.png' %}" uk-tooltip title="Soothing Mist" alt="Soothing Mist"/></div>
+      <div><img src="{% static 'raidar/img/buff/Vampiric_Presence.png' %}" uk-tooltip title="Vampiric Presence" alt="Vampiric Presence"/></div>
+    </div>
+    [[#each encounter.parties:partyNo]]
+      [[#each members]]
+      <div class="r-stats-row r-buff-stats">
+        <div class="r-encounter-player">
+          <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+          <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+          [[#if name]]
+            [[name]]
+          [[else]]
+            <span class="private">PRIVATE</span>
+          [[/if]]
+        </div>
+        [[#each data.boons]]
+          [[#if phases[page.phase]]]
+            <div class="r-encounter-buff">
+              [[#with { format: stacks ? num : perc } ]]
+                <span class="r-buff-number r-bg-30">[[format(phases[page.phase].buffs[boon], 2)]]</span>
+                [[#if phases[page.phase].archetype.buffs['avg_' + boon]]]
+                  <span class="r-buff-number r-bg-50">[[format(phases[page.phase].archetype.buffs['avg_' + boon], 2)]]</span>
+                [[/if]]
+              [[/with]]
+            </div>
+          [[else]]
+            <td></td>
+          [[/if]]
+        [[/each]]
+      </div>
+      [[/each]]
+    [[/each]]
+  </div> -->
   <div class="uk-overflow-auto">
     <table class="uk-table stats">
       <tbody>
         <tr>
           <th>Totals</th>
           <th width="100"><img src="{% static 'raidar/img/buff/Might.png' %}" uk-tooltip title="Might" alt="Might"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Fury.png' %}" uk-tooltip title="Fury" alt="Fury"/></th>
-          <th width="100"><img src="{% static 'raidar/img/buff/Quickness.png' %}" uk-tooltip title="Quickness" alt="Quickness"/></th>
+          <th width="100"></th>
+          <th width="100"></th>
           <th width="100"><img src="{% static 'raidar/img/buff/Alacrity.png' %}" uk-tooltip title="Alacrity" alt="Alacrity"/></th>
           <th width="100"><img src="{% static 'raidar/img/buff/Protection.png' %}" uk-tooltip title="Protection" alt="Protection"/></th>
           <th width="100"><img src="{% static 'raidar/img/buff/Retaliation.png' %}" uk-tooltip title="Retaliation" alt="Retaliation"/></th>
@@ -37,10 +94,12 @@
           [[#each data.boons]]
             [[#if encounter.phases[page.phase]]]
               <td style="[[#if encounter.phases[page.phase].group]][[bar(encounter.phases[page.phase].buffs[boon], encounter.phases[page.phase].group.buffs['avg_' + boon], encounter.phases[page.phase].group.buffs['min_' + boon], encounter.phases[page.phase].group.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(encounter.phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
-                <span>[[encounter.phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                [[#if encounter.phases[page.phase].group]]
-                  <span class="expected">[[encounter.phases[page.phase].group.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                [[/if]]
+                [[#with { format: stacks ? num : perc } ]]
+                  <span>[[format(encounter.phases[page.phase].buffs[boon], 2)]]</span>
+                  [[#if encounter.phases[page.phase].group]]
+                    <span class="expected">[[format(encounter.phases[page.phase].group.buffs['avg_' + boon], 2)]]</span>
+                  [[/if]]
+                [[/with]]
               </td>
             [[else]]
               <td></td>
@@ -53,7 +112,9 @@
             [[#each data.boons]]
               [[#if phases[page.phase]]]
                 <td style="[[bar1(phases[page.phase].buffs[boon], stacks || 100)]]">
-                  <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
+                  [[#with { format: stacks ? num : perc } ]]
+                    <span>[[format(phases[page.phase].buffs[boon], 2)]]</span>
+                  [[/with]]
                 </td>
               [[else]]
                 <td></td>
@@ -105,11 +166,13 @@
               </td>
               [[#each data.boons]]
                 [[#if phases[page.phase]]]
-                <td style="[[#if phases[page.phase].archetype.buffs['avg_' + boon]]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
-                    <span>[[phases[page.phase].buffs[boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                    [[#if phases[page.phase].archetype.buffs['avg_' + boon]]]
-                      <span class="expected">[[phases[page.phase].archetype.buffs['avg_' + boon].toPrecision(3)]][[#unless stacks]]%[[/unless]]</span>
-                    [[/if]]
+                  <td style="[[#if phases[page.phase].archetype.buffs['avg_' + boon]]][[bar(phases[page.phase].buffs[boon], phases[page.phase].archetype.buffs['avg_' + boon], phases[page.phase].archetype.buffs['min_' + boon], phases[page.phase].archetype.buffs['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs[boon], stacks || 100)]][[/if]]">
+                    [[#with { format: stacks ? num : perc } ]]
+                      <span>[[format(phases[page.phase].buffs[boon], 2)]]</span>
+                      [[#if phases[page.phase].archetype.buffs['avg_' + boon]]]
+                        <span class="expected">[[format(phases[page.phase].archetype.buffs['avg_' + boon], 2)]]</span>
+                      [[/if]]
+                    [[/with]]
                   </td>
                 [[else]]
                   <td></td>

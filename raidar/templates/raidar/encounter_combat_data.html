@@ -1,7 +1,104 @@
 {% load staticfiles %}
 <div class="table-container">
   {% include 'raidar/encounter_row_header.html' %}
+  [[#each encounter.parties:partyNo]]
+  <div class="r-encounter-stats-container">
+    <div class="r-stats-row r-stats-header uk-visible@l">
+      <div>Spec</div>
+      <div>Damage Done/Second</div>
+      <div>Crit</div>
+      <div>Scholar</div>
+      <div>Flanking</div>
+      <div>Damage Recieved/Second</div>
+    </div>
+    [[#each members]]
+    <div class="r-stats-row">
+      <div class="r-encounter-player" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with encounter.phases[page.phase].events]]
+        Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
+        Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
+        Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
+      [[/with]]">
 
+        <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png" title="[[data.archetypes[archetype]]]"/>
+        <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+        [[#if name]]
+          [[name]]
+        [[else]]
+          <span class="private">PRIVATE</span>
+        [[/if]]
+      </div>
+      [[#with phases[page.phase]]]
+      <div class="r-encounter-damage">
+        <!-- Overall size of the graph can be controlled by width of the svg wrapper below. -->
+        <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+          [[#with actual]]
+          <!-- Total Damage
+          -->
+          <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+            <!-- Total Damage Text -->
+          <text x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='13'>[[num(dps, 0)]]</text>
+          <!-- Next Percentile -->
+          <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(archetype.avg_dps, 0)]] Damage Per Second" x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((archetype.avg_dps)-(dps))/(archetype.avg_dps)*100), 0)]]%' fill='#9C0AFF' />
+
+            <!-- Next Percentile Text -->
+          <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='10'>[[num(archetype.avg_dps, 0)]]</text>
+            [[/with]]
+
+
+            <!-- Boss Damage -->
+          <!-- <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/> -->
+
+
+
+          </svg>
+      </div>
+        [[#with actual]]
+        <div class="r-encounter-buff">
+          <span class="r-buff-number r-bg-60">[[perc(crit)]]</span>
+          [[#if archetype.avg_crit]]
+            <span class="r-buff-number r-bg-70">[[perc(archetype.avg_crit)]]</span>
+          [[/if]]
+        </div>
+        <div class="r-encounter-buff">
+          <span class="r-buff-number r-bg-60">[[perc(scholar)]]</span>
+          [[#if archetype.avg_scholar]]
+            <span class="r-buff-number r-bg-70">[[perc(archetype.avg_scholar)]]</span>
+          [[/if]]
+        </div>
+        <div class="r-encounter-buff">
+          <span class="r-buff-number r-bg-60">[[perc(flanking)]]</span>
+          [[#if archetype.avg_flanking]]
+            <span class="r-buff-number r-bg-70">[[perc(archetype.avg_flanking)]]</span>
+          [[/if]]
+        </div>
+        [[/with]]
+        <div class="r-encounter-damage">
+          <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+            [[#with received]]
+            <!-- Total Damage -->
+            <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((archetype.avg_dps_received)/(dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+              <!-- Total Damage Text -->
+            <text x='[[num(((archetype.avg_dps_received)/(dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='13'>[[num(dps, 0)]]</text>
+            <!-- Next Percentile -->
+            <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(archetype.avg_dps_received, 0)]] Damage Per Second" x='[[num(((archetype.avg_dps_received)/(dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((dps)-(archetype.avg_dps_received))/(archetype.avg_dps_received)*100), 0)]]%' fill='#9C0AFF' />
+
+              <!-- Next Percentile Text -->
+            <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='10'>[[num(archetype.avg_dps, 0)]]</text>
+              [[/with]]
+
+
+              <!-- Boss Damage -->
+            <!-- <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/> -->
+
+
+
+            </svg>
+        </div>
+      [[/with]]
+    </div>
+    [[/each]]
+  </div>
+  [[/each]]
   <div class="uk-overflow-auto">
     <table class="uk-table stats">
       <tbody>
@@ -20,11 +117,33 @@
         <tr>
           [[#with encounter.phases[page.phase]]]
             <td>Squad</td>
+            <td>
+              <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="36px" width="100%">
+                [[#with actual]]
+                <!-- Total Damage -->
+                <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(group.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+                  <!-- Total Damage Text -->
+                <text x='[[num(((dps)/(group.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(dps, 0)]]</text>
+                <!-- Next Percentile -->
+                <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(group.avg_dps, 0)]] Damage Per Second" x='[[num(((dps)/(group.avg_dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((group.avg_dps)-(dps))/(group.avg_dps)*100), 0)]]%' fill='#9C0AFF' opacity='0.6' />
+
+                  <!-- Next Percentile Text -->
+                <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(group.avg_dps, 0)]]</text>
+                  [[/with]]
+
+
+                  <!-- Boss Damage -->
+                <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/>
+
+
+
+                </svg>
+            </td>
             [[#with actual]]
               <td style="[[#if group && group.avg_dps]][[bar(dps, group.avg_dps, group.min_dps, group.max_dps)]][[else]][[bar1(dps, dps)]][[/if]]">
-                <span>[[dps]]</span>
+                <span>[[num(dps, 0)]]</span>
                 [[#if group && group.avg_dps]]
-                <span class="expected">[[Math.round(group.avg_dps)]]</span>
+                <span class="expected">[[num(group.avg_dps, 0)]]</span>
                 [[/if]]
               </td>
             [[else]]
@@ -32,9 +151,9 @@
             [[/with]]
             [[#with actual_boss]]
               <td style="[[#if group && group.avg_dps_boss]][[bar(dps, group.avg_dps_boss, group.min_dps_boss, group.max_dps)]][[else]][[bar1(dps, actual.dps)]][[/if]]">
-                <span>[[dps]]</span>
+                <span>[[num(dps, 0)]]</span>
                 [[#if group && group.avg_dps_boss]]
-                <span class="expected">[[Math.round(group.avg_dps_boss)]]</span>
+                <span class="expected">[[num(group.avg_dps_boss, 0)]]</span>
                 [[/if]]
               </td>
             [[else]]
@@ -42,15 +161,15 @@
             [[/with]]
             [[#with received]]
               <td style="[[#if group && group.avg_dps_received]][[bar(dps, group.avg_dps_received, group.min_dps_received, group.max_dps_received, group.max_dps_received, true)]][[else]][[bar1(dps, dps)]][[/if]]">
-                <span>[[dps]]</span>
+                <span>[[num(dps, 0)]]</span>
                 [[#if group && group.avg_dps_received]]
-                <span class="expected">[[Math.round(group.avg_dps_received)]]</span>
+                <span class="expected">[[num(group.avg_dps_received, 0)]]</span>
                 [[/if]]
               </td>
               <td style="[[#if group && group.avg_total_received]][[bar(total, group.avg_total_received, group.min_total_received, group.max_total_received, group.max_total_received, true)]][[else]][[bar1(total, total)]][[/if]]">
-                <span>[[total]]</span>
+                <span>[[num(total, 0)]]</span>
                 [[#if group && group.avg_total_received]]
-                <span class="expected">[[Math.round(group.avg_total_received)]]</span>
+                <span class="expected">[[num(group.avg_total_received, 0)]]</span>
                 [[/if]]
               </td>
             [[else]]
@@ -59,9 +178,9 @@
             [[/with]]
             [[#with shielded]]
               <td style="[[#if group && group.avg_total_shielded]][[bar(total, group.avg_total_shielded, group.min_total_shielded, group.max_total_shielded, group.max_total_received)]][[else]][[bar1(total, received.total)]][[/if]]">
-                <span>[[total]]</span>
+                <span>[[num(total, 0)]]</span>
                 [[#if group && group.avg_total_shielded]]
-                <span class="expected">[[Math.round(group.avg_total_shielded)]]</span>
+                <span class="expected">[[num(group.avg_total_shielded, 0)]]</span>
                 [[/if]]
               </td>
             [[else]]
@@ -69,27 +188,27 @@
             [[/with]]
             [[#with actual]]
               <td style="[[#if group && group.avg_crit]][[bar(crit, group.avg_crit, group.min_crit, group.max_crit, 100)]][[else]][[bar1(crit, 100)]][[/if]]">
-                <span>[[crit]]%</span>
+                <span>[[perc(crit)]]</span>
                 [[#if group && group.avg_crit]]
-                <span class="expected">[[group.avg_crit.toPrecision(3)]]%</span>
+                <span class="expected">[[perc(group.avg_crit)]]</span>
                 [[/if]]
               </td>
               <td style="[[#if group && group.avg_seaweed]][[bar(seaweed, group.avg_seaweed, group.min_seaweed, group.max_seaweed, 100)]][[else]][[bar1(seaweed, 100)]][[/if]]">
-                <span>[[seaweed]]%</span>
+                <span>[[perc(seaweed)]]</span>
                 [[#if group && group.avg_seaweed]]
-                <span class="expected">[[group.avg_seaweed.toPrecision(3)]]%</span>
+                <span class="expected">[[perc(group.avg_seaweed)]]</span>
                 [[/if]]
               </td>
               <td style="[[#if group && group.avg_scholar]][[bar(scholar, group.avg_scholar, group.min_scholar, group.max_scholar, 100)]][[else]][[bar1(scholar, 100)]][[/if]]">
-                <span>[[scholar]]%</span>
+                <span>[[perc(scholar)]]</span>
                 [[#if group && group.avg_scholar]]
-                <span class="expected">[[group.avg_scholar.toPrecision(3)]]%</span>
+                <span class="expected">[[perc(group.avg_scholar)]]</span>
                 [[/if]]
               </td>
               <td style="[[#if group && group.avg_flanking]][[bar(flanking, group.avg_flanking, group.min_flanking, group.max_flanking, 100)]][[else]][[bar1(flanking, 100)]][[/if]]">
-                <span>[[flanking]]%</span>
+                <span>[[perc(flanking)]]</span>
                 [[#if group && group.avg_flanking]]
-                <span class="expected">[[group.avg_flanking.toPrecision(3)]]%</span>
+                <span class="expected">[[perc(group.avg_flanking)]]</span>
                 [[/if]]
               </td>
             [[/with]]
@@ -101,22 +220,22 @@
               <td>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</td>
               [[#with actual]]
                 <td style="[[bar1(dps, group ? group.max_dps : encounter.phases[page.phase].actual.dps)]]">
-                  <span>[[dps]]</span>
+                  <span>[[num(dps, 0)]]</span>
                 </td>
               [[/with]]
               [[#with actual_boss]]
                 <td style="[[bar1(dps, group ? group.max_dps : encounter.phases[page.phase].actual.dps)]]">
-                  <span>[[dps]]</span>
+                  <span>[[num(dps, 0)]]</span>
                 </td>
               [[else]]
                 <td></td>
               [[/with]]
               [[#with received]]
                 <td style="[[bar1(dps, group ? group.max_dps_received : encounter.phases[page.phase].received.dps)]]">
-                  <span>[[dps]]</span>
+                  <span>[[num(dps, 0)]]</span>
                 </td>
                 <td style="[[bar1(total, group ? group.max_total_received : encounter.phases[page.phase].received.total)]]">
-                  <span>[[total]]</span>
+                  <span>[[num(total, 0)]]</span>
                 </td>
               [[else]]
                 <td></td>
@@ -124,23 +243,23 @@
               [[/with]]
               [[#with shielded]]
                 <td style="[[bar1(total, group ? group.max_total_received : encounter.phases[page.phase].received.total)]]">
-                  <span>[[total]]</span>
+                  <span>[[num(total, 0)]]</span>
                 </td>
               [[else]]
                 <td></td>
               [[/with]]
               [[#with actual]]
                 <td style="[[bar1(crit, 100)]]">
-                  <span>[[crit]]%</span>
+                  <span>[[perc(crit)]]</span>
                 </td>
                 <td style="[[bar1(seaweed, 100)]]">
-                  <span>[[seaweed]]%</span>
+                  <span>[[perc(seaweed)]]</span>
                 </td>
                 <td style="[[bar1(scholar, 100)]]">
-                  <span>[[scholar]]%</span>
+                  <span>[[perc(scholar)]]</span>
                 </td>
                 <td style="[[bar1(flanking, 100)]]">
-                  <span>[[flanking]]%</span>
+                  <span>[[perc(flanking)]]</span>
                 </td>
               [[/with]]
             </tr>
@@ -173,21 +292,35 @@
                 [[/if]]
               </td>
               [[#with phases[page.phase]]]
-                [[#with actual]]
-                  <td style="[[#if archetype.avg_dps]][[bar(dps, archetype.avg_dps, archetype.min_dps, archetype.max_dps, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps || 0)]][[/if]]">
-                    <span>[[dps]]</span>
-                    [[#if archetype.avg_dps]]
-                      <span class="expected">[[Math.round(archetype.avg_dps)]]</span>
-                    [[/if]]
-                  </td>
-                [[else]]
-                  <td>0</td>
-                [[/with]]
+              <td>
+                <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="36px" width="100%">
+                  [[#with actual]]
+                  <!-- Total Damage -->
+                  <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>[[num(dps, 0)]] Damage Per Second" x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' fill='#BF326D' opacity='0.6' />
+                    <!-- Total Damage Text -->
+                  <text x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(dps, 0)]]</text>
+                  <!-- Next Percentile -->
+                  <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Next Percentile Bracket | 99th Percentile</h6>[[num(archetype.avg_dps, 0)]] Damage Per Second" x='[[num(((dps)/(archetype.avg_dps)*100), 0)]]%' y='22px' height='4px' width='[[num((((archetype.avg_dps)-(dps))/(archetype.avg_dps)*100), 0)]]%' fill='#9C0AFF' opacity='0.6' />
+
+                    <!-- Next Percentile Text -->
+                  <text x='100%' y='36px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(archetype.avg_dps, 0)]]</text>
+                    [[/with]]
+
+
+                    <!-- Boss Damage -->
+                  <!-- <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='16px' height='16px' width='60%' fill='#BF326D'/> -->
+
+
+
+                  </svg>
+              </td>
+
+
                 [[#with actual_boss]]
                   <td style="[[#if archetype.avg_dps_boss]][[bar(dps, archetype.avg_dps_boss, archetype.min_dps_boss, archetype.max_dps_boss, encounter.phases[page.phase].individual.max_dps)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps || 0)]][[/if]]">
-                    <span>[[dps]]</span>
+                    <span>[[num(dps, 0)]]</span>
                     [[#if archetype.avg_dps_boss]]
-                      <span class="expected">[[Math.round(archetype.avg_dps_boss)]]</span>
+                      <span class="expected">[[num(archetype.avg_dps_boss, 0)]]</span>
                     [[/if]]
                   </td>
                 [[else]]
@@ -195,15 +328,15 @@
                 [[/with]]
                 [[#with received]]
                   <td style="[[#if archetype.avg_dps_received]][[bar(dps, archetype.avg_dps_received, archetype.min_dps_received, archetype.max_dps_received, encounter.phases[page.phase].individual.max_dps_received, true)]][[else]][[bar1(dps, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_dps_received || 0)]][[/if]]">
-                    <span>[[dps]]</span>
+                    <span>[[num(dps, 0)]]</span>
                     [[#if archetype.avg_dps_received]]
-                      <span class="expected">[[Math.round(archetype.avg_dps_received)]]</span>
+                      <span class="expected">[[num(archetype.avg_dps_received, 0)]]</span>
                     [[/if]]
                   </td>
                   <td style="[[#if archetype.avg_total_received]][[bar(total, archetype.avg_total_received, archetype.min_total_received, archetype.max_total_received, encounter.phases[page.phase].individual.max_total_received, true)]][[else]][[bar1(total, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_total_received || 0)]][[/if]]">
-                    <span>[[total]]</span>
+                    <span>[[num(total, 0)]]</span>
                     [[#if archetype.avg_total_received]]
-                      <span class="expected">[[Math.round(archetype.avg_total_received)]]</span>
+                      <span class="expected">[[num(archetype.avg_total_received, 0)]]</span>
                     [[/if]]
                   </td>
                 [[else]]
@@ -212,9 +345,9 @@
                 [[/with]]
                 [[#with shielded]]
                   <td style="[[#if archetype.avg_total_shielded]][[bar(total, archetype.avg_total_shielded, archetype.min_total_shielded, archetype.max_total_shielded, encounter.phases[page.phase].individual.max_total_received)]][[else]][[bar1(total, encounter.phases[page.phase].individual && encounter.phases[page.phase].individual.max_total_received || 0)]][[/if]]">
-                    <span>[[total]]</span>
+                    <span>[[num(total, 0)]]</span>
                     [[#if archetype.avg_total_shielded]]
-                      <span class="expected">[[Math.round(archetype.avg_total_shielded)]]</span>
+                      <span class="expected">[[num(archetype.avg_total_shielded, 0)]]</span>
                     [[/if]]
                   </td>
                 [[else]]
@@ -222,27 +355,27 @@
                 [[/with]]
                 [[#with actual]]
                   <td style="[[#if archetype.avg_crit]][[bar(actual ? actual.crit : 0, archetype.avg_crit, archetype.min_crit, archetype.max_crit, 100)]][[else]][[bar1(actual ? actual.crit : 0, 100)]][[/if]]">
-                    <span>[[crit]]%</span>
+                    <span>[[perc(crit)]]</span>
                     [[#if archetype.avg_crit]]
-                      <span class="expected">[[archetype.avg_crit.toPrecision(3)]]%</span>
+                      <span class="expected">[[perc(archetype.avg_crit)]]</span>
                     [[/if]]
                   </td>
                   <td style="[[#if archetype.avg_seaweed]][[bar(actual ? actual.seaweed : 0, archetype.avg_seaweed, archetype.min_seaweed, archetype.max_seaweed, 100)]][[else]][[bar1(actual ? actual.seaweed : 0, 100)]][[/if]]">
-                    <span>[[seaweed]]%</span>
+                    <span>[[perc(seaweed)]]</span>
                     [[#if archetype.avg_seaweed]]
-                      <span class="expected">[[archetype.avg_seaweed.toPrecision(3)]]%</span>
+                      <span class="expected">[[perc(archetype.avg_seaweed)]]</span>
                     [[/if]]
                   </td>
                   <td style="[[#if archetype.avg_scholar]][[bar(scholar, archetype.avg_scholar, archetype.min_scholar, archetype.max_scholar, 100)]][[else]][[bar1(scholar, 100)]][[/if]]">
-                    <span>[[scholar]]%</span>
+                    <span>[[perc(scholar)]]</span>
                     [[#if archetype.avg_scholar]]
-                      <span class="expected">[[archetype.avg_scholar.toPrecision(3)]]%</span>
+                      <span class="expected">[[perc(archetype.avg_scholar)]]</span>
                     [[/if]]
                   </td>
                   <td style="[[#if archetype.avg_flanking]][[bar(flanking, archetype.avg_flanking, archetype.min_flanking, archetype.max_flanking, 100)]][[else]][[bar1(flanking, 100)]][[/if]]">
-                    <span>[[flanking]]%</span>
+                    <span>[[perc(flanking)]]</span>
                     [[#if archetype.avg_flanking]]
-                      <span class="expected">[[archetype.avg_flanking.toPrecision(3)]]%</span>
+                      <span class="expected">[[perc(archetype.avg_flanking)]]</span>
                     [[/if]]
                   </td>
                 [[else]]
