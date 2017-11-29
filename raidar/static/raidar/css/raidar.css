@@ -110,7 +110,7 @@ svg:not(:root).chart {
 @media (min-width: 1200px) {
   .r-encounter-stats-container .r-stats-row {
     display: grid;
-    grid-template-columns: 160px 3fr repeat(4, 1fr) 2fr;
+    grid-template-columns: 160px 3fr 2fr repeat(4, 1fr);
     grid-gap: 16px; } }
 
 .r-encounter-stats-container .r-encounter-player {
@@ -118,11 +118,17 @@ svg:not(:root).chart {
   align-items: center;
   grid-auto-flow: column; }
 
+.r-encounter-stats-container .r-buff-toggle {
+  grid-column: span 4; }
+
 .r-encounter-stats-container .r-encounter-buff {
   display: grid;
-  grid-template-rows: repeat(2, minmax(max-content, 44px));
+  grid-template-rows: repeat(2, max-content);
+  grid-template-columns: 20px 1fr;
   grid-gap: 4px;
-  align-items: center; }
+  align-items: flex-start; }
+  .r-encounter-stats-container .r-encounter-buff img {
+    grid-row: span 2; }
   .r-encounter-stats-container .r-encounter-buff .r-buff-number {
     display: flex;
     justify-content: center;

@@ -9885,149 +9885,149 @@
 	"\/raidar\/templates\/raidar\/account.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/account.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_boon_output.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_output.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_boon_uptime.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_uptime.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_boss_metrics.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_boss_metrics.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_filter.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_filter.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_row_header.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_row_header.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounters.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounters.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/global_stats.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/index.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/index.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/info_about.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/info_about.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/info_contact.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/info_contact.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/info_framework.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/info_framework.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/info_help.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/info_help.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/info_releasenotes.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/info_releasenotes.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/intro.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/intro.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/navbar.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/navbar.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/profile.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/profile.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/thank-you.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/thank-you.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/uploads.html": {
 		"cB": 0,
 		"ft": 8192,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/uploads.html",
-		"oF": 0
+		"oF": 1
 		},
 	"\/raidar\/tests.py": {
 		"cB": 0,
