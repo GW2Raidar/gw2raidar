@@ -126,10 +126,7 @@ class Phase:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_start)]
             if relevant_gaps.empty:
-                if (skip_point is not None) and (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
-                    print("Damage passed skip point, skipping")
-                    return current_time
-                return None
+                return end_time
                         
             end_time = int(relevant_gaps['time'].iloc[0])
             relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
