@@ -331,6 +331,7 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
+    Boss('Soulless Horror', Kind.RAID, [19767], key_npc_ids=[19767], despawns_instead_of_dying = False, has_structure_boss = False),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
