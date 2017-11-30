@@ -56,6 +56,11 @@ svg:not(:root).chart {
     .r-global-stats-container .r-stats-header .r-buff-toggle a.uk-active {
       color: #FCF1E2; }
 
+.r-encounter-stats-container.uk-sticky-fixed .r-stats-header,
+.r-global-stats-container.uk-sticky-fixed .r-stats-header {
+  padding-top: 16px;
+  font-size: 0.75em; }
+
 .r-buff-container {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -117,12 +122,17 @@ svg:not(:root).chart {
   .r-encounter-stats-container .r-stats-row {
     display: grid;
     grid-template-columns: 160px minmax(300px, 3fr) 1fr minmax(300px, 4fr) 60px;
+    grid-gap: 16px; }
+  .r-encounter-stats-container .r-stats-row.r-stats-buffs {
+    display: grid;
+    grid-template-columns: 160px 1fr;
     grid-gap: 16px; } }
 
 .r-encounter-stats-container .r-encounter-player {
   display: grid;
   align-items: center;
-  grid-auto-flow: column; }
+  grid-template-columns: 1fr 36px;
+  grid-gap: 8px; }
 
 .r-encounter-stats-container .r-encounter-buff-container {
   margin: 0;
@@ -2607,12 +2617,16 @@ select.uk-form-width-xsmall {
   line-height: 1.5;
   background: none;
   /* 2 */
-  color: #958cbb; }
+  color: #958cbb;
+  border-color: transparent; }
 
 /* Hover + Focus */
 .uk-button-text:hover,
 .uk-button-text:focus {
-  color: #FCF1E2; }
+  color: #FCF1E2;
+  border-color: transparent;
+  color: #FCF1E2;
+  background-color: transparent; }
 
 /* Disabled */
 .uk-button-text:disabled {
@@ -11595,12 +11609,16 @@ select.uk-form-width-xsmall {
   line-height: 1.5;
   background: none;
   /* 2 */
-  color: #958cbb; }
+  color: #958cbb;
+  border-color: transparent; }
 
 /* Hover + Focus */
 .uk-button-text:hover,
 .uk-button-text:focus {
-  color: #FCF1E2; }
+  color: #FCF1E2;
+  border-color: transparent;
+  color: #FCF1E2;
+  background-color: transparent; }
 
 /* Disabled */
 .uk-button-text:disabled {
