@@ -123,102 +123,190 @@ Label of the button should add the encounter type to the button text. i.e. If th
     </div>
   </div>
 {% endcomment %}
-<div class="r-encounters-list encounters">
-  <div class="r-encounters-list-row header">
-    <div class="r-encounters-title" on-click="sort_encounters" data-sort="area:up">
-      Encounter
-      [[#if settings.encounterSort.prop != 'area']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
+
+<div class="uk-overflow-auto">
+  <table class="uk-table uk-table-striped encounters">
+    <thead>
+      <tr>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="area:up">
+          <span>Area
+          [[#if settings.encounterSort.prop != 'area']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]</span>
+        </th>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="started_at:down">
+          <span>Time
+          [[#if settings.encounterSort.prop != 'started_at']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]</span>
+        </th>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="duration:down">
+          Dur.
+          [[#if settings.encounterSort.prop != 'duration']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="character:up">
+          Character
+          [[#if settings.encounterSort.prop != 'character']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="account:up">
+          Account
+          [[#if settings.encounterSort.prop != 'account']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="uploaded_at:down">
+          Upload
+          [[#if settings.encounterSort.prop != 'uploaded_at']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-auto" on-click="sort_encounters" data-sort="category:up">
+          Category
+          [[#if settings.encounterSort.prop != 'category']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">filter_list</i>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-auto">
+          Tags
+          <div class="uk-float-right" on-click="encounter_filter_toggle">
+            [[#if settings.encounterSort.filters]]
+              <i class="material-icons" uk-tooltip title="Remove filters">close</i>
+            [[else]]
+            <i class="material-icons" uk-tooltip title="Filters">search</i>
+
+            [[/if]]
+          </div>
+        </th>
+      </tr>
+
+      [[#if settings.encounterSort.filters]]
+        <tr>
+          <th>
+            <div class="uk-button-group">
+              <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === true && 'uk-button-primary' || '']]" value="true" on-click="encounter_filter_success"><span uk-icon="icon: check"></span></button>
+              <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_success"></button>
+              <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === false && 'uk-button-primary' || '']]" value="false" on-click="encounter_filter_success"><span uk-icon="icon: close"></span></button>
+            </div><br/>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.area]]" placeholder="Starts with" list="encountersAreas">
+            <datalist id="encountersAreas">
+              [[#each encountersAreas]]
+                <option value="[[.]]"/>
+              [[/each]]
+            </datalist>
+          </th>
+          <th>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.started_from]]" placeholder="From" type="date"><br>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.started_till]]" placeholder="Till" type="date">
+          </th>
+          <th>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.duration_from]]" placeholder="From"><br>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.duration_till]]" placeholder="Till">
+          </th>
+          <th>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.character]]" placeholder="Starts with" list="encountersCharacters">
+            <datalist id="encountersCharacters">
+              [[#each encountersCharacters]]
+                <option value="[[.]]"/>
+              [[/each]]
+            </datalist>
+          </th>
+          <th>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.account]]" placeholder="Starts with" list="encountersAccounts">
+            <datalist id="encountersAccounts">
+              [[#each encountersAccounts]]
+                <option value="[[.]]"/>
+              [[/each]]
+            </datalist>
+          </th>
+          <th>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.uploaded_from]]" placeholder="From" type="date"><br>
+            <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.uploaded_till]]" placeholder="Till" type="date">
+          </th>
+          <th>
+            <select as-ukUpdate class="uk-select uk-form-small uk-margin-remove" value="[[settings.encounterSort.filter.category]]">
+              <option value="[[null]]">Any Category</option>
+              <option value="[[0]]">Uncategorised</option>
+              [[#each data.categories:id]]
+                <option value="[[parseInt(id)]]">[[.]]</option>
+              [[/each]]
+            </select>
+          </th>
+          <th>
+            <input placeholder="Tag search" class="uk-input uk-form-small" value="[[settings.encounterSort.filter.tag]]">
+          </th>
+        </tr>
       [[/if]]
-    </div>
-    <div class="r-encounters-time" on-click="sort_encounters" data-sort="started_at:started_at">Timestamp
-      [[#if settings.encounterSort.prop != 'started_at']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
-      [[/if]]
-    </div>
-    <div class="r-encounters-duration" on-click="sort_encounters" data-sort="duration:down">Duration
-      [[#if settings.encounterSort.prop != 'duration']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
-      [[/if]]
-    </div>
-    <div class="r-encounters-character" on-click="sort_encounters" data-sort="character:down">Character
-      [[#if settings.encounterSort.prop != 'character']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
-      [[/if]]
-    </div>
-    <div class="r-encounters-account" on-click="sort_encounters" data-sort="account:down">Account
-      [[#if settings.encounterSort.prop != 'account']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
-      [[/if]]
-    </div>
-    <div class="r-encounters-upload" on-click="sort_encounters" data-sort="uploaded_at:down">Log Uploaded
-      [[#if settings.encounterSort.prop != 'uploaded_at']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
-      [[/if]]
-    </div>
-    <div class="r-encounters-category" on-click="sort_encounters" data-sort="category:down">Category
-      [[#if settings.encounterSort.prop != 'category']]
-        <i class="material-icons">filter_list</i>
-      [[elseif settings.encounterSort.dir == 'up']]
-        <i class="material-icons">keyboard_arrow_up</i>
-      [[else]]
-        <i class="material-icons">keyboard_arrow_down</i>
-      [[/if]]
-    </div>
-    <div class="r-encounters-tags">Tags
-      <div class="uk-float-right" on-click="encounter_filter_toggle">
-        [[#if settings.encounterSort.filters]]
-          <span uk-tooltip title="Remove filters" uk-icon="icon: close"></span>
-        [[else]]
-          <span uk-tooltip title="Filters" uk-icon="icon: search"></span>
-        [[/if]]
-      </div>
-    </div>
-  </div>
-[[#each encounterSlice]]
-  <a on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]" class="r-encounters-list-row">
-    <div class="r-encounters-title">[[area]]</div>
-    <div class="r-encounters-time">[[formatDate(started_at)]]</div>
-    <div class="r-encounters-duration">Duration</div>
-    <div class="r-encounters-character">
-      <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png">
-      <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
-      <span class="r-character">[[character]]</span>
-    </div>
-    <div class="r-encounters-account">[[account]]</div>
-    <div class="r-encounters-upload">[[formatDate(uploaded_at)]]</div>
-    <div class="r-encounters-category">[[category ? data.categories[category] : '']]</div>
-    <div class="r-encounters-tags">
-      [[#each tags]]
-        <span class="tag">[[.]]</span>
-      [[/each]]
-    </div>
-  </a>
-[[/each]]
+    </thead>
+
+    [[#each encounterSlice]]
+      <a style="display:table-row;" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
+        <td class="[[success ? 'uk-text-success' : 'uk-text-danger']]">
+          [[area]]
+        </td>
+        <td>
+          [[formatDate(started_at)]]
+        </td>
+        <td>
+          &#91;[[formatTime(duration)]]&#93;
+        </td>
+        <td>
+          <div class="max-content-width">
+            <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+            <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
+            [[character]]
+          </div>
+        </td>
+        <td>
+          [[account]]
+        </td>
+        <td>
+          [[formatDate(uploaded_at)]]
+        </td>
+        <td>
+          [[category ? data.categories[category] : '']]
+        </td>
+        <td>
+          <div class="tags-input no-background">
+            [[#each tags]]
+              <span class="tag">[[.]]</span>
+            [[/each]]
+          </div>
+        </td>
+      </a>
+    [[/each]]
+  </table>
 </div>
 </div>
 

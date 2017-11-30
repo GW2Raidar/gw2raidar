@@ -42,34 +42,23 @@
 </form>
 
 
-<nav class="uk-navbar-container" uk-navbar>
-  <div class="uk-navbar-left">
-    <ul class="uk-navbar-nav">
-      <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
-      <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
-      <li class="[[persistent_page.tab == 'boon_output' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_output')">Boon Output</a></li>
-      <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
-    </ul>
-  </div>
-  <div class="uk-navbar-right">
-    <ul class="uk-navbar-nav">
-      [[#each encounter.phase_order]]
-      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
-      [[/each]]
-    </ul>
-  </div>
-</nav>
-<div class="uk-grid">
-  <div class="uk-width-1-2 uk-button-group">
-      <button class="uk-button [[persistent_page.tab == 'combat_stats' ? 'uk-button-primary' : '']]" on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</button>
-      <button class="uk-button [[persistent_page.tab == 'boon_uptime' ? 'uk-button-primary' : '']]" on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</button>
-      <button class="uk-button [[persistent_page.tab == 'boon_output' ? 'uk-button-primary' : '']]" on-click="@this.set('persistent_page.tab', 'boon_output')">Boon Output</button>
-      <button class="uk-button [[persistent_page.tab == 'boss_metrics' ? 'uk-button-primary' : '']]" on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</button>
-  </div>
-</div>
-
-<div class="uk-overflow-auto">
-</div>
+  <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar>
+    <div class="uk-navbar-left">
+      <ul uk-tab="swiping: true;">
+        <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
+        <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
+        <li class="[[persistent_page.tab == 'boon_output' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_output')">Boon Output</a></li>
+        <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
+      </ul>
+    </div>
+    <div class="uk-navbar-right">
+      <ul uk-tab="swiping: true;">
+        [[#each encounter.phase_order]]
+        <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="uk-flex-last [[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+        [[/each]]
+      </ul>
+    </div>
+  </nav>
 
 [[#if persistent_page.tab == 'combat_stats']]
   {% include 'raidar/encounter_combat_data.html' %}
