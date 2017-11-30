@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '1.0.4b1',
-        'timestamp': 1511232469, # date +%s
+        'id': '1.0.5',
+        'timestamp': 1511683646, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -65,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'gw2raidar.urls'
