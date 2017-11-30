@@ -126,10 +126,7 @@ class Phase:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_start)]
             if relevant_gaps.empty:
-                if (skip_point is not None) and (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
-                    print("Damage passed skip point, skipping")
-                    return current_time
-                return None
+                return end_time
                         
             end_time = int(relevant_gaps['time'].iloc[0])
             relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
@@ -334,6 +331,7 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
+    Boss('Soulless Horror', Kind.RAID, [19767], key_npc_ids=[19767], despawns_instead_of_dying = False, has_structure_boss = False),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
