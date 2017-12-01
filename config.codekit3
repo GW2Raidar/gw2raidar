@@ -10142,18 +10142,18 @@
 		"oAP": "\/raidar\/templates\/raidar\/encounter.html",
 		"oF": 1
 		},
-	"\/raidar\/templates\/raidar\/encounter_boon_uptime.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 1,
-		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_uptime.html",
-		"oF": 1
-		},
 	"\/raidar\/templates\/raidar\/encounter_boss_metrics.html": {
 		"cB": 0,
 		"ft": 8192,
 		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_boss_metrics.html",
+		"oF": 1
+		},
+	"\/raidar\/templates\/raidar\/encounter_buffs.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 1,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
 		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
@@ -10168,13 +10168,6 @@
 		"ft": 8192,
 		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_filter.html",
-		"oF": 1
-		},
-	"\/raidar\/templates\/raidar\/encounter_offensive_boons.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 1,
-		"oAP": "\/raidar\/templates\/raidar\/encounter_offensive_boons.html",
 		"oF": 1
 		},
 	"\/raidar\/templates\/raidar\/encounter_row_header.html": {

@@ -62,8 +62,10 @@
     <div class="uk-navbar-left">
       <ul uk-tab="swiping: true;">
         <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
-        <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
         <li class="[[persistent_page.tab == 'offensive_boons' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'offensive_boons')">Offensive Boons</a></li>
+        <li class="[[persistent_page.tab == 'supportive_boons' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'supportive_boons')">Supportive Boons</a></li>
+        <li class="[[persistent_page.tab == 'offensive_buffs' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'offensive_buffs')">Offensive Buffs</a></li>
+        <li class="[[persistent_page.tab == 'supportive_buffs' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'supportive_buffs')">Supportive Buffs</a></li>
         <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
       </ul>
     </div>
@@ -78,10 +80,8 @@
 
 [[#if persistent_page.tab == 'combat_stats']]
   {% include 'raidar/encounter_combat_data.html' %}
-[[elseif persistent_page.tab == 'boon_uptime']]
-  {% include 'raidar/encounter_boon_uptime.html' %}
-[[elseif persistent_page.tab == 'offensive_boons']]
-  {% include 'raidar/encounter_offensive_boons.html' %}
+[[elseif persistent_page.tab == 'offensive_boons' || persistent_page.tab == 'supportive_boons' || persistent_page.tab == 'offensive_buffs' || persistent_page.tab == 'supportive_buffs']]
+  {% include 'raidar/encounter_buffs.html' %}
 [[elseif persistent_page.tab == 'boss_metrics']]
   {% include 'raidar/encounter_boss_metrics.html' %}
 [[/if]]
