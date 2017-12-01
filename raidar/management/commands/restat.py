@@ -333,7 +333,6 @@ class Command(BaseCommand):
                             buffs_out_by_build_era = navigate(totals_by_build_era, 'buffs_out')
 
                             if(encounter.success):
-
                                 calculate([totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
                                      totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era], count)
                                 calculate_standard_stats(
