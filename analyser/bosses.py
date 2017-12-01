@@ -113,6 +113,8 @@ class Phase:
    
             elif not relevant_gaps.empty:
                 gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
+            else:
+                gap_time = None
             
             if gap_time is not None:
                 relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
