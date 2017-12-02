@@ -36,6 +36,8 @@ def deimos_cm_detector(events, boss_instids):
 def skorvald_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
+def soulless_cm_detector(events, boss_instids):
+    return len(events[(events.skillid == 47414)&(events.time - events.time.min() < 16000)]) > 1
 
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
@@ -331,7 +333,7 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
-    Boss('Soulless Horror', Kind.RAID, [19767]),
+    Boss('Soulless Horror', Kind.RAID, [19767], cm_detector = soulless_cm_detector),
     Boss('Dhuum', Kind.RAID, [19450]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
