@@ -27,7 +27,7 @@
       </div>
       <span class="uk-h2 uk-margin-small-left" title="[[encounter.success ? 'Successful Kill' : 'Wipe']]" uk-tooltip="pos: right; delay: 250"><i class="material-icons [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">[[encounter.success ? 'check_circle' : 'cancel']]</i></span>
     </div>
-    <div class="uk-width-1-2 uk-text-right">
+    <div class="uk-width-1-2 uk-text-right uk-visible@m">
       <button class="uk-button uk-button-text"><i class="material-icons">label_outline</i> Tag</button>
       <div uk-dropdown="mode: click">
         <form class="uk-margin-small uk-flex uk-flex-bottom uk-form-stacked uk-text-left" on-submit="set_tags_cat">
@@ -61,15 +61,21 @@
   <nav class="uk-navbar-container uk-navbar-transparent" uk-navbar>
     <div class="uk-navbar-left">
       <ul uk-tab="swiping: true;">
-        <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
-        <li class="[[persistent_page.tab == 'offensive_boons' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'offensive_boons')">Offensive Boons</a></li>
-        <li class="[[persistent_page.tab == 'supportive_boons' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'supportive_boons')">Supportive Boons</a></li>
-        <li class="[[persistent_page.tab == 'offensive_buffs' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'offensive_buffs')">Offensive Buffs</a></li>
-        <li class="[[persistent_page.tab == 'supportive_buffs' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'supportive_buffs')">Supportive Buffs</a></li>
+        <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Overview</a></li>
+        <li class="[[persistent_page.tab == 'offensive_boons' || persistent_page.tab == 'supportive_boons' || persistent_page.tab == 'offensive_buffs' || persistent_page.tab == 'supportive_buffs' ? 'uk-active' : '']]"><a href="#">Buffs <i class="material-icons">keyboard_arrow_down</i></a></li>
+        <div uk-dropdown="mode: click">
+            <ul class="uk-nav uk-dropdown-nav">
+              <li><a on-click="@this.set('persistent_page.tab', 'offensive_boons')">Offensive Boons</a></li>
+              <li><a on-click="@this.set('persistent_page.tab', 'supportive_boons')">Supportive Boons</a></li>
+              <li><a on-click="@this.set('persistent_page.tab', 'offensive_buffs')">Offensive Buffs</a></li>
+              <li><a on-click="@this.set('persistent_page.tab', 'supportive_buffs')">Supportive Buffs</a></li>
+            </ul>
+        </div>
+
         <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
       </ul>
     </div>
-    <div class="uk-navbar-right">
+    <div class="uk-navbar-right uk-visible@m">
       <ul uk-tab="swiping: true;">
         [[#each encounter.phase_order]]
         <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="uk-flex-last [[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>

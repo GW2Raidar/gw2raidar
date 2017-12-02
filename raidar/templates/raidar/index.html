@@ -56,7 +56,7 @@
           <div class="uk-light">
               <div class="uk-container uk-container-large">
                   <header class="uk-grid ">
-                    <div class="uk-width-1-2">
+                    <div class="uk-width-1-1 uk-width-1-2@s">
                       <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal uk-light">GW2 Raidar</h1>
                     </div>
                     <div class="uk-width-1-2">
@@ -255,18 +255,22 @@
 
           </div>
     </div>
-    <footer class="uk-heading uk-padding uk-light uk-background-secondary">
-        <div class="uk-container uk-container-large">
+    <footer class="uk-heading uk-padding uk-light uk-background-secondary uk-container uk-container-large">
           <div class="uk-grid">
-              <ul class="uk-nav uk-width-1-6">
-                  <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
-                  <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
-              </ul>
-              <ul class="uk-nav uk-width-1-6">
-                  <li><a href="#" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
-                  <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
-              </ul>
-              <div class="uk-width-2-3">
+              <div class="uk-width-1-2 uk-width-1-6@m">
+                <ul class="uk-nav">
+                    <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
+                    <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
+                </ul>
+              </div>
+
+              <div class="uk-width-1-2 uk-width-1-6@m">
+                <ul class="uk-nav">
+                    <li><a href="#" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
+                    <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
+                </ul>
+              </div>
+              <div class="uk-width-2-3@m uk-width-1-1">
               <p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
               <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="uk-width-auto uk-inline">
                 <input type="hidden" name="cmd" value="_s-xclick">
@@ -280,7 +284,6 @@
                   <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
               </div>
           </div>
-        </div>
     </footer>
     </script>
   </head>

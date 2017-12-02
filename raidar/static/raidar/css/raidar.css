@@ -14,6 +14,12 @@
   background-size: 100% auto;
   background-position: top;
   background-attachment: fixed; }
+  @media (max-width: 960px) {
+    .custom-header {
+      background-size: auto; } }
+
+.material-icons {
+  vertical-align: middle; }
 
 .r-percentile-label {
   opacity: 0.5;
@@ -113,20 +119,6 @@ svg:not(:root).chart {
     grid-template-columns: 160px repeat(auto-fit, minmax(100px, 1fr));
     grid-template-rows: 2fr;
     grid-gap: 8px; }
-  .r-encounter-stats-container .r-stats-row .compare {
-    visibility: hidden; }
-  .r-encounter-stats-container .r-stats-row:hover .compare {
-    visibility: visible; }
-
-@media (min-width: 1200px) {
-  .r-encounter-stats-container .r-stats-row {
-    display: grid;
-    grid-template-columns: 160px minmax(300px, 3fr) 1fr minmax(300px, 4fr) 60px;
-    grid-gap: 16px; }
-  .r-encounter-stats-container .r-stats-row.r-stats-buffs {
-    display: grid;
-    grid-template-columns: 160px 1fr;
-    grid-gap: 16px; } }
 
 .r-encounter-stats-container .r-encounter-player {
   display: grid;
@@ -134,13 +126,48 @@ svg:not(:root).chart {
   grid-template-columns: 1fr 36px;
   grid-gap: 8px; }
 
+@media (max-width: 1200px) {
+  .r-encounter-stats-container .r-stats-row {
+    grid-template-columns: 1fr 2fr; }
+  .r-encounter-stats-container .r-encounter-player {
+    grid-column: span 2;
+    grid-template-columns: max-content 36px; }
+  .r-encounter-stats-container .r-encounter-damage {
+    grid-column: span 2; }
+  .r-encounter-stats-container .r-encounter-damage.in {
+    grid-column: span 1; } }
+
+@media (max-width: 640px) {
+  .r-encounter-stats-container .r-stats-row {
+    grid-template-columns: 1fr; }
+  .r-encounter-stats-container .r-encounter-player,
+  .r-encounter-stats-container .r-encounter-damage,
+  .r-encounter-stats-container .r-encounter-damage.in {
+    grid-column: auto; }
+  .r-encounter-stats-container .compare {
+    display: none; } }
+
+@media (min-width: 1200px) {
+  .r-encounter-stats-container .r-stats-row {
+    display: grid;
+    grid-template-columns: 160px minmax(300px, 3fr) 1fr minmax(max-content, 3fr) 60px;
+    grid-gap: 16px; }
+  .r-encounter-stats-container .r-stats-row.r-stats-buffs {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    grid-gap: 16px; }
+  .r-encounter-stats-container .compare {
+    visibility: hidden; }
+  .r-encounter-stats-container:hover .compare {
+    visibility: visible; } }
+
 .r-encounter-stats-container .r-encounter-buff-container {
   margin: 0;
   padding: 0;
   list-style: none; }
-  .r-encounter-stats-container .r-encounter-buff-container li.uk-active {
+  .r-encounter-stats-container .r-encounter-buff-container li.uk-active, .r-encounter-stats-container .r-encounter-buff-container .r-buff-list {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(max-content, 84px));
+    grid-template-columns: repeat(auto-fit, minmax(max-content, 68px));
     grid-column-gap: 16px; }
 
 .r-encounter-stats-container .r-encounter-buff {
@@ -166,6 +193,9 @@ svg:not(:root).chart {
 
 .r-encounter-stats-container .r-encounter-misc .uk-badge {
   cursor: help; }
+
+.r-encounter-stats-container.r-encounter-mechanics-container .r-stats-row {
+  grid-template-columns: 160px repeat(auto-fill, minmax(100px, max-content)); }
 
 .r-global-stats-container .r-stats-row {
   grid-template: "spec spec" max-content "damage damage" max-content "buffs  buffs" max-content / 160px 1fr; }
@@ -216,29 +246,11 @@ svg:not(:root).chart {
       grid-area: damagein; }
 
 .r-encounters-list {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-  grid-template-rows: 60px repeat(6, fit-content(100px)) 1fr;
-  grid-gap: 16px; }
-  .r-encounters-list .r-encounters-list-row {
-    grid-column: span 8;
-    display: grid;
-    background: #3D3852;
-    border-radius: 3px; }
-    .r-encounters-list .r-encounters-list-row .r-encounters-title,
-    .r-encounters-list .r-encounters-list-row .r-encounters-time,
-    .r-encounters-list .r-encounters-list-row .r-encounters-duration,
-    .r-encounters-list .r-encounters-list-row .r-encounters-character,
-    .r-encounters-list .r-encounters-list-row .r-encounters-account,
-    .r-encounters-list .r-encounters-list-row .r-encounters-upload,
-    .r-encounters-list .r-encounters-list-row .r-encounters-category,
-    .r-encounters-list .r-encounters-list-row .r-encounters-tags {
-      grid-row: 1; }
-    .r-encounters-list .r-encounters-list-row.header {
-      font-family: "Source Code Pro", monospace;
-      text-transform: uppercase;
-      font-size: 0.75em;
-      background: none; }
+  display: table-row;
+  border-bottom: 4px solid #1F1C2C; }
+  @media (max-width: 960px) {
+    .r-encounters-list {
+      display: block; } }
 
 .r-bg-1 {
   background-color: #705E72 !important;
@@ -2469,8 +2481,6 @@ select.uk-form-width-xsmall {
   background-color: transparent;
   border: 2px solid #3D3852;
   padding: 0 16px; }
-  .uk-button .material-icons {
-    vertical-align: middle; }
 
 .uk-button:not(:disabled) {
   cursor: pointer; }
@@ -11461,8 +11471,6 @@ select.uk-form-width-xsmall {
   background-color: transparent;
   border: 2px solid #3D3852;
   padding: 0 16px; }
-  .uk-button .material-icons {
-    vertical-align: middle; }
 
 .uk-button:not(:disabled) {
   cursor: pointer; }

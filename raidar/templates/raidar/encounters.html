@@ -123,7 +123,7 @@ Label of the button should add the encounter type to the button text. i.e. If th
     </div>
   </div>
 {% endcomment %}
-<div class="uk-float-right" on-click="encounter_filter_toggle">
+<div class="uk-float-right uk-visible@m" on-click="encounter_filter_toggle">
   [[#if settings.encounterSort.filters]]
     <i class="material-icons" uk-tooltip="pos:left" title="Remove filters">close</i>
   [[else]]
@@ -261,7 +261,7 @@ Label of the button should add the encounter type to the button text. i.e. If th
     </thead>
 
     [[#each encounterSlice]]
-      <a style="display:table-row;" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
+      <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
         <td colspan="2">
           <h5 class="[[success ? 'uk-text-success' : 'uk-text-danger']] uk-margin-remove">[[area]]</h5>
           <p class="uk-text-small uk-margin-remove">[[formatDate(started_at)]]</p>
@@ -276,13 +276,13 @@ Label of the button should add the encounter type to the button text. i.e. If th
               <p class="uk-text-small uk-margin-remove">Account: [[account]]</p>
             </div>
         </td>
-        <td>
+        <td class="uk-visible@m">
           [[formatDate(uploaded_at)]]
         </td>
-        <td>
+        <td class="uk-visible@m">
           [[category ? data.categories[category] : '']]
         </td>
-        <td>
+        <td class="uk-visible@m">
           <div class="tags-input no-background">
             [[#each tags]]
               <span class="tag">[[.]]</span>
