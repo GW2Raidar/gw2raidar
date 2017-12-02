@@ -108,13 +108,11 @@ class Phase:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
                 
+            gap_time = None
             if relevant_gaps.empty and (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
-                gap_time = int(damage_gaps.time.iloc[-1])
-   
+                gap_time = int(damage_gaps.time.iloc[-1])   
             elif not relevant_gaps.empty:
                 gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
-            else:
-                gap_time = None
             
             if gap_time is not None:
                 relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
