@@ -334,7 +334,12 @@ BOSS_ARRAY = [
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
     Boss('Soulless Horror', Kind.RAID, [19767], cm_detector = soulless_cm_detector),
-    Boss('Dhuum', Kind.RAID, [19450]),
+    Boss('Dhuum', Kind.RAID, [19450],phases = [
+        Phase("Pre-event", True, phase_end_damage_start = 1),
+        Phase("Main", True, phase_end_health = 10, phase_end_damage_stop = 10000),
+        Phase("???", False, phase_end_damage_start = 10000),
+        Phase("Ritual", True)
+    ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
