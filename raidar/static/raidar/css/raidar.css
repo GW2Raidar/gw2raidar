@@ -152,14 +152,15 @@ svg:not(:root).chart {
     display: grid;
     grid-template-columns: 160px minmax(300px, 3fr) 1fr minmax(max-content, 3fr) 60px;
     grid-gap: 16px; }
+    .r-encounter-stats-container .r-stats-row:hover .compare {
+      opacity: 1; }
   .r-encounter-stats-container .r-stats-row.r-stats-buffs {
     display: grid;
     grid-template-columns: 160px 1fr;
     grid-gap: 16px; }
   .r-encounter-stats-container .compare {
-    visibility: hidden; }
-  .r-encounter-stats-container:hover .compare {
-    visibility: visible; } }
+    opacity: 0;
+    transition: opacity 150ms ease-in-out 100ms; } }
 
 .r-encounter-stats-container .r-encounter-buff-container {
   margin: 0;

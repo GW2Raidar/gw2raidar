@@ -189,9 +189,9 @@
                 <div class="r-encounter-buff">
                   [[#with { format: buff.stacks ? num : perc } ]]
                   <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 2)]]</span>
+                    <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                     [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 2)]]</span>
+                      <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
                     [[/if]]
                   [[/with]]
                 </div>

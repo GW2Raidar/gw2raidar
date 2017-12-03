@@ -125,58 +125,121 @@ Label of the button should add the encounter type to the button text. i.e. If th
 {% endcomment %}
 <div class="uk-float-right uk-visible@m" on-click="encounter_filter_toggle">
   [[#if settings.encounterSort.filters]]
-    <i class="material-icons" uk-tooltip="pos:left" title="Remove filters">close</i>
+    <button class="uk-button">Clear Filters <i class="material-icons">close</i></button>
   [[else]]
-  <i class="material-icons" uk-tooltip="pos:left" title="Filters">search</i>
+    <button class="uk-button">Filters <i class="material-icons">filter_list</i></button>
 
   [[/if]]
 </div>
 [[#if settings.encounterSort.filters]]
+<form class="uk-form-stacked">
+  <legend class="uk-legend">Filters</legend>
+  <div uk-grid>
+    <div class="uk-width-1-2@m">
+      <div class="uk-margin">
+        <label class="uk-form-label uk-h5">By Success</label>
+        <div class="uk-button-group uk-form-controls">
+          <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === true && 'uk-button-primary' || '']]" value="true" on-click="encounter_filter_success"><i class="material-icons uk-text-success">check_circle</i></button>
+          <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_success"></button>
+          <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === false && 'uk-button-primary' || '']]" value="false" on-click="encounter_filter_success"><i class="material-icons uk-text-danger">cancel</i></button>
+        </div>
+      </div>
 
-      <div class="uk-button-group">
-        <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === true && 'uk-button-primary' || '']]" value="true" on-click="encounter_filter_success"><span uk-icon="icon: check"></span></button>
-        <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_success"></button>
-        <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === false && 'uk-button-primary' || '']]" value="false" on-click="encounter_filter_success"><span uk-icon="icon: close"></span></button>
-      </div><br/>
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.area]]" placeholder="Starts with" list="encountersAreas">
-      <datalist id="encountersAreas">
-        [[#each encountersAreas]]
-          <option value="[[.]]"/>
-        [[/each]]
-      </datalist>
+      <div class="uk-margin">
+        <label class="uk-form-label uk-h5" for="encounterSelect">By Encounter</label>
+        <div class="uk-form-controls">
+          <select id="encounterSelect" class="uk-select" value="[[settings.encounterSort.filter.area]]">
 
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.started_from]]" placeholder="From" type="date"><br>
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.started_till]]" placeholder="Till" type="date">
+            [[#each encountersAreas]]
+              <option value="[[.]]">[[.]]</option>
+            [[/each]]
+          </select>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label for="" class="uk-form-label uk-h5">By Encounter Duration</label>
+        <div uk-grid>
+          <div class="uk-width-1-2">
+            <input class="uk-input" value="[[settings.encounterSort.filter.duration_from]]" placeholder="Longer than...">
+          </div>
+          <div class="uk-width-1-2">
+            <input class="uk-input" value="[[settings.encounterSort.filter.duration_till]]" placeholder="Shorter than...">
+          </div>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label for="" class="uk-form-label uk-h5">By Encounter Time</label>
+        <div uk-grid>
+          <div class="uk-width-1-2">
+            <label for="timeFrom" class="uk-form-label">From</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.started_from]]" placeholder="From" type="date" id="timeFrom">
+          </div>
+          <div class="uk-width-1-2">
+            <label for="timeTill" class="uk-form-label">Till</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.started_till]]" placeholder="Till" type="date" id="timeTill">
+          </div>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label for="" class="uk-form-label uk-h5">By Uploaded Time</label>
+        <div uk-grid>
+          <div class="uk-width-1-2">
+            <label for="timeFrom" class="uk-form-label">From</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.uploaded_from]]" placeholder="From" type="date" id="timeFrom">
+          </div>
+          <div class="uk-width-1-2">
+            <label for="timeTill" class="uk-form-label">Till</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.uploaded_till]]" placeholder="Till" type="date" id="timeTill">
+          </div>
+        </div>
+      </div>
 
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.duration_from]]" placeholder="From"><br>
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.duration_till]]" placeholder="Till">
 
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.character]]" placeholder="Starts with" list="encountersCharacters">
-      <datalist id="encountersCharacters">
-        [[#each encountersCharacters]]
-          <option value="[[.]]"/>
-        [[/each]]
-      </datalist>
+    </div>
+    <div class="uk-width-1-2@m">
+      <div class="uk-margin">
+        <label for="#characterName" class="uk-form-label uk-h5">By Character</label>
+        <input class="uk-input" value="[[settings.encounterSort.filter.character]]" placeholder="Character name" list="encountersCharacters">
+        <datalist id="encountersCharacters">
+          [[#each encountersCharacters]]
+            <option value="[[.]]"/>
+          [[/each]]
+        </datalist>
+      </div>
 
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.account]]" placeholder="Starts with" list="encountersAccounts">
-      <datalist id="encountersAccounts">
-        [[#each encountersAccounts]]
-          <option value="[[.]]"/>
-        [[/each]]
-      </datalist>
+      <div class="uk-margin">
+        <label for="#accountName" class="uk-form-label uk-h5">By Account</label>
+        <input class="uk-input" value="[[settings.encounterSort.filter.account]]" placeholder="Account name" list="encountersAccounts" id="accountName">
+        <datalist id="encountersAccounts">
+          [[#each encountersAccounts]]
+            <option value="[[.]]"/>
+          [[/each]]
+        </datalist>
+      </div>
 
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.uploaded_from]]" placeholder="From" type="date"><br>
-      <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.uploaded_till]]" placeholder="Till" type="date">
 
-      <select as-ukUpdate class="uk-select uk-form-small uk-margin-remove" value="[[settings.encounterSort.filter.category]]">
-        <option value="[[null]]">Any Category</option>
-        <option value="[[0]]">Uncategorised</option>
-        [[#each data.categories:id]]
-          <option value="[[parseInt(id)]]">[[.]]</option>
-        [[/each]]
-      </select>
 
-      <input placeholder="Tag search" class="uk-input uk-form-small" value="[[settings.encounterSort.filter.tag]]">
+      <div class="uk-margin">
+        <label for="#category" class="uk-form-label uk-h5">By Category</label>
+        <select id="category" as-ukUpdate class="uk-select uk-margin-remove" value="[[settings.encounterSort.filter.category]]">
+          <option value="[[null]]">Any Category</option>
+          <option value="[[0]]">Uncategorised</option>
+          [[#each data.categories:id]]
+            <option value="[[parseInt(id)]]">[[.]]</option>
+          [[/each]]
+        </select>
+      </div>
+
+      <div class="uk-margin">
+        <label for="#tag" class="uk-form-label uk-h5">By Tag</label>
+        <input placeholder="Tag search" class="uk-input" id="tag" value="[[settings.encounterSort.filter.tag]]">
+      </div>
+    </div>
+  </div>
+
+
+
+</form>
 
 [[/if]]
   <table class="uk-table uk-table-striped uk-table-small uk-table-responsive encounters">
