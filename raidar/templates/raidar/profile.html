@@ -34,7 +34,7 @@
       {# <button class="uk-button">All (45)</button> #}
       <div class="uk-inline">
           [[#with {active: page.area == 'All raid bosses' || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]]
-            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] - [[/if]]Raids <i class="material-icons">arrow_drop_down</i></button>
+            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Raids <i class="material-icons">arrow_drop_down</i></button>
           [[/with]]
           <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -89,7 +89,7 @@
       </div>
       <div class="uk-inline">
           [[#with {active: page.area == 'All fractal bosses' || page.area in data.areas && data.areas[page.area].kind == 4}]]
-            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] - [[/if]]Fractals CM <i class="material-icons">arrow_drop_down</i></button>
+            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Fractals CM <i class="material-icons">arrow_drop_down</i></button>
           [[/with]]
           <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -127,7 +127,7 @@
       </div>
       <div class="uk-inline">
           [[#with {active: page.area == 'All golem bosses' || page.area in data.areas && data.areas[page.area].kind == 3}]]
-            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] - [[/if]]Golems <i class="material-icons">arrow_drop_down</i></button>
+            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Golems <i class="material-icons">arrow_drop_down</i></button>
           [[/with]]
           <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
