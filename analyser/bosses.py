@@ -340,6 +340,7 @@ BOSS_ARRAY = [
         Phase("???", False, phase_end_damage_start = 10000),
         Phase("Ritual", True)
     ]),
+    Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], cm_detector = soulless_cm_detector),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
