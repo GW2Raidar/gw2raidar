@@ -1,5 +1,5 @@
 {% load staticfiles %}
-<div class="table-container">
+<div class="table-container uk-margin-top">
   {% include 'raidar/encounter_row_header.html' %}
   <div class="r-encounter-stats-container r-encounter-mechanics-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header uk-visible@l">
@@ -14,7 +14,7 @@
   </div>
   <div class="r-encounter-stats-container r-encounter-mechanics-container">
     <div class="r-stats-row">
-      <div><h5>Squad</h5></div>
+      <div class="r-encounter-player"><h5>Squad</h5></div>
       [[#each encounter.boss_metrics]]
         <div class="r-mechanics-list">
           <h6 class="uk-hidden@l">[[short_name]]</h6>

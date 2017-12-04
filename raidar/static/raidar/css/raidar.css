@@ -47,7 +47,8 @@ svg:not(:root).chart {
   background: #3D3852;
   padding: 12px;
   margin-bottom: 8px;
-  border-radius: 3px; }
+  border-radius: 3px;
+  min-height: 60px; }
 
 .r-encounter-stats-container .r-stats-header,
 .r-global-stats-container .r-stats-header {
@@ -197,6 +198,9 @@ svg:not(:root).chart {
 
 .r-encounter-stats-container.r-encounter-mechanics-container .r-stats-row {
   grid-template-columns: 160px repeat(auto-fill, minmax(100px, max-content)); }
+
+.r-encounter-stats-container .r-mechanics-list {
+  align-items: center; }
 
 .r-global-stats-container .r-stats-row {
   grid-template: "spec spec" max-content "damage damage" max-content "buffs  buffs" max-content / 160px 1fr; }
