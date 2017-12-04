@@ -36,6 +36,8 @@ def deimos_cm_detector(events, boss_instids):
 def skorvald_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
+def soulless_cm_detector(events, boss_instids):
+    return len(events[(events.skillid == 47414)&(events.time - events.time.min() < 16000)&(events.is_buffremove == 0)]) > 1
 
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
@@ -108,9 +110,9 @@ class Phase:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
                 
+            gap_time = None
             if relevant_gaps.empty and (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
-                gap_time = int(damage_gaps.time.iloc[-1])
-   
+                gap_time = int(damage_gaps.time.iloc[-1])   
             elif not relevant_gaps.empty:
                 gap_time = int(relevant_gaps['time'].iloc[0] - relevant_gaps['delta'].iloc[0])
             
@@ -126,10 +128,7 @@ class Phase:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_start)]
             if relevant_gaps.empty:
-                if (skip_point is not None) and (relevant_health_updates['dst_agent'].min() < (skip_point + 2) * 100):
-                    print("Damage passed skip point, skipping")
-                    return current_time
-                return None
+                return end_time
                         
             end_time = int(relevant_gaps['time'].iloc[0])
             relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
@@ -334,6 +333,8 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
+    Boss('Soulless Horror', Kind.RAID, [19767], cm_detector = soulless_cm_detector),
+    Boss('Dhuum', Kind.RAID, [19450]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),

@@ -1,7 +1,7 @@
 <!-- Medium and smaller Display Navigation -->
 <div class="uk-offcanvas-content">
 
-    <button class="uk-button uk-button-default uk-width-1-1 uk-hidden@s" type="button" uk-toggle="target: #encounter-filters-mobile">Filter Encounters</button>
+    <button class="uk-button uk-button-default uk-width-1-1 uk-margin-bottom uk-hidden@s" type="button" uk-toggle="target: #encounter-filters-mobile">Filter Encounters</button>
 
     <div id="encounter-filters-mobile" uk-offcanvas="overlay: true; mode: slide;">
         <div class="uk-offcanvas-bar uk-offcanvas-bar-animation uk-offcanvas-slide">
@@ -202,15 +202,4 @@
           </div>
       </div>
   </div>
-</div>
-
-<!-- Era Filter -->
-<h5 class="uk-font-family-secondary">Time Frame</h5>
-<button class="uk-button uk-button-default uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">Most recent <i class="material-icons">expand_more</i></button>
-<div uk-dropdown="mode: click">
-    <ul class="uk-nav uk-dropdown-nav">
-      [[#each eras]]
-        <li><a href="[[id]]">[[name]]</a></li>
-      [[/each]]
-    </ul>
 </div>
