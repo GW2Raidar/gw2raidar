@@ -1,0 +1,64 @@
+{% load staticfiles %}
+<h2>GW2 Raidar API</h2>
+
+<p>
+  GW2 Raidar API currently offers the following endpoints.
+</p>
+
+<section>
+  <h4>
+    Categories: <code>{% url 'api_categories' %}</code>
+  </h4>
+  <p>
+    Returns: a JSON object of known category IDs and names, to be used for the Upload endpoint.
+  </p>
+</section>
+
+<section>
+  <h4>
+    Upload: <code>{% url 'api_upload' %}</code>
+  </h4>
+  <dl>
+    <dt>
+      <code>username</code>
+    </dt>
+    <dd>
+      the GW2 Raidar login of the uploading user
+    </dd>
+
+    <dt>
+      <code>password</code>
+    </dt>
+    <dd>
+      the GW2 Raidar password of the uploading user
+    </dd>
+
+    <dt>
+      <code>file</code>
+    </dt>
+    <dd>
+      the file <em>attachment</em> (not the filename string!) of the <code>.evtc</code> or <code>.evtc.zip</code> file
+    </dd>
+
+    <dt>
+      <code>category</code> (optional)
+    </dt>
+    <dd>
+      the category ID (as reported by the Categories endpoint) to assign to the uploaded encounter
+    </dd>
+
+    <dt>
+      <code>tags</code> (optional)
+    </dt>
+    <dd>
+      a comma-separated list of the tags to assign to the uploaded encounter
+    </dd>
+  </dl>
+  <p>
+    If successful, the uploaded file will enter the analysis queue. Returns a JSON object with <code>filename</code> and <code>upload_id</code>. For now, it is not possible to get the feedback on the result of analysis of the uploaded file.
+  </p>
+  <p>
+    In case of error, the JSON object will contain <code>error</code>, and a status message will reflect the type of the error
+    (<code>401 Unauthorized</code> for <code>"Could not authenticate"</code>, <code>400 Bad Request</code> for <code>"Only single file uploads are allowed"</code> and <code>"Missing file attachment named `file`"</code>)
+  </p>
+</section>

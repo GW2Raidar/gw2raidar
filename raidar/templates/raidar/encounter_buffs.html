@@ -5,7 +5,7 @@ However, there's other five tabs just waiting to happen (according to #216)
 Waiting to see how they are to be rendered. Are they switched? What's the switch?
 {% endcomment %}
 
-<div class="table-container">
+<div class="table-container uk-margin-top">
   {% include 'raidar/encounter_row_header.html' %}
   <div class="r-encounter-stats-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header">
@@ -29,9 +29,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[1].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -48,9 +48,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[2].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -67,9 +67,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[3].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -86,9 +86,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[3].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -135,9 +135,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 [[#each data.buff_tabs[1].order]]
                   [[#with { buff: data.buffs[.], code: . } ]]
                     [[#if encounter.phases[page.phase]]]
-                      <div class="r-encounter-buff">
+                      <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                         [[#with { format: buff.stacks ? num : perc } ]]
-                        <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                           <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                           [[#if encounter.phases[page.phase].group]]
                             <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -155,9 +155,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 [[#each data.buff_tabs[1].order]]
                   [[#with { buff: data.buffs[.], code: . } ]]
                     [[#if encounter.phases[page.phase]]]
-                      <div class="r-encounter-buff">
+                      <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                         [[#with { format: buff.stacks ? num : perc } ]]
-                        <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                           <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                           [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                             <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -177,9 +177,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[2].order]]
                 [[#with { buff: data.buffs[.], code: . } ]]
                   [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff">
+                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                       [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                         [[#if encounter.phases[page.phase].group]]
                           <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -197,9 +197,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[2].order]]
                 [[#with { buff: data.buffs[.], code: . } ]]
                   [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff">
+                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                       [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                         [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                           <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -219,9 +219,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[3].order]]
                 [[#with { buff: data.buffs[.], code: . } ]]
                   [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff">
+                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                       [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                         [[#if encounter.phases[page.phase].group]]
                           <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -239,9 +239,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[3].order]]
                 [[#with { buff: data.buffs[.], code: . } ]]
                   [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff">
+                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                       [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                         [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                           <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -261,9 +261,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[4].order]]
                 [[#with { buff: data.buffs[.], code: . } ]]
                   [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff">
+                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                       [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                         [[#if encounter.phases[page.phase].group]]
                           <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -281,9 +281,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[4].order]]
                 [[#with { buff: data.buffs[.], code: . } ]]
                   [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff">
+                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                       [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                         [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                           <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -320,9 +320,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             [[#each data.buff_tabs[1].order]]
               [[#with { buff: data.buffs[.], code: . } ]]
                 [[#if encounter.phases[page.phase]]]
-                  <div class="r-encounter-buff">
+                  <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                     [[#with { format: buff.stacks ? num : perc } ]]
-                    <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                    <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                       <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                       [[#if encounter.phases[page.phase].group]]
                         <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -340,9 +340,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             [[#each data.buff_tabs[1].order]]
               [[#with { buff: data.buffs[.], code: . } ]]
                 [[#if encounter.phases[page.phase]]]
-                  <div class="r-encounter-buff">
+                  <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                     [[#with { format: buff.stacks ? num : perc } ]]
-                    <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                    <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                       <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                       [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                         <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -362,9 +362,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[2].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -382,9 +382,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[2].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                     [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                       <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -404,9 +404,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[3].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -424,9 +424,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[3].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                     [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                       <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
@@ -446,9 +446,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[4].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                     [[#if encounter.phases[page.phase].group]]
                       <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
@@ -466,9 +466,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
           [[#each data.buff_tabs[4].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff">
+                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
                   [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" uk-tooltip title="[[buff.name]]" alt="[[buff.name]]"/>
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
                     [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
                       <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>

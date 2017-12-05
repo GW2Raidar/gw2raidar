@@ -30,11 +30,11 @@
     <div class="uk-width-1-2 uk-text-right uk-visible@m">
       <button class="uk-button uk-button-text"><i class="material-icons">label_outline</i> Tag</button>
       <div uk-dropdown="mode: click">
-        <form class="uk-margin-small uk-flex uk-flex-bottom uk-form-stacked uk-text-left" on-submit="set_tags_cat">
+        <form class="uk-margin-small uk-width-medium uk-form-stacked uk-text-left" on-submit="set_tags_cat">
           <fieldset class="uk-fieldset">
             <label class="uk-form-label" for="add-category">Category</label>
             <div class="uk-form-controls">
-              <select id="add-category" as-ukUpdate class="uk-select uk-margin-small uk-select" style="width: 150px" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
+              <select id="add-category" as-ukUpdate class="uk-select uk-margin-small uk-select" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
                 <option value="[[null]]">No category</option>
                 [[#each data.categories:id]]
                   <option value="[[id]]">[[.]]</option>
