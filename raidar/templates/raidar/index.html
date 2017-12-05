@@ -91,8 +91,8 @@
                                 </dl>
                                 </div>
                               </li>-->
-                              <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
-                              <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip><i class="material-icons uk-margin-small-right">exit_to_app</i> </a></li>
+                              <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+                              <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">exit_to_app</i> </a></li>
                             [[else]]
                               <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">input</i> Login</a></li>
                               <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
