@@ -5,6 +5,14 @@
       [[#if username]]
         <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Personal Stats</a></li>
         <li class="[[page.name=='encounters' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
+      [[#if is_staff]]
+        <li class="uk-hidden@m "><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
+      [[/if]]
+        <li class="uk-hidden@m [[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+        <li class="uk-hidden@m"><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">exit_to_app</i> </a></li>
+      [[else]]
+        <li class="uk-hidden@m [[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">input</i> Login</a></li>
+        <li class="uk-hidden@m [[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
       [[/if]]
     </ul>
   </div>

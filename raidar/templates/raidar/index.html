@@ -52,17 +52,17 @@
 
     <script id="template" type="text/ractive">
         {# Logo #}
-        <div class="custom-header">
+        <div class="custom-header uk-overflow-hidden uk-overflow-auto uk-margin-bottom">
           <div class="uk-light">
-              <div class="uk-container uk-container-large">
+              <div class="uk-container uk-container-large ">
                   <header class="uk-grid ">
                     <div class="uk-width-1-1 uk-width-1-2@s">
                       <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal uk-light">GW2 Raidar</h1>
                     </div>
                     <div class="uk-width-1-2">
-                      <nav class="uk-navbar uk-navbar-container uk-navbar-transparent">
+                      <nav class="uk-navbar uk-navbar-container uk-navbar-transparent ">
                         <div class="uk-navbar-right">
-                          <ul class="uk-navbar-nav">
+                          <ul class="uk-navbar-nav uk-visible@m">
                             [[#if username]]
                               [[#if is_staff]]
                                 <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
@@ -106,7 +106,7 @@
           </div>
 
 
-          <div class="uk-container uk-container-large uk-margin-bottom">
+          <div class="uk-container uk-container-large">
               <div class="uk-grid uk-margin-remove-top">
                 <div class="uk-width-1-1">
                 {% include 'raidar/navbar.html' %}
