@@ -51,7 +51,10 @@ svg:not(:root).chart {
   padding: 12px;
   margin-bottom: 8px;
   border-radius: 3px;
-  min-height: 60px; }
+  min-height: 60px;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center; }
 
 .r-encounter-stats-container .r-stats-header,
 .r-global-stats-container .r-stats-header {
@@ -154,6 +157,16 @@ svg:not(:root).chart {
           align-items: center;
   grid-template-columns: 1fr 36px;
   grid-gap: 8px; }
+  .r-encounter-stats-container .r-encounter-player .r-encounter-player-image {
+    position: relative; }
+    .r-encounter-stats-container .r-encounter-player .r-encounter-player-image .r-encounter-player-archetype {
+      padding: 3px;
+      border-radius: 50%;
+      background: #1f1c2d;
+      position: absolute;
+      right: -8px;
+      bottom: -8px;
+      width: 20px; }
 
 @media (max-width: 1200px) {
   .r-encounter-stats-container .r-stats-row {
@@ -294,7 +307,12 @@ svg:not(:root).chart {
 
 .r-encounters-list {
   display: table-row;
-  border-bottom: 4px solid #1F1C2C; }
+  border-bottom: 4px solid #1F1C2C;
+  -webkit-transition: background-color 150ms ease-in-out;
+  transition: background-color 150ms ease-in-out; }
+  .r-encounters-list:hover {
+    background-color: #322e43;
+    text-decoration: none; }
   @media (max-width: 960px) {
     .r-encounters-list {
       display: block; } }
