@@ -14,7 +14,7 @@
   </div>
   <div class="r-encounter-stats-container r-encounter-mechanics-container">
     <div class="r-stats-row">
-      <div class="r-encounter-player"><h5>Squad</h5></div>
+      <div class="r-encounter-player uk-text-right"><h5 class="uk-margin-remove">Squad</h5></div>
       [[#each encounter.boss_metrics]]
         <div class="r-mechanics-list">
           <h6 class="uk-hidden@l">[[short_name]]</h6>
@@ -24,6 +24,22 @@
     </div>
     [[#each encounter.parties:partyNo]]
     <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5>
+    [[#with { party: . }]]
+      <div class="r-stats-row">
+        <div class="r-encounter-player uk-text-right">
+          <div>
+            <h6 class="uk-font-family-secondary uk-margin-remove uk-text-uppercase">([[members.length]] member[[members.length > 1 && 's' || '']])</h6>
+            <h5 class="uk-margin-remove">Party [[partyNo]] Total</h5>
+          </div>
+        </div>
+        [[#each encounter.boss_metrics]]
+          <div class="r-mechanics-list">
+            <h6 class="uk-hidden@l">[[short_name]]</h6>
+            [[[tagForMechanic(party, .)]]]
+          </div>
+        [[/each]]
+      </div>
+    [[/with]]
       [[#each members]]
         [[#with { member: . }]]
           <div class="r-stats-row">
@@ -40,8 +56,10 @@
                   <h5 class="private uk-margin-remove">PRIVATE</h5>
                 [[/if]]
               </div>
-              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
-
+              <div class="r-encounter-player-image">
+                <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
+                <img class="r-encounter-player-archetype" alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+              </div>
             </div>
             [[#each encounter.boss_metrics]]
             <div class="r-mechanics-list">
@@ -52,20 +70,7 @@
           </div>
         [[/with]]
       [[/each]]
-      [[#with { party: . }]]
-        <div class="r-stats-row">
-          <div class="uk-text-right">
-            <h6 class="uk-font-family-secondary uk-margin-remove uk-text-uppercase">([[members.length]] member[[members.length > 1 && 's' || '']])</h6>
-            <h5 class="uk-margin-remove">Party [[partyNo]] Total</h5>
-          </div>
-          [[#each encounter.boss_metrics]]
-            <div class="r-mechanics-list">
-              <h6 class="uk-hidden@l">[[short_name]]</h6>
-              [[[tagForMechanic(party, .)]]]
-            </div>
-          [[/each]]
-        </div>
-      [[/with]]
+
     [[/each]]
   </div>
 </div>
