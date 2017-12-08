@@ -1,5 +1,5 @@
 from .models import *
-from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
 from analyser.bosses import BOSSES
 from django.conf import settings
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
@@ -34,6 +34,7 @@ import numpy as np
 import base64
 
 
+
 logger = logging.getLogger(__name__)
 
 
@@ -65,7 +66,7 @@ def _userprops(request):
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(character__account__user=request.user).select_related('encounter', 'character', 'character__account')
+    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
@@ -89,8 +90,11 @@ def _html_response(request, page, data={}):
         # No Google Analytics, it's fine
         pass
     response['archetypes'] = {k: v for k, v in Participation.ARCHETYPE_CHOICES}
-    response['areas'] = {area.id: area.name for area in Area.objects.all()}
-    response['specialisations'] = {p: {e: n for (pp, e), n in Character.SPECIALISATIONS.items() if pp == p} for p, _ in Character.PROFESSION_CHOICES}
+    response['areas'] = {id: {
+            "name": boss.name,
+            "kind": boss.kind,
+        } for id, boss in BOSSES.items()}
+    response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['page'] = page
     response['debug'] = settings.DEBUG
@@ -116,7 +120,7 @@ def download(request, url_id=None):
     encounter = Encounter.objects.get(url_id=url_id)
     if request.user.is_authenticated:
         own_account_names = [account.name for account in Account.objects.filter(
-            characters__participations__encounter_id=encounter.id,
+            participations__encounter_id=encounter.id,
             user=request.user)]
     else:
         own_account_names = []
@@ -260,7 +264,7 @@ def encounter(request, url_id=None, json=None):
         else:
             raise Http404("Encounter does not exist")
     own_account_names = [account.name for account in Account.objects.filter(
-        characters__participations__encounter_id=encounter.id,
+        participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
     dump = encounter.val
@@ -491,8 +495,11 @@ def _perform_upload(request):
         return ("Missing file attachment named `file`", None)
     filename = file.name
 
-    category_id = request.POST.get('category', None);
-    tagstring = request.POST.get('tags', '');
+    val = {}
+    if 'category' in request.POST:
+        val['category_id'] = request.POST['category']
+    if 'tags' in request.POST:
+        val['tagstring'] = request.POST['tags']
 
     uploaded_at = time()
 
@@ -500,10 +507,7 @@ def _perform_upload(request):
             filename=filename, uploaded_by=request.user,
             defaults={
                 "uploaded_at": time(),
-                "val": {
-                    "category_id": category_id,
-                    "tagstring": tagstring,
-                }
+                "val": val,
             })
 
     diskname = upload.diskname()
@@ -557,7 +561,7 @@ def profile_graph(request):
     stat = request.POST['stat']
 
     participations = Participation.objects.select_related('encounter').filter(
-            encounter__era_id=era_id, character__account__user=request.user, encounter__success=True)
+            encounter__era_id=era_id, account__user=request.user, encounter__success=True)
 
     try:
         if area_id.startswith('All'):
@@ -570,7 +574,7 @@ def profile_graph(request):
     if archetype_id != 'All':
         participations = participations.filter(archetype=archetype_id)
     if profession_id != 'All':
-        participations = participations.filter(character__profession=profession_id)
+        participations = participations.filter(profession=profession_id)
     if elite_id != 'All':
         participations = participations.filter(elite=elite_id)
 
@@ -583,7 +587,7 @@ def profile_graph(request):
     except KeyError:
         requested = None # XXX fill out in restat
     MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
-    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character__name', 'encounter__started_at', 'encounter__value')
+    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character', 'encounter__started_at', 'encounter__value')
     data = []
     times = []
 
@@ -637,7 +641,7 @@ def privacy(request):
 @require_POST
 def set_tags_cat(request):
     encounter = Encounter.objects.get(pk=int(request.POST.get('id')))
-    participation = encounter.participations.filter(character__account__user=request.user).exists()
+    participation = encounter.participations.filter(account__user=request.user).exists()
     if not participation:
         return _error('Not a participant')
     encounter.tagstring = request.POST.get('tags')

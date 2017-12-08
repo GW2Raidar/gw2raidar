@@ -9,6 +9,17 @@
   Ractive.DEBUG = DEBUG;
 
 
+  const inputDateAvailable = (() => {
+    const smiley = '1)';
+    const type = 'date';
+    let input = document.createElement('input');
+    input.setAttribute('type', type);
+    input.value = smiley;
+    return input.type === type && 'style' in input && input.value !== smiley;
+  })();
+  console.log(inputDateAvailable);
+
+
   Ractive.decorators.ukUpdate = function(node) {
     UIkit.update();
     return {
@@ -110,6 +121,31 @@
   }
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
+  }
+  // adapted from https://stackoverflow.com/a/2901298/240443
+  // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
+  // num(1234.5):     1,234.5
+  // num(1234.5, 2):  1,234.50
+  // num(1234.5, 0):  1,234
+  // num(0.1234567):  0.123,4567
+  // num(0.12345678): 0.123,456,78
+  let digitGrouper = ',';
+  let decimalSeparator = '.';
+  helpers.num = (n, d) => {
+    if (n === undefined) return '';
+    let s = d == null ? n.toString() : n.toFixed(d);
+    let p = s.split('.');
+    p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, digitGrouper);
+    if (p[1] && digitGrouper == ' ') p[1] = p[1].replace(/(\d{3})(?!\d$)\B/g, '$1' + digitGrouper);
+    return p.join(decimalSeparator);
+  }
+  // special for percentages, defaults to 2 decimal digits (`null` is natural formatting)
+  // perc(23.2):     23.20%
+  // perc(23.2, 0):  23%
+  // perc(23.2):     23.2%
+  helpers.perc = (n, d) => {
+    if (n === undefined) return '';
+    return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
   helpers.buffImportanceLookup = {
     'might': 80,
@@ -228,8 +264,13 @@
 
     let ignore = (actualPhase == 'All' || metricData.split_by_phase) ? '' : 'class="ignore"';
     let value = metrics[metricData.name];
-    if (metricData.data_type == 0) {
-      value = "[" + helpers.formatTime(value / 1000) + "]";
+    switch (metricData.data_type) {
+      case 0: // time
+        value = "[" + helpers.formatTime(value / 1000) + "]";
+        break;
+      case 1: // count
+        value = helpers.num(value);
+        break;
     }
     return `<td ${ignore}>${value}</td>`;
   }
@@ -370,9 +411,9 @@ ${rectSvg.join("\n")}
     return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
     + helpers.rectangle(0, 35, 80*p[90]/max, 30, new Colour(quantileColours[3]))
     + helpers.rectangle(0, 65, 80*p[50]/max, 30, new Colour(quantileColours[2]))
-    + helpers.text(80*p[99]/max, 30, 11, p[99].toFixed(0))
-    + helpers.text(80*p[90]/max, 60, 11, p[90].toFixed(0))
-    + helpers.text(80*p[50]/max, 90, 11, p[50].toFixed(0)))
+    + helpers.text(80*p[99]/max, 30, 11, helpers.num(p[99], 0))
+    + helpers.text(80*p[90]/max, 60, 11, helpers.num(p[90], 0))
+    + helpers.text(80*p[50]/max, 90, 11, helpers.num(p[50], 0)))
      + `;background-size: ${space_for_image ? 75 : 100}% 100%; background-position:${space_for_image ? 36 : 0}px 0px; background-repeat: no-repeat`;
   }
   helpers.rectangle = (x, y, width, height, colour) => {
