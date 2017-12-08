@@ -322,7 +322,7 @@ Label of the button should add the encounter type to the button text. i.e. If th
     </thead>
 
     [[#each encounterSlice]]
-      <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
+      <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]" uk-scroll="el:#top;">
         <td colspan="2">
           <h5 class="[[success ? 'uk-text-success' : 'uk-text-danger']] uk-margin-remove">[[area]]</h5>
           <p class="uk-text-small uk-margin-remove">[[formatDate(started_at)]]</p>
