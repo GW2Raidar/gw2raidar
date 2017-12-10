@@ -6134,19 +6134,6 @@
 		"oF": 0,
 		"oS": 3
 		},
-	"\/node_modules\/uikit\/src\/scss\/raidar.scss": {
-		"aP": 1,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
-		"oF": 3,
-		"oS": 3,
-		"uL": 1
-		},
 	"\/node_modules\/uikit\/src\/scss\/theme\/_import.scss": {
 		"aP": 0,
 		"bl": 0,
@@ -8364,16 +8351,6 @@
 		"oAP": "\/raidar\/models.py",
 		"oF": 0
 		},
-	"\/raidar\/static\/raidar\/css\/raidar.css": {
-		"aP": 1,
-		"bl": 0,
-		"ft": 16,
-		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/raidar-min.css",
-		"oF": 0,
-		"oS": 3
-		},
 	"\/raidar\/static\/raidar\/css\/uikit.min.css": {
 		"aP": 1,
 		"bl": 0,
@@ -9823,22 +9800,33 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/icon\/Desmina.png": {
+	"\/raidar\/static\/raidar\/img\/icon\/Dhuum.png": {
 		"ft": 32768,
-		"iS": 3808,
+		"iS": 3851,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Desmina.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Dhuum.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/icon\/Dhuum.png": {
+	"\/raidar\/static\/raidar\/img\/icon\/Downed_ally.png": {
 		"ft": 32768,
-		"iS": 3851,
+		"iS": 19624,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Dhuum.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Downed_ally.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Downed_enemy.png": {
+		"ft": 32768,
+		"iS": 19478,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Downed_enemy.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -10004,6 +9992,17 @@
 		"iS": 13326,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Slothasor.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Soulless Horror.png": {
+		"ft": 32768,
+		"iS": 3808,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Soulless Horror.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
