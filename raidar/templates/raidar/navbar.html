@@ -1,6 +1,6 @@
 <nav class="uk-navbar uk-navbar-transparent uk-navbar-container">
   <div class="uk-navbar-left">
-    <ul class="uk-navbar-nav">
+    <ul class="uk-navbar-nav r-navbar-hover">
       <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>
       [[#if username]]
         <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Personal Stats</a></li>
@@ -17,7 +17,7 @@
     </ul>
   </div>
   <div class="uk-navbar-right uk-visible@m">
-     <ul class="uk-navbar-nav">
+     <ul class="uk-navbar-nav r-navbar-hover">
        [[#if username]]
          <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')"><i class="material-icons uk-margin-small-right">file_upload</i>Upload</a></li>
        [[/if]]

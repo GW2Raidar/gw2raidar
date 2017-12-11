@@ -2,11 +2,12 @@
 [[#with profile]]
 
   [[#with page.era.profile]]
-    <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top">
+
+    <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
       {# <button class="uk-button">All (45)</button> #}
       <div class="uk-inline">
           [[#with {active: page.area == 'All raid bosses' || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]]
-            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Raids <i class="material-icons">arrow_drop_down</i></button>
+            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Raids <i class="material-icons">expand_more</i></button>
           [[/with]]
           <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -61,7 +62,7 @@
       </div>
       <div class="uk-inline">
           [[#with {active: page.area == 'All fractal bosses' || page.area in data.areas && data.areas[page.area].kind == 4}]]
-            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Fractals CM <i class="material-icons">arrow_drop_down</i></button>
+            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Fractals CM <i class="material-icons">expand_more</i></button>
           [[/with]]
           <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -99,7 +100,7 @@
       </div>
       <div class="uk-inline">
           [[#with {active: page.area == 'All golem bosses' || page.area in data.areas && data.areas[page.area].kind == 3}]]
-            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Golems <i class="material-icons">arrow_drop_down</i></button>
+            <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]]Golems <i class="material-icons">expand_more</i></button>
           [[/with]]
           <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -137,6 +138,25 @@
           </div>
       </div>
     </div>
+    <div class="uk-button-group uk-width-1-1 uk-hidden@s">
+      <button class="uk-button uk-width-expand" on-click="@.set({'page.area': 'All raid bosses'})" class-uk-active="page.area === 'All raid bosses'">Raids</button>
+      <button class="uk-button uk-width-expand" on-click="@.set({'page.area': 'All fractal bosses'})" class-uk-active="page.area === 'All fractal bosses'">Fractals</button>
+      <button class="uk-button uk-width-expand" on-click="@.set({'page.area': 'All golem bosses'})" class-uk-active="page.area === 'All golem bosses'">Golems</button>
+    </div>
+    <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter</h6>
+    <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" id="">
+      <option value="">All Raids</option>
+      <optgroup label="Spirit Vale">
+        <option value="">Vale Guardian</option>
+        <option value="">Gorseval</option>
+        <option value="">Sabetha</option>
+      </optgroup>
+      <optgroup label="Salvation Pass">
+        <option value="">Slothasor</option>
+        <option value="">Bandit Trio</option>
+        <option value="">Matthias</option>
+      </optgroup>
+    </select>
 
   {% comment %}
     <div class="uk-margin">
@@ -157,7 +177,7 @@
   {% endcomment %}
   <div>
     <h6 class="uk-font-family-secondary">Time Frame</h6>
-    <button class="uk-button uk-button-default uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">Most recent <i class="material-icons">expand_more</i></button>
+    <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">Most recent <i class="material-icons">expand_more</i></button>
     <div uk-dropdown="mode: click">
         <ul class="uk-nav uk-dropdown-nav">
           [[#each eras]]
@@ -166,11 +186,6 @@
         </ul>
     </div>
   </div>
-  <!-- <select class="uk-select" value='[[page.era]]'>
-    [[#each eras]]
-      <option value='[[this]]'>[[name]]</option>
-    [[/each]]
-  </select> -->
     [[#if encounter[page.area]]]
     [[#if page.area.match(/^All \w+ bosses$/)]]
     <h2>[[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area].name]]</h2>
@@ -191,7 +206,7 @@
     <div class="r-media uk-margin-medium-top">
       <img width="70px" src="/static/raidar/img/icon/[[data.areas[page.area].name]].png" alt="[[data.areas[page.area].name]]">
       <div class="r-body">
-        <h2 class="uk-margin-remove">[[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area].name]]</h2>
+        <h2 style="line-height:1;" class="uk-margin-small-bottom">[[page.area.match(/^All \w+ bosses$/) ? page.area : data.areas[page.area].name]]</h2>
         <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
           Alive [[
             perc(100
