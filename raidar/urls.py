@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
+from django.views.generic.base import TemplateView
 import importlib
 
 from . import views
@@ -30,6 +31,7 @@ urlpatterns = [
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
     url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
     url(r'^$', views.index, name = "index"),
+    url(r'^robots.txt$', TemplateView.as_view(template_name='raidar/robots.txt'), name="robots"),
     url(r'^global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]
 

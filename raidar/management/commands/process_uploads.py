@@ -206,14 +206,20 @@ class Command(BaseCommand):
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
             upload_val = upload.val
-            category_id = upload_val.get('category_id', None)
-            tagstring = upload_val.get('tagstring', '')
             if duration < 60:
                 raise EvtcAnalysisException('Encounter shorter than 60s')
 
             era = Era.by_time(started_at)
-            area, _ = Area.objects.get_or_create(id=evtc_encounter.area_id,
-                    defaults={ "name": analyser.boss_info.name })
+            area_id = evtc_encounter.area_id
+            boss_name = analyser.boss_info.name
+            if dump['Category']['encounter']['cm']:
+                boss_name += " (CM)"
+                if analyser.boss_info.non_cm_allowed:
+                    area_id += 0xFF0000
+                
+                
+            area, _ = Area.objects.get_or_create(id=area_id,
+                    defaults={ "name": boss_name })
 
             status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
@@ -245,10 +251,7 @@ class Command(BaseCommand):
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
-                    encounter.category_id = category_id
-                    encounter.tagstring = tagstring
                     encounter.has_evtc = True
-                    encounter.save()
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
                         filename=filename,
@@ -256,10 +259,13 @@ class Command(BaseCommand):
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
-                        category_id=category_id, has_evtc=True,
-                        account_hash=account_hash
+                        has_evtc=True, account_hash=account_hash
                     )
-                    encounter.tagstring = tagstring
+                if 'category_id' in upload_val:
+                    encounter.category_id = upload_val['category_id']
+                if 'tagstring' in upload_val:
+                    encounter.tagstring = upload_val['tagstring']
+                encounter.save()
 
                 file.close()
                 file = None
@@ -276,16 +282,12 @@ class Command(BaseCommand):
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
                         name=player['account'])
-                    character, _ = Character.objects.get_or_create(
-                        name=name, account=account,
-                        defaults={
-                            'profession': player['profession']
-                        }
-                    )
                     participation, _ = Participation.objects.update_or_create(
-                        character=character, encounter=encounter,
+                        account=account, encounter=encounter,
                         defaults={
+                            'character': name,
                             'archetype': player['archetype'],
+                            'profession': player['profession'],
                             'party': player['party'],
                             'elite': player['elite']
                         }
