@@ -33,6 +33,9 @@ def mo_cm_detector(events, boss_instids):
 def deimos_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 42000000) & (events.src_instid.isin(boss_instids))]) > 0
 
+def dhuum_cm_detector(events, boss_instids):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 40000000) & (events.src_instid.isin(boss_instids))]) > 0
+
 def skorvald_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
@@ -334,13 +337,19 @@ BOSS_ARRAY = [
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
     Boss('Soulless Horror', Kind.RAID, [19767], cm_detector = soulless_cm_detector),
-    Boss('Dhuum', Kind.RAID, [19450],phases = [
+    Boss('Dhuum', Kind.RAID, [19450], cm_detector = dhuum_cm_detector, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
         Phase("Main", True, phase_end_health = 10, phase_end_damage_stop = 10000),
         Phase("???", False, phase_end_damage_start = 10000),
         Phase("Ritual", True)
     ]),
     Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], cm_detector = soulless_cm_detector),
+    Boss('Dhuum (CM)', Kind.RAID, [0xFF4BFA], cm_detector = dhuum_cm_detector, phases = [
+        Phase("Pre-event", True, phase_end_damage_start = 1),
+        Phase("Main", True, phase_end_health = 10, phase_end_damage_stop = 10000),
+        Phase("???", False, phase_end_damage_start = 10000),
+        Phase("Ritual", True)
+    ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
