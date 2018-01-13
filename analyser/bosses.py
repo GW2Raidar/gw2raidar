@@ -1,4 +1,5 @@
 from enum import IntEnum
+from .bossmetrics import *
 
 class DesiredValue(IntEnum):
     LOW = -1
@@ -56,7 +57,7 @@ class Metric:
         return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
-    def __init__(self, name, kind, boss_ids, metrics=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True):
+    def __init__(self, name, kind, boss_ids, metrics=None, gather_stats=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True):
         self.name = name
         self.kind = kind
         self.boss_ids = boss_ids
@@ -70,6 +71,7 @@ class Boss:
         self.cm_detector = cm_detector
         self.force_single_party = force_single_party
         self.non_cm_allowed = non_cm_allowed
+        self.gather_boss_specific_stats = gather_stats
 
 class Phase:
     def __init__(self, name, important,
@@ -152,7 +154,7 @@ BOSS_ARRAY = [
         Metric('Blue Guardian Invulnerability Time', 'Blue Invuln', MetricType.TIME, False),
         Metric('Bullets Eaten', 'Bulleted', MetricType.COUNT),
         Metric('Teleports', 'Teleported', MetricType.COUNT)
-    ]),
+    ], gather_stats = gather_vg_stats),
     Boss('Gorseval', Kind.RAID, [0x3C45], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First souls", False, phase_end_damage_start = 10000, phase_skip_health = 33),
@@ -163,7 +165,7 @@ BOSS_ARRAY = [
         Metric('Unmitigated Spectral Impacts', 'Slammed', MetricType.COUNT, True, True),
         Metric('Ghastly Imprisonments', 'Imprisoned', MetricType.COUNT),
         Metric('Spectral Darkness', 'Tainted', MetricType.TIME)
-    ]),
+    ], gather_stats = gather_gorse_stats),
     Boss('Sabetha', Kind.RAID, [0x3C0F], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000, phase_skip_health = 50),
         Phase("Kernan", False, phase_end_damage_start = 10000, phase_skip_health = 50),
@@ -174,7 +176,7 @@ BOSS_ARRAY = [
         Phase("Phase 4", True)
     ], metrics = [
         Metric('Heavy Bombs Undefused', 'Heavy Bombs', MetricType.COUNT, False)
-    ]),
+    ], gather_stats = gather_sab_stats),
     Boss('Slothasor', Kind.RAID, [0x3EFB], phases = [
         Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000, phase_skip_health = 60),
         Phase("Break 1", False, phase_end_damage_start = 1000, phase_skip_health = 60),
@@ -193,7 +195,7 @@ BOSS_ARRAY = [
         Metric('Spores Blocked', 'Spore Blocks', MetricType.COUNT, True, False, DesiredValue.HIGH),
         Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
-    ]),
+    ], gather_stats = gather_sloth_stats),
     Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
         #Phase("Clear 1", False, phase_end_health = 99),
@@ -202,7 +204,7 @@ BOSS_ARRAY = [
         Phase("Zane", True, phase_end_damage_stop = 10000),
         Phase("Clear 3", False, phase_end_damage_start = 10000),
         Phase("Narella", True, phase_end_damage_stop = 10000)
-    ]),
+    ], gather_stats = gather_trio_stats),
     Boss('Matthias', Kind.RAID, [0x3EF3], phases = [
         #Will currently detect phases slightly early - but probably not a big deal?
         Phase("Ice", True, phase_end_health = 80),
@@ -218,7 +220,7 @@ BOSS_ARRAY = [
         Metric('Shards Absorbed', 'Absorbed', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Sacrificed', 'Sacrificed', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Well of the Profane Carrier', 'Welled', MetricType.COUNT, True, False, DesiredValue.NONE)
-    ]),
+    ], gather_stats = gather_matt_stats),
     Boss('Keep Construct', Kind.RAID, [0x3F6B], phases = [
         # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
         Phase("Pre-burn 1", True, phase_end_damage_stop = 15000),
@@ -238,20 +240,20 @@ BOSS_ARRAY = [
         Metric('Rifts Hit', 'Rifts Hit', MetricType.COUNT, False, False, DesiredValue.HIGH),
         Metric('Gaining Power', 'Power Gained', MetricType.COUNT, False, False),
         Metric('Magic Blast Intensity', 'Orbs Missed', MetricType.COUNT, False, False)
-    ]),
+    ], gather_stats = gather_kc_stats),
     Boss('Xera', Kind.RAID, [0x3F76, 0x3F9E], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
         Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),
     ], metrics = [
         Metric('Derangement', 'Deranged', MetricType.COUNT)
-    ]),
+    ], gather_stats = gather_xera_stats),
     Boss('Cairn', Kind.RAID, [0x432A], metrics = [
         Metric('Displacement', 'Teleported', MetricType.COUNT),
         Metric('Meteor Swarm', 'Shard Hits', MetricType.COUNT),
         Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
         Metric('Shared Agony', 'Agony', MetricType.COUNT)
-    ], cm_detector = cairn_cm_detector),
+    ], cm_detector = cairn_cm_detector, gather_stats = gather_cairn_stats),
     Boss('Mursaat Overseer', Kind.RAID, [0x4314], metrics = [
         Metric('Protect', 'Protector', MetricType.COUNT),
         Metric('Claim', 'Claimer', MetricType.COUNT),
@@ -259,7 +261,7 @@ BOSS_ARRAY = [
         Metric('Soldiers', 'Soldiers', MetricType.COUNT, False),
         Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
-    ], cm_detector = mo_cm_detector),
+    ], cm_detector = mo_cm_detector, gather_stats = gather_mursaat_overseer_stats),
     Boss('Samarog', Kind.RAID, [0x4324], phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
@@ -278,7 +280,7 @@ BOSS_ARRAY = [
         Metric('Small Friend', 'Small Friend', MetricType.COUNT, True, True),
         Metric('Big Friend', 'Big Friend', MetricType.COUNT, True, True),
         Metric('Spear Impact', 'Spear Impacts', MetricType.COUNT, True, True)
-    ], cm_detector = samarog_cm_detector),
+    ], cm_detector = samarog_cm_detector, gather_stats = gather_samarog_stats),
     Boss('Deimos', Kind.RAID, [0x4302], key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
@@ -290,7 +292,7 @@ BOSS_ARRAY = [
         Metric('Demonic Shockwave', 'Shockwave', MetricType.COUNT, True, False),
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
-    ], cm_detector = deimos_cm_detector),
+    ], cm_detector = deimos_cm_detector, gather_stats = gather_deimos_stats),
     Boss('Cairn (CM)', Kind.RAID, [0xFF432A], metrics = [
         Metric('Displacement', 'Teleported', MetricType.COUNT),
         Metric('Meteor Swarm', 'Shard Hits', MetricType.COUNT),
@@ -336,13 +338,13 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
-    Boss('Soulless Horror', Kind.RAID, [19767], cm_detector = soulless_cm_detector),
+    Boss('Soulless Horror', Kind.RAID, [19767], cm_detector = soulless_cm_detector, gather_stats = gather_sh_stats),
     Boss('Dhuum', Kind.RAID, [19450], cm_detector = dhuum_cm_detector, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
         Phase("Main", True, phase_end_health = 10, phase_end_damage_stop = 10000),
         Phase("???", False, phase_end_damage_start = 10000),
         Phase("Ritual", True)
-    ]),
+    ], gather_stats = gather_dhuum_stats),
     Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], cm_detector = soulless_cm_detector),
     Boss('Dhuum (CM)', Kind.RAID, [0xFF4BFA], cm_detector = dhuum_cm_detector, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
