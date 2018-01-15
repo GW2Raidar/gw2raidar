@@ -71,8 +71,6 @@ svg:not(:root).chart {
   transition: all 150ms ease-in-out; }
   .r-encounter-stats-container .r-stats-row:hover:not(.r-stats-header),
   .r-global-stats-container .r-stats-row:hover:not(.r-stats-header) {
-    -webkit-transform: translateY(-1px);
-            transform: translateY(-1px);
     background: #484261; }
 
 .r-encounter-stats-container .r-stats-header,
@@ -173,9 +171,6 @@ svg:not(:root).chart {
   .r-encounter-stats-container .r-stats-row.r-member {
     -webkit-transform: translate(8px, 0);
             transform: translate(8px, 0); }
-    .r-encounter-stats-container .r-stats-row.r-member:hover {
-      -webkit-transform: translate(8px, -1px);
-              transform: translate(8px, -1px); }
 
 .r-encounter-stats-container .r-encounter-player {
   display: grid;
