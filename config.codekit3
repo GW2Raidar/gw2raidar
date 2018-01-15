@@ -7654,6 +7654,23 @@
 		"oAP": "\/node_modules\/uikit\/tests\/width.html",
 		"oF": 0
 		},
+	"\/node_modules\/uikit\/webpack.config.js": {
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/webpack.config.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
+	"\/node_modules\/uikit\/yarn.lock": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 2,
+		"oAP": "\/node_modules\/uikit\/yarn.lock",
+		"oF": 0
+		},
 	"\/raidar\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -7708,6 +7725,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/__pycache__\/views.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/admin.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/admin.py",
 		"oF": 0
 		},
 	"\/raidar\/apps.py": {
@@ -7778,6 +7802,20 @@
 		"ft": 8192,
 		"oA": 1,
 		"oAP": "\/raidar\/management\/commands\/_qsetiter.py",
+		"oF": 0
+		},
+	"\/raidar\/management\/commands\/process_uploads.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/management\/commands\/process_uploads.py",
+		"oF": 0
+		},
+	"\/raidar\/management\/commands\/restat.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/management\/commands\/restat.py",
 		"oF": 0
 		},
 	"\/raidar\/management\/commands\/reupload.py": {
@@ -8319,6 +8357,13 @@
 		"oAP": "\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc",
 		"oF": 0
 		},
+	"\/raidar\/models.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/models.py",
+		"oF": 0
+		},
 	"\/raidar\/static\/raidar\/css\/raidar.css": {
 		"aP": 1,
 		"bl": 0,
@@ -8349,6 +8394,369 @@
 		"oF": 0,
 		"oS": 3
 		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Any_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 3689,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Any_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Berserker_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 7188,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Berserker_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Chronomancer_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 8802,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Chronomancer_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Daredevil_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6134,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Daredevil_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Deadeye_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5901,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Deadeye_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Dragonhunter_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5297,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Dragonhunter_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Druid_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6015,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Druid_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Elementalist_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6165,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Elementalist_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Engineer_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5383,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Engineer_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Firebrand_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6396,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Firebrand_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Guardian_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6278,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Guardian_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Herald_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6711,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Herald_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Holosmith_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6655,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Holosmith_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Mesmer_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5892,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Mesmer_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Mirage_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5369,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Mirage_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Necromancer_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5351,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Necromancer_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Ranger_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6490,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Ranger_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Reaper_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5514,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Reaper_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Renegade_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 4422,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Renegade_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Revenant_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 4557,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Revenant_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Scourge_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 7736,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Scourge_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Scrapper_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5800,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Scrapper_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Some_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 4219,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Some_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Soulbeast_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 8393,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Soulbeast_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Spellbreaker_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 5713,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Spellbreaker_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Tempest_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 8273,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Tempest_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Thief_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6408,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Thief_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Warrior_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 6726,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Warrior_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/120px\/120px-Weaver_tango_icon_200px.png": {
+		"ft": 32768,
+		"iS": 3907,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/120px\/120px-Weaver_tango_icon_200px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Any_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 791,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Any_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Berserker_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1088,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Berserker_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Chronomancer_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1320,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Chronomancer_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Commando_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 459,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Commando_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/20px\/Daredevil_tango_icon_20px.png": {
 		"ft": 32768,
 		"iS": 1113,
@@ -8357,6 +8765,39 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Deadeye_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 918,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Deadeye_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Dragonhunter_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1000,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Dragonhunter_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Druid_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1047,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Druid_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -8371,6 +8812,39 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/20px\/Engineer_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1061,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Engineer_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Firebrand_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1086,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Firebrand_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Guardian_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1072,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Guardian_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/20px\/Herald_tango_icon_20px.png": {
 		"ft": 32768,
 		"iS": 1110,
@@ -8382,6 +8856,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/20px\/Holosmith_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1081,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Holosmith_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/20px\/Mesmer_tango_icon_20px.png": {
 		"ft": 32768,
 		"iS": 1137,
@@ -8390,6 +8875,17 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Mirage_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 979,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Mirage_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -8415,6 +8911,61 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/20px\/Reaper_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1091,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Reaper_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Renegade_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 911,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Renegade_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Revenant_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 762,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Revenant_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Scourge_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1254,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Scourge_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Scrapper_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1108,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Scrapper_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/20px\/Shadowmancer_tango_icon_20px.png": {
 		"ft": 32768,
 		"iS": 1217,
@@ -8423,6 +8974,39 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Some_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 728,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Some_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Soulbeast_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1445,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Soulbeast_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/20px\/Spellbreaker_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1212,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Spellbreaker_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -8437,6 +9021,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/20px\/Thief_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 1313,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Thief_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/20px\/Warrior_tango_icon_20px.png": {
 		"ft": 32768,
 		"iS": 1182,
@@ -8448,6 +9043,380 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/20px\/Weaver_tango_icon_20px.png": {
+		"ft": 32768,
+		"iS": 749,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/20px\/Weaver_tango_icon_20px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Any_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 1317,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Any_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Berserker_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2411,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Berserker_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Chronomancer_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2600,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Chronomancer_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Daredevil_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2281,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Daredevil_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Deadeye_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2158,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Deadeye_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Dragonhunter_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2097,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Dragonhunter_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Druid_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2064,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Druid_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Elementalist_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2110,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Elementalist_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Engineer_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2095,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Engineer_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Firebrand_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2416,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Firebrand_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Guardian_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2316,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Guardian_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Herald_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2354,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Herald_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Holosmith_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2261,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Holosmith_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Mesmer_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2213,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Mesmer_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Mirage_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2047,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Mirage_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Necromancer_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 1975,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Necromancer_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Ranger_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2325,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Ranger_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Reaper_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2020,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Reaper_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Renegade_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 1841,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Renegade_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Revenant_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 1831,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Revenant_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Scourge_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2622,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Scourge_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Scrapper_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2084,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Scrapper_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Some_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 1856,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Some_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Soulbeast_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2748,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Soulbeast_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Spellbreaker_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2260,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Spellbreaker_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Tempest_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2605,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Tempest_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Thief_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2240,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Thief_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Warrior_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 2244,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Warrior_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/48px\/Weaver_tango_icon_48px.png": {
+		"ft": 32768,
+		"iS": 1745,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/48px\/Weaver_tango_icon_48px.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/arch\/Condi.png": {
+		"ft": 32768,
+		"iS": 594,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/arch\/Condi.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/arch\/Heal.png": {
+		"ft": 32768,
+		"iS": 654,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/arch\/Heal.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/arch\/Power.png": {
+		"ft": 32768,
+		"iS": 501,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/arch\/Power.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/arch\/Support.png": {
+		"ft": 32768,
+		"iS": 208,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/arch\/Support.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/arch\/Tank.png": {
 		"ft": 32768,
 		"iS": 630,
@@ -8456,6 +9425,676 @@
 		"oF": 1,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/background\/header-concept.jpg": {
+		"ft": 16384,
+		"iS": 356717,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
+		"ft": 32768,
+		"iS": 995,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/aegis.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/alacrity.png": {
+		"ft": 32768,
+		"iS": 1341,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/alacrity.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/assassins_presence.png": {
+		"ft": 32768,
+		"iS": 1395,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/assassins_presence.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/banner_defence.png": {
+		"ft": 32768,
+		"iS": 1161,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/banner_defence.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/banner_discipline.png": {
+		"ft": 32768,
+		"iS": 1176,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/banner_discipline.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/banner_strength.png": {
+		"ft": 32768,
+		"iS": 1277,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/banner_strength.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/banner_tactics.png": {
+		"ft": 32768,
+		"iS": 1156,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/banner_tactics.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/empower_allies.png": {
+		"ft": 32768,
+		"iS": 1390,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/empower_allies.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/fury.png": {
+		"ft": 32768,
+		"iS": 1271,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/fury.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png": {
+		"ft": 32768,
+		"iS": 1137,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/gotl.png": {
+		"ft": 32768,
+		"iS": 1389,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/gotl.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/might.png": {
+		"ft": 32768,
+		"iS": 1216,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/might.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/naturalistic_resonance.png": {
+		"ft": 32768,
+		"iS": 1172,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/naturalistic_resonance.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png": {
+		"ft": 32768,
+		"iS": 1398,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/protection.png": {
+		"ft": 32768,
+		"iS": 1221,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/protection.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/quickness.png": {
+		"ft": 32768,
+		"iS": 1273,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/quickness.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/regen.png": {
+		"ft": 32768,
+		"iS": 1163,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/regen.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/resistance.png": {
+		"ft": 32768,
+		"iS": 1680,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/resistance.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/retaliation.png": {
+		"ft": 32768,
+		"iS": 1182,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/retaliation.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png": {
+		"ft": 32768,
+		"iS": 1336,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/spirit_of_frost.png": {
+		"ft": 32768,
+		"iS": 1240,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/spirit_of_frost.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/spotter.png": {
+		"ft": 32768,
+		"iS": 1312,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/spotter.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/stability.png": {
+		"ft": 32768,
+		"iS": 1056,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/stability.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png": {
+		"ft": 32768,
+		"iS": 1205,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png": {
+		"ft": 32768,
+		"iS": 1268,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png": {
+		"ft": 32768,
+		"iS": 1252,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/swiftness.png": {
+		"ft": 32768,
+		"iS": 1109,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/swiftness.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png": {
+		"ft": 32768,
+		"iS": 1392,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/vigor.png": {
+		"ft": 32768,
+		"iS": 1130,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vigor.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Arkk (CM).png": {
+		"ft": 32768,
+		"iS": 119382,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Arkk (CM).png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Average Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Average Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Bandit Trio.png": {
+		"ft": 32768,
+		"iS": 13540,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Bandit Trio.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Broken King.png": {
+		"ft": 32768,
+		"iS": 3930,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Broken King.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Cairn.png": {
+		"ft": 32768,
+		"iS": 13209,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Cairn.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Deimos.png": {
+		"ft": 32768,
+		"iS": 13463,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Deimos.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Dhuum.png": {
+		"ft": 32768,
+		"iS": 3851,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Dhuum.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Downed_ally.png": {
+		"ft": 32768,
+		"iS": 19624,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Downed_ally.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Downed_enemy.png": {
+		"ft": 32768,
+		"iS": 19478,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Downed_enemy.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Ensolyss (CM).png": {
+		"ft": 32768,
+		"iS": 127730,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Ensolyss (CM).png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Gorseval.png": {
+		"ft": 32768,
+		"iS": 13646,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Gorseval.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Keep Construct.png": {
+		"ft": 32768,
+		"iS": 12944,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Keep Construct.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/MAMA (CM).png": {
+		"ft": 32768,
+		"iS": 90026,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/MAMA (CM).png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Massive Average Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Massive Average Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Massive Standard Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Massive Standard Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Massive Vital Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Massive Vital Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Matthias.png": {
+		"ft": 32768,
+		"iS": 14227,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Matthias.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Mursaat Overseer.png": {
+		"ft": 32768,
+		"iS": 13049,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Mursaat Overseer.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Resistant Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Resistant Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Sabetha.png": {
+		"ft": 32768,
+		"iS": 12869,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Sabetha.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Samarog.png": {
+		"ft": 32768,
+		"iS": 13900,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Samarog.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Siax (CM).png": {
+		"ft": 32768,
+		"iS": 129478,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Siax (CM).png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered (CM).png": {
+		"ft": 32768,
+		"iS": 120880,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered (CM).png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Slothasor.png": {
+		"ft": 32768,
+		"iS": 13326,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Slothasor.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Soulless Horror.png": {
+		"ft": 32768,
+		"iS": 3808,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Soulless Horror.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Standard Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Standard Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Tough Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Tough Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Vale Guardian.png": {
+		"ft": 32768,
+		"iS": 12262,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Vale Guardian.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Viirastra (CM).png": {
+		"ft": 32768,
+		"iS": 84640,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Viirastra (CM).png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Vital Kitty Golem.png": {
+		"ft": 32768,
+		"iS": 12446,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Vital Kitty Golem.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Xera.png": {
+		"ft": 32768,
+		"iS": 12364,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Xera.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -8536,6 +10175,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/patreon\/become_a_patron_button.png": {
+		"ft": 32768,
+		"iS": 3086,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/patreon\/become_a_patron_button.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/js\/uikit.min.js": {
 		"ft": 64,
 		"ma": 0,
@@ -8546,6 +10196,26 @@
 		"sC": 3,
 		"tS": 0
 		},
+	"\/raidar\/static\/raidar\/script.js": {
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/script-min.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
+	"\/raidar\/static\/raidar\/style.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/style-min.css",
+		"oF": 0,
+		"oS": 3
+		},
 	"\/raidar\/templates\/raidar\/account.html": {
 		"cB": 0,
 		"ft": 8192,
@@ -8553,12 +10223,138 @@
 		"oAP": "\/raidar\/templates\/raidar\/account.html",
 		"oF": 1
 		},
+	"\/raidar\/templates\/raidar\/encounter.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_boss_metrics.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_boss_metrics.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_buffs.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_filter.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_filter.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_row_header.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_row_header.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounters.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounters.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/global_stats.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/index.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/index.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_about.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_about.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_api.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_api.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_contact.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_contact.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_framework.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_framework.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_help.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_help.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_releasenotes.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_releasenotes.html",
+		"oF": 0
+		},
 	"\/raidar\/templates\/raidar\/intro.html": {
 		"cB": 0,
 		"ft": 8192,
 		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/intro.html",
 		"oF": 1
+		},
+	"\/raidar\/templates\/raidar\/navbar.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/navbar.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/profile.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/profile.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/robots.txt": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/robots.txt",
+		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/thank-you.html": {
 		"cB": 0,
@@ -8579,6 +10375,20 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/tests.py",
+		"oF": 0
+		},
+	"\/raidar\/urls.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/urls.py",
+		"oF": 0
+		},
+	"\/raidar\/views.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/views.py",
 		"oF": 0
 		},
 	"\/raidar\/words.txt": {
@@ -9913,6 +11723,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/TestLogs\/errors\/50.evtc.error",
+		"oF": 0
+		},
+	"\/uploads\/2.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/uploads\/2.evtc.zip",
 		"oF": 0
 		}
 	},
