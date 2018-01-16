@@ -46,6 +46,8 @@ class Command(BaseCommand):
         for filename in files:
             try:
                 with open(filename + '.error', 'r') as f:
+                    if options['verbosity'] >= 2:
+                        print(filename)
                     match = re.match(r"(.*) \((.*?)\)", f.readline().rstrip())
                     orig_name = match.group(1)
                     username = match.group(2)
