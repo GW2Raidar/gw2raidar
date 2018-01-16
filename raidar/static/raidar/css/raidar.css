@@ -233,7 +233,7 @@ svg:not(:root).chart {
   margin: 0;
   padding: 0;
   list-style: none; }
-  .r-encounter-stats-container .r-encounter-buff-container li.uk-active, .r-encounter-stats-container .r-encounter-buff-container .r-buff-list {
+  .r-encounter-stats-container .r-encounter-buff-container, .r-encounter-stats-container .r-encounter-buff-container .r-buff-list {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(-webkit-max-content, 68px));
     grid-template-columns: repeat(auto-fit, minmax(max-content, 68px));
