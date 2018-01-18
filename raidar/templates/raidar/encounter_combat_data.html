@@ -68,25 +68,31 @@
             </svg>
         </div>
         <div class="r-encounter-buff-container">
-          [[#if !page.boon_output]]
-            [[#each data.buff_tabs[0].order]]
-              [[#with { buff: data.buffs[.], code: . } ]]
-                [[#if encounter.phases[page.phase]]]
-                  <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> % Percentile">
-                    [[#with { format: buff.stacks ? num : perc } ]]
-                    <img src="[[buff.icon]]" alt="[[buff.name]]"/>
+          [[#each data.buff_tabs[0].order]]
+            [[#with { buff: data.buffs[.], code: . } ]]
+              [[#if encounter.phases[page.phase]]]
+                [[#with { format: buff.stacks ? num : perc } ]]
+                  [[#if !page.boon_output]]
+                    <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> TODO Percentile">
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                       <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
                       [[#if encounter.phases[page.phase].group]]
                         <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
                       [[/if]]
-                    [[/with]]
-                  </div>
-                [[else]]
-                  <div></div>
-                [[/if]]
-              [[/with]]
-            [[/each]]
-          [[/if]]
+                    </div>
+                  [[else]]
+                    <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> TODO Percentile" >
+                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
+                      <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs_out[code])/(encounter.phases[page.phase].group.buffs_out['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs_out[code], 1)]]</span>
+                      [[#if encounter.phases[page.phase].group]]
+                        <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs_out['avg_' + code], 1)]]</span>
+                      [[/if]]
+                    </div>
+                  [[/if]]
+                [[/with]]
+              [[/if]]
+            [[/with]]
+          [[/each]]
         </div>
       </div>
     </div>
