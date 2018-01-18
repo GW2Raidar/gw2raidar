@@ -129,7 +129,7 @@ class EvtcAnalysisException(BaseException):
     pass
 
 def only_entry(frame):
-    return frame.iloc[0] if not frame.empty else None
+    return frame.iloc[-1] if not frame.empty else None
 
 def unique_names(dictionary):
     unique = dict()
@@ -325,7 +325,8 @@ class Analyser:
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
-        BossMetricAnalyser(agents, self.subgroups, self.players, bosses, self.phases, encounter_end).gather_boss_specific_stats(events, collector)
+        if self.boss_info.gather_boss_specific_stats:
+            self.boss_info.gather_boss_specific_stats(events, collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics"), agents, self.subgroups, self.players, bosses, self.phases, encounter_end)
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
 
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
@@ -435,7 +436,7 @@ class Analyser:
     # subsection: boss stats
     def collect_individual_boss_key_events(self, collector, events):
         enter_combat_time = only_entry(events[events.state_change == parser.StateChange.ENTER_COMBAT].time)
-        death_time = only_entry(events[events.state_change == parser.StateChange.CHANGE_DEAD].time)
+        death_time = only_entry(events[events.state_change.isin([parser.StateChange.CHANGE_DEAD, parser.StateChange.EXIT_COMBAT])].time)
         collector.add_data("EnterCombat", enter_combat_time, int)
         collector.add_data("Death", death_time, int)
 
@@ -635,11 +636,15 @@ class Analyser:
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
+            interest_state_changes = end_state_changes + [parser.StateChange.CHANGE_UP]
             key_npc_events = events[events.src_instid.isin(self.boss_info.key_npc_ids)]
             if key_npc_events[(key_npc_events.state_change == parser.StateChange.CHANGE_DEAD)].empty:
                 print("No key NPCs died...")
-                dead_players = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
-                                                 (player_src_events.state_change.isin(end_state_changes))].src_instid.unique()
+                player_interesting_events = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
+                                                 (player_src_events.state_change.isin(interest_state_changes)) & (player_src_events.time < self.end_time)]
+                values = player_interesting_events.groupby('src_instid').last().reset_index()
+                
+                dead_players = values[values.state_change.isin(end_state_changes)].src_instid.unique()
                 print("These players died: {0}".format(dead_players))
                 surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))
                 print("These players survived: {0}".format(surviving_players))
