@@ -9,7 +9,7 @@ from gw2raidar import settings
 from raidar.models import *
 from sys import exit, stderr
 from time import time
-from zipfile import ZipFile, BadZipFile
+from zipfile import ZipFile, BadZipFile, ZIP_DEFLATED
 from queue import Empty
 import os
 import os.path
@@ -276,7 +276,7 @@ class Command(BaseCommand):
                     zipfile = None
                     os.rename(diskname, new_diskname)
                 else:
-                    with ZipFile(new_diskname, 'w') as zipfile_out:
+                    with ZipFile(new_diskname, 'w', ZIP_DEFLATED) as zipfile_out:
                         zipfile_out.write(diskname, orig_filename)
 
                 for name, player in status_for.items():
