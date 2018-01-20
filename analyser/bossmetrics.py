@@ -63,6 +63,25 @@ class Skills:
     GAINING_POWER = 35075
     MAGIC_BLAST_INTENSITY = 35119
     SPEAR_IMPACT = 37816
+    
+    # Soulless Horror
+    
+    VORTEX_SLASH_INNER = 47327
+    VORTEX_SLASH_OUTER = 48432
+    DEATH_AOE = 47430
+    PIE_SLICE = {48363, 47915}
+    SCYTHE = 47363
+    
+    # Dhuum
+    
+    MESSENGER = 48172
+    SHACKLE = 47335
+    CRACK = 48752
+    PUTRID_BOMB = 48760
+    SUCK = 48398
+    DEATH_MARK = 48176
+    SNATCH = 47076
+    TOXIC_SICKNESS = 37030
 
 def standard_count(events):
     return len(events);
@@ -126,10 +145,36 @@ def gather_trio_stats(events, collector, agents, subgroups, players, bosses, pha
     return
 
 def gather_sh_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
-    return
+    vortex_inner_events = events[(events.skillid == Skills.VORTEX_SLASH_INNER) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    vortex_outer_events = events[(events.skillid == Skills.VORTEX_SLASH_OUTER) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    death_aoe_events = events[(events.skillid == Skills.DEATH_AOE) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    pie_slice_events = events[(events.skillid.isin(Skills.PIE_SLICE)) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    sythe_events = events[(events.skillid == Skills.SCYTHE) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    
+    gather_count_stat('Vortex (Inner)', collector, True, False, phases, subgroups, players, vortex_inner_events)
+    gather_count_stat('Vortex (Outer)', collector, True, False, phases, subgroups, players, vortex_outer_events)
+    gather_count_stat('Soul Rift', collector, True, False, phases, subgroups, players, death_aoe_events)
+    gather_count_stat('Quad Slash', collector, True, False, phases, subgroups, players, pie_slice_events)
+    gather_count_stat('Scythe Hits', collector, True, False, phases, subgroups, players, sythe_events)
 
 def gather_dhuum_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
-    return
+    messenger_events = events[(events.skillid == Skills.MESSENGER) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    shackle_events = events[(events.skillid == Skills.SHACKLE) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    crack_events = events[(events.skillid == Skills.CRACK) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    putrid_bomb_events = events[(events.skillid == Skills.PUTRID_BOMB) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    suck_events = events[(events.skillid == Skills.SUCK) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    death_mark_events = events[(events.skillid == Skills.DEATH_MARK) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    snatch_events = events[(events.skillid == Skills.SNATCH) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    toxic_sickness_events = events[(events.skillid == Skills.TOXIC_SICKNESS) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    
+    gather_count_stat('Messenger', collector, True, False, phases, subgroups, players, messenger_events)
+    gather_count_stat('Shackle Hits', collector, True, False, phases, subgroups, players, shackle_events)
+    gather_count_stat('Fissured', collector, True, False, phases, subgroups, players, crack_events)
+    gather_count_stat('Putrid Bomb', collector, True, False, phases, subgroups, players, putrid_bomb_events)
+    gather_count_stat('Sucked', collector, True, False, phases, subgroups, players, suck_events)
+    gather_count_stat('Death Marked', collector, True, False, phases, subgroups, players, death_mark_events)
+    gather_count_stat('Snatched', collector, True, False, phases, subgroups, players, snatch_events)
+    gather_count_stat('Toxic Sickness', collector, True, False, phases, subgroups, players, toxic_sickness_events)
         
 def gather_vg_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
     teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(players.index) & (events.value > 0)]
