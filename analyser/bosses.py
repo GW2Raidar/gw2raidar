@@ -357,8 +357,7 @@ BOSS_ARRAY = [
         Metric('Putrid Bomb', 'Putrid Bomb', MetricType.COUNT, True, False),
         Metric('Sucked', 'Sucked', MetricType.COUNT, True, False),
         Metric('Death Marked', 'Death Marked', MetricType.COUNT, True, False),
-        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
-        Metric('Toxic Sickness', 'Toxic Sickness', MetricType.COUNT, True, False)
+        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False)
     ], gather_stats = gather_dhuum_stats),
     Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], metrics = [
         Metric('Vortex (Inner)', 'Vortex (Inner)', MetricType.COUNT, True, False),
@@ -379,8 +378,7 @@ BOSS_ARRAY = [
         Metric('Putrid Bomb', 'Putrid Bomb', MetricType.COUNT, True, False),
         Metric('Sucked', 'Sucked', MetricType.COUNT, True, False),
         Metric('Death Marked', 'Death Marked', MetricType.COUNT, True, False),
-        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
-        Metric('Toxic Sickness', 'Toxic Sickness', MetricType.COUNT, True, False)
+        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False)
     ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),

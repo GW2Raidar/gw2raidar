@@ -81,7 +81,6 @@ class Skills:
     SUCK = 48398
     DEATH_MARK = 48176
     SNATCH = 47076
-    TOXIC_SICKNESS = 37030
 
 def standard_count(events):
     return len(events);
@@ -174,7 +173,6 @@ def gather_dhuum_stats(events, collector, agents, subgroups, players, bosses, ph
     gather_count_stat('Sucked', collector, True, False, phases, subgroups, players, suck_events)
     gather_count_stat('Death Marked', collector, True, False, phases, subgroups, players, death_mark_events)
     gather_count_stat('Snatched', collector, True, False, phases, subgroups, players, snatch_events)
-    gather_count_stat('Toxic Sickness', collector, True, False, phases, subgroups, players, toxic_sickness_events)
         
 def gather_vg_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
     teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(players.index) & (events.value > 0)]
