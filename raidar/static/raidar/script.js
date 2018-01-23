@@ -147,6 +147,32 @@
     if (n === undefined) return '';
     return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
+  // e.g. pctl(per_might)
+  helpers.pctl = base64 => {
+    return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
+  }
+  // e.g. bsearch(might, pctl(per_might))
+  helpers.bsearch = (needle, haystack) => {
+    let l = 0, h = haystack.length - 1;
+    if (needle > haystack[h]) {
+      return h + 1;
+    }
+    while (l != h) {
+      let m = (l + h) >> 1;
+      if (haystack[m] < needle) {
+        l = m + 1;
+      } else {
+        h = m;
+      }
+    }
+    return h;
+  };
+  helpers.th = num => {
+    let ones = num % 10;
+    let tens = num % 100 - ones;
+    let suffix = tens == 1 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
+    return num + suffix;
+  };
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,
