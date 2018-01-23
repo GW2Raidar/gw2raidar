@@ -69,28 +69,27 @@
         </div>
         <div class="r-encounter-buff-container">
           [[#each data.buff_tabs[0].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                [[#with { format: buff.stacks ? num : perc } ]]
-                  [[#if page.boon_output]]
-                    [[#with { buff_pctl: pctl(buffs_out[code], group.buffs_out['per_' + code]) } ]]
-                      <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
-                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(encounter.phases[page.phase].buffs_out[code], 1)]] </span>
-                        <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs_out['avg_' + code], 1)]]</span>
-                      </div>
-                    [[/with]]
-                  [[else]]
-                    [[#with { buff_pctl: pctl(buffs[code], group.buffs['per_' + code]) } ]]
-                      <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
-                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                        <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                      </div>
-                    [[/with]]
-                  [[/if]]
-                [[/with]]
-              [[/if]]
+            [[#with {
+              buff: data.buffs[.],
+              format: data.buffs[.].stacks ? num : perc,
+              code: .,
+              section: page.boon_output ? {
+                  name: 'Output',
+                  value: buffs_out[.],
+                  percentiles: pctl(group.buffs_out['per_' + .])
+                } : {
+                  name: 'Uptime',
+                  value: buffs[.],
+                  percentiles: pctl(group.buffs['per_' + .])
+                }
+            }]]
+              [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
+                <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
+                  <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]] </span>
+                  <span class="r-buff-number r-bg-50 compare">[[format(section.percentiles[50], 1)]]</span>
+                </div>
+              [[/with]]
             [[/with]]
           [[/each]]
         </div>
@@ -276,32 +275,27 @@
 
       <div class="r-encounter-buff-container">
         [[#each data.buff_tabs[0].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              [[#with { format: buff.stacks ? num : perc } ]]
-                [[#if page.boon_output]]
-                  [[#with { buff_pctl: pctl(buffs_out[code], archetype.buffs_out['per_' + code]) } ]]
-                    <!-- Output -->
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
-                      <img src="[[buff.icon]]" uk-tooltip="pos:bottom-left" title="[[buff.name]]" alt="[[buff.name]]"/>
-                      <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(buffs_out[code], 1)]]</span>
-                      <span class="r-buff-number r-bg-50 compare">[[format(archetype.buffs_out['avg_' + code], 1)]]</span>
-                    </div>
-                  [[/with]]
-                [[else]]
-                  [[#with { buff_pctl: pctl(buffs_out[code], archetype.buffs_out['per_' + code]) } ]]
-                    <!-- Uptime -->
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                      <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(buffs[code], 1)]]</span>
-                      <span class="r-buff-number r-bg-50 compare">[[format(archetype.buffs['avg_' + code], 1)]]</span>
-                    </div>
-                  [[/with]]
-                [[/if]]
-              [[/with]]
-            [[else]]
-              <div></div>
-            [[/if]]
+          [[#with {
+            buff: data.buffs[.],
+            format: data.buffs[.].stacks ? num : perc,
+            code: .,
+            section: page.boon_output ? {
+                name: 'Output',
+                value: buffs_out[.],
+                percentiles: pctl(archetype.buffs_out['per_' + .])
+              } : {
+                name: 'Uptime',
+                value: buffs[.],
+                percentiles: pctl(archetype.buffs['per_' + .])
+              }
+          }]]
+            [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
+              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+                <img src="[[buff.icon]]" uk-tooltip="pos:bottom-left" title="[[buff.name]]" alt="[[buff.name]]"/>
+                <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
+                <span class="r-buff-number r-bg-50 compare">[[format(section.percentiles[50], 1)]]</span>
+              </div>
+            [[/with]]
           [[/with]]
         [[/each]]
       </div>
