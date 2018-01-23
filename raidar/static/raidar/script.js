@@ -147,6 +147,28 @@
     if (n === undefined) return '';
     return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
+  helpers.pctl = (needle, percentiles) => {
+    let haystack = new Float32Array(Uint8Array.from(atob(percentiles), c => c.charCodeAt(0)).buffer)
+    let l = 0, h = haystack.length - 1;
+    if (needle > haystack[h]) {
+      return h + 1;
+    }
+    while (l != h) {
+      let m = (l + h) >> 1;
+      if (haystack[m] < needle) {
+        l = m + 1;
+      } else {
+        h = m;
+      }
+    }
+    return h;
+  };
+  helpers.th = num => {
+    let ones = num % 10;
+    let tens = num % 100 - ones;
+    let suffix = tens == 1 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
+    return num + suffix;
+  }
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,
