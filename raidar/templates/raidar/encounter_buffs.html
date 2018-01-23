@@ -6,489 +6,145 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
 {% endcomment %}
 
 <div class="table-container uk-margin-top">
-  {% include 'raidar/encounter_row_header.html' %}
   <div class="r-encounter-stats-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header">
       <div class="uk-visible@m">Spec</div>
-      <div class="r-buff-toggle" uk-switcher="connect: .uk-switcher">
-        <a href="#">Uptime</a> | <a href="#">Output</a>
+      <div class="r-buff-toggle">
+        <a href="#" class-uk-active="!page.boon_output" on-click="@.set({'page.boon_output': false}) && false">Uptime</a>
+        |
+        <a href="#" class-uk-active="page.boon_output" on-click="@.set({'page.boon_output': true}) && false">Output</a>
       </div>
     </div>
   </div>
-  <div class="r-encounter-stats-container">
-    <div class="r-stats-row r-stats-buffs">
-      <div class="r-encounter-player uk-text-right [[self && 'compare-show']]">
-        <div>
-            <h5 class="uk-margin-remove">Squad</h5>
-        </div>
-      </div>
-      <ul class="r-encounter-buff-container" >
-        <!-- Uptime -->
-        <li class="uk-active">
-          [[#if persistent_page.tab == 'offensive_boons']]
-          [[#each data.buff_tabs[1].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                  [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                    [[#if encounter.phases[page.phase].group]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                    [[/if]]
-                  [[/with]]
-                </div>
-              [[else]]
-                <div></div>
-              [[/if]]
-            [[/with]]
-          [[/each]]
 
-          [[elseif persistent_page.tab == 'supportive_boons']]
-          [[#each data.buff_tabs[2].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                  [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                    [[#if encounter.phases[page.phase].group]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                    [[/if]]
-                  [[/with]]
-                </div>
-              [[else]]
-                <div></div>
-              [[/if]]
-            [[/with]]
-          [[/each]]
-
-          [[elseif persistent_page.tab == 'offensive_buffs']]
-          [[#each data.buff_tabs[3].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                  [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                    [[#if encounter.phases[page.phase].group]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                    [[/if]]
-                  [[/with]]
-                </div>
-              [[else]]
-                <div></div>
-              [[/if]]
-            [[/with]]
-          [[/each]]
-
-          [[elseif persistent_page.tab == 'supportive_buffs']]
-          [[#each data.buff_tabs[3].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                  [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                    [[#if encounter.phases[page.phase].group]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                    [[/if]]
-                  [[/with]]
-                </div>
-              [[else]]
-                <div></div>
-              [[/if]]
-            [[/with]]
-          [[/each]]
-
-          [[/if]]
-
-        </li>
-      </ul>
-    </div>
-
-  [[#each encounter.parties:partyNo]]
-  <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5>
-  <div class="r-stats-row r-stats-buffs r-party">
-    <div class="r-encounter-player uk-text-right [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with encounter.phases[page.phase].events]]
-      Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
-      Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
-      Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
-    [[/with]]">
-      <div>
-          <h6 class="uk-font-family-secondary uk-margin-remove uk-text-uppercase">([[members.length]] member[[members.length > 1 && 's' || '']])</h6>
-          <h5 class="uk-margin-remove">Party [[partyNo]] </h5>
-      </div>
-
-    </div>
-    <ul class="uk-switcher r-buff-toggle r-encounter-buff-container" >
-      [[#if persistent_page.tab == 'offensive_boons']]
-        <!-- Uptime -->
-        <li>
-          [[#each data.buff_tabs[1].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                  [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                    [[#if encounter.phases[page.phase].group]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                    [[/if]]
-                  [[/with]]
-                </div>
-              [[else]]
-                <div></div>
-              [[/if]]
-            [[/with]]
-          [[/each]]
-        </li>
-        <!-- Output -->
-        <li>
-          [[#each data.buff_tabs[1].order]]
-            [[#with { buff: data.buffs[.], code: . } ]]
-              [[#if encounter.phases[page.phase]]]
-                <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                  [[#with { format: buff.stacks ? num : perc } ]]
-                  <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                    [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                      <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                    [[/if]]
-                  [[/with]]
-                </div>
-              [[else]]
-                <div></div>
-              [[/if]]
-            [[/with]]
-          [[/each]]
-        </li>
-
-      [[elseif persistent_page.tab == 'supportive_boons']]
-      <!-- Uptime -->
-      <li>
-        [[#each data.buff_tabs[2].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                [[#with { format: buff.stacks ? num : perc } ]]
-                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                  <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                  [[#if encounter.phases[page.phase].group]]
-                    <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                  [[/if]]
-                [[/with]]
-              </div>
-            [[else]]
-              <div></div>
-            [[/if]]
-          [[/with]]
-        [[/each]]
-      </li>
-      <!-- Output -->
-      <li>
-        [[#each data.buff_tabs[2].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                [[#with { format: buff.stacks ? num : perc } ]]
-                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                  <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                  [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                    <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                  [[/if]]
-                [[/with]]
-              </div>
-            [[else]]
-              <div></div>
-            [[/if]]
-          [[/with]]
-        [[/each]]
-      </li>
-
-      [[elseif persistent_page.tab == 'offensive_buffs']]
-      <!-- Uptime -->
-      <li>
-        [[#each data.buff_tabs[3].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                [[#with { format: buff.stacks ? num : perc } ]]
-                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                  <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                  [[#if encounter.phases[page.phase].group]]
-                    <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                  [[/if]]
-                [[/with]]
-              </div>
-            [[else]]
-              <div></div>
-            [[/if]]
-          [[/with]]
-        [[/each]]
-      </li>
-      <!-- Output -->
-      <li>
-        [[#each data.buff_tabs[3].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                [[#with { format: buff.stacks ? num : perc } ]]
-                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                  <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                  [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                    <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                  [[/if]]
-                [[/with]]
-              </div>
-            [[else]]
-              <div></div>
-            [[/if]]
-          [[/with]]
-        [[/each]]
-      </li>
-
-      [[elseif persistent_page.tab == 'supportive_buffs']]
-      <!-- Uptime -->
-      <li>
-        [[#each data.buff_tabs[4].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                [[#with { format: buff.stacks ? num : perc } ]]
-                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                  <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                  [[#if encounter.phases[page.phase].group]]
-                    <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                  [[/if]]
-                [[/with]]
-              </div>
-            [[else]]
-              <div></div>
-            [[/if]]
-          [[/with]]
-        [[/each]]
-      </li>
-      <!-- Output -->
-      <li>
-        [[#each data.buff_tabs[4].order]]
-          [[#with { buff: data.buffs[.], code: . } ]]
-            [[#if encounter.phases[page.phase]]]
-              <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                [[#with { format: buff.stacks ? num : perc } ]]
-                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                  <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                  [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                    <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                  [[/if]]
-                [[/with]]
-              </div>
-            [[else]]
-              <div></div>
-            [[/if]]
-          [[/with]]
-        [[/each]]
-      </li>
-      [[/if]]
-    </ul>
-  </div>
-    [[#each members]]
-
-        <div class="r-stats-row r-stats-buffs r-member">
-          <div class="r-encounter-player uk-text-right [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with encounter.phases[page.phase].events]]
-            Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
-            Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
-            Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
-          [[/with]]">
+  [[#with { tabNo: {offensive_boons: 1, supportive_boons: 2, offensive_buffs: 3, supportive_buffs: 4 }[persistent_page.tab]}]]
+    <div class="r-encounter-stats-container">
+      [[#with encounter.phases[page.phase]]]
+        <div class="r-stats-row r-stats-buffs">
+          <div class="r-encounter-player uk-text-right [[self && 'compare-show']]">
             <div>
-              <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[archetype]]]</h6>
-              [[#if name]]
-                <h5 class="uk-margin-remove">[[name]]</h5>
-              [[else]]
-                <h5 class="private uk-margin-remove">PRIVATE</h5>
-              [[/if]]
+                <h5 class="uk-margin-remove">Squad</h5>
             </div>
-            <div class="r-encounter-player-image">
-              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
-              <img class="r-encounter-player-archetype" alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
-            </div>
-
           </div>
-          <ul class="uk-switcher r-buff-toggle r-encounter-buff-container" >
-            [[#if persistent_page.tab == 'offensive_boons']]
-              <!-- Uptime -->
-              <li>
-                [[#each data.buff_tabs[1].order]]
-                  [[#with { buff: data.buffs[.], code: . } ]]
-                    [[#if encounter.phases[page.phase]]]
-                      <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                        [[#with { format: buff.stacks ? num : perc } ]]
-                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                          <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                          [[#if encounter.phases[page.phase].group]]
-                            <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                          [[/if]]
-                        [[/with]]
-                      </div>
-                    [[else]]
-                      <div></div>
-                    [[/if]]
-                  [[/with]]
-                [[/each]]
-              </li>
-              <!-- Output -->
-              <li>
-                [[#each data.buff_tabs[1].order]]
-                  [[#with { buff: data.buffs[.], code: . } ]]
-                    [[#if encounter.phases[page.phase]]]
-                      <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                        [[#with { format: buff.stacks ? num : perc } ]]
-                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                          <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                          [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                            <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                          [[/if]]
-                        [[/with]]
-                      </div>
-                    [[else]]
-                      <div></div>
-                    [[/if]]
-                  [[/with]]
-                [[/each]]
-              </li>
-
-            [[elseif persistent_page.tab == 'supportive_boons']]
-            <!-- Uptime -->
-            <li>
-              [[#each data.buff_tabs[2].order]]
-                [[#with { buff: data.buffs[.], code: . } ]]
-                  [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                      [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                        [[#if encounter.phases[page.phase].group]]
-                          <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                        [[/if]]
-                      [[/with]]
-                    </div>
-                  [[else]]
-                    <div></div>
-                  [[/if]]
+          <div class="r-encounter-buff-container" >
+            [[#each data.buff_tabs[tabNo].order]]
+              [[#with {
+                buff: data.buffs[.],
+                format: data.buffs[.].stacks ? num : perc,
+                code: .,
+                section: page.boon_output ? {
+                    name: 'Output',
+                    value: buffs_out[.],
+                    percentiles: pctl(group.buffs_out['per_' + .])
+                  } : {
+                    name: 'Uptime',
+                    value: buffs[.],
+                    percentiles: pctl(group.buffs['per_' + .])
+                  }
+              }]]
+                [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
+                  <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+                    <img src="[[buff.icon]]" alt="[[buff.name]]"/>
+                    <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
+                    <span class="r-buff-number r-bg-50 compare">[[format(section.percentiles[50], 1)]]</span>
+                  </div>
                 [[/with]]
-              [[/each]]
-            </li>
-            <!-- Output -->
-            <li>
-              [[#each data.buff_tabs[2].order]]
-                [[#with { buff: data.buffs[.], code: . } ]]
-                  [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                      [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                        [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                          <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                        [[/if]]
-                      [[/with]]
-                    </div>
-                  [[else]]
-                    <div></div>
-                  [[/if]]
-                [[/with]]
-              [[/each]]
-            </li>
-
-            [[elseif persistent_page.tab == 'offensive_buffs']]
-            <!-- Uptime -->
-            <li>
-              [[#each data.buff_tabs[3].order]]
-                [[#with { buff: data.buffs[.], code: . } ]]
-                  [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                      [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                        [[#if encounter.phases[page.phase].group]]
-                          <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                        [[/if]]
-                      [[/with]]
-                    </div>
-                  [[else]]
-                    <div></div>
-                  [[/if]]
-                [[/with]]
-              [[/each]]
-            </li>
-            <!-- Output -->
-            <li>
-              [[#each data.buff_tabs[3].order]]
-                [[#with { buff: data.buffs[.], code: . } ]]
-                  [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                      [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                        [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                          <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                        [[/if]]
-                      [[/with]]
-                    </div>
-                  [[else]]
-                    <div></div>
-                  [[/if]]
-                [[/with]]
-              [[/each]]
-            </li>
-
-            [[elseif persistent_page.tab == 'supportive_buffs']]
-            <!-- Uptime -->
-            <li>
-              [[#each data.buff_tabs[4].order]]
-                [[#with { buff: data.buffs[.], code: . } ]]
-                  [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Uptime</h5><strong>Performance:</strong> n/a% Percentile">
-                      [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-[[num(((encounter.phases[page.phase].buffs[code])/(encounter.phases[page.phase].group.buffs['max_' + code])*100), 0)]]">[[format(encounter.phases[page.phase].buffs[code], 1)]] </span>
-                        [[#if encounter.phases[page.phase].group]]
-                          <span class="r-buff-number r-bg-50 compare">[[format(encounter.phases[page.phase].group.buffs['avg_' + code], 1)]]</span>
-                        [[/if]]
-                      [[/with]]
-                    </div>
-                  [[else]]
-                    <div></div>
-                  [[/if]]
-                [[/with]]
-              [[/each]]
-            </li>
-            <!-- Output -->
-            <li>
-              [[#each data.buff_tabs[4].order]]
-                [[#with { buff: data.buffs[.], code: . } ]]
-                  [[#if encounter.phases[page.phase]]]
-                    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] Output</h5><strong>Performance:</strong> n/a% Percentile">
-                      [[#with { format: buff.stacks ? num : perc } ]]
-                      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                        <span class="r-buff-number r-bg-60">[[format(phases[page.phase].buffs_out[code], 1)]]</span>
-                        [[#if phases[page.phase].archetype.buffs_out['avg_' + code]]]
-                          <span class="r-buff-number r-bg-50 compare">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 1)]]</span>
-                        [[/if]]
-                      [[/with]]
-                    </div>
-                  [[else]]
-                    <div></div>
-                  [[/if]]
-                [[/with]]
-              [[/each]]
-            </li>
-            [[/if]]
-          </ul>
+              [[/with]]
+            [[/each]]
+          </div>
         </div>
+      [[/with]]
 
-    [[/each]]
+      [[#each encounter.parties:partyNo]]
+        [[#with phases[page.phase]]]
+          <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5>
+          <div class="r-stats-row r-stats-buffs r-party">
+            <div class="r-encounter-player uk-text-right" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with events]]
+                  Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
+                  Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
+                  Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
+                [[/with]]">
+              <div>
+                <h6 class="uk-font-family-secondary uk-margin-remove uk-text-uppercase">([[members.length]] member[[members.length > 1 && 's' || '']])</h6>
+                <h5 class="uk-margin-remove">Party [[partyNo]] </h5>
+              </div>
+            </div>
+            <div class="r-encounter-buff-container">
+              [[#each data.buff_tabs[tabNo].order]]
+                [[#with {
+                  buff: data.buffs[.],
+                  format: data.buffs[.].stacks ? num : perc,
+                  code: .,
+                  section: page.boon_output ? {
+                      name: 'Output',
+                      value: buffs_out[.]
+                    } : {
+                      name: 'Uptime',
+                      value: buffs[.]
+                    }
+                }]]
+                  <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
+                    <img src="[[buff.icon]]" alt="[[buff.name]]"/>
+                    <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
+                  </div>
+                [[/with]]
+              [[/each]]
+            </div>
+          </div>
+        [[/with]]
 
-  [[/each]]
-  </div>
+        [[#each members]]
+          [[#with phases[page.phase]]]
+            <div class="r-stats-row r-stats-buffs r-member">
+              <div class="r-encounter-player uk-text-right [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with encounter.phases[page.phase].events]]
+                    Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
+                    Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
+                    Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
+                  [[/with]]">
+                <div>
+                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[archetype]]]</h6>
+                  [[#if name]]
+                    <h5 class="uk-margin-remove">[[name]]</h5>
+                  [[else]]
+                    <h5 class="private uk-margin-remove">PRIVATE</h5>
+                  [[/if]]
+                </div>
+                <div class="r-encounter-player-image">
+                  <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
+                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+                </div>
+              </div>
 
+              <div class="r-encounter-buff-container" >
+                [[#each data.buff_tabs[tabNo].order]]
+                  [[#with {
+                    buff: data.buffs[.],
+                    format: data.buffs[.].stacks ? num : perc,
+                    code: .,
+                    section: page.boon_output ? {
+                        name: 'Output',
+                        value: buffs_out[.],
+                        percentiles: pctl(archetype.buffs_out['per_' + .])
+                      } : {
+                        name: 'Uptime',
+                        value: buffs[.],
+                        percentiles: pctl(archetype.buffs['per_' + .])
+                      }
+                  }]]
+                    [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
+                      <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+                        <img src="[[buff.icon]]" alt="[[buff.name]]"/>
+                        <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]] </span>
+                        <span class="r-buff-number r-bg-50 compare">[[format(section.percentiles[50], 1)]]</span>
+                      </div>
+                    [[/with]]
+                  [[/with]]
+                [[/each]]
+              </div>
+            </div>
+          [[/with]]
+        [[/each]]
+      [[/each]]
+    </div>
+  [[/with]]
 </div>
