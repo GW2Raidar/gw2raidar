@@ -10244,13 +10244,6 @@
 		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
 		"oF": 0
 		},
-	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
-		"oF": 0
-		},
 	"\/raidar\/templates\/raidar\/encounter_filter.html": {
 		"cB": 0,
 		"ft": 8192,

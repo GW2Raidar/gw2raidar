@@ -22,9 +22,8 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             <h5 class="uk-margin-remove">Squad</h5>
         </div>
       </div>
-      <ul class="r-encounter-buff-container" >
+      <div class="r-encounter-buff-container" >
         <!-- Uptime -->
-        <li class="uk-active">
           [[#if persistent_page.tab == 'offensive_boons']]
           [[#each data.buff_tabs[1].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
@@ -103,12 +102,11 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
 
           [[/if]]
 
-        </li>
-      </ul>
+      </div>
     </div>
 
   [[#each encounter.parties:partyNo]]
-  <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5>
+  <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]]</span></h5>
   <div class="r-stats-row r-stats-buffs r-party">
     <div class="r-encounter-player uk-text-right [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with encounter.phases[page.phase].events]]
       Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
@@ -121,10 +119,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
       </div>
 
     </div>
-    <ul class="uk-switcher r-buff-toggle r-encounter-buff-container" >
+    <ul class="r-buff-toggle r-encounter-buff-container" >
       [[#if persistent_page.tab == 'offensive_boons']]
         <!-- Uptime -->
-        <li>
           [[#each data.buff_tabs[1].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
@@ -142,9 +139,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[/if]]
             [[/with]]
           [[/each]]
-        </li>
         <!-- Output -->
-        <li>
           [[#each data.buff_tabs[1].order]]
             [[#with { buff: data.buffs[.], code: . } ]]
               [[#if encounter.phases[page.phase]]]
@@ -162,7 +157,6 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[/if]]
             [[/with]]
           [[/each]]
-        </li>
 
       [[elseif persistent_page.tab == 'supportive_boons']]
       <!-- Uptime -->
