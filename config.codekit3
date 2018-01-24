@@ -10223,6 +10223,13 @@
 		"oAP": "\/raidar\/templates\/raidar\/account.html",
 		"oF": 1
 		},
+	"\/raidar\/templates\/raidar\/donation_cta.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/donation_cta.html",
+		"oF": 0
+		},
 	"\/raidar\/templates\/raidar\/encounter.html": {
 		"cB": 0,
 		"ft": 8192,
