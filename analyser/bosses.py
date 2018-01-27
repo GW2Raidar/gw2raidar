@@ -343,7 +343,8 @@ BOSS_ARRAY = [
         Metric('Vortex (Outer)', 'Vortex (Outer)', MetricType.COUNT, True, False),
         Metric('Soul Rift', 'Soul Rift', MetricType.COUNT, True, False),
         Metric('Quad Slash', 'Quad Slash', MetricType.COUNT, True, False),
-        Metric('Scythe Hits', 'Scythe Hits', MetricType.COUNT, True, False)
+        Metric('Scythe Hits', 'Scythe Hits', MetricType.COUNT, True, False),
+        Metric('Necrosis Received', 'Necrosis Received', MetricType.COUNT, True, False)
     ], cm_detector = soulless_cm_detector, gather_stats = gather_sh_stats),
     Boss('Dhuum', Kind.RAID, [19450], cm_detector = dhuum_cm_detector, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
