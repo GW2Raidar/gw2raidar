@@ -82,6 +82,7 @@ class Skills:
     SUCK = 48398
     DEATH_MARK = 48176
     SNATCH = 47076
+    GAZE = 46950
 
 def standard_count(events):
     return len(events);
@@ -167,7 +168,7 @@ def gather_dhuum_stats(events, collector, agents, subgroups, players, bosses, ph
     suck_events = events[(events.skillid == Skills.SUCK) & events.dst_instid.isin(players.index) & (events.value > 0)]
     death_mark_events = events[(events.skillid == Skills.DEATH_MARK) & events.dst_instid.isin(players.index) & (events.value > 0)]
     snatch_events = events[(events.skillid == Skills.SNATCH) & events.dst_instid.isin(players.index) & (events.value > 0)]
-    toxic_sickness_events = events[(events.skillid == Skills.TOXIC_SICKNESS) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    gaze_events = events[(events.skillid == Skills.GAZE) & events.dst_instid.isin(players.index) & (events.is_buffremove == 0)]
     
     gather_count_stat('Messenger', collector, True, False, phases, subgroups, players, messenger_events)
     gather_count_stat('Shackle Hits', collector, True, False, phases, subgroups, players, shackle_events)
@@ -176,6 +177,7 @@ def gather_dhuum_stats(events, collector, agents, subgroups, players, bosses, ph
     gather_count_stat('Sucked', collector, True, False, phases, subgroups, players, suck_events)
     gather_count_stat('Death Marked', collector, True, False, phases, subgroups, players, death_mark_events)
     gather_count_stat('Snatched', collector, True, False, phases, subgroups, players, snatch_events)
+    gather_count_stat('Dhuum Gaze', collector, True, False, phases, subgroups, players, gaze_events)
         
 def gather_vg_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
     teleport_events = events[(events.skillid == Skills.UNSTABLE_MAGIC_SPIKE) & events.dst_instid.isin(players.index) & (events.value > 0)]

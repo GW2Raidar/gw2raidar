@@ -358,14 +358,15 @@ BOSS_ARRAY = [
         Metric('Putrid Bomb', 'Putrid Bomb', MetricType.COUNT, True, False),
         Metric('Sucked', 'Sucked', MetricType.COUNT, True, False),
         Metric('Death Marked', 'Death Marked', MetricType.COUNT, True, False),
-        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False)
+        Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ], gather_stats = gather_dhuum_stats),
     Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], metrics = [
         Metric('Vortex (Inner)', 'Vortex (Inner)', MetricType.COUNT, True, False),
         Metric('Vortex (Outer)', 'Vortex (Outer)', MetricType.COUNT, True, False),
         Metric('Soul Rift', 'Soul Rift', MetricType.COUNT, True, False),
         Metric('Quad Slash', 'Quad Slash', MetricType.COUNT, True, False),
-        Metric('Scythe Hits', 'Scythe Hits', MetricType.COUNT, True, False)
+        Metric('Scythe Hits', 'Scythe Hits', MetricType.COUNT, True, False),
+        Metric('Necrosis Received', 'Necrosis Received', MetricType.COUNT, True, False)
     ], cm_detector = soulless_cm_detector),
     Boss('Dhuum (CM)', Kind.RAID, [0xFF4BFA], cm_detector = dhuum_cm_detector, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
@@ -379,7 +380,8 @@ BOSS_ARRAY = [
         Metric('Putrid Bomb', 'Putrid Bomb', MetricType.COUNT, True, False),
         Metric('Sucked', 'Sucked', MetricType.COUNT, True, False),
         Metric('Death Marked', 'Death Marked', MetricType.COUNT, True, False),
-        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False)
+        Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
+        Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
