@@ -5,10 +5,6 @@
       <div class="r-media">
         <img width="70px" src="/static/raidar/img/icon/[[name]].png" alt="[[name]]">
         <div class="uk-card uk-card-default uk-card-small uk-card-body" uk-drop="delay-show: 250">
-          <h5 class="uk-margin-remove">
-            <span>[[formatDate(started_at)]]</span>
-            &#32;
-          </h5>
           <div>
             <span class="ignore">Uploaded as</span>
             [[#if evtc_url]]
@@ -24,8 +20,10 @@
         </div>
         <div class="r-body">
           <h2 style='line-height:1;' class="uk-margin-small-bottom">[[name]]</h2>
-          <span class="uk-badge uk-text-bold [[encounter.success ? 'uk-label-success' : 'uk-label-danger']]">[[encounter.success ? 'Success' : 'Wipe']]</span>
-          <span class="uk-badge r-bg-50 uk-text-bold">[[formatTime(duration)]]</span>
+          <span class="uk-badge uk-text-bold [[encounter.success ? 'uk-label-success' : 'uk-label-danger']]">[[encounter.success ? 'Success' : 'Wipe']]  ([[formatTime(duration)]])</span>
+          <span class="uk-badge uk-text-bold r-bg-0">
+            [[formatDate(started_at)]]
+          </span>
           <a href="" class="uk-badge uk-text-bold uk-visible@m">Tag [[encounter.tags]] </a>
           <div uk-dropdown="mode: click">
             <form class="uk-margin-small uk-width-medium uk-form-stacked uk-text-left" on-submit="set_tags_cat">

@@ -17,8 +17,8 @@
       integrity="sha256-tV9zrfcixE5yg4K2R/dTFr5mXOmVLNwkGryU5OAGM+Q="
       crossorigin="anonymous"></script>
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit.min.js"
-      integrity="sha256-HM5Ln23ZwUKUp2XJmTYmSVWc7Ymwdbt8YyQX/k3fsY4="
+      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.38/js/uikit.min.js"
+      integrity="sha256-k6hupab8OMmSWisZdl9LmMw0ZUNN6luT2gzUZ00Fz8k="
       crossorigin="anonymous"></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
@@ -114,13 +114,6 @@
         </div>
     <div class="uk-container uk-container-large">
         <div class="uk-height-viewport uk-flex uk-flex-column">
-
-          <div class="uk-flex-center">
-
-
-
-          </div>
-
             {# content #}
             <div class="uk-flex-1">
               [[#if loading]]
@@ -189,6 +182,7 @@
               [[elseif page.name == "encounter"]]
 
                 {% include 'raidar/encounter.html' %}
+                {% include 'raidar/donation_cta.html' %}
 
               [[elseif page.name == "info-help"]]
 
@@ -213,6 +207,7 @@
               [[elseif page.name == "global_stats"]]
 
                 {% include 'raidar/global_stats.html' %}
+                {% include 'raidar/donation_cta.html' %}
               [[elseif page.name == "thank-you"]]
 
                 {% include 'raidar/thank-you.html' %}
@@ -227,6 +222,7 @@
 
                   [[#if encounters.length]]
                     {% include 'raidar/encounters.html' %}
+                    {% include 'raidar/donation_cta.html' %}
                   [[else]]
                     <p>
                       Drag and drop evtc files to this window to upload.
@@ -240,6 +236,7 @@
                 [[elseif page.name == "uploads"]]
 
                   {% include 'raidar/uploads.html' %}
+                  {% include 'raidar/donation_cta.html' %}
 
                 [[elseif page.name == "account"]]
 
@@ -316,7 +313,6 @@
               [[/if]]{# username #}
             </div>
 
-
           </div>
     </div>
     <footer class="uk-heading uk-padding uk-light uk-background-secondary">
@@ -335,16 +331,7 @@
                   <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
               </ul>
             </div>
-            <div class="uk-width-2-3@m uk-width-1-1">
-            <p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
-            <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="uk-width-auto uk-inline">
-              <input type="hidden" name="cmd" value="_s-xclick">
-              <input type="hidden" name="hosted_button_id" value="3KAQWB87RUXZ2">
-              <button class="uk-button" style="background-color:#003087;" type="submit" border="0" name="submit" value="submit" onClick="ga(‘send’, ‘event’, ‘Donations’, ‘Click’, ‘PayPal’);">Donate with Paypal</button>
-              <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
-            </form>
-            <a class="uk-button" style="background-color:#fc674e;" href="https://www.patreon.com/bePatron?u=7921847" data-patreon-widget-type="become-patron-button" onClick="ga(‘send’, ‘event’, ‘Donations’, ‘Click’, ‘Patreon’);">Become a Patron!</a>
-            </div>
+
             <div class="uk-width-1-1 uk-padding uk-padding-remove-bottom">
                 <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
             </div>
