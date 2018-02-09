@@ -695,6 +695,9 @@ svg:not(:root).chart {
 .r-encounter-stats-container .r-stats-row {
   padding: 8px;
   margin-bottom: 4px; }
+  @media (max-width: 1200px) {
+    .r-encounter-stats-container .r-stats-row {
+      padding: 16px; } }
   .r-encounter-stats-container .r-stats-row.r-buff-stats {
     display: grid;
     grid-template-columns: 160px repeat(auto-fit, minmax(100px, 1fr));
@@ -703,17 +706,15 @@ svg:not(:root).chart {
   .r-encounter-stats-container .r-stats-row.r-party {
     background-color: #2b273a; }
   .r-encounter-stats-container .r-stats-row.r-member {
-    -webkit-transform: translate(8px, 0);
-            transform: translate(8px, 0);
+    margin-left: 6px;
     position: relative; }
     @media (max-width: 640px) {
       .r-encounter-stats-container .r-stats-row.r-member {
-        -webkit-transform: translate(0);
-                transform: translate(0); } }
+        margin-left: 0; } }
     .r-encounter-stats-container .r-stats-row.r-member:after {
       content: "";
       width: 4px;
-      background-color: #278718;
+      background-color: #1a5c10;
       position: absolute;
       left: 0;
       top: 0;
@@ -756,11 +757,8 @@ svg:not(:root).chart {
   .r-encounter-stats-container .r-stats-row {
     grid-template-columns: 1fr 2fr; }
   .r-encounter-stats-container .r-encounter-player {
-    grid-column: span 2;
     grid-template-columns: -webkit-max-content 36px;
     grid-template-columns: max-content 36px; }
-  .r-encounter-stats-container .r-encounter-damage {
-    grid-column: span 2; }
   .r-encounter-stats-container .r-encounter-damage.in {
     grid-column: span 1; }
   .r-encounter-stats-container .r-stats-buffs .r-encounter-buff-container {
@@ -812,6 +810,9 @@ svg:not(:root).chart {
       -ms-flex-align: start;
           align-items: flex-start;
   margin-top: 16px; }
+  @media (max-width: 640px) {
+    .r-encounter-stats-container .r-encounter-buff {
+      grid-template-rows: 20px; } }
   .r-encounter-stats-container .r-encounter-buff img {
     grid-row: span 2; }
   .r-encounter-stats-container .r-encounter-buff .r-buff-number {
