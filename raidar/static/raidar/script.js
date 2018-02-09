@@ -1069,10 +1069,10 @@ ${body}
 <canvas height="${height}" width="${width}"/>
 </div>
             `, {center: true});
-        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
-        dialog.panel.css({width: width, height: height});
+        $(dialog.$el).css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        $(dialog.panel).css({width: width, height: height});
         dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
-        let ctx = dialog.$el.find('canvas');
+        let ctx = $(dialog.$el).find('canvas');
         let datasets = [];
         if (globals) {
           datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
