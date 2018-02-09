@@ -264,7 +264,7 @@
 
               {# Best/Max & Avg/Median damage for Archetype Total/Cleave Damage #}
               {#<text class="chart-sm-hide chart-md-align" x='100%' y='44px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>BEST - [[num(archetype.max_dps, 0)]]</text>#}
-              <text class="chart-sm-align" x='[[num(100 * section.percentiles_dps[50] / section.max_dps, 0)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[50]]th)</tspan></text>
+              <text class="chart-sm-align" x='[[num(100 * section.percentiles_dps[50] / section.max_dps, 0)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(50)]])</tspan></text>
             </svg>
           [[/with]]
         [[/with]]
