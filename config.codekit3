@@ -10196,6 +10196,16 @@
 		"sC": 3,
 		"tS": 0
 		},
+	"\/raidar\/static\/raidar\/script.js": {
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/script-min.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -10274,6 +10284,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/index.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/index.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/info_about.html": {
