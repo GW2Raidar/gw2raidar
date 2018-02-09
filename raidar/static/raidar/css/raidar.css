@@ -706,6 +706,10 @@ svg:not(:root).chart {
     -webkit-transform: translate(8px, 0);
             transform: translate(8px, 0);
     position: relative; }
+    @media (max-width: 640px) {
+      .r-encounter-stats-container .r-stats-row.r-member {
+        -webkit-transform: translate(0);
+                transform: translate(0); } }
     .r-encounter-stats-container .r-stats-row.r-member:after {
       content: "";
       width: 4px;
@@ -723,6 +727,9 @@ svg:not(:root).chart {
       top: 0;
       border-radius: 3px 0 0 3px;
       height: 100%; }
+  @media (max-width: 640px) {
+    .r-encounter-stats-container .r-stats-row.r-stats-header {
+      grid-template-columns: 1fr 1fr; } }
 
 .r-encounter-stats-container .r-encounter-player {
   display: grid;
@@ -731,6 +738,9 @@ svg:not(:root).chart {
           align-items: center;
   grid-template-columns: 1fr 36px;
   grid-gap: 8px; }
+  @media (max-width: 640px) {
+    .r-encounter-stats-container .r-encounter-player {
+      grid-template-columns: 1fr 36px !important; } }
   .r-encounter-stats-container .r-encounter-player .r-encounter-player-image {
     position: relative; }
     .r-encounter-stats-container .r-encounter-player .r-encounter-player-image .r-encounter-player-archetype {
