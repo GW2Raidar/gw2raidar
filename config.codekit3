@@ -5403,7 +5403,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/countdown.scss",
 		"oF": 0,
 		"oS": 0,
@@ -5663,7 +5663,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/marker.scss",
 		"oF": 0,
 		"oS": 0,
@@ -5832,7 +5832,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/progress.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6144,7 +6144,7 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
 		"oF": 3,
-		"oS": 0,
+		"oS": 3,
 		"uL": 1
 		},
 	"\/node_modules\/uikit\/src\/scss\/theme\/_import.scss": {
@@ -9434,9 +9434,9 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"q": 100
+		"oIPL": 1,
+		"opt": 1,
+		"q": 48
 		},
 	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
 		"ft": 32768,
@@ -11755,7 +11755,7 @@
 	"alwaysUseExternalServer": 1,
 	"animateCSSInjections": 1,
 	"autoBuildNewItems": 1,
-	"autoprefixerBrowserString": "> 1%, last 2 versions, Firefox ESR, Opera 12.1",
+	"autoprefixerBrowserString": "> 1%, last 2 versions, Firefox ESR, Opera 12.1, ie 10",
 	"babelAuxiliaryCommentAfter": "",
 	"babelAuxiliaryCommentBefore": "",
 	"babelConfigFileHandlingType": 0,
