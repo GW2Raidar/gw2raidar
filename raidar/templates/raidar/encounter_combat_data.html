@@ -5,9 +5,9 @@
     <div class="r-stats-row r-stats-header">
       <div class="uk-visible@l">Spec</div>
       <div class="r-buff-toggle">
-        <a href="#" class-uk-active="" on-click="">Total DPS</a>
+        <a href="#" class-uk-active="page.dps_boss" on-click="@.set({'page.dps_boss': true}) && false">Boss DPS</a>
         |
-        <a href="#" class-uk-active="" on-click="">Boss DPS</a>
+        <a href="#" class-uk-active="!page.dps_boss" on-click="@.set({'page.dps_boss': false}) && false">Total DPS</a>
     </div>
       <div class="uk-visible@l">DPS Received</div>
       <div class="r-buff-toggle uk-text-right uk-text-left@m">
@@ -221,41 +221,56 @@
         <!-- Overall size of the graph can be controlled by chart class below ie: chart-100. The number after chart is equal to the % width of the whole graph. The highest archetype dps should be 100 and the others in relation to it.
 
         Example: highest archetype dps (99th percentile) is 10,000 but the person playing that archetype only did 8,000 their graph would stil have .chart-100. Lets say the next highest archetype dps is 9,000 and the person playing that archetype did 8,500. Their graph would be set with .chart-90.  -->
-        <svg class="chart chart-100" xmlns='http://www.w3.org/2000/svg' height="46px">
-          [[#with actual]]
-          <!-- Archetype Total/Cleave DPS line.
-          -->
-          <rect class="chart" x='0' y='36px' height='2px' width='100%' fill='#E7CCA9' />
+        [[#with {
+          max_max_dps: encounter.phases[page.phase].individual.max_dps,
+          section: page.dps_boss ? {
+              name: 'Boss DPS',
+              dps: actual_boss.dps,
+              avg_dps: archetype.avg_dps_boss,
+              max_dps: archetype.max_dps_boss,
+              percentiles_dps: pctl(archetype.per_dps_boss)
+            } : {
+              name: 'Total DPS',
+              dps: actual.dps,
+              avg_dps: archetype.avg_dps,
+              max_dps: archetype.max_dps,
+              percentiles_dps: pctl(archetype.per_dps)
+            }
+        }]]
+          [[#with { pctl_dps: bsearch(section.dps, section.percentiles_dps) } ]]
+            <svg class="chart chart-[[num(100 * section.max_dps / max_max_dps, 0)]]" xmlns='http://www.w3.org/2000/svg' height="46px">
+              {# Archetype Total/Cleave DPS line. #}
+              <rect class="chart" x='0' y='36px' height='2px' width='100%' fill='#E7CCA9' />
 
-          <!-- Archetype Total/Cleave DPS AVERAGE or MEDIAN mark.
-          -->
-          <rect class="chart" x='50%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
+              {# Archetype Total/Cleave DPS AVERAGE or MEDIAN mark. #}
+              <rect class="chart" x='[[num(100 * section.percentiles_dps[50] / section.max_dps, 0)]]%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
 
-          <!-- Archetype Total/Cleave DPS BEST or TOP mark.
-          -->
-          <rect class="chart chart-sm-hide" x='100%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
+              {# Archetype Total/Cleave DPS BEST or TOP mark. #}
+              {#<rect class="chart chart-sm-hide" x='100%' y='36px' height='6px' width='2px' fill='#E7CCA9' />#}
 
-          <!-- Total/Cleave Damage for the player
-          This should be a % of the best Total/Cleave DPS possible for their archetype.
+              {# Total/Cleave Damage for the player #}
+              {%comment%}
+              This should be a % of the best Total/Cleave DPS possible for their archetype.
 
-          I believe the math below should be sound for the "width" but should be double checked. Percentile calculation (.r-bg-#) I'm less certain is accurate.
-          -->
-          <rect class="chart chart-hover r-bg-[[num(((dps)/(archetype.max_dps)*100), 0)]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total DPS</h5><strong>[[num(dps, 0)]]</strong> DPS. <br /> This role's average DPS is <strong>[[num(archetype.avg_dps, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.max_dps)*100), 0)]]%' opacity='1' />
-          <!-- Total & Boss Damage Text -->
-          <text class="chart-sm-align" x='[[num(((dps)/(archetype.max_dps)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[#with actual_boss]] ([[num(dps, 0)]]) [[/with]] [[num(dps, 0)]]</text>
+              I believe the math below should be sound for the "width" but should be double checked. Percentile calculation (.r-bg-#) I'm less certain is accurate.
+              {%endcomment%}
+              <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS. <br /> This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(100 * section.dps / section.max_dps, 0)]]%' opacity='1' />
+              {# DPS Text #}
+              <text class="chart-sm-align" x='[[num(100 * section.dps / section.max_dps, 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.dps, 0)]]</text>
 
-
-          <!-- Best/Max & Avg/Median damage for Archetype Total/Cleave Damage
-          -->
-          <text class="chart-sm-hide chart-md-align" x='100%' y='44px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>BEST - [[num(archetype.max_dps, 0)]]</text>
-          <text class="chart-sm-align" x='50%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>AVG - [[num(archetype.avg_dps, 0)]]</text>
-            [[/with]]
-            [[#with actual_boss]]
-              <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss DPS</h5><strong>[[num(dps, 0)]]</strong> DPS. <br /> This role's average DPS is <strong>[[num(archetype.avg_dps_boss, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.max_dps)*100), 0)]]%' opacity='0.2' fill="black" />
-            [[/with]]
-          </svg>
-
+              {# Best/Max & Avg/Median damage for Archetype Total/Cleave Damage #}
+              {#<text class="chart-sm-hide chart-md-align" x='100%' y='44px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>BEST - [[num(archetype.max_dps, 0)]]</text>#}
+              <text class="chart-sm-align" x='[[num(100 * section.percentiles_dps[50] / section.max_dps, 0)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[50]]%ile [[num(section.percentiles_dps[50], 0)]]</text>
+              {%comment%}{# TODO cleanup #}
+                [[#with actual_boss]]
+                  <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss DPS</h5><strong>[[num(dps, 0)]]</strong> DPS. <br /> This role's average DPS is <strong>[[num(archetype.avg_dps_boss, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.max_dps)*100), 0)]]%' opacity='0.2' fill="black" />
+                [[/with]]
+              {%endcomment%}
+            </svg>
+          [[/with]]
+        [[/with]]
       </div>
+
       <div class="r-encounter-damage in">
         <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-remove uk-text-uppercase">Damage Received</h6>
         <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
