@@ -252,11 +252,7 @@
               {#<rect class="chart chart-sm-hide" x='100%' y='36px' height='6px' width='2px' fill='#E7CCA9' />#}
 
               {# Total/Cleave Damage for the player #}
-              {%comment%}
-              This should be a % of the best Total/Cleave DPS possible for their archetype.
-
-              I believe the math below should be sound for the "width" but should be double checked. Percentile calculation (.r-bg-#) I'm less certain is accurate.
-              {%endcomment%}
+              {# This should be a % of the best Total/Cleave DPS possible for their archetype. #}
               {#  Total DPS backdrop #}
               <rect class="chart chart-hover r-bg-[[pctl_dps]]" class-uk-hidden="!page.dps_boss" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS. Click for more details." x='0%' y='16px' height='16px' width='[[num(100 * section.dps_total / section.max_dps, 0)]]%' opacity='0.3' />
               {#  Primary DPS Graph #}
@@ -269,11 +265,6 @@
               {# Best/Max & Avg/Median damage for Archetype Total/Cleave Damage #}
               {#<text class="chart-sm-hide chart-md-align" x='100%' y='44px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>BEST - [[num(archetype.max_dps, 0)]]</text>#}
               <text class="chart-sm-align" x='[[num(100 * section.percentiles_dps[50] / section.max_dps, 0)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[50]]th)</tspan></text>
-              {%comment%}{# TODO cleanup #}
-                [[#with actual_boss]]
-                  <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss DPS</h5><strong>[[num(dps, 0)]]</strong> DPS. <br /> This role's average DPS is <strong>[[num(archetype.avg_dps_boss, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(((dps)/(archetype.max_dps)*100), 0)]]%' opacity='0.2' fill="black" />
-                [[/with]]
-              {%endcomment%}
             </svg>
           [[/with]]
         [[/with]]
