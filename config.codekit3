@@ -7,7 +7,7 @@
 		"uuidString": "3A760E32-0043-4CD2-BC39-87DDAA2502C6"
 		}
 	],
-"creatorBuild": "26148",
+"creatorBuild": "26261",
 "files": {
 	"\/.gitignore": {
 		"cB": 0,
@@ -9412,8 +9412,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/arch\/Support.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -10222,6 +10222,13 @@
 		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/account.html",
 		"oF": 1
+		},
+	"\/raidar\/templates\/raidar\/donation_cta.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/donation_cta.html",
+		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/encounter.html": {
 		"cB": 0,
@@ -12312,6 +12319,10 @@
 		"id-match": {
 			"active": 0,
 			"optionString": "'^[a-z]+([A-Z][a-z]+)*$', {'properties': false, 'onlyDeclarations': true}"
+			},
+		"implicit-arrow-linebreak": {
+			"active": 0,
+			"optionString": "'beside'"
 			},
 		"indent": {
 			"active": 0,
