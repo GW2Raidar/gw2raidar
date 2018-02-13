@@ -10251,6 +10251,13 @@
 		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
 		"oF": 0
 		},
+	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
+		"oF": 0
+		},
 	"\/raidar\/templates\/raidar\/encounter_filter.html": {
 		"cB": 0,
 		"ft": 8192,
@@ -11725,11 +11732,39 @@
 		"oAP": "\/TestLogs\/errors\/50.evtc.error",
 		"oF": 0
 		},
-	"\/uploads\/2.evtc.zip": {
+	"\/uploads\/encounters\/arichardson\/20170901-211558.evtc.zip": {
 		"cB": 0,
 		"ft": 8192,
 		"oA": 0,
-		"oAP": "\/uploads\/2.evtc.zip",
+		"oAP": "\/uploads\/encounters\/arichardson\/20170901-211558.evtc.zip",
+		"oF": 0
+		},
+	"\/uploads\/encounters\/arichardson\/20180212-205945.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/uploads\/encounters\/arichardson\/20180212-205945.evtc.zip",
+		"oF": 0
+		},
+	"\/uploads\/encounters\/arichardson\/20180212-223208.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/uploads\/encounters\/arichardson\/20180212-223208.evtc.zip",
+		"oF": 0
+		},
+	"\/uploads\/encounters\/arichardson\/20180213-040254.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/uploads\/encounters\/arichardson\/20180213-040254.evtc.zip",
+		"oF": 0
+		},
+	"\/uploads\/encounters\/arichardson\/20180213-200756.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/uploads\/encounters\/arichardson\/20180213-200756.evtc.zip",
 		"oF": 0
 		}
 	},
