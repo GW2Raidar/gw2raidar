@@ -147,6 +147,7 @@
     if (n === undefined) return '';
     return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
+  // TODO load from server
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,
@@ -154,9 +155,12 @@
     'alacrity': 15,
     'protection': 15,
     'retaliation': 5,
+    'aegis': 25,
+    'resist': 15,
+    'stab': 8,
+    'vigor': 15,
     'spotter': 5,
     'glyph_of_empowerment': 10,
-    'gotl': 200,
     'spirit_of_frost': 7.5,
     'sun_spirit': 6,
     'empower_allies': 5,
@@ -170,7 +174,7 @@
   }
   helpers.buffStackLookup = {
     'might': 25,
-    'gotl': 5
+    'stab': 25,
   }
   helpers.buffImageLookup = {
     'might': 'Might',
@@ -180,9 +184,13 @@
     'protection': 'Protection',
     'retaliation': 'Retaliation',
     'regen': 'Regeneration',
+    'aegis': 'Aegis',
+    'resist': 'Resistance',
+    'stab': 'Stability',
+    'swift': 'Swiftness',
+    'vigor': 'Vigor',
     'spotter': 'Spotter',
     'glyph_of_empowerment': 'Glyph_of_Empowerment',
-    'gotl': 'Grace_of_the_Land',
     'spirit_of_frost': 'Frost_Spirit',
     'sun_spirit': 'Sun_Spirit',
     'stone_spirit': 'Stone_Spirit',
@@ -461,6 +469,7 @@ ${body}
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
+  // TODO load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
     { boon: 'fury' },
@@ -469,9 +478,13 @@ ${body}
     { boon: 'protection' },
     { boon: 'retaliation' },
     { boon: 'regen' },
+    { boon: 'aegis' },
+    { boon: 'resist' },
+    { boon: 'stab', stacks: 25 },
+    { boon: 'swift' },
+    { boon: 'vigor' },
     { boon: 'spotter' },
     { boon: 'glyph_of_empowerment' },
-    { boon: 'gotl', stacks: 5 },
     { boon: 'spirit_of_frost' },
     { boon: 'sun_spirit' },
     { boon: 'stone_spirit' },
