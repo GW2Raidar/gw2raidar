@@ -153,8 +153,8 @@ def gather_sh_stats(events, collector, agents, subgroups, players, bosses, phase
     sythe_events = events[(events.skillid == Skills.SCYTHE) & events.dst_instid.isin(players.index) & (events.value > 0)]
     necrosis_events = events[(events.skillid == Skills.NECROSIS) & events.dst_instid.isin(players.index) & (events.is_buffremove == 0)]
     
-    gather_count_stat('Vortex (Inner)', collector, True, False, phases, subgroups, players, vortex_inner_events)
-    gather_count_stat('Vortex (Outer)', collector, True, False, phases, subgroups, players, vortex_outer_events)
+    gather_count_stat('Inner Vortex', collector, True, False, phases, subgroups, players, vortex_inner_events)
+    gather_count_stat('Outer Vortex', collector, True, False, phases, subgroups, players, vortex_outer_events)
     gather_count_stat('Soul Rift', collector, True, False, phases, subgroups, players, death_aoe_events)
     gather_count_stat('Quad Slash', collector, True, False, phases, subgroups, players, pie_slice_events)
     gather_count_stat('Scythe Hits', collector, True, False, phases, subgroups, players, sythe_events)
