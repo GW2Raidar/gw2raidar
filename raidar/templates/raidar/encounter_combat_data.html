@@ -254,7 +254,7 @@
 
               I believe the math below should be sound for the "width" but should be double checked. Percentile calculation (.r-bg-#) I'm less certain is accurate.
               {%endcomment%}
-              <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS. <br /> This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(100 * section.dps / section.max_dps, 0)]]%' opacity='1' />
+              <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS. <br /> This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>.<br/><strong>Performance:</strong> [[th(pctl_dps)]] Percentile" x='0%' y='16px' height='16px' width='[[num(100 * section.dps / section.max_dps, 0)]]%' opacity='1' />
               {# DPS Text #}
               <text class="chart-sm-align" x='[[num(100 * section.dps / section.max_dps, 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.dps, 0)]]</text>
 
