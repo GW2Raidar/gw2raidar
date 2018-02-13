@@ -11690,6 +11690,34 @@
 		"oAP": "\/TestLogs\/encounters\/arichardson\/20171006-212823.evtc",
 		"oF": 0
 		},
+	"\/TestLogs\/encounters\/arichardson\/20180212-205945.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180212-205945.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180212-223208.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180212-223208.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180213-040254.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180213-040254.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180213-200756.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180213-200756.evtc.zip",
+		"oF": 0
+		},
 	"\/TestLogs\/errors\/47.evtc": {
 		"cB": 0,
 		"ft": 8192,
@@ -11730,41 +11758,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/TestLogs\/errors\/50.evtc.error",
-		"oF": 0
-		},
-	"\/uploads\/encounters\/arichardson\/20170901-211558.evtc.zip": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/uploads\/encounters\/arichardson\/20170901-211558.evtc.zip",
-		"oF": 0
-		},
-	"\/uploads\/encounters\/arichardson\/20180212-205945.evtc.zip": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/uploads\/encounters\/arichardson\/20180212-205945.evtc.zip",
-		"oF": 0
-		},
-	"\/uploads\/encounters\/arichardson\/20180212-223208.evtc.zip": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/uploads\/encounters\/arichardson\/20180212-223208.evtc.zip",
-		"oF": 0
-		},
-	"\/uploads\/encounters\/arichardson\/20180213-040254.evtc.zip": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/uploads\/encounters\/arichardson\/20180213-040254.evtc.zip",
-		"oF": 0
-		},
-	"\/uploads\/encounters\/arichardson\/20180213-200756.evtc.zip": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/uploads\/encounters\/arichardson\/20180213-200756.evtc.zip",
 		"oF": 0
 		}
 	},
