@@ -7,7 +7,7 @@
 		"uuidString": "3A760E32-0043-4CD2-BC39-87DDAA2502C6"
 		}
 	],
-"creatorBuild": "26261",
+"creatorBuild": "26268",
 "files": {
 	"\/.gitignore": {
 		"cB": 0,
@@ -70,6 +70,34 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/analyser\/__pycache__\/splits.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/analyser\/analyser.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/analyser.py",
+		"oF": 0
+		},
+	"\/analyser\/bosses.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/bosses.py",
+		"oF": 0
+		},
+	"\/analyser\/bossmetrics.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/bossmetrics.py",
+		"oF": 0
+		},
+	"\/analyser\/buffs.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/buffs.py",
 		"oF": 0
 		},
 	"\/analyser\/collector.py": {
@@ -207,6 +235,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/gw2raidar\/__pycache__\/wsgi.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/gw2raidar\/settings.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/gw2raidar\/settings.py",
 		"oF": 0
 		},
 	"\/gw2raidar\/settings_local.py.example": {
@@ -7769,6 +7804,13 @@
 		"oAP": "\/raidar\/management\/commands\/_qsetiter.py",
 		"oF": 0
 		},
+	"\/raidar\/management\/commands\/process_uploads.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/management\/commands\/process_uploads.py",
+		"oF": 0
+		},
 	"\/raidar\/management\/commands\/restat.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -9396,6 +9438,17 @@
 		"opt": 1,
 		"q": 48
 		},
+	"\/raidar\/static\/raidar\/img\/buff\/Aegis.png": {
+		"ft": 32768,
+		"iS": 1276,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Aegis.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/buff\/alacrity.png": {
 		"ft": 32768,
 		"iS": 1341,
@@ -9572,6 +9625,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/buff\/Resistance.png": {
+		"ft": 32768,
+		"iS": 1390,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Resistance.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/buff\/retaliation.png": {
 		"ft": 32768,
 		"iS": 1182,
@@ -9616,6 +9680,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/buff\/Stability.png": {
+		"ft": 32768,
+		"iS": 1276,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Stability.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png": {
 		"ft": 32768,
 		"iS": 1205,
@@ -9649,11 +9724,33 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/buff\/Swiftness.png": {
+		"ft": 32768,
+		"iS": 1306,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Swiftness.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png": {
 		"ft": 32768,
 		"iS": 1392,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/Vigor.png": {
+		"ft": 32768,
+		"iS": 1337,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Vigor.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -10099,6 +10196,16 @@
 		"sC": 3,
 		"tS": 0
 		},
+	"\/raidar\/static\/raidar\/script.js": {
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/script-min.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -10128,6 +10235,20 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/encounter.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_boon_output.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_output.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_boon_uptime.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_uptime.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/encounter_boss_metrics.html": {
@@ -10219,6 +10340,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/info_help.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/info_releasenotes.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/info_releasenotes.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/intro.html": {
@@ -11663,6 +11791,7 @@
 	"animateCSSInjections": 1,
 	"autoBuildNewItems": 1,
 	"autoprefixerBrowserString": "> 1%, last 2 versions, Firefox ESR, Opera 12.1, ie 10",
+	"autoprefixerEnableIEGrid": 1,
 	"babelAuxiliaryCommentAfter": "",
 	"babelAuxiliaryCommentBefore": "",
 	"babelConfigFileHandlingType": 0,
