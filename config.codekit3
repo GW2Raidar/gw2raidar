@@ -72,34 +72,6 @@
 		"oAP": "\/analyser\/__pycache__\/splits.cpython-36.pyc",
 		"oF": 0
 		},
-	"\/analyser\/analyser.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/analyser\/analyser.py",
-		"oF": 0
-		},
-	"\/analyser\/bosses.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/analyser\/bosses.py",
-		"oF": 0
-		},
-	"\/analyser\/bossmetrics.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/analyser\/bossmetrics.py",
-		"oF": 0
-		},
-	"\/analyser\/buffs.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/analyser\/buffs.py",
-		"oF": 0
-		},
 	"\/analyser\/collector.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -235,13 +207,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/gw2raidar\/__pycache__\/wsgi.cpython-36.pyc",
-		"oF": 0
-		},
-	"\/gw2raidar\/settings.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/gw2raidar\/settings.py",
 		"oF": 0
 		},
 	"\/gw2raidar\/settings_local.py.example": {
@@ -7804,13 +7769,6 @@
 		"oAP": "\/raidar\/management\/commands\/_qsetiter.py",
 		"oF": 0
 		},
-	"\/raidar\/management\/commands\/process_uploads.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/management\/commands\/process_uploads.py",
-		"oF": 0
-		},
 	"\/raidar\/management\/commands\/restat.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -9438,17 +9396,6 @@
 		"opt": 1,
 		"q": 48
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
-		"ft": 32768,
-		"iS": 995,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/aegis.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
 	"\/raidar\/static\/raidar\/img\/buff\/alacrity.png": {
 		"ft": 32768,
 		"iS": 1341,
@@ -9625,17 +9572,6 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/resistance.png": {
-		"ft": 32768,
-		"iS": 1680,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/resistance.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
 	"\/raidar\/static\/raidar\/img\/buff\/retaliation.png": {
 		"ft": 32768,
 		"iS": 1182,
@@ -9680,17 +9616,6 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/stability.png": {
-		"ft": 32768,
-		"iS": 1056,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/stability.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
 	"\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png": {
 		"ft": 32768,
 		"iS": 1205,
@@ -9724,33 +9649,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/swiftness.png": {
-		"ft": 32768,
-		"iS": 1109,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/swiftness.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
 	"\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png": {
 		"ft": 32768,
 		"iS": 1392,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png",
-		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"oT": 1,
-		"q": 100
-		},
-	"\/raidar\/static\/raidar\/img\/buff\/vigor.png": {
-		"ft": 32768,
-		"iS": 1130,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vigor.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -10196,16 +10099,6 @@
 		"sC": 3,
 		"tS": 0
 		},
-	"\/raidar\/static\/raidar\/script.js": {
-		"ft": 64,
-		"ma": 0,
-		"mi": 1,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/script-min.js",
-		"oF": 0,
-		"sC": 3,
-		"tS": 0
-		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -10326,13 +10219,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/info_help.html",
-		"oF": 0
-		},
-	"\/raidar\/templates\/raidar\/info_releasenotes.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/info_releasenotes.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/intro.html": {
