@@ -305,6 +305,7 @@ class Analyser:
 
         if (       (encounter.version < '20170923' and gw_build >= 82356)
                 or (encounter.version < '20171107' and gw_build >= 83945)
+                or (encounter.version < '20180206' and gw_build >= 86181)
                 ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
@@ -325,7 +326,8 @@ class Analyser:
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
-        self.boss_info.gather_boss_specific_stats(events, collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics"), agents, self.subgroups, self.players, bosses, self.phases, encounter_end)
+        if self.boss_info.gather_boss_specific_stats:
+            self.boss_info.gather_boss_specific_stats(events, collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics"), agents, self.subgroups, self.players, bosses, self.phases, encounter_end)
         buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
 
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)

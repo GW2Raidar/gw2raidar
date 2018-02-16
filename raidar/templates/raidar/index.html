@@ -6,8 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="A Guild Wars 2 log parsing site to upload ArcDPS combat logs from high end PvE content such as Raids and Challenge Mote Fractals">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://npmcdn.com/tags-input@1.1.1/tags-input.js"></script>
-    <link href="https://npmcdn.com/tags-input@1.1.1/tags-input.css" rel="stylesheet">
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -19,14 +17,16 @@
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.39/js/uikit.min.js"
       integrity="sha256-w7qX33Gtp81CF0B7UK16G8ekF0FN5UIhJTY66Un9n0c="
-      crossorigin="anonymous"></script>
+      crossorigin="anonymous" defer></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
       integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
-      crossorigin="anonymous"></script>
+      crossorigin="anonymous" defer></script>
     <link href="{% static 'raidar/css/raidar.css' %}" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
       rel="stylesheet">
+    <script src="https://npmcdn.com/tags-input@1.1.1/tags-input.js" defer></script>
+    <link href="https://npmcdn.com/tags-input@1.1.1/tags-input.css" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
       window.raidar_data = {{ userprops|safe }};
