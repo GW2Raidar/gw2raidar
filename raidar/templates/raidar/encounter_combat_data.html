@@ -9,7 +9,7 @@
         |
         <a href="#" class-uk-active="page.dps_boss" on-click="@.set({'page.dps_boss': true}) && false">Boss DPS</a>
     </div>
-      <div class="uk-visible@l">DPS Received</div>
+      <div class="uk-visible@l">Damage Received</div>
       <div class="r-buff-toggle uk-text-right uk-text-left@m">
         <a href="#" class-uk-active="!page.boon_output" on-click="@.set({'page.boon_output': false}) && false">Uptime</a>
         |
@@ -287,8 +287,13 @@
             -->
             <rect class="chart chart-hover r-bg-[[num(((total)/(archetype.max_total_received)*100), 0)]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Recieved</h5><strong>[[num(total, 0)]]</strong> damage recieved per second. <br /> This role's average is <strong>[[num(archetype.avg_total_received, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[num(((total)/(archetype.max_total_received)*100), 0)]]%' opacity='1' />
 
+            <!-- Barrier Damage Absorbed
+            -->
+            <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Barrier</h5><strong>[[#with shielded]][[num(total, 0)]]</strong> damage absorbed by barrier <br /> This role's average is <strong>[[num(archetype.avg_total_shielded, 0)]][[/with]]</strong>." x='[[num(((total)/(archetype.max_total_received)*100), 0)]]%' y='16px' height='16px' width='[[#with shielded]][[num(((total)/(archetype.max_total_received)*100), 0)]][[/with]]%' opacity='0.6' fill='#FCF1E2'/>
+
             <!-- Total Damage Text -->
             <text x='[[num(((total)/(archetype.max_total_received)*100), 0)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(total, 0)]]</text>
+
 
 
               <!-- Next Percentile Text -->
