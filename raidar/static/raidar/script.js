@@ -122,6 +122,9 @@
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
   }
+  helpers.round = (n, d=0) => {
+    return n.toFixed(d);
+  }
   // adapted from https://stackoverflow.com/a/2901298/240443
   // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
   // num(1234.5):     1,234.5
