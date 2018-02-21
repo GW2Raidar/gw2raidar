@@ -8084,6 +8084,13 @@
 		"oAP": "\/raidar\/migrations\/0037_make_added_fields_nonnull.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0038_new_django.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0038_new_django.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8348,6 +8355,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0038_new_django.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0038_new_django.cpython-36.pyc",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
