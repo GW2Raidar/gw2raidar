@@ -176,14 +176,14 @@
               width: round(100 * section.dps / max_max_dps)
             }]]
               {# line #}
-              <rect class="chart" x='0' y='36px' height='2px' width='[[round(100 * section.squad_dps / max_max_dps)]]%' fill='#E7CCA9' />
+
 
               [[#if page.dps_boss]]
                 {# total DPS backdrop #}
-                <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-0" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[round(100 * section.dps_total / max_max_dps)]]%' opacity='0.3' />
+                <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-101" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[round(100 * section.dps_total / max_max_dps)]]%' opacity='0.3' />
               [[/if]]
               {# primary DPS Graph #}
-              <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-0" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
+              <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-101" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>." x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
               [[#unless page.dps_boss]]
                 {# boss DPS overlay #}
                 <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[round(100 * section.dps_boss / max_max_dps)]]%' opacity='0.15' />
@@ -204,10 +204,8 @@
             squad_recv: encounter.phases[page.phase].received.total
           }]]
             [[#with { width: round(100 * recv / max_max_recv) }]]
-              {# line #}
-              <rect class="chart" x='0' y='36px' height='2px' width='[[round(100 * squad_recv / max_max_recv)]]%' fill='#E7CCA9' />
               {# tick #}
-              <rect class="chart r-bg-0" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
+              <rect class="chart r-bg-101" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
               {# text #}
               <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(recv, 0)]]</text>
             [[/with]]
@@ -300,7 +298,7 @@
             pctl_dps: bsearch(section.dps, section.percentiles_dps),
             width: round(100 * section.dps / max_max_dps)
           }]]
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px">
+            <svg class="chart chart-[[round(100 * section.max_dps / max_max_dps)]]" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
               {# line #}
               <rect class="chart" x='0' y='36px' height='2px' width='[[round(100 * section.max_dps / max_max_dps)]]%' fill='#E7CCA9' />
 
