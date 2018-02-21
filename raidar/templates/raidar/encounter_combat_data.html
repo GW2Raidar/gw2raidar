@@ -228,7 +228,7 @@
           } ]]
             <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
               <img src="[[buff.icon]]" title="[[buff.name]]" alt="[[buff.name]]"/>
-              <span class="r-buff-number">[[format(section.value, 1)]]</span>
+              <span class="r-buff-number r-bg-101">[[format(section.value, 1)]]</span>
             </div>
           [[/with]]
         [[/each]]
@@ -356,7 +356,7 @@
               {# text #}
               <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.recv, 0)]]</text>
               {# tick text #}
-              <text class="" x='[[round(100 * section.percentiles_recv[50] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[50], 0)]] ([[th(50)]])</text>
+              <text class="" x='[[round(100 * section.percentiles_recv[50] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(50)]])</tspan></text>
             [[/with]]
           [[/with]]
         </svg>
@@ -380,7 +380,7 @@
           }]]
             [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
               <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
-                <img src="[[buff.icon]]" uk-tooltip="pos:bottom-left" title="[[buff.name]]" alt="[[buff.name]]"/>
+                <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                 <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
                 <span class="r-buff-number r-bg-[[50]] compare">[[format(section.percentiles[50], 1)]]</span>
               </div>
