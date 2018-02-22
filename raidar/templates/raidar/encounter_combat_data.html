@@ -176,7 +176,7 @@
               width: round(100 * section.dps / max_max_dps)
             }]]
               {# line #}
-
+              <rect class="chart" x='0' y='36px' height='2px' width='[[round(100 * section.squad_dps / max_max_dps)]]%' fill='#E7CCA9' />
 
               [[#if page.dps_boss]]
                 {# total DPS backdrop #}
@@ -188,7 +188,8 @@
                 {# boss DPS overlay #}
                 <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[round(100 * section.dps_boss / max_max_dps)]]%' opacity='0.15' />
               [[/unless]]
-
+              {# line text #}
+              <text x='[[round(100 * section.squad_dps / max_max_dps)]]%' y='42px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#958cbb'  font-size='11'>Squad</text>
               {# text #}
               <text x='[[width < 12 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 12 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.dps, 0)]]</text>
             [[/with]]
@@ -204,10 +205,14 @@
             squad_recv: encounter.phases[page.phase].received.total
           }]]
             [[#with { width: round(100 * recv / max_max_recv) }]]
+              {# line #}
+              <rect class="chart" x='0' y='36px' height='2px' width='[[round(100 * squad_recv / max_max_recv)]]%' fill='#E7CCA9' />
               {# tick #}
               <rect class="chart r-bg-101" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
+              {# line text #}
+              <text x='[[round(100 * squad_recv / max_max_recv)]]%' y='42px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#958cbb'  font-size='11'>Squad</text>
               {# text #}
-              <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(recv, 0)]]</text>
+              <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 50 ? 'middle' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(recv, 0)]]</text>
             [[/with]]
           [[/with]]
         </svg>
@@ -298,7 +303,7 @@
             pctl_dps: bsearch(section.dps, section.percentiles_dps),
             width: round(100 * section.dps / max_max_dps)
           }]]
-            <svg class="chart chart-[[round(100 * section.max_dps / max_max_dps)]]" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
               {# line #}
               <rect class="chart" x='0' y='36px' height='2px' width='[[round(100 * section.max_dps / max_max_dps)]]%' fill='#E7CCA9' />
 
@@ -317,9 +322,9 @@
               [[/unless]]
 
               {# text #}
-              <text class="chart-sm-align" x='[[round(100 * section.dps / max_max_dps)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.dps, 0)]]</text>
+              <text class="chart-sm-align" x='[[round(100 * section.dps / max_max_dps)]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.dps, 0)]]</text>
               {# tick #}
-              <text class="chart-sm-align" x='[[round(100 * section.percentiles_dps[50] / max_max_dps)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(50)]])</tspan></text>
+              <text class="chart-sm-align" x='[[round(100 * section.percentiles_dps[50] / max_max_dps)]]%' y='44px' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'middle']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(50)]])</tspan></text>
             </svg>
           [[/with]]
         [[/with]]
@@ -354,9 +359,9 @@
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Barrier</h5>Up to <strong>[[num(section.shield_recv, 0)]] ([[perc(100 * section.shield_recv / section.recv)]])</strong> damage absorbed by barrier" x='[[round(100 * (section.recv - section.shield_recv) / max_max_recv)]]%' y='16px' height='16px' width='[[round(100 * section.shield_recv / max_max_recv)]]%' opacity='0.6' fill='#FCF1E2'/>
 
               {# text #}
-              <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.recv, 0)]]</text>
+              <text x='[[width < 50 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 50 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.recv, 0)]]</text>
               {# tick text #}
-              <text class="" x='[[round(100 * section.percentiles_recv[50] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(50)]])</tspan></text>
+              <text class="" x='[[round(100 * section.percentiles_recv[50] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'end' : 'middle']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[50], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(50)]])</tspan></text>
             [[/with]]
           [[/with]]
         </svg>
