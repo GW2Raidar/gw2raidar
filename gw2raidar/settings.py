@@ -153,7 +153,7 @@ LOGOUT_REDIRECT_URL = 'index'
 CORS_ORIGIN_ALLOW_ALL = True
 # CORS_ORIGIN_WHITELIST = []
 # CORS_ORIGIN_REGEX_WHITELIST = []
-CORS_URLS_REGEX = r'^/(?:api/.*|global_stats.json)$'
+CORS_URLS_REGEX = r'^/api/.*$'
 
 
 
