@@ -167,7 +167,7 @@ def gather_dhuum_stats(events, collector, agents, subgroups, players, bosses, ph
     putrid_bomb_events = events[(events.skillid == Skills.PUTRID_BOMB) & events.dst_instid.isin(players.index) & (events.value > 0)]
     suck_events = events[(events.skillid == Skills.SUCK) & events.dst_instid.isin(players.index) & (events.value > 0)]
     death_mark_events = events[(events.skillid == Skills.DEATH_MARK) & events.dst_instid.isin(players.index) & (events.value > 0)]
-    snatch_events = events[(events.skillid == Skills.SNATCH) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    snatch_events = combine_by_time_range_and_instid(events[(events.skillid == Skills.SNATCH) & events.dst_instid.isin(players.index) & (events.value > 0)], 1000)
     gaze_events = events[(events.skillid == Skills.GAZE) & events.dst_instid.isin(players.index) & (events.is_buffremove == 0)]
     
     gather_count_stat('Messenger', collector, True, False, phases, subgroups, players, messenger_events)
