@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '1.0.3b4',
-        'timestamp': 1510218419, # date +%s
+        'id': '1.0.12',
+        'timestamp': 1518494485, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -44,6 +44,7 @@ INTERNAL_IPS = ['127.0.0.1']
 
 INSTALLED_APPS = [
     'raidar.apps.RaidarConfig',
+    'corsheaders',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,11 +61,13 @@ if importlib.util.find_spec("django_extensions"):
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'gw2raidar.urls'
@@ -147,6 +150,12 @@ LOGIN_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
 
 
+CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_WHITELIST = []
+# CORS_ORIGIN_REGEX_WHITELIST = []
+CORS_URLS_REGEX = r'^/(?:api/.*|global_stats.json)$'
+
+
 
 # Google Analytics
 GA_PROPERTY_ID = None
@@ -167,3 +176,19 @@ if DEBUG:
     if importlib.util.find_spec("debug_toolbar"):
         INSTALLED_APPS.append('debug_toolbar')
         MIDDLEWARE.append('debug_toolbar.middleware.DebugToolbarMiddleware')
+        DEBUG_TOOLBAR_PANELS = [
+            'debug_toolbar.panels.versions.VersionsPanel',
+            'debug_toolbar.panels.timer.TimerPanel',
+            'debug_toolbar.panels.settings.SettingsPanel',
+            'debug_toolbar.panels.headers.HeadersPanel',
+            'debug_toolbar.panels.request.RequestPanel',
+            'debug_toolbar.panels.sql.SQLPanel',
+            'debug_toolbar.panels.staticfiles.StaticFilesPanel',
+            'debug_toolbar.panels.templates.TemplatesPanel',
+            'debug_toolbar.panels.cache.CachePanel',
+            'debug_toolbar.panels.signals.SignalsPanel',
+            'debug_toolbar.panels.logging.LoggingPanel',
+            'debug_toolbar.panels.redirects.RedirectsPanel',
+        ]
+        if importlib.util.find_spec("ddt_request_history"):
+            DEBUG_TOOLBAR_PANELS.append('ddt_request_history.panels.request_history.RequestHistoryPanel')
