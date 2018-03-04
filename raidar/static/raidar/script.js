@@ -122,6 +122,9 @@
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
   }
+  helpers.round = (n, d=0) => {
+    return n.toFixed(d);
+  }
   // adapted from https://stackoverflow.com/a/2901298/240443
   // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
   // num(1234.5):     1,234.5
@@ -180,9 +183,12 @@
     'alacrity': 15,
     'protection': 15,
     'retaliation': 5,
+    'aegis': 25,
+    'resist': 15,
+    'stab': 8,
+    'vigor': 15,
     'spotter': 5,
     'glyph_of_empowerment': 10,
-    'gotl': 200,
     'spirit_of_frost': 7.5,
     'sun_spirit': 6,
     'empower_allies': 5,
@@ -196,7 +202,7 @@
   }
   helpers.buffStackLookup = {
     'might': 25,
-    'gotl': 5
+    'stab': 25,
   }
   helpers.buffImageLookup = {
     'might': 'Might',
@@ -206,9 +212,13 @@
     'protection': 'Protection',
     'retaliation': 'Retaliation',
     'regen': 'Regeneration',
+    'aegis': 'Aegis',
+    'resist': 'Resistance',
+    'stab': 'Stability',
+    'swift': 'Swiftness',
+    'vigor': 'Vigor',
     'spotter': 'Spotter',
     'glyph_of_empowerment': 'Glyph_of_Empowerment',
-    'gotl': 'Grace_of_the_Land',
     'spirit_of_frost': 'Frost_Spirit',
     'sun_spirit': 'Sun_Spirit',
     'stone_spirit': 'Stone_Spirit',
@@ -487,6 +497,37 @@ ${body}
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
+  // TODO load from server
+  initData.data.boons = [
+    { boon: 'might', stacks: 25 },
+    { boon: 'fury' },
+    { boon: 'quickness' },
+    { boon: 'alacrity' },
+    { boon: 'protection' },
+    { boon: 'retaliation' },
+    { boon: 'regen' },
+    { boon: 'aegis' },
+    { boon: 'resist' },
+    { boon: 'stab', stacks: 25 },
+    { boon: 'swift' },
+    { boon: 'vigor' },
+    { boon: 'spotter' },
+    { boon: 'glyph_of_empowerment' },
+    { boon: 'spirit_of_frost' },
+    { boon: 'sun_spirit' },
+    { boon: 'stone_spirit' },
+    { boon: 'storm_spirit' },
+    { boon: 'empower_allies' },
+    { boon: 'banner_strength' },
+    { boon: 'banner_discipline' },
+    { boon: 'banner_tactics' },
+    { boon: 'banner_defence' },
+    { boon: 'assassins_presence' },
+    { boon: 'naturalistic_resonance' },
+    { boon: 'pinpoint_distribution' },
+    { boon: 'soothing_mist' },
+    { boon: 'vampiric_presence' },
+  ];
   delete window.raidar_data;
 
   function URLForPage(page) {
@@ -1069,10 +1110,10 @@ ${body}
 <canvas height="${height}" width="${width}"/>
 </div>
             `, {center: true});
-        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
-        dialog.panel.css({width: width, height: height});
+        $(dialog.$el).css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        $(dialog.panel).css({width: width, height: height});
         dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
-        let ctx = dialog.$el.find('canvas');
+        let ctx = $(dialog.$el).find('canvas');
         let datasets = [];
         if (globals) {
           datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));

@@ -7,7 +7,7 @@
 		"uuidString": "3A760E32-0043-4CD2-BC39-87DDAA2502C6"
 		}
 	],
-"creatorBuild": "26148",
+"creatorBuild": "26268",
 "files": {
 	"\/.gitignore": {
 		"cB": 0,
@@ -5403,7 +5403,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/countdown.scss",
 		"oF": 0,
 		"oS": 0,
@@ -5663,7 +5663,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/marker.scss",
 		"oF": 0,
 		"oS": 0,
@@ -5832,7 +5832,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/progress.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6144,7 +6144,7 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
 		"oF": 3,
-		"oS": 0,
+		"oS": 3,
 		"uL": 1
 		},
 	"\/node_modules\/uikit\/src\/scss\/theme\/_import.scss": {
@@ -8084,6 +8084,13 @@
 		"oAP": "\/raidar\/migrations\/0037_make_added_fields_nonnull.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0038_new_django.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0038_new_django.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8348,6 +8355,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0038_new_django.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0038_new_django.cpython-36.pyc",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
@@ -9434,15 +9448,15 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
-		"q": 100
+		"oIPL": 1,
+		"opt": 1,
+		"q": 48
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Aegis.png": {
 		"ft": 32768,
-		"iS": 995,
+		"iS": 1276,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/aegis.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Aegis.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9625,11 +9639,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/resistance.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Resistance.png": {
 		"ft": 32768,
-		"iS": 1680,
+		"iS": 1390,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/resistance.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Resistance.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9680,11 +9694,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/stability.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Stability.png": {
 		"ft": 32768,
-		"iS": 1056,
+		"iS": 1276,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/stability.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Stability.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9724,11 +9738,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/swiftness.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Swiftness.png": {
 		"ft": 32768,
-		"iS": 1109,
+		"iS": 1306,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/swiftness.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Swiftness.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9746,11 +9760,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/vigor.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Vigor.png": {
 		"ft": 32768,
-		"iS": 1130,
+		"iS": 1337,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vigor.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Vigor.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -10196,16 +10210,6 @@
 		"sC": 3,
 		"tS": 0
 		},
-	"\/raidar\/static\/raidar\/script.js": {
-		"ft": 64,
-		"ma": 0,
-		"mi": 1,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/script-min.js",
-		"oF": 0,
-		"sC": 3,
-		"tS": 0
-		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -10237,6 +10241,20 @@
 		"oAP": "\/raidar\/templates\/raidar\/encounter.html",
 		"oF": 0
 		},
+	"\/raidar\/templates\/raidar\/encounter_boon_output.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_output.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_boon_uptime.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_boon_uptime.html",
+		"oF": 0
+		},
 	"\/raidar\/templates\/raidar\/encounter_boss_metrics.html": {
 		"cB": 0,
 		"ft": 8192,
@@ -10249,13 +10267,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
-		"oF": 0
-		},
-	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/encounter_filter.html": {
@@ -11690,6 +11701,41 @@
 		"oAP": "\/TestLogs\/encounters\/arichardson\/20171006-212823.evtc",
 		"oF": 0
 		},
+	"\/TestLogs\/encounters\/arichardson\/20180212-205945.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180212-205945.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180212-223208.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180212-223208.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180213-040254.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180213-040254.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180213-200756.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180213-200756.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180218-120204.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180218-120204.evtc.zip",
+		"oF": 0
+		},
 	"\/TestLogs\/errors\/47.evtc": {
 		"cB": 0,
 		"ft": 8192,
@@ -11731,13 +11777,6 @@
 		"oA": 0,
 		"oAP": "\/TestLogs\/errors\/50.evtc.error",
 		"oF": 0
-		},
-	"\/uploads\/2.evtc.zip": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/uploads\/2.evtc.zip",
-		"oF": 0
 		}
 	},
 "hooks": [
@@ -11747,7 +11786,7 @@
 "projectAttributes": {
 	"creationDate": 531249016,
 	"displayValue": "gw2raidar",
-	"displayValueWasSetByUser": 0,
+	"displayValueWasSetByUser": 1,
 	"iconImageName": "meme-wonka"
 	},
 "projectSettings": {
@@ -11755,7 +11794,8 @@
 	"alwaysUseExternalServer": 1,
 	"animateCSSInjections": 1,
 	"autoBuildNewItems": 1,
-	"autoprefixerBrowserString": "> 1%, last 2 versions, Firefox ESR, Opera 12.1",
+	"autoprefixerBrowserString": "> 1%, last 2 versions, Firefox ESR, Opera 12.1, ie 10",
+	"autoprefixerEnableIEGrid": 1,
 	"babelAuxiliaryCommentAfter": "",
 	"babelAuxiliaryCommentBefore": "",
 	"babelConfigFileHandlingType": 0,
@@ -12319,6 +12359,10 @@
 		"id-match": {
 			"active": 0,
 			"optionString": "'^[a-z]+([A-Z][a-z]+)*$', {'properties': false, 'onlyDeclarations': true}"
+			},
+		"implicit-arrow-linebreak": {
+			"active": 0,
+			"optionString": "'beside'"
 			},
 		"indent": {
 			"active": 0,
