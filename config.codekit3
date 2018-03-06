@@ -7,7 +7,7 @@
 		"uuidString": "3A760E32-0043-4CD2-BC39-87DDAA2502C6"
 		}
 	],
-"creatorBuild": "26268",
+"creatorBuild": "26330",
 "files": {
 	"\/.gitignore": {
 		"cB": 0,
@@ -9639,11 +9639,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Resistance.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/resist.png": {
 		"ft": 32768,
 		"iS": 1390,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Resistance.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/resist.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9694,11 +9694,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Stability.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/stab.png": {
 		"ft": 32768,
 		"iS": 1276,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Stability.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/stab.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9738,11 +9738,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Swiftness.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/swift.png": {
 		"ft": 32768,
 		"iS": 1306,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Swiftness.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/swift.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -10210,6 +10210,16 @@
 		"sC": 3,
 		"tS": 0
 		},
+	"\/raidar\/static\/raidar\/script.js": {
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/script-min.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -10267,6 +10277,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/encounter_filter.html": {

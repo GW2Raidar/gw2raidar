@@ -68,7 +68,7 @@
                 {# text #}
                 <text x='[[round(100 * section.dps / max_max_dps)]]%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.dps, 0)]]</text>
                 {# tick text #}
-                <text class="" x='[[round(100 * section.percentiles_dps[settings.comparePerc] / max_max_dps)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[settings.comparePerc], 0)]] ([[th(settings.comparePerc)]])</text>
+                <text class="" x='[[round(100 * section.percentiles_dps[settings.comparePerc] / max_max_dps)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_dps[settings.comparePerc], 0)]]<tspan fill="#958cbb" alignment-baseline="hanging"> ([[th(settings.comparePerc)]])</tspan></text>
               [[/with]]
             [[/with]]
           </svg>
@@ -102,7 +102,7 @@
                 {# text #}
                 <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.recv, 0)]]</text>
                 {# tick text #}
-                <text class="" x='[[round(100 * section.percentiles_recv[settings.comparePerc] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[settings.comparePerc], 0)]] ([[th(settings.comparePerc)]])</text>
+                <text class="" x='[[round(100 * section.percentiles_recv[settings.comparePerc] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="middle" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[settings.comparePerc], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(settings.comparePerc)]])</tspan></text>
               [[/with]]
             [[/with]]
           </svg>
@@ -359,7 +359,7 @@
               <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Barrier</h5>Up to <strong>[[num(section.shield_recv, 0)]] ([[perc(100 * section.shield_recv / section.recv)]])</strong> damage absorbed by barrier" x='[[round(100 * (section.recv - section.shield_recv) / max_max_recv)]]%' y='16px' height='16px' width='[[round(100 * section.shield_recv / max_max_recv)]]%' opacity='0.6' fill='#FCF1E2'/>
 
               {# text #}
-              <text x='[[width < 50 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 50 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.recv, 0)]]</text>
+              <text x='[[width < 35 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 35 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.recv, 0)]]</text>
               {# tick text #}
               <text class="" x='[[round(100 * section.percentiles_recv[settings.comparePerc] / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'end' : 'middle']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[settings.comparePerc], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(settings.comparePerc)]])</tspan></text>
             [[/with]]
