@@ -32,7 +32,8 @@ urlpatterns = [
     url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
     url(r'^$', views.index, name = "index"),
     url(r'^robots.txt$', TemplateView.as_view(template_name='raidar/robots.txt'), name="robots"),
-    url(r'^global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
+    # XXX HACK separate API
+    url(r'^(?:api/)?global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]
 
 if settings.DEBUG and importlib.util.find_spec('debug_toolbar'):
