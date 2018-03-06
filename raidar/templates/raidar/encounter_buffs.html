@@ -30,7 +30,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             [[#each data.buff_tabs[tabNo].order]]
               [[#with {
                 buff: data.buffs[.],
-                format: data.buffs[.].stacks ? num : perc,
+                format: ('stacks' in data.buffs[.]) ? num : perc,
                 code: .,
                 section: page.boon_output ? {
                     name: 'Output',
@@ -73,7 +73,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[#each data.buff_tabs[tabNo].order]]
                 [[#with {
                   buff: data.buffs[.],
-                  format: data.buffs[.].stacks ? num : perc,
+                  format: ('stacks' in data.buffs[.]) ? num : perc,
                   code: .,
                   section: page.boon_output ? {
                       name: 'Output',
@@ -85,7 +85,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 }]]
                   <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
                     <img src="[[buff.icon]]" alt="[[buff.name]]"/>
-                    <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
+                    <span class="r-buff-number r-bg-101">[[format(section.value, 1)]]</span>
                   </div>
                 [[/with]]
               [[/each]]
@@ -119,7 +119,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 [[#each data.buff_tabs[tabNo].order]]
                   [[#with {
                     buff: data.buffs[.],
-                    format: data.buffs[.].stacks ? num : perc,
+                    format: ('stacks' in data.buffs[.]) ? num : perc,
                     code: .,
                     section: page.boon_output ? {
                         name: 'Output',
