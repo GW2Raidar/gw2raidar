@@ -497,6 +497,7 @@ ${body}
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
+  if (!initData.settings.comparePerc) initData.settings.comparePerc = 50;
   // TODO load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
