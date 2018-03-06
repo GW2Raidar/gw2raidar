@@ -241,12 +241,12 @@
 
       <div class='r-encounter-misc uk-visible@l'>
         [[#with actual]]
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="Critical: [[perc(crit)]]">C</div>
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="Scholar Uptime: [[perc(scholar)]]">S</div>
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="Flanking Uptime: [[perc(flanking)]]">F</div>
+          <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Critical: [[perc(crit)]]">C</div>
+          <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Scholar Uptime: [[perc(scholar)]]">S</div>
+          <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Flanking Uptime: [[perc(flanking)]]">F</div>
         [[/with]]
         [[#with shielded]]
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="Barrier: [[num(total, 0)]]">B</div>
+          <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Barrier: [[num(total, 0)]]">B</div>
         [[/with]]
       </div>
       [[/with]]
@@ -395,13 +395,31 @@
       </div>
 
       <div class='r-encounter-misc uk-visible@l'>
-        [[#with actual]]
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="<strong>Critical:</strong> [[perc(crit)]] [[#if archetype.avg_crit]]<br /> <strong>Average:</strong> [[perc(archetype.avg_crit)]][[/if]]">C</div>
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="<strong>Scholar Uptime:</strong> [[perc(scholar)]][[#if archetype.avg_scholar]]<br /> <strong>Average:</strong> [[perc(archetype.avg_scholar)]][[/if]]">S</div>
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="<strong>Flanking Uptime:</strong> [[perc(flanking)]][[#if archetype.avg_flanking]]<br /> <strong>Average:</strong> [[perc(archetype.avg_flanking)]][[/if]]">F</div>
-        [[/with]]
-        [[#with shielded]]
-          <div class="uk-badge r-bg-30" uk-tooltip="pos: left" title="<strong>Barrier:</strong> [[num(total, 0)]][[#if archetype.avg_total_shielded]]<br /> <strong>Average:</strong> [[num(archetype.avg_total_shielded, 0)]][[/if]]">B</div>
+        [[#with {
+          crit: actual.crit,
+          avg_crit: archetype.avg_crit,
+          percentiles_crit: pctl(archetype.per_crit),
+          scholar: actual.scholar,
+          avg_scholar: archetype.avg_scholar,
+          percentiles_scholar: pctl(archetype.per_scholar),
+          flanking: actual.flanking,
+          avg_flanking: archetype.avg_flanking,
+          percentiles_flanking: pctl(archetype.per_flanking),
+          shielded: shielded.total,
+          avg_shielded: archetype.avg_total_shielded,
+          percentiles_shielded: pctl(archetype.per_total_shielded)
+        }]]
+          [[#with {
+            pctl_crit: bsearch(crit, percentiles_crit),
+            pctl_scholar: bsearch(scholar, percentiles_scholar),
+            pctl_flanking: bsearch(flanking, percentiles_flanking),
+            pctl_shielded: bsearch(shielded, percentiles_shielded)
+          }]]
+            <div class="uk-badge r-bg-[[pctl_crit]]" uk-tooltip="pos: left" title="<strong>Critical:</strong> [[perc(crit)]]<br/><strong>Average:</strong> [[perc(avg_crit)]]<br/><strong>Performance:</strong> [[th(pctl_crit)]] Percentile">C</div>
+            <div class="uk-badge r-bg-[[pctl_scholar]]" uk-tooltip="pos: left" title="<strong>Scholar Uptime:</strong> [[perc(scholar)]]<br/><strong>Average:</strong> [[perc(avg_scholar)]]<br/><strong>Performance:</strong> [[th(pctl_scholar)]] Percentile">S</div>
+            <div class="uk-badge r-bg-[[pctl_flanking]]" uk-tooltip="pos: left" title="<strong>Flanking Uptime:</strong> [[perc(flanking)]]<br/><strong>Average:</strong> [[perc(avg_flanking)]]<br/><strong>Performance:</strong> [[th(pctl_flanking)]] Percentile">F</div>
+            <div class="uk-badge r-bg-[[pctl_shielded]]" uk-tooltip="pos: left" title="<strong>Barrier:</strong> [[num(shielded, 0)]]<br/><strong>Average:</strong> [[num(avg_shielded)]]<br/><strong>Performance:</strong> [[th(pctl_shielded)]] Percentile">B</div>
+          [[/with]]
         [[/with]]
       </div>
       [[/with]]
