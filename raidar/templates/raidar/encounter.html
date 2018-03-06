@@ -52,7 +52,7 @@
     <div class="uk-width-1-2 uk-visible@s uk-text-right">
       <h6 class="uk-font-family-secondary uk-text-uppercase">Compare Percentile</h6>
       [[#each [99, 90, 80, 70, 60, 50, 30] ]]
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" checked="[[settings.comparePerc == .]]" on-click="@this.set('settings.comparePerc', .)">
+        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" twoway="false" checked="[[settings.comparePerc == .]]" on-click="@this.set('settings.comparePerc', .)">
         <label class="r-percentile-label uk-text-bold" for="[[.]]check"><span class="uk-badge r-bg-[[.]]">[[perc(., 0)]]</span></label>
       [[/each]]
     </div>
