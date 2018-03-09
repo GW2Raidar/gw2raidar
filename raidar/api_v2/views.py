@@ -14,11 +14,11 @@ from distutils.util import strtobool
 
 
 class EncounterSerializer(serializers.HyperlinkedModelSerializer):
-    name = serializers.CharField(source='area.name')
+    #name = serializers.CharField(source='area.name')
 
     class Meta:
         model = Encounter
-        fields = ('url_id', 'started_at', 'name', 'success')
+        fields = ('url_id', 'started_at', 'area_id', 'success')
 
 class EncounterListView(generics.ListAPIView):
     """
@@ -28,13 +28,20 @@ class EncounterListView(generics.ListAPIView):
     serializer_class = EncounterSerializer
 
     def get_queryset(self):
-        queryset = Encounter.objects.filter(accounts__user=self.request.user)
+        queryset = Encounter.objects.filter(accounts__user=self.request.user).order_by('-started_at')
+
         since = self.request.query_params.get('since', None)
         if since is not None:
             queryset = queryset.filter(started_at__gte=since)
+
+        area_id = self.request.query_params.get('area_id', None)
+        if area_id is not None:
+            queryset = queryset.filter(area_id=int(area_id))
+
         success = self.request.query_params.get('success', None)
         if success is not None:
             queryset = queryset.filter(success=strtobool(success))
+
         return queryset
 
     schema = AutoSchema(manual_fields=[
@@ -45,6 +52,15 @@ class EncounterListView(generics.ListAPIView):
             schema=coreschema.Integer(
                 title="Since",
                 description="Earliest time (UNIX timestamp)",
+            ),
+        ),
+        coreapi.Field(
+            name="area_id",
+            required=False,
+            location='query',
+            schema=coreschema.Integer(
+                title="Area ID",
+                description="ID of the area where encounter took place",
             ),
         ),
         coreapi.Field(
@@ -114,4 +130,14 @@ class CategorySerializer(serializers.HyperlinkedModelSerializer):
 class CategoryListView(generics.ListAPIView):
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = LimitOffsetPagination
+
+class AreaSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Area
+        fields = ('id', 'name')
+
+class AreaListView(generics.ListAPIView):
+    queryset = Area.objects.all()
+    serializer_class = AreaSerializer
     pagination_class = LimitOffsetPagination
