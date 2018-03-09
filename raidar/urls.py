@@ -50,6 +50,7 @@ urlpatterns += [
     url(r'^api/v2/token', ObtainAuthToken.as_view()),
     url(r'^api/v2/swagger', get_swagger_view(title='GW2Raidar API')),
     url(r'^api/v2/categories', api_v2_views.CategoryListView.as_view()),
+    url(r'^api/v2/areas', api_v2_views.AreaListView.as_view()),
     url(r'^api/v2/encounters/new', api_v2_views.EncounterUploadView.as_view()),
     url(r'^api/v2/encounters', api_v2_views.EncounterListView.as_view()),
 ]
