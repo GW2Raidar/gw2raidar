@@ -15,10 +15,11 @@ from distutils.util import strtobool
 
 class EncounterSerializer(serializers.HyperlinkedModelSerializer):
     #name = serializers.CharField(source='area.name')
+    tags = serializers.CharField(source='tagstring')
 
     class Meta:
         model = Encounter
-        fields = ('url_id', 'started_at', 'area_id', 'success')
+        fields = ('url_id', 'started_at', 'area_id', 'category_id', 'tags', 'success')
 
 class EncounterListView(generics.ListAPIView):
     """
