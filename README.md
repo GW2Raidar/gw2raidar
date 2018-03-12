@@ -5,7 +5,7 @@ Quickstart
 ----------
 
 * Install Python 3 and pip3
-* `pip3 install django pandas requests django-taggit psycopg2`
+* `pip3 install django pandas requests django-taggit psycopg2 django-cors-headers djangorestframework django-rest-swagger`
 * Optionally for development, `pip3 install django-debug-toolbar django-debug-toolbar-request-history`
 * `python3 manage.py migrate`
 * `python3 manage.py createsuperuser`

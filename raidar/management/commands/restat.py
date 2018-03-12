@@ -153,6 +153,7 @@ def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets,
     calculate(main_stat_targets, f, 'dps_boss', stats_in_phase_to_boss.get('dps', 0))
     calculate(main_stat_targets, f, 'dps_received', stats_in_phase_from_all.get('dps', 0))
     calculate(main_stat_targets, f, 'total_received', stats_in_phase_from_all.get('total', 0))
+    calculate(main_stat_targets, f, 'total_shielded', shielded_in_phase_from_all.get('total', 0))
 
     for buff, value in incoming_buff_stats.items():
         calculate(incoming_buff_targets, f, buff, value)
@@ -238,10 +239,15 @@ class Command(BaseCommand):
         GB = 1024 * 1024 * 1024
         MIN_DISK_AVAIL = 10 * GB
 
-        def is_there_space_now():
-            fsdata = os.statvfs(settings.UPLOAD_DIR)
-            diskavail = fsdata.f_frsize * fsdata.f_bavail
-            return diskavail > MIN_DISK_AVAIL
+        if hasattr(os, 'statvfs'):
+            def is_there_space_now():
+                fsdata = os.statvfs(settings.UPLOAD_DIR)
+                diskavail = fsdata.f_frsize * fsdata.f_bavail
+                return diskavail > MIN_DISK_AVAIL
+        else:
+            def is_there_space_now():
+                # No protection from full disk on Windows
+                return True
 
         if is_there_space_now():
             return

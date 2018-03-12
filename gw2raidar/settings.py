@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '1.0.5',
-        'timestamp': 1511683646, # date +%s
+        'id': '1.0.12',
+        'timestamp': 1518494485, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -44,6 +44,10 @@ INTERNAL_IPS = ['127.0.0.1']
 
 INSTALLED_APPS = [
     'raidar.apps.RaidarConfig',
+    'corsheaders',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'rest_framework_swagger',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -60,11 +64,13 @@ if importlib.util.find_spec("django_extensions"):
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
 ]
 
 ROOT_URLCONF = 'gw2raidar.urls'
@@ -119,6 +125,31 @@ AUTH_PASSWORD_VALIDATORS = [
 
 AUTHENTICATION_BACKENDS = ('raidar.backends.EmailAuthBackend',)
 
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
+    ),
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 100,
+}
+
+SWAGGER_SETTINGS = {
+    'SECURITY_DEFINITIONS': {
+        "api_key": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
+        },
+    },
+    'LOGIN_URL': 'rest_framework:login',
+    'LOGOUT_URL': 'rest_framework:logout',
+}
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/1.10/topics/i18n/
@@ -145,6 +176,12 @@ STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesSto
 
 LOGIN_URL = 'index'
 LOGOUT_REDIRECT_URL = 'index'
+
+
+CORS_ORIGIN_ALLOW_ALL = True
+# CORS_ORIGIN_WHITELIST = []
+# CORS_ORIGIN_REGEX_WHITELIST = []
+CORS_URLS_REGEX = r'^/api/.*$'
 
 
 
