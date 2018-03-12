@@ -6,8 +6,6 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="description" content="A Guild Wars 2 log parsing site to upload ArcDPS combat logs from high end PvE content such as Raids and Challenge Mote Fractals">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <script src="https://npmcdn.com/tags-input@1.1.1/tags-input.js"></script>
-    <link href="https://npmcdn.com/tags-input@1.1.1/tags-input.css" rel="stylesheet">
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
       integrity="sha256-hVVnYaiADRTO2PzUGmuLJr8BLUSjGIZsDYGmIJLv2b8="
@@ -16,25 +14,19 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/ractive/1.0.0-build-9/ractive.min.js"
       integrity="sha256-tV9zrfcixE5yg4K2R/dTFr5mXOmVLNwkGryU5OAGM+Q="
       crossorigin="anonymous"></script>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/css/uikit.min.css"
-      integrity="sha256-Y26f+YUup4fXzkyNHh6TYAc5jwy5abdgKSx3NBNE0AQ="
-      crossorigin="anonymous" />
     <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit.min.js"
-      integrity="sha256-HM5Ln23ZwUKUp2XJmTYmSVWc7Ymwdbt8YyQX/k3fsY4="
-      crossorigin="anonymous"></script>
-    <script
-      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.16/js/uikit-icons.min.js"
-      integrity="sha256-IwFu/0hq7CewRpF0Uw1qW08A8M6/c72km5+VAegaWX8="
-      crossorigin="anonymous"></script>
+      src="https://cdnjs.cloudflare.com/ajax/libs/uikit/3.0.0-beta.39/js/uikit.min.js"
+      integrity="sha256-w7qX33Gtp81CF0B7UK16G8ekF0FN5UIhJTY66Un9n0c="
+      crossorigin="anonymous" defer></script>
     <script
       src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.7.0/Chart.min.js"
       integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
-      crossorigin="anonymous"></script>
-    <link href="https://fonts.googleapis.com/css?family=Source+Code+Pro|Source+Sans+Pro:300,400,700" rel="stylesheet">
-    <link href="{% static 'raidar/style.css' %}" rel="stylesheet">
+      crossorigin="anonymous" defer></script>
+    <link href="{% static 'raidar/css/raidar.css' %}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet">
+    <script src="https://npmcdn.com/tags-input@1.1.1/tags-input.js" defer></script>
+    <link href="https://npmcdn.com/tags-input@1.1.1/tags-input.css" rel="stylesheet">
     <script>
       window.baseURL = "{% url 'index' %}";
       window.raidar_data = {{ userprops|safe }};
@@ -60,81 +52,137 @@
 
     <script id="template" type="text/ractive">
         {# Logo #}
-        <div class="uk-background-secondary uk-light">
-            <div class="uk-container">
-                <header class="uk-grid ">
-                  <div class="uk-width-1-2">
-                    <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal uk-light">GW2 Raidar</h1>
-                  </div>
-                  <div class="uk-width-1-2">
-                    <nav class="uk-navbar uk-navbar-container uk-navbar-transparent">
-                      <div class="uk-navbar-right">
-                        <ul class="uk-navbar-nav">
-                          [[#if username]]
-                            [[#if is_staff]]
-                              <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
+        <div class="custom-header uk-overflow-hidden uk-overflow-auto uk-margin-bottom">
+              <div class="uk-container uk-container-large ">
+                  <header class="uk-grid uk-flex-middle">
+                    <div class="uk-width-1-1 uk-width-1-2@s">
+                      <h1 class="uk-heading-large uk-padding-small uk-padding-remove-horizontal">GW2 Raidar</h1>
+                    </div>
+                    <div class="uk-width-1-2">
+                      <nav class="uk-navbar uk-navbar-container uk-navbar-transparent" id="top">
+                        <div class="uk-navbar-right">
+                          <ul class="uk-navbar-nav uk-visible@m">
+                            [[#if username]]
+                              [[#if is_staff]]
+                                <li class="no-hover"><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
+                              [[/if]]
+                              <!-- Uncomment this to enable notifications.
+                              <li class="uk-inline">
+                                <a href="#">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#fff" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#fff" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#fff" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                                </a>
+                                <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                  <p class="uk-text-center">No notifications.</p>
+                                </div>
+                              </li>
+                              <li class="uk-inline">
+                                <a href="#">
+                                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#32d296" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#32d296" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#32d296" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
+                                </a>
+                                <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
+                                  <dl class="uk-description-list uk-description-list-divider">
+                                      <dt><a href="">Description term</a></dt>
+                                      <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                      <dt><a href="">Description term</a></dt>
+                                      <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                      <dt><a href="">Description term</a></dt>
+                                      <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
+                                </dl>
+                                </div>
+                              </li>-->
+                              <li class="[[page.name=='account' ? 'uk-active' : '']] no-hover"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+                              <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">exit_to_app</i></a></li>
+                            [[else]]
+                              <li class="[[page.name=='login' ? 'uk-active' : '']] no-hover"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">input</i> Login</a></li>
+                              <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
                             [[/if]]
-                            <!-- Uncomment this to enable notifications.
-                            <li class="uk-inline">
-                              <a href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#fff" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#fff" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#fff" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
-                              </a>
-                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
-                                <p class="uk-text-center">No notifications.</p>
-                              </div>
-                            </li>
-                            <li class="uk-inline">
-                              <a href="#">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20" icon="warning" ratio="1"><circle fill="#32d296" cx="10" cy="14" r="1"></circle><circle fill="none" stroke="#32d296" stroke-width="1.1" cx="10" cy="10" r="9"></circle><path fill="#32d296" d="M10.97,7.72 C10.85,9.54 10.56,11.29 10.56,11.29 C10.51,11.87 10.27,12 9.99,12 C9.69,12 9.49,11.87 9.43,11.29 C9.43,11.29 9.16,9.54 9.03,7.72 C8.96,6.54 9.03,6 9.03,6 C9.03,5.45 9.46,5.02 9.99,5 C10.53,5.01 10.97,5.44 10.97,6 C10.97,6 11.04,6.54 10.97,7.72 L10.97,7.72 Z"></path></svg>
-                              </a>
-                              <div class="uk-background-secondary uk-light" uk-dropdown="mode: click; pos: bottom-center; offset: 20" style="width:300px;">
-                                <dl class="uk-description-list uk-description-list-divider">
-                                    <dt><a href="">Description term</a></dt>
-                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
-                                    <dt><a href="">Description term</a></dt>
-                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
-                                    <dt><a href="">Description term</a></dt>
-                                    <dd class="uk-text-small">Lorem ipsum dolor sit amet, consectetur adipiscing elit.</dd>
-                              </dl>
-                              </div>
-                            </li>-->
-                            <li class="[[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')"><i class="uk-margin-small-right" uk-icon="icon: user"></i> [[username]]</a></li>
-                            <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout"><i class="uk-margin-small-right" uk-icon="icon: sign-out"></i> Logout</a></li>
-                          [[else]]
-                            <li class="[[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="uk-margin-small-right" uk-icon="icon: sign-in"></i> Login</a></li>
-                            <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
-                          [[/if]]
-                        </ul>
-                      </div>
-                    </nav>
-                  </div>
-                </header>
-            </div>
-        </div>
-
-
-        <div class="uk-container uk-background-muted uk-margin-bottom">
-            <div class="uk-grid uk-margin-remove-top">
-              <div class="uk-width-1-1">
-              {% include 'raidar/navbar.html' %}
+                          </ul>
+                        </div>
+                      </nav>
+                    </div>
+                  </header>
               </div>
-            </div>
+
+
+          <div class="uk-container uk-container-large">
+              <div class="uk-grid uk-margin-remove-top">
+                <div class="uk-width-1-1">
+                {% include 'raidar/navbar.html' %}
+                </div>
+              </div>
+          </div>
         </div>
-    <div class="uk-container">
+    <div class="uk-container uk-container-large">
         <div class="uk-height-viewport uk-flex uk-flex-column">
-
-
             {# content #}
             <div class="uk-flex-1">
               [[#if loading]]
 
-                <center class="uk-margin-large-top">
-                  <div uk-spinner></div>
-                </center>
+              <div class="r-loading-container">
+                <svg width="100%" height="405" viewBox="0 0 283 405" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+                  <title>Experiments</title>
+                  <desc>Created using Figma</desc>
+                  <g id="Canvas" transform="translate(-4583 -492)">
+                  <g id="Subtract">
+                  <use xlink:href="#eternity0_fill" transform="translate(4583 552)" fill="#5E1B40"/>
+                  </g>
+                  <g id="Legendary1">
+                  <use xlink:href="#eternity1_fill" transform="translate(4705.33 492)"/>
+                  </g>
+                  <g id="Ascended">
+                  <mask id="mask0_alpha" mask-type="alpha">
+                  <g id="Vector 5.1">
+                  <use xlink:href="#eternity1_fill" transform="translate(4705.33 492)" fill="#BF326D" fill-opacity="0.8"/>
+                  </g>
+                  </mask>
+                  <g id="Rectangle" mask="url(#mask0_alpha)">
+                  <use xlink:href="#eternity2_fill" transform="translate(4705 582)" fill="#BF326D" fill-opacity="0.8" style="mix-blend-mode:multiply"/>
+                  </g>
+                  </g>
+                  <g id="Exotic" opacity="0.8">
+                  <mask id="mask1_alpha" mask-type="alpha">
+                  <g id="Vector 5.1">
+                  <use xlink:href="#eternity1_fill" transform="translate(4705.33 492)" fill="#CF890F"/>
+                  </g>
+                  </mask>
+                  <g id="Rectangle" mask="url(#mask1_alpha)">
+                  <use xlink:href="#eternity3_fill" transform="translate(4690.4 660.53)" fill="#CF890F" style="mix-blend-mode:multiply"/>
+                  </g>
+                  </g>
+                  <g id="Trash">
+                  <use xlink:href="#eternity4_fill" transform="translate(4713.79 799.794)" fill="#15131F"/>
+                  </g>
+                  <g id="Legendary">
+                  <use xlink:href="#eternity5_fill" transform="translate(4709 500)" fill="#FFFFFF" fill-opacity="0.5" style="mix-blend-mode:soft-light"/>
+                  </g>
+                  <g id="Rare">
+                  <use xlink:href="#eternity6_fill" transform="translate(4696.87 696.355)" fill="#15131F"/>
+                  </g>
+                  <g id="Uncommon">
+                  <use xlink:href="#eternity7_fill" transform="translate(4681.45 734.198)" fill="#15131F"/>
+                  </g>
+                  <g id="Common">
+                  <use xlink:href="#eternity8_fill" transform="translate(4670 748.327)" fill="#15131F"/>
+                  </g>
+                  </g>
+                  <defs>
+                  <path id="eternity0_fill" fill-rule="evenodd" d="M 141.5 283C 219.648 283 283 219.648 283 141.5C 283 63.3517 219.648 0 141.5 0C 63.3516 0 0 63.3517 0 141.5C 0 143.112 0.0268555 144.717 0.0805664 146.316C 2.47998 78.4141 58.2827 24.1041 126.77 24.1041C 196.783 24.1041 253.54 80.8608 253.54 150.874C 253.54 220.887 196.783 277.644 126.77 277.644C 109.204 277.644 92.4727 274.071 77.2632 267.613C 96.5405 277.451 118.372 283 141.5 283Z"/>
+                  <path id="eternity1_fill" d="M 36.5758 261.625L 16.6706 276.005L 0 254.308L 0 28.5088L 18.91 0L 36.5758 31.0317L 36.5758 261.625Z"/>
+                  <path id="eternity2_fill" d="M 0.221557 31.3889L 37 0L 37 186L 0 186L 0.221557 31.3889Z"/>
+                  <path id="eternity3_fill" d="M 0 0L 82.6066 39.8618L 83.1043 126.65L 0 126.65L 0 0Z"/>
+                  <path id="eternity4_fill" d="M 2.65693 94.6088C -0.527905 89.3611 2.65693 81.6579 4.64745 78.4622L 4.64755 74.6778L 3.15466 73.6687C 2.9556 70.843 3.40347 68.2865 3.65229 67.3614L 1.16413 67.3614C 1.16413 55.857 3.65229 50.2898 4.89636 48.9443L 4.89636 39.3572C 3.9011 39.105 2.65703 37.5912 2.90584 36.0775C 3.6054 31.8215 1.57884 29.9384 0.417705 29.5179C 0.16889 29.0134 -0.229214 27.1464 0.16889 23.7153C 0.566994 20.2841 3.81818 16.9034 5.39401 15.642L 5.39399 1.51374L 9.20616 0L 13.1073 1.51374C 18.2826 8.37603 15.0978 16.8193 12.8585 20.9401L 12.8585 29.5179C 16.6405 32.3436 16.5907 40.7869 16.0931 44.6553L 14.3514 44.6553C 13.7708 46.085 12.7092 50.6598 13.1073 57.5221C 13.6049 66.1 17.8348 69.8843 17.8348 72.6595C 17.8348 75.4347 15.5954 76.6962 16.0931 80.7328C 16.4912 83.9621 15.0978 90.488 14.3514 93.3473C 11.7802 95.9543 5.84176 99.8564 2.65693 94.6088Z"/>
+                  <path id="eternity5_fill" d="M 29 248.537L 13.2177 260L 0 242.706L 0 22.7239L 14.9932 0L 29 24.7349L 29 248.537Z"/>
+                  <path id="eternity6_fill" d="M 34.0877 71.1458C 28.3152 67.1092 20.071 69.6321 16.6705 71.3981C 14.6799 63.3248 4.72742 57.7744 0 56.0084C 5.77251 45.9168 5.391 26.5746 4.47867 18.1649L 20.9004 0C 9.55441 23.8162 14.0165 38.6845 17.6658 43.1416C 16.0734 45.3618 18.8269 50.7944 20.4027 53.2332C 20.9833 52.8127 21.6469 52.224 21.398 51.4672C 21.1142 50.6042 20.4028 50.2057 20.4027 48.4397C 20.4027 47.1782 20.6517 45.1599 21.8956 45.1599C 23.4881 45.1599 24.052 45.8327 24.135 46.1691L 23.8862 46.926C 24.4833 48.7424 23.9691 50.5421 23.6373 51.2149L 24.3838 52.7286C 25.379 52.7286 25.9596 53.5696 26.1255 53.9901C 28.3151 53.3846 29.3601 52.224 29.6089 51.7195C 29.6089 49.2807 29.6587 44.4031 29.8577 44.4031C 30.1065 44.4031 28.3649 43.1416 28.116 41.6279C 28.116 41.6279 28.9454 41.0392 29.3601 40.6187C 29.161 39.4077 29.443 37.2548 29.6089 36.3298C 32.1966 39.7609 31.5165 43.3098 30.853 44.6553L 31.5994 47.9351C 32.7937 44.1003 33.0923 38.9368 33.0923 36.8344L 31.8482 34.0592L 33.3411 35.5729L 37.0734 44.1508C 34.6847 46.3709 34.2535 53.1491 34.3364 56.2607C 30.7535 56.6643 29.3601 58.7836 29.1113 59.7927L 33.8388 57.7744C 36.2274 55.1506 36.161 51.4672 35.8293 49.9534L 39.8103 44.9076C 42.7961 37.0362 42.5473 26.4905 42.0497 22.2015C 44.6373 28.0547 48.4359 32.3772 50.0117 33.8069C 44.6373 42.8893 45.4501 58.7836 46.5283 65.5954C 40.3577 62.9716 35.6635 68.0342 34.0877 71.1458Z"/>
+                  <path id="eternity7_fill" d="M 37.8199 53.2332L 35.8294 52.9809C 36.0284 49.9534 34.5853 47.5146 33.8389 46.6737C 25.6777 40.8205 15.5095 40.7028 11.4455 41.3756C 10.4502 36.9353 3.40047 24.7244 0 19.174C 4.77725 18.5685 7.79621 15.5579 8.70853 14.1282L 13.1872 4.54122L 16.9194 0.50458L 15.1777 5.80267L 14.4313 14.3805L 16.9194 20.4355C 16.9194 19.2245 17.5829 19.5945 17.9147 19.9309C 19.7062 22.5547 21.6469 21.5287 22.3934 20.6878C 22.9739 22.7902 24.782 27.2473 27.3697 28.2565C 29.9573 29.2656 31.1019 30.8635 31.3507 31.5363L 35.8294 31.0317C 37.9858 30.6953 42.0995 28.9124 41.3033 24.4721C 40.3081 18.9218 40.3081 17.408 43.2938 17.408C 46.2796 17.408 44.7867 21.6969 44.7867 24.4721C 44.7867 26.6923 47.109 29.9384 48.2701 31.284C 49.2654 31.8895 51.8365 31.3681 52.9976 31.0317C 52.9976 30.7794 53.2464 30.073 54.2417 29.2656C 55.4858 28.2565 58.7204 26.4905 58.9692 25.229C 59.1682 24.2198 59.7156 23.7994 59.9645 23.7153C 61.1588 23.1098 62.1209 21.2765 62.4526 20.4355C 63.4479 21.4447 64.5261 20.6878 64.9408 20.1832C 65.1398 19.174 66.1848 18.7536 66.6825 18.6695L 67.6777 19.9309L 69.9171 13.6237L 69.4194 5.0458L 67.4289 0L 70.6635 4.28893C 74.6445 15.7934 81.4455 18.5013 84.3483 18.4172C 81.5616 20.6373 76.8839 34.4796 74.8934 41.1233C 64.1943 36.3298 51.2559 45.6645 50.0118 46.6737C 49.0166 47.481 48.436 50.8785 48.2701 52.4763L 46.2796 53.2332C 45.9479 52.3922 44.6374 50.7103 42.0498 50.7103C 39.4621 50.7103 38.1517 52.3922 37.8199 53.2332Z"/>
+                  <path id="eternity8_fill" d="M 57.4763 38.0958C 54.7393 34.0592 49.5142 36.0775 49.0166 38.3481C 39.5616 38.3481 40.8057 30.7794 39.064 28.2565C 37.3223 25.7336 36.327 24.9767 28.8626 19.9309C 22.891 15.8943 15.5924 6.30725 12.6896 2.01832C 13.4858 6.86229 16.0071 13.1191 17.1682 15.642L 15.4265 19.9309C 18.4123 21.3437 20.8175 24.0517 21.6469 25.229L 17.6659 22.7061L 12.9384 17.6603L 12.6896 19.4263L 17.1682 29.0134L 15.1777 33.5546L 21.3981 36.3298L 23.3886 39.6095C 14.6303 32.9491 4.14692 35.1524 0 37.0866C 2.98578 37.2885 6.38626 39.6936 7.71327 40.871C 7.11611 42.2838 7.1327 45.1599 7.21564 46.4214L 5.72275 51.2149C 8.79147 50.2057 16.0237 49.9534 20.4028 57.0176C 24.782 64.0817 29.6919 66.1841 31.5995 66.3523L 32.0972 61.3065L 35.5806 56.513L 40.5569 53.9901L 45.782 53.9901C 46.1801 54.7974 47.2749 55.3356 47.7725 55.5038C 50.9573 55.5038 52.9147 57.3539 53.4953 58.279C 54.4905 56.4625 56.3981 56.0084 57.2275 56.0084C 58.6209 55.4029 59.4668 53.906 59.7156 53.2332C 71.8578 52.4259 74.7275 60.8019 74.6445 65.0908C 79.8697 64.0817 84.0995 57.0176 86.8365 53.4855C 89.0261 50.6598 92.5592 49.2807 94.0521 48.9443L 99.7749 48.9443L 98.282 44.4031L 97.7844 38.8527C 101.168 36.2289 104.005 34.9001 105 34.5637C 93.455 31.3344 83.9336 36.7503 80.6161 39.8618L 83.8507 34.0592L 89.3246 31.284L 87.3341 26.4905L 91.0664 18.6695L 92.5592 17.6603L 90.5687 13.3714C 91.763 11.3531 93.8863 3.61616 94.7986 0C 92.41 7.06412 82.8554 15.2215 78.3768 18.4172C 75.0592 20.4355 68.3246 25.0776 67.9265 27.4996C 67.4289 30.5271 65.4384 34.0592 63.9455 36.0775C 62.7512 37.6921 58.9692 38.1799 57.4763 38.0958Z"/>
+                  </defs>
+                  </svg>
+              </div>
 
               [[elseif page.name == "encounter"]]
 
                 {% include 'raidar/encounter.html' %}
+                {% include 'raidar/donation_cta.html' %}
 
               [[elseif page.name == "info-help"]]
 
@@ -159,9 +207,14 @@
               [[elseif page.name == "global_stats"]]
 
                 {% include 'raidar/global_stats.html' %}
+                {% include 'raidar/donation_cta.html' %}
               [[elseif page.name == "thank-you"]]
 
                 {% include 'raidar/thank-you.html' %}
+
+              [[elseif page.name == "info-framework"]]
+
+                {% include 'raidar/info_framework.html' %}
 
               [[elseif username]]
 
@@ -169,6 +222,7 @@
 
                   [[#if encounters.length]]
                     {% include 'raidar/encounters.html' %}
+                    {% include 'raidar/donation_cta.html' %}
                   [[else]]
                     <p>
                       Drag and drop evtc files to this window to upload.
@@ -182,6 +236,7 @@
                 [[elseif page.name == "uploads"]]
 
                   {% include 'raidar/uploads.html' %}
+                  {% include 'raidar/donation_cta.html' %}
 
                 [[elseif page.name == "account"]]
 
@@ -258,35 +313,31 @@
               [[/if]]{# username #}
             </div>
 
-
           </div>
     </div>
     <footer class="uk-heading uk-padding uk-light uk-background-secondary">
-        <div class="uk-container">
-          <div class="uk-grid">
-              <ul class="uk-nav uk-width-1-6">
+      <div class="uk-container uk-container-large">
+        <div class="uk-grid ">
+            <div class="uk-width-1-2 uk-width-1-6@m">
+              <ul class="uk-nav">
                   <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
                   <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
               </ul>
-              <ul class="uk-nav uk-width-1-6">
+            </div>
+
+            <div class="uk-width-1-2 uk-width-1-6@m">
+              <ul class="uk-nav">
                   <li><a href="#" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
                   <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
               </ul>
-              <div class="uk-width-2-3">
-              <p>As with any website, hosting and server costs are always at play. If you love this site, why not consider donating? A one off donation of a dollar or ten dollars is a huge help in providing this website for free and ad-free to the community.</p>
-              <form action="https://www.paypal.com/cgi-bin/webscr" method="post" target="_top" class="uk-width-auto uk-inline">
-                <input type="hidden" name="cmd" value="_s-xclick">
-                <input type="hidden" name="hosted_button_id" value="3KAQWB87RUXZ2">
-                <button class="uk-button" style="background-color:#003087;" type="submit" border="0" name="submit" value="submit" onClick="ga(‘send’, ‘event’, ‘Donations’, ‘Click’, ‘PayPal’);">Donate with Paypal</button>
-                <img alt="" border="0" src="https://www.paypalobjects.com/en_AU/i/scr/pixel.gif" width="1" height="1">
-              </form>
-              <a class="uk-button" style="background-color:#fc674e;" href="https://www.patreon.com/bePatron?u=7921847" data-patreon-widget-type="become-patron-button" onClick="ga(‘send’, ‘event’, ‘Donations’, ‘Click’, ‘Patreon’);">Become a Patron!</a>
-              </div>
-              <div class="uk-width-1-1 uk-padding uk-padding-remove-bottom">
-                  <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
-              </div>
-          </div>
+            </div>
+
+            <div class="uk-width-1-1 uk-padding uk-padding-remove-bottom">
+                <p class="uk-text-small uk-text-center uk-margin-remove">GW2Raidar is not sponsored by or affiliated with NCsoft or ArenaNet.</p> <p class="uk-text-small uk-text-center uk-margin-remove">All associated logos & designs not openly released as public assets are trademarks or registered trademarks of NCsoft Corporation.</p>
+            </div>
         </div>
+      </div>
+
     </footer>
     </script>
   </head>
@@ -301,5 +352,16 @@
     <div id="container" class="uk-height-viewport">
     </div>
     <script src="{% static 'raidar/script.js' %}"></script>
+    <!-- Hotjar Tracking Code for https://www.gw2raidar.com -->
+    <script>
+        (function(h,o,t,j,a,r){
+            h.hj=h.hj||function(){(h.hj.q=h.hj.q||[]).push(arguments)};
+            h._hjSettings={hjid:710737,hjsv:6};
+            a=o.getElementsByTagName('head')[0];
+            r=o.createElement('script');r.async=1;
+            r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
+            a.appendChild(r);
+        })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    </script>
   </body>
 </html>

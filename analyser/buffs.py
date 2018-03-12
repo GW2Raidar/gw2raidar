@@ -27,7 +27,7 @@ BUFF_TYPES = [
         BuffType('Retaliation', 'retaliation', 873, StackType.DURATION, 5),
         BuffType('Regeneration', 'regen', 718, StackType.DURATION, 5),
         BuffType('Aegis', 'aegis', 743, StackType.DURATION, 5),
-        BuffType('Resistence', 'resist', 26980, StackType.DURATION, 5),
+        BuffType('Resistance', 'resist', 26980, StackType.DURATION, 5),
         BuffType('Stability', 'stab', 1122, StackType.INTENSITY, 25),
         BuffType('Swiftness', 'swift', 719, StackType.DURATION, 9),
         BuffType('Vigor', 'vigor', 726, StackType.DURATION, 5),
@@ -69,6 +69,94 @@ BUFF_TYPES = [
     ]
 
 BUFFS = { buff.name: buff for buff in BUFF_TYPES }
+BUFF_TABS = [
+    {
+        'name': 'Overview',
+        'order': [
+            'might',
+            'fury',
+            'quickness',
+            'alacrity',
+        ],
+    },
+    {
+        'name': 'Offensive Boons',
+        'order': [
+            'might',
+            'fury',
+            'quickness',
+            'retaliation',
+        ],
+    },
+    {
+        'name': 'Supportive Boons',
+        'order': [
+            'protection',
+            'aegis',
+            'regen',
+            'swift',
+            'vigor',
+            'resist',
+            'stab',
+        ],
+    },
+    {
+        'name': 'Offensive Buffs',
+        'order': [
+            'alacrity',
+            'spirit_of_frost',
+            'sun_spirit',
+            'spotter',
+            'banner_strength',
+            'banner_discipline',
+            'empower_allies',
+            'glyph_of_empowerment',
+            'assassins_presence',
+            'pinpoint_distribution',
+        ],
+    },
+    {
+        'name': 'Supportive Buffs',
+        'order': [
+            'stone_spirit',
+            'banner_tactics',
+            'banner_defence',
+            'storm_spirit',
+            'naturalistic_resonance',
+            'soothing_mist',
+            'vampiric_presence',
+        ],
+    },
+    {
+        'name': 'All buffs', # XXX For now; delete when support for tabs arrives
+        'order': [
+            'might',
+            'fury',
+            'quickness',
+            'alacrity',
+            'protection',
+            'retaliation',
+            'regen',
+            'spotter',
+            'glyph_of_empowerment',
+            'gotl',
+            'spirit_of_frost',
+            'sun_spirit',
+            'stone_spirit',
+            'storm_spirit',
+            'empower_allies',
+            'banner_strength',
+            'banner_discipline',
+            'banner_tactics',
+            'banner_defence',
+            'assassins_presence',
+            'naturalistic_resonance',
+            'pinpoint_distribution',
+            'soothing_mist',
+            'vampiric_presence',
+        ],
+    },
+]
 
 class BuffTrackIntensity:
     def __init__(self, buff_type, dst_instid, src_instids, encounter_start, encounter_end):

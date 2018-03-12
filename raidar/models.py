@@ -203,7 +203,7 @@ class Encounter(ValueModel):
     success = models.BooleanField()
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, models.SET_NULL, null=True, blank=True, related_name='uploaded_encounters')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)

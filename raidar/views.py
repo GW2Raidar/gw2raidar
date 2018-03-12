@@ -1,12 +1,14 @@
 from .models import *
 from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
 from analyser.bosses import BOSSES
+from analyser.buffs import BUFF_TYPES, BUFF_TABS, StackType
 from django.conf import settings
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core import serializers
 from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
@@ -80,6 +82,12 @@ def _login_successful(request, user):
 
 
 
+def _buff_data(buff):
+    data = { "name": buff.name }
+    if buff.stacking == StackType.INTENSITY:
+        data["stacks"] = buff.capacity
+    data["icon"] = static("raidar/img/buff/%s.png" % buff.code)
+    return data
 
 def _html_response(request, page, data={}):
     response = _userprops(request)
@@ -96,12 +104,13 @@ def _html_response(request, page, data={}):
         } for id, boss in BOSSES.items()}
     response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
+    response['buffs'] = { buff.code: _buff_data(buff) for buff in BUFF_TYPES }
+    response['buff_tabs'] = BUFF_TABS
     response['page'] = page
     response['debug'] = settings.DEBUG
     response['version'] = settings.VERSION
     if request.user.is_authenticated:
         response['privacy'] = request.user.user_profile.privacy
-    if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
             response['last_notification_id'] = last_notification.id

@@ -122,6 +122,9 @@
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
   }
+  helpers.round = (n, d=0) => {
+    return n.toFixed(d);
+  }
   // adapted from https://stackoverflow.com/a/2901298/240443
   // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
   // num(1234.5):     1,234.5
@@ -147,7 +150,32 @@
     if (n === undefined) return '';
     return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
-  // TODO load from server
+  // e.g. pctl(per_might)
+  helpers.pctl = base64 => {
+    return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
+  }
+  // e.g. bsearch(might, pctl(per_might))
+  helpers.bsearch = (needle, haystack) => {
+    let l = 0, h = haystack.length - 1;
+    if (needle > haystack[h]) {
+      return h + 1;
+    }
+    while (l != h) {
+      let m = (l + h) >> 1;
+      if (haystack[m] < needle) {
+        l = m + 1;
+      } else {
+        h = m;
+      }
+    }
+    return h;
+  };
+  helpers.th = num => {
+    let ones = num % 10;
+    let tens = num % 100 - ones;
+    let suffix = tens == 1 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
+    return num + suffix;
+  };
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,
@@ -413,7 +441,7 @@ ${rectSvg.join("\n")}
     return reversed;
   }
   helpers.p_bar = (p, max, space_for_image) => {
-    let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
+    let quantileColours = ['#d7191c', '#fdae61', '#2D81C6', '#BF326D', '#7B09C9']
 
 
     return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
@@ -428,7 +456,7 @@ ${rectSvg.join("\n")}
     return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`
   }
   helpers.text = (x, y, size, text) => {
-    return `<text x='${x}%' y='${y}%' font-family='Verdana' font-size='${size}'>${text}</text>`
+    return `<text x='${x}%' y='${y}%' font-family='Source Sans Pro' fill='#FCF1E2' font-size='${size}'>${text}</text>`
   }
   helpers.svg = (body) =>  {
     let svg = `
@@ -469,6 +497,7 @@ ${body}
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
+  if (!initData.settings.comparePerc) initData.settings.comparePerc = 50;
   // TODO load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
@@ -1082,10 +1111,10 @@ ${body}
 <canvas height="${height}" width="${width}"/>
 </div>
             `, {center: true});
-        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
-        dialog.panel.css({width: width, height: height});
+        $(dialog.$el).css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        $(dialog.panel).css({width: width, height: height});
         dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
-        let ctx = dialog.$el.find('canvas');
+        let ctx = $(dialog.$el).find('canvas');
         let datasets = [];
         if (globals) {
           datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
