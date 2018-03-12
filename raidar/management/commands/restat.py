@@ -153,6 +153,7 @@ def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets,
     calculate(main_stat_targets, f, 'dps_boss', stats_in_phase_to_boss.get('dps', 0))
     calculate(main_stat_targets, f, 'dps_received', stats_in_phase_from_all.get('dps', 0))
     calculate(main_stat_targets, f, 'total_received', stats_in_phase_from_all.get('total', 0))
+    calculate(main_stat_targets, f, 'total_shielded', shielded_in_phase_from_all.get('total', 0))
 
     for buff, value in incoming_buff_stats.items():
         calculate(incoming_buff_targets, f, buff, value)

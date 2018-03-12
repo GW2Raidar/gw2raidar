@@ -144,7 +144,7 @@ class Category(models.Model):
 class Upload(ValueModel):
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, related_name='unprocessed_uploads')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='unprocessed_uploads')
 
     def __str__(self):
         return '%s (%s)' % (self.filename, self.uploaded_by.username)
@@ -203,7 +203,7 @@ class Encounter(ValueModel):
     success = models.BooleanField()
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
+    uploaded_by = models.ForeignKey(User, models.SET_NULL, null=True, blank=True, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)

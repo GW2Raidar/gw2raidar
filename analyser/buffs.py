@@ -26,6 +26,11 @@ BUFF_TYPES = [
         BuffType('Alacrity', 'alacrity', 30328, StackType.DURATION, 9, 150, 5),
         BuffType('Retaliation', 'retaliation', 873, StackType.DURATION, 5),
         BuffType('Regeneration', 'regen', 718, StackType.DURATION, 5),
+        BuffType('Aegis', 'aegis', 743, StackType.DURATION, 5),
+        BuffType('Resistence', 'resist', 26980, StackType.DURATION, 5),
+        BuffType('Stability', 'stab', 1122, StackType.INTENSITY, 25),
+        BuffType('Swiftness', 'swift', 719, StackType.DURATION, 9),
+        BuffType('Vigor', 'vigor', 726, StackType.DURATION, 5),
 
         # Ranger
         BuffType('Spotter', 'spotter', 14055, StackType.DURATION, 1, 1, 1),
@@ -34,7 +39,6 @@ BUFF_TYPES = [
         BuffType('Stone Spirit', 'stone_spirit', 12547, StackType.DURATION, 1),
         BuffType('Storm Spirit', 'storm_spirit', 12549, StackType.DURATION, 1, 1, 2),
         BuffType('Glyph of Empowerment', 'glyph_of_empowerment', 31803, StackType.DURATION, 1, 1, 1),
-        BuffType('Grace of the Land', 'gotl', 34062, StackType.INTENSITY, 5),
 
         # Warrior
         BuffType('Empower Allies', 'empower_allies', 14222, StackType.DURATION, 1, 1, 1),
