@@ -3,8 +3,11 @@ from django.conf.urls import url, include
 from django.contrib.auth import views as auth_views
 from django.views.generic.base import TemplateView
 import importlib
+from rest_framework.authtoken import views as rest_auth_views, serializers as rest_auth_serializers
+from rest_framework_swagger.views import get_swagger_view
 
 from . import views
+from .api_v2 import views as api_v2_views
 
 urlpatterns = [
     url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
@@ -35,6 +38,23 @@ urlpatterns = [
     # XXX HACK separate API
     url(r'^(?:api/)?global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]
+
+class ObtainAuthToken(rest_auth_views.ObtainAuthToken):
+    def get_serializer(self):
+        return rest_auth_serializers.AuthTokenSerializer()
+
+
+
+urlpatterns += [
+    url(r'^api/v2/auth/', include('rest_framework.urls', namespace='rest_framework')),
+    url(r'^api/v2/token', ObtainAuthToken.as_view()),
+    url(r'^api/v2/swagger', get_swagger_view(title='GW2Raidar API')),
+    url(r'^api/v2/categories', api_v2_views.CategoryListView.as_view()),
+    url(r'^api/v2/areas', api_v2_views.AreaListView.as_view()),
+    url(r'^api/v2/encounters/new', api_v2_views.EncounterUploadView.as_view()),
+    url(r'^api/v2/encounters', api_v2_views.EncounterListView.as_view()),
+]
+
 
 if settings.DEBUG and importlib.util.find_spec('debug_toolbar'):
     import debug_toolbar
