@@ -175,6 +175,7 @@ def profile(request):
                 'started_at': era_user_store.era.started_at,
                 'description': era_user_store.era.description,
                 'profile': era_user_store.val,
+                'individual': era_user_store.era.val['All']['individual'],
             } for era_user_store in queryset]
     except EraUserStore.DoesNotExist:
         eras = []
