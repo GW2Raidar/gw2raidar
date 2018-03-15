@@ -444,3 +444,106 @@ BOSS_ARRAY = [
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False)
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
+IDS = {boss.name: boss.boss_ids[0] for boss in BOSS_ARRAY}
+
+BOSS_LOCATIONS = [
+    {
+        "name": "Raid",
+        "all": 'All raid bosses',
+        "columns": 3,
+        "wings": [
+            {
+                "name": "Spirit Vale",
+                "bosses": [
+                    IDS['Vale Guardian'],
+                    IDS['Gorseval'],
+                    IDS['Sabetha'],
+                ],
+            },
+            {
+                "name": "Salvation Pass",
+                "bosses": [
+                    IDS['Slothasor'],
+                    IDS['Bandit Trio'],
+                    IDS['Matthias'],
+                ],
+            },
+            {
+                "name": "Stronghold of the Faithful",
+                "bosses": [
+                    IDS['Keep Construct'],
+                    IDS['Xera'],
+                ],
+            },
+            {
+                "name": "Bastion of the Penitent",
+                "bosses": [
+                    IDS['Cairn'],
+                    IDS['Mursaat Overseer'],
+                    IDS['Samarog'],
+                    IDS['Deimos'],
+                ],
+            },
+            {
+                "name": "Hall of Chains",
+                "bosses": [
+                    IDS['Soulless Horror'],
+                    IDS['Dhuum'],
+                ],
+            },
+        ],
+    },
+    {
+        "name": "CM Fractals",
+        "all": 'All fractal bosses',
+        "columns": 4,
+        "wings": [
+            {
+                "name": "Nightmare",
+                "bosses": [
+                    IDS['MAMA'],
+                    IDS['Siax'],
+                    IDS['Ensolyss'],
+                ],
+            },
+            {
+                "name": "Shattered Observatory",
+                "bosses": [
+                    IDS['Skorvald the Shattered'],
+                    IDS['Artsariiv'],
+                    IDS['Arkk'],
+                ],
+            },
+        ],
+    },
+    {
+        "name": "Golems",
+        "all": 'All golem bosses',
+        "columns": 4,
+        "wings": [
+            {
+                "name": "Massive",
+                "bosses": [
+                    IDS['Massive Standard Kitty Golem'],
+                    IDS['Massive Average Kitty Golem'],
+                    IDS['Massive Vital Kitty Golem'],
+                ],
+            },
+            {
+                "name": "Normal",
+                "bosses": [
+                    IDS['Standard Kitty Golem'],
+                    IDS['Average Kitty Golem'],
+                    IDS['Vital Kitty Golem'],
+                ],
+            },
+            {
+                "name": "Special",
+                "bosses": [
+                    IDS['Resistant Kitty Golem'],
+                    IDS['Tough Kitty Golem'],
+                ],
+            },
+        ],
+    },
+]

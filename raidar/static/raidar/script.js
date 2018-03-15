@@ -492,6 +492,10 @@ ${body}
     },
     uploads: [],
   };
+  initData.data.boss_locations.forEach(loc => {
+    loc.bosses = {}
+    loc.wings.forEach(wing => wing.bosses.forEach(id => loc.bosses[id] = true ));
+  });
   let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
