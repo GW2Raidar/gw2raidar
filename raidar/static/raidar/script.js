@@ -1081,9 +1081,8 @@ ${body}
       return false;
     },
     chart: function chart(evt, archetype, profession, elite, stat, statName) {
-      let era = r.get('page.era');
+      let eraId = r.get('page.era');
       let eras = r.get('profile.eras');
-      let eraId = era.id;
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
