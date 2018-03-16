@@ -169,16 +169,16 @@ def profile(request):
     user = request.user
     queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
-        eras = [{
+        eras = { era_user_store.era.id: {
                 'id': era_user_store.era_id,
                 'name': era_user_store.era.name,
                 'started_at': era_user_store.era.started_at,
                 'description': era_user_store.era.description,
                 'profile': era_user_store.val,
                 'individual': era_user_store.era.val['All']['individual'],
-            } for era_user_store in queryset]
+            } for era_user_store in queryset}
     except EraUserStore.DoesNotExist:
-        eras = []
+        eras = {}
 
     profile = {
         'username': user.username,
