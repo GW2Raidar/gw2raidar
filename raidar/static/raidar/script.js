@@ -17,7 +17,6 @@
     input.value = smiley;
     return input.type === type && 'style' in input && input.value !== smiley;
   })();
-  console.log(inputDateAvailable);
 
 
   Ractive.decorators.ukUpdate = function(node) {
@@ -576,7 +575,9 @@ ${body}
         url: 'profile.json',
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
-        let eraOrder = Object.values(eras).sort((e1, e2) => e2.started_at - e1.started_at);
+        let eraOrder = Object.values(eras)
+          .filter(era => 'encounter' in era.profile)
+          .sort((e1, e2) => e2.started_at - e1.started_at);
         r.set({
           'page.era': eraOrder[0].id,
           'profile.era_order': eraOrder,
