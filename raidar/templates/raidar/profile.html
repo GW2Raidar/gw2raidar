@@ -1,6 +1,6 @@
 {% load staticfiles %}
 [[#with profile]]
-  [[#with page.era]]
+  [[#with profile.eras[page.era]]]
     [[#with profile]]
 
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
@@ -84,18 +84,18 @@
 
       <div>
         <h6 class="uk-font-family-secondary">Time Frame</h6>
-        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">Most recent <i class="material-icons">expand_more</i></button>
+        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era].name]] <i class="material-icons">expand_more</i></button>
         <div uk-dropdown="mode: click">
           <ul class="uk-nav uk-dropdown-nav">
-            [[#each eras]]
-              <li><a href="[[id]]">[[name]]</a></li>
+            [[#each era_order]]
+              <li><a href="#" on-click="@this.set({'page.era': id})">[[name]]</a></li>
             [[/each]]
           </ul>
         </div>
       </div>
 
       [[#if encounter[page.area]]]
-        [[#if page.area.match(/^All \w+ bosses$/)]]
+        [[#if typeof page.area == "string"]]
           {# All ... bosses #}
           <h2>[[page.area]]</h2>
           <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
@@ -112,7 +112,7 @@
             Dead [[perc(encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage)]]
           </span>
         [[else]]
-          {# specific boss #}
+          {# specific boss ID #}
           <div class="r-media uk-margin-medium-top">
             <img width="70px" src="/static/raidar/img/icon/[[data.areas[page.area].name]].png" alt="[[data.areas[page.area].name]]">
             <div class="r-body">

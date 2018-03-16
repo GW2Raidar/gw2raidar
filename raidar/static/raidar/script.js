@@ -576,9 +576,10 @@ ${body}
         url: 'profile.json',
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
-        let latest = eras[eras.length - 1];
+        let eraOrder = Object.values(eras).sort((e1, e2) => e2.started_at - e1.started_at);
         r.set({
-          'page.era': latest,
+          'page.era': eraOrder[0].id,
+          'profile.era_order': eraOrder,
         });
       });
     },
