@@ -1,6 +1,6 @@
 from .models import *
 from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
-from analyser.bosses import BOSSES
+from analyser.bosses import BOSSES, BOSS_LOCATIONS
 from analyser.buffs import BUFF_TYPES, BUFF_TABS, StackType
 from django.conf import settings
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
@@ -102,6 +102,7 @@ def _html_response(request, page, data={}):
             "name": boss.name,
             "kind": boss.kind,
         } for id, boss in BOSSES.items()}
+    response['boss_locations'] = BOSS_LOCATIONS
     response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
     response['buffs'] = { buff.code: _buff_data(buff) for buff in BUFF_TYPES }
@@ -160,6 +161,18 @@ def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
+def _profile_data_for_era(era_user_store):
+    era_val = era_user_store.era.val
+    return {
+        'id': era_user_store.era_id,
+        'name': era_user_store.era.name,
+        'started_at': era_user_store.era.started_at,
+        'description': era_user_store.era.description,
+        'profile': era_user_store.val,
+        'individual': era_val['All']['individual'],
+        'build': era_val['All']['build'],
+    }
+
 @require_GET
 def profile(request):
     if not request.user.is_authenticated:
@@ -168,15 +181,9 @@ def profile(request):
     user = request.user
     queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
-        eras = [{
-                'id': era_user_store.era_id,
-                'name': era_user_store.era.name,
-                'started_at': era_user_store.era.started_at,
-                'description': era_user_store.era.description,
-                'profile': era_user_store.val,
-            } for era_user_store in queryset]
+        eras = { era_user_store.era.id: _profile_data_for_era(era_user_store) for era_user_store in queryset}
     except EraUserStore.DoesNotExist:
-        eras = []
+        eras = {}
 
     profile = {
         'username': user.username,

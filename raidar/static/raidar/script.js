@@ -17,7 +17,6 @@
     input.value = smiley;
     return input.type === type && 'style' in input && input.value !== smiley;
   })();
-  console.log(inputDateAvailable);
 
 
   Ractive.decorators.ukUpdate = function(node) {
@@ -492,6 +491,10 @@ ${body}
     },
     uploads: [],
   };
+  initData.data.boss_locations.forEach(loc => {
+    loc.bosses = {}
+    loc.wings.forEach(wing => wing.bosses.forEach(id => loc.bosses[id] = true ));
+  });
   let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
@@ -572,9 +575,12 @@ ${body}
         url: 'profile.json',
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
-        let latest = eras[eras.length - 1];
+        let eraOrder = Object.values(eras)
+          .filter(era => 'encounter' in era.profile)
+          .sort((e1, e2) => e2.started_at - e1.started_at);
         r.set({
-          'page.era': latest,
+          'page.era': eraOrder[0].id,
+          'profile.era_order': eraOrder,
         });
       });
     },
@@ -1075,9 +1081,8 @@ ${body}
       return false;
     },
     chart: function chart(evt, archetype, profession, elite, stat, statName) {
-      let era = r.get('page.era');
+      let eraId = r.get('page.era');
       let eras = r.get('profile.eras');
-      let eraId = era.id;
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
