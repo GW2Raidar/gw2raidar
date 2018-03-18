@@ -167,7 +167,7 @@
                     <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
                     <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
                       [[#with {dps_percentiles:p(lineStats.per_dps)}]]
-                      [[#each [{"v":99,"line":1},{"v":90,"line":2},{"v":50,"line":3}]]]
+                      [[#each [{"v":99},{"v":90},{"v":50}]]]
 
                         <!--
                       Overlapping charts for Boss and Cleave damage
@@ -176,18 +176,18 @@
 
                       Classes assign colors: r-bg-{Percentile} will add the color to that element.
                       -->
-                        <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[v]]th Percentile</h6>36432 Damage Per Second" x='0%' y='[[2 + line * 12]]px' height='8px' width='[[100*dps_percentiles[v]/individual.max_dps]]%' opacity='0.3' />
+                        <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[v]]th Percentile</h6>[[num(dps_percentiles[v],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*dps_percentiles[v]/individual.max_dps]]%' opacity='0.3' />
                       <!--
                       Second <rect> is full opacity and the same color.
                       -->
-                      <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[v]]th Percentile</h6>32305 Damage Per Second" x='0%' y='[[2 + line * 12]]px' height='8px' width='[[100*boss_dps_percentiles[v]/individual.max_dps]]%'/>
+                      <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[v]]th Percentile</h6>[[num(boss_dps_percentiles[v],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*boss_dps_percentiles[v]/individual.max_dps]]%'/>
 
                       <!--
                       Text with some custom adjustments to deal with alignment issues.
                       -->
-                      [[#if line == 1]]
+                      [[#if @index == 0]]
                       <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
-                      [[elseif line == 2]]
+                      [[elseif @index == 1]]
                       <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='30px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
                       [[else]]
                       <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='48px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
@@ -198,61 +198,33 @@
                   </div>
                   <div class="r-global-stats-buffs r-buff-container">
                     <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l uk-margin-remove">Buffs</h6>
+                    [[#each [
+                      buffs[0],
+                      buffs[1],
+                      buffs[2] ,
+                      buffs[3],
+                      buffs[4]
+                    ] ]]
                     <div class="r-buff">
+                      [[#if percentiles]]
+                      [[#with {stackable:buff_name == 'might', pretty_name: buff_name.replace('_',' ')}]]
                       <div class="r-buff-icon">
-                        <img src="/static/raidar/img/buff//Might.png" alt="might">
+                        <img src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]">
                       </div>
-                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 99th Percentile</h6>Average output of 180 stacks of might" class="r-buff-number chart-hover r-bg-99">180
+                      [[#each [{"v":99},{"v":90},{"v":50}]]]
+                        [[#if stackable]]
+                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Stacks | [[v]]th Percentile</h6>Average output of [[num(percentiles[v], 0)]] stacks of [[pretty_name]]" class="r-buff-number chart-hover r-bg-[[v]]">[[num(percentiles[v], 0)]]
+                        </div>
+                        [[else]]
+                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Uptime | [[v]]th Percentile</h6>Average output of [[num(percentiles[v], 0)]]% [[pretty_name]] uptime" class="r-buff-number r-bg-[[v]] chart-hover">[[num(percentiles[v], 0)]]<sup>%</sup>
                       </div>
-                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 90th Percentile</h6>Average output of 102 stacks of might" class="r-buff-number chart-hover r-bg-90">102
-                      </div>
-                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 50th Percentile</h6>Average output of 50 stacks of might" class="r-buff-number chart-hover r-bg-50">50
-                      </div>
+                        [[/if]]
+                      [[/each]]
+                      [[/with]]
+                      [[else]]
+                      [[/if]]
                     </div>
-                    <div class="r-buff">
-                      <div class="r-buff-icon">
-                        <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
-                      </div>
-                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552<sup>%</sup>
-                      </div>
-                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472<sup>%</sup>
-                      </div>
-                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335<sup>%</sup>
-                      </div>
-                    </div>
-                    <div class="r-buff">
-                      <div class="r-buff-icon">
-                        <img src="/static/raidar/img/buff//protection.png" alt="protection">
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-                      </div>
-                    </div>
-                    <div class="r-buff">
-                      <div class="r-buff-icon">
-                        <img src="/static/raidar/img/buff//fury.png" alt="fury">
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-                      </div>
-                    </div>
-                    <div class="r-buff">
-                      <div class="r-buff-icon">
-                        <img src="/static/raidar/img/buff//alacrity.png" alt="alacrity">
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-                      </div>
-                      <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-                      </div>
-                    </div>
+                    [[/each]]
                   </div>
                 </div>
               [[/with]]
@@ -266,98 +238,5 @@
       </div>
       [[/each]]
     [[/with]]
-
-<h1>Everything below here is old for reference only.</h1>
-      <!-- Old-->
-  [[#with stats]]
-    <div  class="uk-overflow-auto uk-margin-remove-bottom">
-      <table class="uk-table uk-table-striped uk-table-small">
-         <thead>
-           <tr>
-             <th class="uk-table-shrink"></th>
-             <th>Duration (seconds)</th>
-             <th>Cleave DPS</th>
-             <th>Boss DPS</th>
-             <th>DPS Received</th>
-           </tr>
-         </thead>
-         <tbody>
-           [[#if group.per_duration]]
-           <td>Full group</td>
-          [[#each [
-              {"percentiles": p_r(group.per_duration), "max": group.max_duration},
-              {"percentiles": p(group.per_dps), "max": group.max_dps},
-              {"percentiles": p(group.per_dps_boss), "max": group.max_dps_boss},
-              {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
-            ] ]]
-              [[#if percentiles]]
-              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
-
-              </td>
-              [[else]]
-              <td></td>
-              [[/if]]
-            [[/each]]
-           [[else]]
-              <tr><td colspan="9">Not enough data to display group statistics</td></tr>
-           [[/if]]
-         </tbody>
-      </table>
-      [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
-      <h3 class="uk-margin-remove-top uk-margin-small-bottom">[[data.archetypes[archetype]]]</h3>
-      <div>
-        <table class="uk-width-1-1 uk-table uk-table-striped uk-table-small">
-          <thead>
-            <tr class="">
-              <th class="uk-table-shrink">Specialisation</th>
-              <th class="uk-width-1-6">Cleave DPS</th>
-              <th class="uk-width-1-6">Boss DPS</th>
-              <th class="uk-table-expand" colspan="5">Outgoing buffs</th>
-              <th class="uk-table-shrink">Popularity</th>
-            </tr>
-          </thead>
-          <tbody>
-            [[#each flattenStats(build)]]
-              [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
-                [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]
-                  [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
-                  <tr class="uk-margin-remove" >
-                    <td>
-                      <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
-                      [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
-                    </td>
-                    [[#each [
-                      {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
-                      {"percentiles": boss_dps_percentiles, "max": individual.max_dps_boss},
-                      buffs[0],
-                      buffs[1],
-                      buffs[2] ,
-                      buffs[3],
-                      buffs[4]
-                    ] ]]
-                      [[#if percentiles]]
-                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
-                        [[#if buff_image]]
-                          <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
-                        [[/if]]
-                      </td>
-                      [[else]]
-                      <td></td>
-                      [[/if]]
-                    [[/each]]
-                    <td>[[num(lineStats.count/group.count, 2)]]</td>
-                  </tr>
-                  [[/with]]
-                [[/if]]
-              [[/with]]
-            [[else]]
-              <tr><td colspan="9">Not enough data to display for [[data.archetypes[archetype]]] specialisations</td></tr>
-            [[/each]]
-          </tbody>
-        </table>
-        </div>
-      [[/each]]
-    </div>
-  [[/with]]
   </div>
 [[/with]]
