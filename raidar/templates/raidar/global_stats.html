@@ -26,23 +26,13 @@
       </div>
       <div>
         <h6 class="uk-font-family-secondary">Compare Percentile</h6>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="99check" checked>
-        <label class="r-percentile-label uk-text-bold" for="99check"><span class="uk-badge r-bg-99">99%</span></label>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="90check" checked>
-        <label class="r-percentile-label uk-text-bold" for="90check"><span class="uk-badge r-bg-90">90%</span></label>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="80check">
-        <label class="r-percentile-label uk-text-bold" for="80check"><span class="uk-badge r-bg-80">80%</span></label>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="70check">
-        <label class="r-percentile-label uk-text-bold" for="70check"><span class="uk-badge r-bg-70">70%</span></label>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="60check">
-        <label class="r-percentile-label uk-text-bold" for="60check"><span class="uk-badge r-bg-60">60%</span></label>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="50check" checked>
-        <label class="r-percentile-label uk-text-bold" for="50check"><span class="uk-badge r-bg-50">50%</span></label>
-        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="30check">
-        <label class="r-percentile-label uk-text-bold" for="30check"><span class="uk-badge r-bg-30">30%</span></label>
+        [[#each [99, 90, 80, 70, 60, 50, 30] ]]
+          <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" twoway="false" checked="[[settings.compareGlobalPerc.indexOf(.) !== -1]]" on-click="@this.set('settings.compareGlobalPerc', updateCompareGlobalPerc(settings.compareGlobalPerc, .))">
+        <label class="r-percentile-label uk-text-bold" for="[[.]]check"><span class="uk-badge r-bg-[[.]]">[[perc(., 0)]]</span></label>
+        [[/each]]
       </div>
     </div>
-
+<!-- settings.compareGlobalPerc.indexOf(.) !== -1 ? settings.compareGlobalPerc.filter(a => a !== .) :  -->
 
 
 
@@ -74,16 +64,18 @@
         </div>
         <div class="r-stats-row">
           <div class="r-duration">
-            <div class="r-duration-item r-bg-99">5:35
-            </div>
-            <div class="r-duration-item  r-bg-90">6:02
-            </div>
-            <div class="r-duration-item  r-bg-50">8:32
-            </div>
+            [[#with {duration_percentiles: p(group.per_duration)}]]
+              [[#each settings.compareGlobalPerc]]
+                <div class="r-duration-item r-bg-[[.]]">[[formatTimeShort(duration_percentiles[100-.])]]
+                </div>
+              [[/each]]
+            [[/with]]
           </div>
           <div class="r-global-stats-damage">
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
-              <!--
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" width="100%">
+              [[#with {dps_percentiles: p(group.per_dps), boss_dps_percentiles: p(group.per_dps_boss)}]]
+              [[#each settings.compareGlobalPerc]]
+                <!--
               Overlapping charts for Boss and Cleave damage
 
               First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
@@ -91,44 +83,38 @@
               Classes assign colors: r-bg-{Percentile} will add the color to that element.
 
               -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='14px' height='8px' width='100%' opacity='0.3' />
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[.]]th Percentile</h6>[[num(dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*dps_percentiles[.]/group.max_dps]]%' opacity='0.3' />
               <!--
               Second <rect> is full opacity and the same color.
 
               -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='14px' height='8px' width='85%'/>
-
-              <!-- 90th percentile -->
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='26px' height='8px' width='65%' opacity='0.3'/>
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='26px' height='8px' width='55.9176428058626%'/>
-
-              <!-- 50th percentile -->
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='38px' height='8px' width='48.44386649328132%' opacity="0.6"/>
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='38px' height='8px' width='39.44386649328132%'/>
-
-              <!--
-              Text with some custom adjustments to deal with alignment issues.
-              -->
-              <text x='100%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-
-              <!-- This middle one might be a little funny. It's x value needs to be about 4px more than the rect element it references. -->
-              <text x='65.5%' y='30px' alignment-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-
-              <text x='48.44386649328132%' y='48px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[.]]th Percentile</h6>[[num(boss_dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*boss_dps_percentiles[.]/group.max_dps]]%'/>
+                [[#if @index == 0]]
+                  <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                [[elseif @index < settings.compareGlobalPerc.length - 1]]
+                  <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                [[else]]
+                   <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                [[/if]]
+              [[/each]]
+              [[/with]]
             </svg>
           </div>
           <div class="r-global-stats-damageIn">
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="40px" width="100%">
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='4px' height='8px' width='48%'/>
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='16px' height='8px' width='65%'/>
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='28px' height='8px' width='100%'/>
-              <!--
-              Text with some custom adjustments to deal with alignment issues.
-              -->
-              <text x='48%' y='0' alignment-baseline="baseline" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>22352</text>
-              <!-- This middle one might be a little funny. It's x value needs to be about 4px more than the rect element it references. -->
-              <text x='65.5%' y='20px' alignment-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>32721</text>
-              <text x='100%' y='38px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>36201</text></svg>
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[4 + settings.compareGlobalPerc.length * 12]]px" width="100%">
+              [[#with {inc_dps_percentiles: p(group.per_dps_received)}]]
+              [[#each settings.compareGlobalPerc]]
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Received | [[.]]th Percentile</h6>[[num(inc_dps_percentiles[100-.],0)]] Damage Per Second" x='0%' y='[[4 + @index * 12]]px' height='8px' width='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%'/>
+                [[#if @index == 0]]
+                  <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='-10' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                [[elseif @index < settings.compareGlobalPerc.length - 1]]
+                  <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[8 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                [[else]]
+                   <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[14 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                [[/if]]
+              [[/each]]
+              [[/with]]
+            </svg>
           </div>
         </div>
       </div>
@@ -165,9 +151,9 @@
                   </div>
                   <div class="r-global-stats-damage">
                     <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
-                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
+                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" width="100%">
                       [[#with {dps_percentiles:p(lineStats.per_dps)}]]
-                      [[#each [{"v":99},{"v":90},{"v":50}]]]
+                      [[#each settings.compareGlobalPerc]]
 
                         <!--
                       Overlapping charts for Boss and Cleave damage
@@ -176,21 +162,21 @@
 
                       Classes assign colors: r-bg-{Percentile} will add the color to that element.
                       -->
-                        <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[v]]th Percentile</h6>[[num(dps_percentiles[v],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*dps_percentiles[v]/individual.max_dps]]%' opacity='0.3' />
+                        <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[.]]th Percentile</h6>[[num(dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*dps_percentiles[.]/individual.max_dps]]%' opacity='0.3' />
                       <!--
                       Second <rect> is full opacity and the same color.
                       -->
-                      <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[v]]th Percentile</h6>[[num(boss_dps_percentiles[v],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*boss_dps_percentiles[v]/individual.max_dps]]%'/>
+                      <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[.]]th Percentile</h6>[[num(boss_dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*boss_dps_percentiles[.]/individual.max_dps]]%'/>
 
                       <!--
                       Text with some custom adjustments to deal with alignment issues.
                       -->
                       [[#if @index == 0]]
-                      <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
-                      [[elseif @index == 1]]
-                      <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='30px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      [[elseif @index < settings.compareGlobalPerc.length - 1]]
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                       [[else]]
-                      <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='48px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                       [[/if]]
                       [[/each]]
                       [[/with]]
@@ -211,12 +197,12 @@
                       <div class="r-buff-icon">
                         <img src="{% static 'raidar/img/buff/' %}/[[buff_name]].png" alt="[[buff_name]]" width="20">
                       </div>
-                      [[#each [{"v":99},{"v":90},{"v":50}]]]
+                      [[#each settings.compareGlobalPerc]]
                         [[#if stackable]]
-                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Stacks | [[v]]th Percentile</h6>Average output of [[num(percentiles[v], 0)]] stacks of [[pretty_name]]" class="r-buff-number chart-hover r-bg-[[v]]">[[num(percentiles[v], 0)]]
+                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Stacks | [[.]]th Percentile</h6>Average output of [[num(percentiles[.], 0)]] stacks of [[pretty_name]]" class="r-buff-number chart-hover r-bg-[[.]]">[[num(percentiles[.], 0)]]
                         </div>
                         [[else]]
-                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Uptime | [[v]]th Percentile</h6>Average output of [[num(percentiles[v], 0)]]% [[pretty_name]] uptime" class="r-buff-number r-bg-[[v]] chart-hover">[[num(percentiles[v], 0)]]<sup>%</sup>
+                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Uptime | [[.]]th Percentile</h6>Average output of [[num(percentiles[.], 0)]]% [[pretty_name]] uptime" class="r-buff-number r-bg-[[.]] chart-hover">[[num(percentiles[.], 0)]]<sup>%</sup>
                       </div>
                         [[/if]]
                       [[/each]]
