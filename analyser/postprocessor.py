@@ -6,10 +6,14 @@ def something(participation, data):
     all_phase_stats = data['Category']['combat']['Phase']['All']
     all_to_boss = all_phase_stats['Subgroup']['*All']
 
-    player_stats = all_phase_stats['Player'][participation.character.name]
-    condi = player_stats['Metrics']['condi']['To']['*Boss']
-    power = player_stats['Metrics']['power']['To']['*Boss']
-    total = player_stats['Metrics']['damage']['To']['*Boss']
+    print("Revising archetype for character ", participation.character)
+    player_stats = all_phase_stats['Player'][participation.character]
+
+    damage_stats = player_stats['Metrics']['damage']['To']['*Boss']
+    print(damage_stats)
+    condi = damage_stats['condi_dps']
+    power = damage_stats['power_dps']
+    total = damage_stats['dps']
 
     multiplier = 2/data.playerCount
     if (participation.archetype not in [Archetype.POWER, Archetype.CONDI]
