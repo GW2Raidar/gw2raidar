@@ -286,7 +286,7 @@ class Command(BaseCommand):
 
 
 
-                #participations = encounter.participations.all()
+                participations = encounter.participations.all()
                 #for participation in participations:
                     #try:
                     #something(participation, data)
