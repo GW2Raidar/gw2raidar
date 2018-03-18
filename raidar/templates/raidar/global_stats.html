@@ -11,6 +11,7 @@
       [[/each]]
     </select> -->
     <!-- Era Filter -->
+    [[#with stats]]
     <div class="uk-flex-left" uk-grid>
       <div>
         <h6 class="uk-font-family-secondary">Time Frame</h6>
@@ -132,7 +133,8 @@
         </div>
       </div>
 
-      <h2 class="uk-heading-line"><span>Power</span></h2>
+      [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
+      <h2 class="uk-heading-line"><span>[[data.archetypes[archetype]]]</span></h2>
 
       <div class="r-global-stats-container">
         <div class="r-stats-row r-stats-header uk-visible@l">
@@ -140,300 +142,130 @@
           <div>Damage Per Second</div>
           <div>Buffs</div>
         </div>
-        <div class="r-stats-row">
-          <div class='r-spec'>
-            <div>
-              <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">Revenant</h6>
-              <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size (Add # of logs here) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i> Herald</h5>
-            </div>
-            <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
+
+        [[#each flattenStats(build)]]
+          [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
+            [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]
+              [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
+                <div class="r-stats-row">
+                  <div class='r-spec'>
+                    <div>
+                      <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">[[data.specialisations[professionId][0]]]</h6>
+                      [[#if true]]
+                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> Statistics that combine multiple encounters may be heavily skewed by the fact that different classes are used at different bosses, regardless of sample size ([[lineStats.count]])"><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[elseif lineStats.count >= 40]]
+                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size ([[lineStats.count]]) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i> [[data.specialisations[professionId][eliteId]]]</h5>
+                      [[elseif lineStats.count >= 20]]
+                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> This indicates a moderate sample size ([[lineStats.count]]) and the statistics are probably a good representation but could contain some outliers that are skewing numbers up or down."><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[else]]
+                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Low Confidence Level</h6> This indicates a small sample size ([[lineStats.count]]) there is enough data to be shown (more than 10 logs) but it's probably heavily skewed by outliers."><i class="material-icons uk-text-danger uk-text-small r-global-stats-indicator">cancel</i>[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[/if]]
+                    </div>
+                    <img alt="[[data.specialisations[professionId][eliteId]]]" src="/static/raidar/img/48px/[[data.specialisations[professionId][eliteId]]]_tango_icon_48px.png">
+                  </div>
+                  <div class="r-global-stats-damage">
+                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
+                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
+                      [[#with {dps_percentiles:p(lineStats.per_dps)}]]
+                      [[#each [{"v":99,"line":1},{"v":90,"line":2},{"v":50,"line":3}]]]
+
+                        <!--
+                      Overlapping charts for Boss and Cleave damage
+
+                      First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
+
+                      Classes assign colors: r-bg-{Percentile} will add the color to that element.
+                      -->
+                        <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[v]]th Percentile</h6>36432 Damage Per Second" x='0%' y='[[2 + line * 12]]px' height='8px' width='[[100*dps_percentiles[v]/individual.max_dps]]%' opacity='0.3' />
+                      <!--
+                      Second <rect> is full opacity and the same color.
+                      -->
+                      <rect class="chart chart-hover r-bg-[[v]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[v]]th Percentile</h6>32305 Damage Per Second" x='0%' y='[[2 + line * 12]]px' height='8px' width='[[100*boss_dps_percentiles[v]/individual.max_dps]]%'/>
+
+                      <!--
+                      Text with some custom adjustments to deal with alignment issues.
+                      -->
+                      [[#if line == 1]]
+                      <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
+                      [[elseif line == 2]]
+                      <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='30px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
+                      [[else]]
+                      <text x='[[100*dps_percentiles[v]/individual.max_dps]]%' y='48px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[v],0)]]) [[num(dps_percentiles[v],0)]]</text>
+                      [[/if]]
+                      [[/each]]
+                      [[/with]]
+                    </svg>
+                  </div>
+                  <div class="r-global-stats-buffs r-buff-container">
+                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l uk-margin-remove">Buffs</h6>
+                    <div class="r-buff">
+                      <div class="r-buff-icon">
+                        <img src="/static/raidar/img/buff//Might.png" alt="might">
+                      </div>
+                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 99th Percentile</h6>Average output of 180 stacks of might" class="r-buff-number chart-hover r-bg-99">180
+                      </div>
+                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 90th Percentile</h6>Average output of 102 stacks of might" class="r-buff-number chart-hover r-bg-90">102
+                      </div>
+                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 50th Percentile</h6>Average output of 50 stacks of might" class="r-buff-number chart-hover r-bg-50">50
+                      </div>
+                    </div>
+                    <div class="r-buff">
+                      <div class="r-buff-icon">
+                        <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
+                      </div>
+                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552<sup>%</sup>
+                      </div>
+                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472<sup>%</sup>
+                      </div>
+                      <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335<sup>%</sup>
+                      </div>
+                    </div>
+                    <div class="r-buff">
+                      <div class="r-buff-icon">
+                        <img src="/static/raidar/img/buff//protection.png" alt="protection">
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
+                      </div>
+                    </div>
+                    <div class="r-buff">
+                      <div class="r-buff-icon">
+                        <img src="/static/raidar/img/buff//fury.png" alt="fury">
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
+                      </div>
+                    </div>
+                    <div class="r-buff">
+                      <div class="r-buff-icon">
+                        <img src="/static/raidar/img/buff//alacrity.png" alt="alacrity">
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
+                      </div>
+                      <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              [[/with]]
+            [[/if]]
+          [[/with]]
+        [[else]]
+          <div class="r-stats-row">
+            <div class='r-global-stats-damage'>Not enough data to display for [[data.archetypes[archetype]]] specialisations</div>
           </div>
-          <div class="r-global-stats-damage">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
-              <!--
-              Overlapping charts for Boss and Cleave damage
-
-              First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
-
-              Classes assign colors: r-bg-{Percentile} will add the color to that element.
-
-              -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='14px' height='8px' width='100%' opacity='0.3' />
-              <!--
-              Second <rect> is full opacity and the same color.
-
-              -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='14px' height='8px' width='85%'/>
-
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='26px' height='8px' width='65%' opacity='0.3'/>
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='26px' height='8px' width='55.9176428058626%'/>
-
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='38px' height='8px' width='48.44386649328132%' opacity="0.6"/>
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='38px' height='8px' width='39.44386649328132%'/>
-              <!--
-              Text with some custom adjustments to deal with alignment issues.
-              -->
-              <text x='100%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-              <text x='65.5%' y='30px' alignment-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-              <text x='48.44386649328132%' y='48px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text></svg>
-          </div>
-          <div class="r-global-stats-buffs r-buff-container">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l uk-margin-remove">Buffs</h6>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//Might.png" alt="might">
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 99th Percentile</h6>Average output of 180 stacks of might" class="r-buff-number chart-hover r-bg-99">180
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 90th Percentile</h6>Average output of 102 stacks of might" class="r-buff-number chart-hover r-bg-90">102
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 50th Percentile</h6>Average output of 50 stacks of might" class="r-buff-number chart-hover r-bg-50">50
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552<sup>%</sup>
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472<sup>%</sup>
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//protection.png" alt="protection">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//fury.png" alt="fury">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//alacrity.png" alt="alacrity">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="r-stats-row">
-          <div class='r-spec'>
-            <div>
-              <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">Elementalist</h6>
-              <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> This indicates a moderate sample size (Add # of logs here) and the statistics are probably a good representation but could contain some outliers that are skewing numbers up or down."><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i> Weaver</h5>
-            </div>
-            <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-          </div>
-          <div class="r-global-stats-damage">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
-              <!--
-              Overlapping charts for Boss and Cleave damage
-
-              First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
-
-              Classes assign colors: r-bg-{Percentile} will add the color to that element.
-
-              -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='14px' height='8px' width='100%' opacity='0.3' />
-              <!--
-              Second <rect> is full opacity and the same color.
-
-              -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='14px' height='8px' width='85%'/>
-
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='26px' height='8px' width='65%' opacity='0.3'/>
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='26px' height='8px' width='55.9176428058626%'/>
-
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='38px' height='8px' width='48.44386649328132%' opacity="0.6"/>
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='38px' height='8px' width='39.44386649328132%'/>
-              <!--
-              Text with some custom adjustments to deal with alignment issues.
-              -->
-              <text x='100%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-              <text x='65.5%' y='30px' alignment-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-              <text x='48.44386649328132%' y='48px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text></svg>
-          </div>
-          <div class="r-global-stats-buffs r-buff-container">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l uk-margin-remove">Buffs</h6>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//Might.png" alt="might">
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 99th Percentile</h6>Average output of 180 stacks of might" class="r-buff-number chart-hover r-bg-99">180
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 90th Percentile</h6>Average output of 102 stacks of might" class="r-buff-number chart-hover r-bg-90">102
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 50th Percentile</h6>Average output of 50 stacks of might" class="r-buff-number chart-hover r-bg-50">50
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552<sup>%</sup>
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472<sup>%</sup>
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//protection.png" alt="protection">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//fury.png" alt="fury">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//alacrity.png" alt="alacrity">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div class="r-stats-row">
-          <div class='r-spec'>
-            <div>
-              <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">Necromancer</h6>
-              <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Low Confidence Level</h6> This indicates a small sample size (Add # of logs here) there is enough data to be shown (more than 10 logs) but it's probably heavily skewed by outliers."><i class="material-icons uk-text-danger uk-text-small r-global-stats-indicator">cancel</i> Reaper</h5>
-            </div>
-            <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-          </div>
-          <div class="r-global-stats-damage">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="60px" width="100%">
-              <!--
-              Overlapping charts for Boss and Cleave damage
-
-              First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
-
-              Classes assign colors: r-bg-{Percentile} will add the color to that element.
-
-              -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 99th Percentile</h6>36432 Damage Per Second" x='0%' y='14px' height='8px' width='100%' opacity='0.3' />
-              <!--
-              Second <rect> is full opacity and the same color.
-
-              -->
-              <rect class="chart chart-hover r-bg-99" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 99th Percentile</h6>32305 Damage Per Second" x='0%' y='14px' height='8px' width='85%'/>
-
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 90th Percentile</h6>32721 Damage Per Second" x='0%' y='26px' height='8px' width='65%' opacity='0.3'/>
-              <rect class="chart chart-hover r-bg-90" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 90th Percentile</h6>30000 Damage Per Second" x='0%' y='26px' height='8px' width='55.9176428058626%'/>
-
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | 50th Percentile</h6>22352 Damage Per Second" x='0%' y='38px' height='8px' width='48.44386649328132%' opacity="0.6"/>
-              <rect class="chart chart-hover r-bg-50" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | 50th Percentile</h6>21032 Damage Per Second" x='0%' y='38px' height='8px' width='39.44386649328132%'/>
-              <!--
-              Text with some custom adjustments to deal with alignment issues.
-              -->
-              <text x='100%' y='0' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-              <text x='65.5%' y='30px' alignment-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text>
-              <text x='48.44386649328132%' y='48px' alignment-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>(Boss DMG) Cleave DMG</text></svg>
-          </div>
-          <div class="r-global-stats-buffs r-buff-container">
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l uk-margin-remove">Buffs</h6>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//Might.png" alt="might">
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 99th Percentile</h6>Average output of 180 stacks of might" class="r-buff-number chart-hover r-bg-99">180
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 90th Percentile</h6>Average output of 102 stacks of might" class="r-buff-number chart-hover r-bg-90">102
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Might Stacks | 50th Percentile</h6>Average output of 50 stacks of might" class="r-buff-number chart-hover r-bg-50">50
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//Quickness.png" alt="quickness">
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 99th Percentile</h6>Average output of 552% quickness uptime" class="r-buff-number r-bg-99 chart-hover">552<sup>%</sup>
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 90th Percentile</h6>Average output of 472<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-90 chart-hover">472<sup>%</sup>
-              </div>
-              <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Quickness Uptime | 50th Percentile</h6>Average output of 335<sup>%</sup> quickness uptime" class="r-buff-number  r-bg-50 chart-hover">335<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//protection.png" alt="protection">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//fury.png" alt="fury">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-            <div class="r-buff">
-              <div class="r-buff-icon">
-                <img src="/static/raidar/img/buff//alacrity.png" alt="alacrity">
-              </div>
-              <div class="r-buff-number chart-hover r-bg-99">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-90">30<sup>%</sup>
-              </div>
-              <div class="r-buff-number chart-hover r-bg-50">30<sup>%</sup>
-              </div>
-            </div>
-          </div>
-        </div>
+        [[/each]]
       </div>
+      [[/each]]
+    [[/with]]
 
 <h1>Everything below here is old for reference only.</h1>
       <!-- Old-->

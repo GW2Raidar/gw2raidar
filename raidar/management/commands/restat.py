@@ -286,10 +286,10 @@ class Command(BaseCommand):
 
 
 
-                participations = encounter.participations.all()
-                for participation in participations:
+                #participations = encounter.participations.all()
+                #for participation in participations:
                     #try:
-                    something(participation, data)
+                    #something(participation, data)
                     #except Exception as e:
                     #    print("Exception in archetype code: ", e)
 
