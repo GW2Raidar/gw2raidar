@@ -100,7 +100,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 <strong>Disconnects:</strong> [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
               [[/with]]">
                 <div>
-                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[archetype]]]</h6>
+                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[../../archetype]]]</h6>
                   [[#if name]]
                     <h5 class="uk-margin-remove">[[name]]</h5>
                   [[else]]
@@ -109,7 +109,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 </div>
                 <div class="r-encounter-player-image">
                   <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
-                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[../../archetype]]]" src="{% static 'raidar/img/arch/' %}[[data.archetypes[archetype]]].png"/>
+                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[../../archetype]]]" src="{% static 'raidar/img/arch/' %}[[data.archetypes[../../archetype]]].png"/>
                 </div>
               </div>
 
