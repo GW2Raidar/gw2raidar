@@ -81,7 +81,7 @@
   <div class="uk-navbar-right uk-visible@m">
     <ul uk-tab="swiping: true;">
       [[#each encounter.phase_order]]
-      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="uk-flex-last [[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+        <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="uk-flex-last [[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
       [[/each]]
     </ul>
   </div>

@@ -22,23 +22,26 @@
         </div>
       [[/each]]
     </div>
+
     [[#each encounter.parties:partyNo]]
-    <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</span></h5>
-    [[#with { party: . }]]
-      <div class="r-stats-row r-party">
-        <div class="r-encounter-player uk-text-right">
-          <div>
-            <h5 class="uk-margin-remove">Total</h5>
+      <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</span></h5>
+
+      [[#with { party: . }]]
+        <div class="r-stats-row r-party">
+          <div class="r-encounter-player uk-text-right">
+            <div>
+              <h5 class="uk-margin-remove">Total</h5>
+            </div>
           </div>
+          [[#each encounter.boss_metrics]]
+            <div class="r-mechanics-list">
+              <h6 class="uk-hidden@l">[[short_name]]</h6>
+              [[[tagForMechanic(party, .)]]]
+            </div>
+          [[/each]]
         </div>
-        [[#each encounter.boss_metrics]]
-          <div class="r-mechanics-list">
-            <h6 class="uk-hidden@l">[[short_name]]</h6>
-            [[[tagForMechanic(party, .)]]]
-          </div>
-        [[/each]]
-      </div>
-    [[/with]]
+      [[/with]]
+
       [[#each members]]
         [[#with { member: . }]]
           <div class="r-stats-row r-member activity-[[#with phases[page.phase].events]][[#with encounter]][[num(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]]">
@@ -61,10 +64,10 @@
               </div>
             </div>
             [[#each encounter.boss_metrics]]
-            <div class="r-mechanics-list">
+              <div class="r-mechanics-list">
                 <h6 class="uk-hidden@l">[[short_name]]</h6>
                 [[[tagForMechanic(member , .)]]]
-            </div>
+              </div>
             [[/each]]
           </div>
         [[/with]]
