@@ -156,7 +156,7 @@
   }
   // e.g. bsearch(might, pctl(per_might))
   helpers.bsearch = (needle, haystack) => {
-    if (!needle.length) return 0;
+    if (!haystack.length) return 0;
     let l = 0, h = haystack.length - 1;
     if (needle > haystack[h]) {
       return h + 1;
