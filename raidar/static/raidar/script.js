@@ -797,8 +797,6 @@ ${body}
     window.ga('send', 'pageview');
   }
 
-
-
   function notification(str, style) {
     UIkit.notification(str, style);
   }
@@ -884,6 +882,10 @@ ${body}
     },
     refresh_page: function refreshPage(x) {
       setPage();
+    },
+    global_stats_nav: function printify(event, key, val) {
+        r.set(key, val)
+        setPage();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;

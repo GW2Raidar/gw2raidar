@@ -2,7 +2,53 @@
 
 [[#with global_stats]]
   <div id="content">
-    {% include 'raidar/encounter_filter.html' %}
+    <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
+        {# <button class="uk-button">All (45)</button> #}
+        [[#each data.boss_locations]]
+          <div class="uk-inline">
+            {# TODO active check is bad ATM #}
+            {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
+            [[#with {active: page.area == all || page.area in bosses}]]
+              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+            [[/with]]
+            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+              <div class="uk-width-1 uk-grid">
+                <div class="uk-width-1">
+                  <ul class="uk-nav uk-dropdown-nav">
+                    <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
+                      <a href="#">[[all]]</a>
+                    </li>
+                  </ul>
+              </div>
+                [[#each wings]]
+                  <div class="uk-width-1-[[columns]]@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                      <li class="uk-nav-header">[[name]]</li>
+                      [[#each bosses]]
+                        <li on-click="@this.fire('global_stats_nav', 'page.area_id', .)" class-uk-active="page.area_id == ."><a>[[data.areas[.].name]]</a></li>
+                      [[/each]]
+                    </ul>
+                  </div>
+                [[/each]]
+              </div>
+            </div>
+          </div>
+        [[/each]]
+      </div>
+      {# Mobile navigation/filtering #}
+      <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter</h6>
+      <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" id="">
+        [[#each data.boss_locations]]
+        <option>[[all]]</option>
+          [[#each wings]]
+          <optgroup label="[[name]]">
+            [[#each bosses]]
+              <option on-select="@this.fire('global_stats_nav', 'page.area_id', .)">[[data.areas[.].name]]</option>
+            [[/each]]
+          </optgroup>
+          [[/each]]
+        [[/each]]
+      </select>
     <!-- <select as-ukUpdate id="era-selector" class="uk-select uk-width-auto" value='[[page.era_id]]'
             on-change="refresh_page">
         <option value="[[null]]">Most recent</option>
@@ -15,11 +61,11 @@
     <div class="uk-flex-left" uk-grid>
       <div>
         <h6 class="uk-font-family-secondary">Time Frame</h6>
-        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">Most recent <i class="material-icons">expand_more</i></button>
+        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era_id].name]]<i class="material-icons">expand_more</i></button>
         <div uk-dropdown="mode: click">
             <ul class="uk-nav uk-dropdown-nav">
               [[#each eras]]
-                <li><a href="[[id]]">[[name]]</a></li>
+                <li><a on-click="@this.fire('global_stats_nav', 'page.era_id', id)">[[name]]</a></li>
               [[/each]]
             </ul>
         </div>
@@ -63,6 +109,7 @@
           <div>DPS Recieved</div>
         </div>
         <div class="r-stats-row">
+          [[#if group.per_duration]]
           <div class="r-duration">
             [[#with {duration_percentiles: p(group.per_duration)}]]
               [[#each settings.compareGlobalPerc]]
@@ -116,6 +163,9 @@
               [[/with]]
             </svg>
           </div>
+          [[else]]
+            <div class='r-global-stats-damage'>Not enough data to display for group statistics</div>
+          [[/if]]
         </div>
       </div>
 
@@ -137,11 +187,11 @@
                   <div class='r-spec'>
                     <div>
                       <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">[[data.specialisations[professionId][0]]]</h6>
-                      [[#if true]]
+                      [[#if !(Number(page.area_id)>0)]]
                       <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> Statistics that combine multiple encounters may be heavily skewed by the fact that different classes are used at different bosses, regardless of sample size ([[lineStats.count]])"><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>[[data.specialisations[professionId][eliteId]]]</h5>
-                      [[elseif lineStats.count >= 40]]
+                      [[elseif lineStats.count >= 200]]
                       <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size ([[lineStats.count]]) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i> [[data.specialisations[professionId][eliteId]]]</h5>
-                      [[elseif lineStats.count >= 20]]
+                      [[elseif lineStats.count >= 50]]
                       <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> This indicates a moderate sample size ([[lineStats.count]]) and the statistics are probably a good representation but could contain some outliers that are skewing numbers up or down."><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>[[data.specialisations[professionId][eliteId]]]</h5>
                       [[else]]
                       <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Low Confidence Level</h6> This indicates a small sample size ([[lineStats.count]]) there is enough data to be shown (more than 10 logs) but it's probably heavily skewed by outliers."><i class="material-icons uk-text-danger uk-text-small r-global-stats-indicator">cancel</i>[[data.specialisations[professionId][eliteId]]]</h5>
