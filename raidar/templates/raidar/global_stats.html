@@ -8,15 +8,15 @@
           <div class="uk-inline">
             {# TODO active check is bad ATM #}
             {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-            [[#with {active: page.area == all || page.area in bosses}]]
-              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+            [[#with {active: page.area_id == all || page.area_id in bosses}]]
+              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area_id] ? data.areas[page.area_id].name : page.area_id]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
             [[/with]]
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
                 <div class="uk-width-1">
                   <ul class="uk-nav uk-dropdown-nav">
-                    <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
-                      <a href="#">[[all]]</a>
+                    <li on-click="@this.fire('global_stats_nav', 'page.area_id', all)" class-uk-active="page.area_id === all">
+                      <a>[[all]]</a>
                     </li>
                   </ul>
               </div>
@@ -39,7 +39,7 @@
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter</h6>
       <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" id="">
         [[#each data.boss_locations]]
-        <option>[[all]]</option>
+        <option on-select="@this.fire('global_stats_nav', 'page.area_id', all)">[[all]]</option>
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
@@ -70,6 +70,7 @@
             </ul>
         </div>
       </div>
+
       <div>
         <h6 class="uk-font-family-secondary">Compare Percentile</h6>
         [[#each [99, 90, 80, 70, 60, 50, 30] ]]
