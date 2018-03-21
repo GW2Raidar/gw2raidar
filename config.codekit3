@@ -79,6 +79,13 @@
 		"oAP": "\/analyser\/analyser.py",
 		"oF": 0
 		},
+	"\/analyser\/bosses.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/bosses.py",
+		"oF": 0
+		},
 	"\/analyser\/bossmetrics.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -98,6 +105,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/analyser\/collector.py",
+		"oF": 0
+		},
+	"\/analyser\/postprocessor.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/postprocessor.py",
 		"oF": 0
 		},
 	"\/analyser\/splits.py": {
@@ -7727,6 +7741,34 @@
 		"oAP": "\/raidar\/admin.py",
 		"oF": 0
 		},
+	"\/raidar\/api_v2\/__init__.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 1,
+		"oAP": "\/raidar\/api_v2\/__init__.py",
+		"oF": 0
+		},
+	"\/raidar\/api_v2\/__pycache__\/__init__.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 1,
+		"oAP": "\/raidar\/api_v2\/__pycache__\/__init__.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/api_v2\/__pycache__\/views.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/api_v2\/__pycache__\/views.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/api_v2\/views.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/api_v2\/views.py",
+		"oF": 0
+		},
 	"\/raidar\/apps.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -7802,6 +7844,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/management\/commands\/process_uploads.py",
+		"oF": 0
+		},
+	"\/raidar\/management\/commands\/restat.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/management\/commands\/restat.py",
 		"oF": 0
 		},
 	"\/raidar\/management\/commands\/reupload.py": {
@@ -8070,11 +8119,25 @@
 		"oAP": "\/raidar\/migrations\/0037_make_added_fields_nonnull.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0038_auto_20171209_1411.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0038_auto_20171209_1411.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/0038_new_django.py": {
 		"cB": 0,
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/0038_new_django.py",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/0039_merge_20180318_1122.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0039_merge_20180318_1122.py",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__init__.py": {
@@ -8343,11 +8406,25 @@
 		"oAP": "\/raidar\/migrations\/__pycache__\/0037_make_added_fields_nonnull.cpython-36.pyc",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/__pycache__\/0038_auto_20171209_1411.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0038_auto_20171209_1411.cpython-36.pyc",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__pycache__\/0038_new_django.cpython-36.pyc": {
 		"cB": 0,
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/__pycache__\/0038_new_django.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0039_merge_20180318_1122.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0039_merge_20180318_1122.cpython-36.pyc",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
@@ -10283,11 +10360,11 @@
 		"oAP": "\/raidar\/templates\/raidar\/encounters.html",
 		"oF": 0
 		},
-	"\/raidar\/templates\/raidar\/global_stats.html": {
+	"\/raidar\/templates\/raidar\/index.html": {
 		"cB": 0,
 		"ft": 8192,
 		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
+		"oAP": "\/raidar\/templates\/raidar\/index.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/info_about.html": {
@@ -10346,6 +10423,13 @@
 		"oAP": "\/raidar\/templates\/raidar\/navbar.html",
 		"oF": 0
 		},
+	"\/raidar\/templates\/raidar\/profile.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/profile.html",
+		"oF": 0
+		},
 	"\/raidar\/templates\/raidar\/robots.txt": {
 		"cB": 0,
 		"ft": 8192,
@@ -10379,6 +10463,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/urls.py",
+		"oF": 0
+		},
+	"\/raidar\/views.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/views.py",
 		"oF": 0
 		},
 	"\/raidar\/words.txt": {

@@ -70,7 +70,7 @@
             </ul>
         </div>
       </div>
-      <div>
+      <div class="uk-visible@m">
         <h6 class="uk-font-family-secondary">Compare Percentile</h6>
         [[#each [99, 90, 80, 70, 60, 50, 30] ]]
           <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" twoway="false" checked="[[settings.compareGlobalPerc.indexOf(.) !== -1]]" on-click="@this.set('settings.compareGlobalPerc', updateCompareGlobalPerc(settings.compareGlobalPerc, .))">
@@ -119,7 +119,7 @@
             [[/with]]
           </div>
           <div class="r-global-stats-damage">
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" width="100%">
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px">
               [[#with {dps_percentiles: p(group.per_dps), boss_dps_percentiles: p(group.per_dps_boss)}]]
               [[#each settings.compareGlobalPerc]]
                 <!--
@@ -139,7 +139,7 @@
                 [[#if @index == 0]]
                   <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                 [[elseif @index < settings.compareGlobalPerc.length - 1]]
-                  <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                  <text x='[[(100*dps_percentiles[.]/group.max_dps)+0.5]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                 [[else]]
                    <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                 [[/if]]
@@ -155,7 +155,7 @@
                 [[#if @index == 0]]
                   <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='-10' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
                 [[elseif @index < settings.compareGlobalPerc.length - 1]]
-                  <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[8 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                  <text x='[[(100*inc_dps_percentiles[100-.]/group.max_dps_received)+0.5]]%' y='[[8 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
                 [[else]]
                    <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[14 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
                 [[/if]]
@@ -188,11 +188,11 @@
                     <div>
                       <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">[[data.specialisations[professionId][0]]]</h6>
                       [[#if !(Number(page.area_id)>0)]]
-                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> Statistics that combine multiple encounters may be heavily skewed by the fact that different classes are used at different bosses, regardless of sample size ([[lineStats.count]])"><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>[[data.specialisations[professionId][eliteId]]]</h5>
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> Statistics that combine multiple encounters may be heavily skewed by the fact that different classes are used at different bosses, regardless of sample size ([[lineStats.count]])"><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
                       [[elseif lineStats.count >= 200]]
-                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size ([[lineStats.count]]) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i> [[data.specialisations[professionId][eliteId]]]</h5>
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size ([[lineStats.count]]) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
                       [[elseif lineStats.count >= 50]]
-                      <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> This indicates a moderate sample size ([[lineStats.count]]) and the statistics are probably a good representation but could contain some outliers that are skewing numbers up or down."><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>[[data.specialisations[professionId][eliteId]]]</h5>
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> This indicates a moderate sample size ([[lineStats.count]]) and the statistics are probably a good representation but could contain some outliers that are skewing numbers up or down."><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
                       [[else]]
                       <h5 class="uk-margin-remove" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Low Confidence Level</h6> This indicates a small sample size ([[lineStats.count]]) there is enough data to be shown (more than 10 logs) but it's probably heavily skewed by outliers."><i class="material-icons uk-text-danger uk-text-small r-global-stats-indicator">cancel</i>[[data.specialisations[professionId][eliteId]]]</h5>
                       [[/if]]
@@ -200,8 +200,8 @@
                     <img alt="[[data.specialisations[professionId][eliteId]]]" src="/static/raidar/img/48px/[[data.specialisations[professionId][eliteId]]]_tango_icon_48px.png">
                   </div>
                   <div class="r-global-stats-damage">
-                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
-                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" width="100%">
+                    <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
+                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px">
                       [[#with {dps_percentiles:p(lineStats.per_dps)}]]
                       [[#each settings.compareGlobalPerc]]
 
@@ -222,11 +222,11 @@
                       Text with some custom adjustments to deal with alignment issues.
                       -->
                       [[#if @index == 0]]
-                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="[[(100*dps_percentiles[.]/individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                       [[elseif @index < settings.compareGlobalPerc.length - 1]]
-                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      <text x='[[(100*dps_percentiles[.]/individual.max_dps)+0.5]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                       [[else]]
-                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="[[(100*dps_percentiles[.]/individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
                       [[/if]]
                       [[/each]]
                       [[/with]]
