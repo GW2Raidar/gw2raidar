@@ -8,8 +8,8 @@
           <div class="uk-inline">
             {# TODO active check is bad ATM #}
             {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-            [[#with {active: page.area == all || page.area in bosses}]]
-              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area] ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+            [[#with page.area == all || page.area in bosses as active]]
+              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[page.area in data.areas ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
             [[/with]]
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -24,12 +24,12 @@
                   <div class="uk-width-1-[[columns]]@m uk-width-1">
                     <ul class="uk-nav uk-dropdown-nav">
                       <li class="uk-nav-header">[[name]]</li>
-                      [[#each bosses]]
-                        [[#if . in encounter]]
-                          <li on-click="@.set({'page.area': .})" class-uk-active="page.area == ."><a href="#">[[data.areas[.].name]] ([[encounter[.].archetype.All.profession.All.elite.All.count]])</a></li>
+                      [[#each bosses as boss_id]]
+                        [[#if boss_id in encounter]]
+                          <li on-click="@.set({'page.area': boss_id})" class-uk-active="page.area == boss_id"><a href="#">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</a></li>
                         [[else]]
                           {# TODO make visually distinct the dead links #}
-                          <li><a href="#" on-click="false">[[data.areas[.].name]] (0)</a></li>
+                          <li><a href="#" on-click="false">[[data.areas[boss_id].name]] (0)</a></li>
                         [[/if]]
                       [[/each]]
                     </ul>
@@ -44,18 +44,18 @@
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter</h6>
       <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" id="">
         [[#each data.boss_locations]]
-        <option>[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</option>
+          <option>[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</option>
           [[#each wings]]
-          <optgroup label="[[name]]">
-            [[#each bosses]]
-              [[#if . in encounter]]
-                <option on-select="@.set({'page.area': .})">[[data.areas[.].name]] ([[encounter[.].archetype.All.profession.All.elite.All.count]])</option>
-              [[else]]
-                {# TODO make visually distinct the dead links #}
-                <option>[[data.areas[.].name]] (0)</option>
-              [[/if]]
-            [[/each]]
-          </optgroup>
+            <optgroup label="[[name]]">
+              [[#each bosses as boss_id]]
+                [[#if boss_id in encounter]]
+                  <option on-select="@.set({'page.area': boss_id})">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</option>
+                [[else]]
+                  {# TODO make visually distinct the dead links #}
+                  <option>[[data.areas[boss_id].name]] (0)</option>
+                [[/if]]
+              [[/each]]
+            </optgroup>
           [[/each]]
         [[/each]]
       </select>
@@ -90,138 +90,140 @@
         </div>
       </div>
 
-      [[#if encounter[page.area]]]
-        [[#if typeof page.area == "string"]]
-          {# All ... bosses #}
-          <h2>[[page.area]]</h2>
-          <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
-            Alive [[
-              perc(100
-              - encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage
-              - encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage
-              )]]
-          </span>
-          <span class="uk-badge uk-text-bold uk-label-warning uk-margin-small-right">
-            Downed [[perc(encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage)]]
-          </span>
-          <span class="uk-badge uk-text-bold uk-label-error">
-            Dead [[perc(encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage)]]
-          </span>
-        [[else]]
-          {# specific boss ID #}
-          <div class="r-media uk-margin-medium-top">
-            <img width="70px" src="/static/raidar/img/icon/[[data.areas[page.area].name]].png" alt="[[data.areas[page.area].name]]">
-            <div class="r-body">
-              <h2 style="line-height:1;" class="uk-margin-small-bottom">[[data.areas[page.area].name]]</h2>
-              <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
-                Alive [[
-                  perc(100
-                  - encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage
-                  - encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage
-                  )]]
-              </span>
-              <span class="uk-badge uk-text-bold uk-label-warning uk-margin-small-right">
-                Downed [[perc(encounter[page.area].archetype.All.profession.All.elite.All.avg_down_percentage)]]
-              </span>
-              <span class="uk-badge uk-text-bold uk-label-error">
-                Dead [[perc(encounter[page.area].archetype.All.profession.All.elite.All.avg_dead_percentage)]]
-              </span>
+      [[#with encounter[page.area] as enc]]
+        [[#with @context.get("enc.archetype.All.profession.All.elite.All") || {} as allstat]]
+          [[#if typeof page.area == "string"]]
+            {# All ... bosses #}
+            <h2>[[page.area]]</h2>
+            <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
+              Alive [[
+                perc(100
+                - allstat.avg_down_percentage
+                - allstat.avg_dead_percentage
+                )]]
+            </span>
+            <span class="uk-badge uk-text-bold uk-label-warning uk-margin-small-right">
+              Downed [[perc(allstat.avg_down_percentage)]]
+            </span>
+            <span class="uk-badge uk-text-bold uk-label-error">
+              Dead [[perc(allstat.avg_dead_percentage)]]
+            </span>
+          [[else]]
+            {# specific boss ID #}
+            <div class="r-media uk-margin-medium-top">
+              <img width="70px" src="/static/raidar/img/icon/[[data.areas[page.area].name]].png" alt="[[data.areas[page.area].name]]">
+              <div class="r-body">
+                <h2 style="line-height:1;" class="uk-margin-small-bottom">[[data.areas[page.area].name]]</h2>
+                <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
+                  Alive [[
+                    perc(100
+                    - allstat.avg_down_percentage
+                    - allstat.avg_dead_percentage
+                    )]]
+                </span>
+                <span class="uk-badge uk-text-bold uk-label-warning uk-margin-small-right">
+                  Downed [[perc(allstat.avg_down_percentage)]]
+                </span>
+                <span class="uk-badge uk-text-bold uk-label-error">
+                  Dead [[perc(allstat.avg_dead_percentage)]]
+                </span>
+              </div>
             </div>
-          </div>
-        [[/if]]
+          [[/if]]
 
-        [[#each keysWithAllLast(encounter[page.area].archetype, {1: 2, 2: 3, 5: 1})]]
-          [[#with {archetypeId: ., archetype: encounter[page.area].archetype[.]}]]
-            <h2 class="uk-heading-line">
-              <span>
-                [[#if archetypeId !== 'All']]
-                  <img alt="[[data.archetypes[archetypeId]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetypeId]]].png"/>
-                [[/if]]
-                [[archetypeId === 'All' ? 'All' : data.archetypes[archetypeId]]]
-              </span>
-            </h2>
+          [[#each keysWithAllLast(enc.archetype, {1: 2, 2: 3, 5: 1}) as archetypeId]]
+            [[#with enc.archetype[archetypeId] as archetype]]
+              <h2 class="uk-heading-line">
+                <span>
+                  [[#if archetypeId !== 'All']]
+                    <img alt="[[data.archetypes[archetypeId]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetypeId]]].png"/>
+                  [[/if]]
+                  [[archetypeId === 'All' ? 'All' : data.archetypes[archetypeId]]]
+                </span>
+              </h2>
 
-            <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-remove-top">
-              Archetype played [[perc(encounter[page.area].archetype[archetypeId] ? 100 * encounter[page.area].archetype[archetypeId].profession.All.elite.All.count / encounter[page.area].archetype.All.profession.All.elite.All.count : 0)]] of encounters.
-            </h6>
+              <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-remove-top">
+                Archetype played [[perc(archetype ? 100 * archetype.profession.All.elite.All.count / allstat.count : 0)]] of encounters.
+              </h6>
 
-            <div class="uk-grid">
-              [[#each keysWithAllLast(archetype.profession)]]
-                [[#with {professionId: ., profession: archetype.profession[.]}]]
-                  [[#each keysWithAllLast(profession.elite)]]
-                    [[#with {eliteId: ., elite: profession.elite[.]}]]
-                      [[#with elite]]
-                        [[#with build ? {
-                          percentiles_dps: pctl(build[professionId][eliteId][archetypeId].per_dps),
-                          percentiles_dps_boss: pctl(build[professionId][eliteId][archetypeId].per_dps_boss)
-                        } : {}]]
-                          [[#with build ? {
-                            pctl_dps: bsearch(avg_dps, percentiles_dps),
-                            pctl_dps_boss: bsearch(avg_dps_boss, percentiles_dps_boss)
-                          } : {}]]
-                            <div class="uk-width-1-4@xl uk-width-1-3@m uk-width-1-2@s uk-width-1-1">
-                              <div class="r-profile-stats">
-                                <div class="r-profile-profession">
-                                  [[#if professionId !== 'All']]
-                                    <img alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_48px.png"/>
-                                  [[else]]
-                                    <img alt="All Archetypes" src="/static/raidar/img/48px/Any_tango_icon_48px.png"/>
-                                  [[/if]]
+              <div class="uk-grid">
+                [[#each keysWithAllLast(archetype.profession) as professionId]]
+                  [[#with archetype.profession[professionId] as profession]]
+                    [[#each keysWithAllLast(profession.elite) as eliteId]]
+                      [[#with profession.elite[eliteId] as elite, @this.get(`profile.eras.${page.era}.build.${professionId}.${eliteId}.${archetypeId}`) as stat]]
+                        [[#with elite]]
+                          [[#with stat ? {
+                            percentiles_dps: pctl(stat.per_dps),
+                            percentiles_dps_boss: pctl(stat.per_dps_boss)
+                          } : []]]
+                            [[#with stat ? {
+                              pctl_dps: bsearch(avg_dps, percentiles_dps),
+                              pctl_dps_boss: bsearch(avg_dps_boss, percentiles_dps_boss)
+                            } : 0]]
+                              <div class="uk-width-1-4@xl uk-width-1-3@m uk-width-1-2@s uk-width-1-1">
+                                <div class="r-profile-stats">
+                                  <div class="r-profile-profession">
+                                    [[#if professionId !== 'All']]
+                                      <img alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_48px.png"/>
+                                    [[else]]
+                                      <img alt="All Archetypes" src="/static/raidar/img/48px/Any_tango_icon_48px.png"/>
+                                    [[/if]]
 
-                                  <div>
-                                    <h4 class="uk-margin-remove">[[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]</h4>
-                                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-remove">Encounters: [[num(count, 0)]]</h6>
-                                  </div>
-                                </div>
-
-                                <div class="r-profile-activity">
-                                  <div class="r-tooltip-help" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Downstate</h6>Spent an average of [[perc(avg_down_percentage)]] of encounter time in down state." uk-tooltip="pos:bottom-left;">
-                                    <img width="18px" src="/static/raidar/img/icon/Downed_ally.png" alt="Time spent in downed state">
-                                    <span class="uk-badge uk-background-default">[[perc(avg_down_percentage)]]</span>
+                                    <div>
+                                      <h4 class="uk-margin-remove">[[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]</h4>
+                                      <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-remove">Encounters: [[num(count, 0)]]</h6>
+                                    </div>
                                   </div>
 
-                                  <div class="r-tooltip-help" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Dead</h6>Spent an average of [[perc(avg_dead_percentage)]] of encounter time dead." uk-tooltip="pos:bottom-left;">
-                                    <img width="18px" src="/static/raidar/img/icon/Downed_enemy.png" alt="Time spent dead">
-                                    <span class="uk-badge uk-background-default">[[perc(avg_dead_percentage)]]</span>
+                                  <div class="r-profile-activity">
+                                    <div class="r-tooltip-help" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Downstate</h6>Spent an average of [[perc(avg_down_percentage)]] of encounter time in down state." uk-tooltip="pos:bottom-left;">
+                                      <img width="18px" src="/static/raidar/img/icon/Downed_ally.png" alt="Time spent in downed state">
+                                      <span class="uk-badge uk-background-default">[[perc(avg_down_percentage)]]</span>
+                                    </div>
+
+                                    <div class="r-tooltip-help" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Dead</h6>Spent an average of [[perc(avg_dead_percentage)]] of encounter time dead." uk-tooltip="pos:bottom-left;">
+                                      <img width="18px" src="/static/raidar/img/icon/Downed_enemy.png" alt="Time spent dead">
+                                      <span class="uk-badge uk-background-default">[[perc(avg_dead_percentage)]]</span>
+                                    </div>
                                   </div>
-                                </div>
 
-                                <div class="r-profile-damage">
-                                  [[#if 'avg_dps' in elite]]
-                                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-bottom">Total DPS (Average)Max</h6>
-                                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
-                                      <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max DPS</h6>[[num(max_dps, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps / individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')"/>
-                                      <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average DPS</h6>[[num(avg_dps, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps / individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')" />
-                                      <!--
-                                      Text with some custom adjustments to deal with alignment issues.
-                                      -->
-                                      <text x='[[100 * max_dps / individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps / individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='11'>([[num(avg_dps, 0)]]) [[num(max_dps, 0)]]</text>
+                                  <div class="r-profile-damage">
+                                    [[#if 'avg_dps' in elite]]
+                                      <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-bottom">Total DPS (Average)Max</h6>
+                                      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
+                                        <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max DPS</h6>[[num(max_dps, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps / individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')"/>
+                                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average DPS</h6>[[num(avg_dps, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps / individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')" />
+                                        <!--
+                                        Text with some custom adjustments to deal with alignment issues.
+                                        -->
+                                        <text x='[[100 * max_dps / individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps / individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='11'>([[num(avg_dps, 0)]]) [[num(max_dps, 0)]]</text>
 
-                                    </svg>
-                                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-top uk-margin-small-bottom">Boss DPS (Average)Max</h6>
-                                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
-                                      <rect class="chart chart-hover r-bg-[[pctl_dps_boss]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max Boss DPS</h6>[[num(max_dps_boss, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps_boss / individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')"/>
-                                      <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average Boss DPS</h6>[[num(avg_dps_boss, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps_boss)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps_boss / individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')" />
-                                      <!--
-                                      Text with some custom adjustments to deal with alignment issues.
-                                      -->
-                                      <text x='[[100 * max_dps_boss / individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps_boss / individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(avg_dps_boss, 0)]]) [[num(max_dps_boss, 0)]]</text>
-                                    </svg>
-                                  [[/if]]
+                                      </svg>
+                                      <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-top uk-margin-small-bottom">Boss DPS (Average)Max</h6>
+                                      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
+                                        <rect class="chart chart-hover r-bg-[[pctl_dps_boss]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max Boss DPS</h6>[[num(max_dps_boss, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps_boss / individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')"/>
+                                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average Boss DPS</h6>[[num(avg_dps_boss, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps_boss)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps_boss / individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')" />
+                                        <!--
+                                        Text with some custom adjustments to deal with alignment issues.
+                                        -->
+                                        <text x='[[100 * max_dps_boss / individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps_boss / individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(avg_dps_boss, 0)]]) [[num(max_dps_boss, 0)]]</text>
+                                      </svg>
+                                    [[/if]]
+                                  </div>
                                 </div>
                               </div>
-                            </div>
+                            [[/with]]
                           [[/with]]
                         [[/with]]
                       [[/with]]
-                    [[/with]]
-                  [[/each]]
-                [[/with]]
-              [[/each]]
-            </div>
-          [[/with]]
-        [[/each]]
-      [[/if]]
+                    [[/each]]
+                  [[/with]]
+                [[/each]]
+              </div>
+            [[/with]]
+          [[/each]]
+        [[/with]]
+      [[/with]]
     [[/with]]
   [[/with]]
 [[/with]]
