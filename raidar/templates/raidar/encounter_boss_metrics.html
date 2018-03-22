@@ -1,7 +1,7 @@
 {% load staticfiles %}
 <div class="table-container uk-margin-top">
   {% include 'raidar/encounter_row_header.html' %}
-  <div class="r-encounter-stats-container r-encounter-mechanics-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
+  <div class="r-encounter-stats-container r-encounter-mechanics-container uk-margin-remove-bottom uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header uk-visible@l">
       <div>Totals</div>
       [[#each encounter.boss_metrics]]
@@ -12,7 +12,7 @@
 
     </div>
   </div>
-  <div class="r-encounter-stats-container r-encounter-mechanics-container">
+  <div class="r-encounter-stats-container r-encounter-mechanics-container squad">
     <div class="r-stats-row">
       <div class="r-encounter-player uk-text-right"><h5 class="uk-margin-remove">Squad</h5></div>
       [[#each encounter.boss_metrics]]
@@ -22,15 +22,18 @@
         </div>
       [[/each]]
     </div>
+  </div>
 
     [[#each encounter.parties:partyNo]]
-      <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</span></h5>
+    <div class="r-encounter-stats-container r-encounter-mechanics-container">
+      <!-- <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</span></h5> -->
 
       [[#with { party: . }]]
         <div class="r-stats-row r-party">
           <div class="r-encounter-player uk-text-right">
             <div>
-              <h5 class="uk-margin-remove">Total</h5>
+              <h5 class="uk-margin-remove">Party [[partyNo]]</h5>
+              <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[members.length]] member[[members.length > 1 && 's' || '']]</h6>
             </div>
           </div>
           [[#each encounter.boss_metrics]]
@@ -72,7 +75,7 @@
           </div>
         [[/with]]
       [[/each]]
-
+      </div>
     [[/each]]
-  </div>
+
 </div>
