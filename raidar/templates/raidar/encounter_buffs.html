@@ -6,7 +6,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
 {% endcomment %}
 
 <div class="table-container uk-margin-top">
-  <div class="r-encounter-stats-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
+  <div class="r-encounter-stats-container uk-background-default uk-margin-remove-bottom" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header">
       <div class="uk-visible@m">Spec</div>
       <div class="r-buff-toggle">
@@ -18,8 +18,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
   </div>
 
   [[#with {offensive_boons: 1, supportive_boons: 2, offensive_buffs: 3, supportive_buffs: 4 }[persistent_page.tab] as tabNo]]
-    <div class="r-encounter-stats-container">
+
       [[#with encounter.phases[page.phase]]]
+      <div class="r-encounter-stats-container squad">
         <div class="r-stats-row r-stats-buffs">
           <div class="r-encounter-player uk-text-right [[self && 'compare-show']]">
             <div>
@@ -52,11 +53,14 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             [[/each]]
           </div>
         </div>
+      </div>
       [[/with]]
 
       [[#each encounter.parties:partyNo]]
+      <div class="r-encounter-stats-container">
         [[#with phases[page.phase]]]
-          <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5>
+
+          <!-- <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5> -->
           <div class="r-stats-row r-stats-buffs r-party">
             <div class="r-encounter-player uk-text-right" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with events]]
                   Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
@@ -64,8 +68,9 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                   Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
                 [[/with]]">
               <div>
-                <h6 class="uk-font-family-secondary uk-margin-remove uk-text-uppercase">([[members.length]] member[[members.length > 1 && 's' || '']])</h6>
+                
                 <h5 class="uk-margin-remove">Party [[partyNo]] </h5>
+                <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[members.length]] member[[members.length > 1 && 's' || '']]</h6>
               </div>
             </div>
             <div class="r-encounter-buff-container">
@@ -141,7 +146,8 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             </div>
           [[/with]]
         [[/each]]
+        </div>
       [[/each]]
-    </div>
+
   [[/with]]
 </div>
