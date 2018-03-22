@@ -23,7 +23,7 @@
                 [[#each wings]]
                   <div class="uk-width-1-[[columns]]@m uk-width-1">
                     <ul class="uk-nav uk-dropdown-nav">
-                      <li class="uk-nav-header">[[name]]</li>
+                      <li class="uk-nav-header uk-margin-top">[[name]]</li>
                       [[#each bosses as boss_id]]
                         [[#if boss_id in encounter]]
                           <li on-click="@.set({'page.area': boss_id})" class-uk-active="page.area == boss_id"><a href="#">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</a></li>
@@ -79,7 +79,7 @@
       {% endcomment %}
 
       <div>
-        <h6 class="uk-font-family-secondary">Time Frame</h6>
+        <h6 class="uk-font-family-secondary uk-text-uppercase">Time Frame</h6>
         <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era].name]] <i class="material-icons">expand_more</i></button>
         <div uk-dropdown="mode: click">
           <ul class="uk-nav uk-dropdown-nav">

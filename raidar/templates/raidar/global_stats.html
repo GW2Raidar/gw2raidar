@@ -2,48 +2,16 @@
 
 [[#with global_stats]]
   <div id="content">
-    <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
-        {# <button class="uk-button">All (45)</button> #}
-        [[#each data.boss_locations]]
-          <div class="uk-inline">
-            {# TODO active check is bad ATM #}
-            {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-            [[#with {active: page.area_id == all || page.area_id in bosses}]]
-              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area_id] ? data.areas[page.area_id].name : page.area_id]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
-            [[/with]]
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-              <div class="uk-width-1 uk-grid">
-                <div class="uk-width-1">
-                  <ul class="uk-nav uk-dropdown-nav">
-                    <li on-click="@this.fire('global_stats_nav', 'page.area_id', all)" class-uk-active="page.area_id === all">
-                      <a>[[all]]</a>
-                    </li>
-                  </ul>
-              </div>
-                [[#each wings]]
-                  <div class="uk-width-1-[[columns]]@m uk-width-1">
-                    <ul class="uk-nav uk-dropdown-nav">
-                      <li class="uk-nav-header">[[name]]</li>
-                      [[#each bosses]]
-                        <li on-click="@this.fire('global_stats_nav', 'page.area_id', .)" class-uk-active="page.area_id == ."><a>[[data.areas[.].name]]</a></li>
-                      [[/each]]
-                    </ul>
-                  </div>
-                [[/each]]
-              </div>
-            </div>
-          </div>
-        [[/each]]
-      </div>
+
       {# Mobile navigation/filtering #}
-      <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter</h6>
-      <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" id="">
+      <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
+      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.area_id]]' on-change="refresh_page">
         [[#each data.boss_locations]]
-        <option on-select="@this.fire('global_stats_nav', 'page.area_id', all)">[[all]]</option>
+        <option value="[[null]]">[[all]]</option>
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
-              <option on-select="@this.fire('global_stats_nav', 'page.area_id', .)">[[data.areas[.].name]]</option>
+              <option value='[[data.areas[.].id]]'>[[data.areas[.].name]]</option>
             [[/each]]
           </optgroup>
           [[/each]]
@@ -58,24 +26,58 @@
     </select> -->
     <!-- Era Filter -->
     [[#with stats]]
-    <div class="uk-flex-left" uk-grid>
-      <div>
-        <h6 class="uk-font-family-secondary">Time Frame</h6>
-        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era_id].name]]<i class="material-icons">expand_more</i></button>
-        <div uk-dropdown="mode: click">
-            <ul class="uk-nav uk-dropdown-nav">
-              [[#each eras]]
-                <li><a on-click="@this.fire('global_stats_nav', 'page.era_id', id)">[[name]]</a></li>
-              [[/each]]
-            </ul>
+    <div class="uk-flex-left uk-visible@m boundary" uk-grid>
+      <div class="uk-button-group uk-width-expand  uk-margin-bottom uk-margin-top">
+          {# <button class="uk-button">All (45)</button> #}
+          [[#each data.boss_locations]]
+            <div class="uk-inline">
+              {# TODO active check is bad ATM #}
+              {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
+              [[#with {active: page.area_id == all || page.area_id in bosses}]]
+                <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area_id] ? data.areas[page.area_id].name : page.area_id]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+              [[/with]]
+              <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify; offset: -10;">
+                <div class="uk-width-1 uk-grid">
+                  <div class="uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                      <li on-click="@this.fire('global_stats_nav', 'page.area_id', all)" class-uk-active="page.area_id === all">
+                        <a>[[all]]</a>
+                      </li>
+                    </ul>
+                </div>
+                  [[#each wings]]
+                    <div class="uk-width-1-[[columns]]@m uk-width-1">
+                      <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header uk-margin-top">[[name]]</li>
+                        [[#each bosses]]
+                          <li on-click="@this.fire('global_stats_nav', 'page.area_id', .)" class-uk-active="page.area_id == ."><a>[[data.areas[.].name]]</a></li>
+                        [[/each]]
+                      </ul>
+                    </div>
+                  [[/each]]
+                </div>
+              </div>
+            </div>
+          [[/each]]
         </div>
-      </div>
-      <div class="uk-visible@m">
-        <h6 class="uk-font-family-secondary">Compare Percentile</h6>
+
+      <div class="uk-text-right">
+        <h6 class="uk-font-family-secondary uk-text-uppercase">Compare Percentile</h6>
         [[#each [99, 90, 80, 70, 60, 50, 30] ]]
           <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" twoway="false" checked="[[settings.compareGlobalPerc.indexOf(.) !== -1]]" on-click="@this.set('settings.compareGlobalPerc', updateCompareGlobalPerc(settings.compareGlobalPerc, .))">
         <label class="r-percentile-label uk-text-bold" for="[[.]]check"><span class="uk-badge r-bg-[[.]]">[[perc(., 0)]]</span></label>
         [[/each]]
+      </div>
+    </div>
+    <div class="uk-width-auto">
+      <h6 class="uk-font-family-secondary uk-text-uppercase">Time Frame</h6>
+      <button class="uk-button uk-width-auto@m uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era_id].name]]<i class="material-icons">expand_more</i></button>
+      <div uk-dropdown="mode: click">
+          <ul class="uk-nav uk-dropdown-nav">
+            [[#each eras]]
+              <li><a on-click="@this.fire('global_stats_nav', 'page.era_id', id)">[[name]]</a></li>
+            [[/each]]
+          </ul>
       </div>
     </div>
 <!-- settings.compareGlobalPerc.indexOf(.) !== -1 ? settings.compareGlobalPerc.filter(a => a !== .) :  -->
@@ -111,6 +113,7 @@
         <div class="r-stats-row">
           [[#if group.per_duration]]
           <div class="r-duration">
+            <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Duration</h6>
             [[#with {duration_percentiles: p(group.per_duration)}]]
               [[#each settings.compareGlobalPerc]]
                 <div class="r-duration-item r-bg-[[.]]">[[formatTimeShort(duration_percentiles[100-.])]]
@@ -119,6 +122,7 @@
             [[/with]]
           </div>
           <div class="r-global-stats-damage">
+            <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
             <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px">
               [[#with {dps_percentiles: p(group.per_dps), boss_dps_percentiles: p(group.per_dps_boss)}]]
               [[#each settings.compareGlobalPerc]]
@@ -148,6 +152,7 @@
             </svg>
           </div>
           <div class="r-global-stats-damageIn">
+            <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">DPS Recieved</h6>
             <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[4 + settings.compareGlobalPerc.length * 12]]px" width="100%">
               [[#with {inc_dps_percentiles: p(group.per_dps_received)}]]
               [[#each settings.compareGlobalPerc]]
