@@ -6,7 +6,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
 {% endcomment %}
 
 <div class="table-container uk-margin-top">
-  <div class="r-encounter-stats-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
+  <div class="r-encounter-stats-container uk-background-default uk-margin-remove-bottom" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header">
       <div class="uk-visible@m">Spec</div>
       <div class="r-buff-toggle">
@@ -17,9 +17,10 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
     </div>
   </div>
 
-  [[#with { tabNo: {offensive_boons: 1, supportive_boons: 2, offensive_buffs: 3, supportive_buffs: 4 }[persistent_page.tab]}]]
-    <div class="r-encounter-stats-container">
+  [[#with {offensive_boons: 1, supportive_boons: 2, offensive_buffs: 3, supportive_buffs: 4 }[persistent_page.tab] as tabNo]]
+
       [[#with encounter.phases[page.phase]]]
+      <div class="r-encounter-stats-container squad">
         <div class="r-stats-row r-stats-buffs">
           <div class="r-encounter-player uk-text-right [[self && 'compare-show']]">
             <div>
@@ -27,22 +28,21 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             </div>
           </div>
           <div class="r-encounter-buff-container" >
-            [[#each data.buff_tabs[tabNo].order]]
+            [[#each data.buff_tabs[tabNo].order as code]]
               [[#with {
-                buff: data.buffs[.],
-                format: ('stacks' in data.buffs[.]) ? num : perc,
-                code: .,
+                buff: data.buffs[code],
+                format: ('stacks' in data.buffs[code]) ? num : perc,
                 section: page.boon_output ? {
                     name: 'Output',
-                    value: buffs_out[.],
-                    percentiles: pctl(group.buffs_out['per_' + .])
+                    value: buffs_out[code],
+                    percentiles: pctl(@context.get(`group.buffs_out.per_${code}`))
                   } : {
                     name: 'Uptime',
-                    value: buffs[.],
-                    percentiles: pctl(group.buffs['per_' + .])
+                    value: buffs[code],
+                    percentiles: pctl(@context.get(`group.buffs.per_${code}`))
                   }
               }]]
-                [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
+                [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
                   <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
                     <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                     <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
@@ -53,11 +53,14 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             [[/each]]
           </div>
         </div>
+      </div>
       [[/with]]
 
       [[#each encounter.parties:partyNo]]
+      <div class="r-encounter-stats-container">
         [[#with phases[page.phase]]]
-          <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5>
+
+          <!-- <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5> -->
           <div class="r-stats-row r-stats-buffs r-party">
             <div class="r-encounter-player uk-text-right" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with events]]
                   Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
@@ -65,22 +68,22 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                   Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
                 [[/with]]">
               <div>
-                <h6 class="uk-font-family-secondary uk-margin-remove uk-text-uppercase">([[members.length]] member[[members.length > 1 && 's' || '']])</h6>
+                
                 <h5 class="uk-margin-remove">Party [[partyNo]] </h5>
+                <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[members.length]] member[[members.length > 1 && 's' || '']]</h6>
               </div>
             </div>
             <div class="r-encounter-buff-container">
-              [[#each data.buff_tabs[tabNo].order]]
+              [[#each data.buff_tabs[tabNo].order as code]]
                 [[#with {
-                  buff: data.buffs[.],
-                  format: ('stacks' in data.buffs[.]) ? num : perc,
-                  code: .,
+                  buff: data.buffs[code],
+                  format: ('stacks' in data.buffs[code]) ? num : perc,
                   section: page.boon_output ? {
                       name: 'Output',
-                      value: buffs_out[.]
+                      value: buffs_out[code]
                     } : {
                       name: 'Uptime',
-                      value: buffs[.]
+                      value: buffs[code]
                     }
                 }]]
                   <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
@@ -102,7 +105,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 <strong>Disconnects:</strong> [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
               [[/with]]">
                 <div>
-                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[archetype]]]</h6>
+                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[../../archetype]]]</h6>
                   [[#if name]]
                     <h5 class="uk-margin-remove">[[name]]</h5>
                   [[else]]
@@ -111,27 +114,26 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 </div>
                 <div class="r-encounter-player-image">
                   <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
-                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}[[data.archetypes[archetype]]].png"/>
+                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[../../archetype]]]" src="{% static 'raidar/img/arch/' %}[[data.archetypes[../../archetype]]].png"/>
                 </div>
               </div>
 
               <div class="r-encounter-buff-container" >
-                [[#each data.buff_tabs[tabNo].order]]
+                [[#each data.buff_tabs[tabNo].order as code]]
                   [[#with {
-                    buff: data.buffs[.],
-                    format: ('stacks' in data.buffs[.]) ? num : perc,
-                    code: .,
+                    buff: data.buffs[code],
+                    format: ('stacks' in data.buffs[code]) ? num : perc,
                     section: page.boon_output ? {
                         name: 'Output',
-                        value: buffs_out[.],
-                        percentiles: pctl(archetype.buffs_out['per_' + .])
+                        value: buffs_out[code],
+                        percentiles: pctl(@context.get(`archetype.buffs_out.per_${code}`))
                       } : {
                         name: 'Uptime',
-                        value: buffs[.],
-                        percentiles: pctl(archetype.buffs['per_' + .])
+                        value: buffs[code],
+                        percentiles: pctl(@context.get(`archetype.buffs.per_${code}`))
                       }
                   }]]
-                    [[#with { buff_pctl: bsearch(section.value, section.percentiles) } ]]
+                    [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
                       <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
                         <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                         <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]] </span>
@@ -144,7 +146,8 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             </div>
           [[/with]]
         [[/each]]
+        </div>
       [[/each]]
-    </div>
+
   [[/with]]
 </div>

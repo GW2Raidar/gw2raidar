@@ -164,10 +164,12 @@
   }
   // e.g. pctl(per_might)
   helpers.pctl = base64 => {
+    if (!base64) return [];
     return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
   }
   // e.g. bsearch(might, pctl(per_might))
   helpers.bsearch = (needle, haystack) => {
+    if (!haystack.length) return 0;
     let l = 0, h = haystack.length - 1;
     if (needle > haystack[h]) {
       return h + 1;

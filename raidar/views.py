@@ -338,6 +338,9 @@ def encounter(request, url_id=None, json=None):
                     private = True
                     encounter_showable = False
 
+    max_player_dps = max(_safe_get(lambda: data['Metrics']['damage']['To']['*All']['dps']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
+    max_player_recv = max(_safe_get(lambda: data['Metrics']['damage']['From']['*All']['total']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
+
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
@@ -355,6 +358,8 @@ def encounter(request, url_id=None, json=None):
             "phase_order": phases,
             "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
+            "max_player_dps": max_player_dps,
+            "max_player_recv": max_player_recv,
             "phases": {
                 phase: {
                     'duration': encounter.duration if phase == "All" else _safe_get(lambda: dump['Category']['encounter']['Phase'][phase]['duration']),
@@ -373,6 +378,7 @@ def encounter(request, url_id=None, json=None):
             "parties": parties,
         }
     }
+
     if encounter_showable or request.user.is_staff:
         if encounter.gdrive_url:
             data['encounter']['evtc_url'] = encounter.gdrive_url;

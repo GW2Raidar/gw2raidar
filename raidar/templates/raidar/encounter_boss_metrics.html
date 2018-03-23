@@ -1,7 +1,7 @@
 {% load staticfiles %}
 <div class="table-container uk-margin-top">
   {% include 'raidar/encounter_row_header.html' %}
-  <div class="r-encounter-stats-container r-encounter-mechanics-container uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
+  <div class="r-encounter-stats-container r-encounter-mechanics-container uk-margin-remove-bottom uk-background-default" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header uk-visible@l">
       <div>Totals</div>
       [[#each encounter.boss_metrics]]
@@ -12,7 +12,7 @@
 
     </div>
   </div>
-  <div class="r-encounter-stats-container r-encounter-mechanics-container">
+  <div class="r-encounter-stats-container r-encounter-mechanics-container squad">
     <div class="r-stats-row">
       <div class="r-encounter-player uk-text-right"><h5 class="uk-margin-remove">Squad</h5></div>
       [[#each encounter.boss_metrics]]
@@ -22,23 +22,29 @@
         </div>
       [[/each]]
     </div>
+  </div>
+
     [[#each encounter.parties:partyNo]]
-    <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</span></h5>
-    [[#with { party: . }]]
-      <div class="r-stats-row r-party">
-        <div class="r-encounter-player uk-text-right">
-          <div>
-            <h5 class="uk-margin-remove">Total</h5>
+    <div class="r-encounter-stats-container r-encounter-mechanics-container">
+      <!-- <h5 class="uk-heading-line uk-font-family-secondary"><span>Party [[partyNo]] ([[members.length]] member[[members.length > 1 && 's' || '']])</span></h5> -->
+
+      [[#with { party: . }]]
+        <div class="r-stats-row r-party">
+          <div class="r-encounter-player uk-text-right">
+            <div>
+              <h5 class="uk-margin-remove">Party [[partyNo]]</h5>
+              <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[members.length]] member[[members.length > 1 && 's' || '']]</h6>
+            </div>
           </div>
+          [[#each encounter.boss_metrics]]
+            <div class="r-mechanics-list">
+              <h6 class="uk-hidden@l">[[short_name]]</h6>
+              [[[tagForMechanic(party, .)]]]
+            </div>
+          [[/each]]
         </div>
-        [[#each encounter.boss_metrics]]
-          <div class="r-mechanics-list">
-            <h6 class="uk-hidden@l">[[short_name]]</h6>
-            [[[tagForMechanic(party, .)]]]
-          </div>
-        [[/each]]
-      </div>
-    [[/with]]
+      [[/with]]
+
       [[#each members]]
         [[#with { member: . }]]
           <div class="r-stats-row r-member activity-[[#with phases[page.phase].events]][[#with encounter]][[num(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]]">
@@ -61,15 +67,15 @@
               </div>
             </div>
             [[#each encounter.boss_metrics]]
-            <div class="r-mechanics-list">
+              <div class="r-mechanics-list">
                 <h6 class="uk-hidden@l">[[short_name]]</h6>
                 [[[tagForMechanic(member , .)]]]
-            </div>
+              </div>
             [[/each]]
           </div>
         [[/with]]
       [[/each]]
-
+      </div>
     [[/each]]
-  </div>
+
 </div>
