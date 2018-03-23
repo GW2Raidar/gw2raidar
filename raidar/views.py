@@ -206,14 +206,14 @@ def global_stats(request, era_id=None, area_id=None, json=None):
         })
     try:
         era_query = Era.objects.all()
-        eras = [{
+        eras = {era.id: {
                 'name': era.name,
                 'id': era.id,
                 'started_at': era.started_at,
                 'description': era.description
-            } for era in era_query]
+            } for era in era_query}
     except Era.DoesNotExist:
-        eras = []
+        eras = {}
 
     try:
         area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
@@ -226,7 +226,7 @@ def global_stats(request, era_id=None, area_id=None, json=None):
 
     try:
         if era_id is None:
-            era_id = eras[0]['id']
+            era_id = max(eras.values(), key=lambda z: z['started_at'])['id']
         era = Era.objects.get(id=era_id)
         if area_id is None:
             raw_data = era.val

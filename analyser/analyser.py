@@ -220,13 +220,14 @@ class Analyser:
 
         #construct frame of all power damage to boss, including deltas since last hit.
         boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
-        deltas = boss_power_events.time - boss_power_events.time.shift(1)
-        boss_power_events = boss_power_events.assign(delta = deltas)
-        #print_frame(boss_power_events[boss_power_events.delta >= 3000])
+        previous = boss_power_events.time.shift(1)
+        deltas = boss_power_events.time - previous
+        boss_power_events = boss_power_events.assign(delta = deltas, previous = previous)
+        #print_frame(boss_power_events[boss_power_events.delta >= 1000][['time','previous','delta']])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
         & (from_boss_events.dst_agent > 0)]
-        #print_frame(health_updates)
+        #print_frame(health_updates[['time','dst_agent']])
 
         #construct frame of all boss skill activations
         boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
@@ -306,6 +307,7 @@ class Analyser:
         if (       (encounter.version < '20170923' and gw_build >= 82356)
                 or (encounter.version < '20171107' and gw_build >= 83945)
                 or (encounter.version < '20180206' and gw_build >= 86181)
+                or (encounter.version < '20180306' and gw_build >= 87045)            
                 ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 

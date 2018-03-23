@@ -399,24 +399,24 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = skorvald_cm_detector, force_single_party = True, non_cm_allowed = False),
     Boss('Artsariiv', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
-        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
-        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 6000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 6000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 6000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 6000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
-        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000, phase_skip_health = 70),
-        Phase("First orb", False, phase_end_damage_start = 10000, phase_skip_health = 70),
-        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000, phase_skip_health = 50),
-        Phase("Archdiviner", False, phase_end_damage_start = 10000, phase_skip_health = 50),
-        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000, phase_skip_health = 40),
-        Phase("Second orb", False, phase_end_damage_start = 10000, phase_skip_health = 40),
-        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000, phase_skip_health = 30),
-        Phase("Gladiator", False, phase_end_damage_start = 10000, phase_skip_health = 30),
-        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000, phase_skip_health = 1),
-        Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 1),
-        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
+        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 6000, phase_skip_health = 70),
+        Phase("First orb", False, phase_end_damage_start = 6000, phase_skip_health = 70),
+        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 6000, phase_skip_health = 50),
+        Phase("Archdiviner", False, phase_end_damage_start = 6000, phase_skip_health = 50),
+        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 6000, phase_skip_health = 40),
+        Phase("Second orb", False, phase_end_damage_start = 6000, phase_skip_health = 40),
+        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 6000, phase_skip_health = 30),
+        Phase("Gladiator", False, phase_end_damage_start = 6000, phase_skip_health = 30),
+        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 6000, phase_skip_health = 1),
+        Phase("Third orb", False, phase_end_damage_start = 6000, phase_skip_health = 1),
+        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 6000)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('MAMA', Kind.FRACTAL, [0x427d], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000, phase_skip_health = 50),

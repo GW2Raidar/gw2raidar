@@ -124,6 +124,19 @@
   helpers.round = (n, d=0) => {
     return n.toFixed(d);
   }
+  helpers.updateCompareGlobalPerc = (list, clicked) =>
+  {
+    let newList =  list.indexOf(clicked) !== -1
+    ? list.filter(a => a !== clicked)
+    : list.concat([clicked]).sort().reverse()
+
+    if (newList.length === 0) {
+      return list;
+    }
+
+    return newList;
+  }
+
   // adapted from https://stackoverflow.com/a/2901298/240443
   // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
   // num(1234.5):     1,234.5
@@ -283,6 +296,16 @@
       else if (usec < 100) usec = "0" + usec;
       if (minutes) return minutes + ":" + f0X(seconds) + "." + usec;
       return seconds + "." + usec;
+    } else {
+      return '';
+    }
+  };
+  helpers.formatTimeShort = duration => {
+    if (duration !== undefined) {
+      let seconds = Math.trunc(duration);
+      let minutes = Math.trunc(seconds / 60);
+      seconds -= minutes * 60
+      return minutes + ":" + f0X(seconds);
     } else {
       return '';
     }
@@ -503,6 +526,7 @@ ${body}
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
   if (!initData.settings.comparePerc) initData.settings.comparePerc = 50;
+  if (!initData.settings.compareGlobalPerc) initData.settings.compareGlobalPerc = [99,90,50];
   // TODO load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
@@ -775,8 +799,6 @@ ${body}
     window.ga('send', 'pageview');
   }
 
-
-
   function notification(str, style) {
     UIkit.notification(str, style);
   }
@@ -862,6 +884,10 @@ ${body}
     },
     refresh_page: function refreshPage(x) {
       setPage();
+    },
+    global_stats_nav: function printify(event, key, val) {
+        r.set(key, val)
+        setPage();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;

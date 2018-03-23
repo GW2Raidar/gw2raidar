@@ -13,6 +13,7 @@ from time import time
 import os
 import csv
 from evtcparser.parser import AgentType
+from analyser.postprocessor import something
 import pandas as pd
 import numpy as np
 import base64
@@ -283,7 +284,15 @@ class Command(BaseCommand):
                 data = encounter.val
                 phases = data['Category']['combat']['Phase']
 
+
+
                 participations = encounter.participations.all()
+                #for participation in participations:
+                    #try:
+                    #something(participation, data)
+                    #except Exception as e:
+                    #    print("Exception in archetype code: ", e)
+
                 for phase, stats_in_phase in phases.items():
                     squad_stats = stats_in_phase['Subgroup']['*All']
                     phase_duration = data['Category']['encounter']['duration'] if phase == 'All' else _safe_get(lambda: data['Category']['encounter']['Phase'][phase]['duration'])
