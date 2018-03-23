@@ -563,6 +563,7 @@ ${body}
     if (page.no) url += '/' + page.no;
     if (page.era_id) url += '/' + page.era_id;
     if (page.area_id) url += '/area-' + page.area_id;
+    if (page.kind_id) url += '/' + page.kind_id;
     return url;
   }
 
@@ -614,7 +615,14 @@ ${body}
       });
       $.get({
         url: URLForPage(page).substring(1) + '.json',
-      }).then(setData);
+      }).then(setData).then(() => {
+        let eras = r.get('global_stats.eras');
+        let eraOrder = Object.values(eras)
+          .sort((e1, e2) => e2.started_at - e1.started_at);
+        r.set({
+          'global_stats.stats.era_order': eraOrder,
+        });
+      });
     },
   };
 
@@ -883,7 +891,11 @@ ${body}
     refresh_page: function refreshPage(x) {
       setPage();
     },
-    global_stats_nav: function printify(event, key, val) {
+    global_stats_nav: function global_stats_nav(event, key, val) {
+        if(key == 'page.area_id' || key == 'page.kind_id') {
+            r.set('page.area_id', null)
+            r.set('page.kind_id', null)
+        }
         r.set(key, val)
         setPage();
     },
