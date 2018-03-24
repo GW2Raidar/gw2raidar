@@ -203,7 +203,8 @@ def global_stats(request, era_id=None, area_id=None, kind_id=None, json=None):
             "name": "global_stats",
             "era_id": era_id,
             "area_id": area_id,
-            "kind_id": kind_id
+            "kind_id": kind_id,
+            "mobile_selector": area_id if area_id else kind_id
         })
     try:
         era_query = Era.objects.all()

@@ -5,13 +5,13 @@
 
       {# Mobile navigation/filtering #}
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
-      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.area_id]]' on-change="refresh_page">
+      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.mobile_selector]]' on-change="@this.fire('global_stats_nav', Number(page.mobile_selector) > 0 ? 'page.area_id': 'page.kind_id', page.mobile_selector)">
         [[#each data.boss_locations]]
-        <option value="[[null]]">[[all]]</option>
+        <option value="[[all]]">[[all]]</option>
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
-              <option value='[[data.areas[.].id]]'>[[data.areas[.].name]]</option>
+              <option value='[[.]]'>[[data.areas[.].name]]</option>
             [[/each]]
           </optgroup>
           [[/each]]
