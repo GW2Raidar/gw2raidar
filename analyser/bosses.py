@@ -41,7 +41,13 @@ def skorvald_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
 def soulless_cm_detector(events, boss_instids):
-    return len(events[(events.skillid == 47414)&(events.time - events.time.min() < 16000)&(events.is_buffremove == 0)]) > 1
+    necrosis_events = events[(events.skillid == 47414)&(events.time - events.time.min() < 16000)&(events.is_buffremove == 0)].copy()
+    deltas = abs(necrosis_events.time - necrosis_events.time.shift(1))
+    deltas.fillna(10000000, inplace=True)
+    necrosis_events = necrosis_events.assign(deltas = deltas)
+    necrosis_events = necrosis_events[necrosis_events.deltas > 1000]
+    print(necrosis_events)
+    return len(necrosis_events) > 1
 
 class Metric:
     def __init__(self, name, short_name, data_type, split_by_player = True, split_by_phase = False, desired = DesiredValue.LOW):
