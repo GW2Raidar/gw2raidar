@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^$', views.index, name = "index"),
     url(r'^robots.txt$', TemplateView.as_view(template_name='raidar/robots.txt'), name="robots"),
     # XXX HACK separate API
-    url(r'^(?:api/)?global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+)|/(?P<kind_id>[A-Za-z ]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
+    url(r'^(?:api/)?global_stats(?:/(?P<era_id>[0-9]+))?(?:/(?:area-)?(?P<stats_page>[0-9]+|[A-Za-z ]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]
 
 class ObtainAuthToken(rest_auth_views.ObtainAuthToken):

@@ -564,8 +564,13 @@ ${body}
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
     if (page.era_id) url += '/' + page.era_id;
-    if (page.area_id) url += '/area-' + page.area_id;
-    if (page.kind_id) url += '/' + page.kind_id;
+    if (page.stats_page) {
+        if(Number(page.stats_page) > 0) {
+            url += '/area-' + page.stats_page;
+        } else {
+            url += '/' + page.stats_page;
+        }
+    }
     return url;
   }
 
@@ -894,10 +899,6 @@ ${body}
       setPage();
     },
     global_stats_nav: function global_stats_nav(event, key, val) {
-        if(key == 'page.area_id' || key == 'page.kind_id') {
-            r.set('page.area_id', null)
-            r.set('page.kind_id', null)
-        }
         r.set(key, val)
         setPage();
     },
