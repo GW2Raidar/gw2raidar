@@ -1,4 +1,5 @@
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from analyser.bosses import *
 from multiprocessing import Queue, Process, log_to_stderr
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
@@ -205,18 +206,23 @@ class Command(BaseCommand):
             started_at = dump['Category']['encounter']['start']
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
-            upload_val = upload.val
-            if duration < 60:
-                raise EvtcAnalysisException('Encounter shorter than 60s')
-
-            era = Era.by_time(started_at)
-            area_id = evtc_encounter.area_id
             boss_name = analyser.boss_info.name
+            upload_val = upload.val
+            area_id = evtc_encounter.area_id
+
+            minDuration = 60
+            if BOSSES[area_id].kind == Kind.FRACTAL:
+                minDuration = 30    
+            
+            if duration < minDuration:
+                raise EvtcAnalysisException('Encounter shorter than 60s')
+                        
             if dump['Category']['encounter']['cm']:
                 boss_name += " (CM)"
                 if analyser.boss_info.non_cm_allowed:
                     area_id += 0xFF0000
-                
+                            
+            era = Era.by_time(started_at)        
                 
             area, _ = Area.objects.get_or_create(id=area_id,
                     defaults={ "name": boss_name })
