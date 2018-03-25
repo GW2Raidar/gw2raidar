@@ -5,13 +5,13 @@
 
       {# Mobile navigation/filtering #}
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
-      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.area_id]]' on-change="refresh_page">
+      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.mobile_selector]]' on-change="@this.fire('global_stats_nav', Number(page.mobile_selector) > 0 ? 'page.area_id': 'page.kind_id', page.mobile_selector)">
         [[#each data.boss_locations]]
-        <option value="[[null]]">[[all]]</option>
+        <option value="[[all]]">[[all]]</option>
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
-              <option value='[[data.areas[.].id]]'>[[data.areas[.].name]]</option>
+              <option value='[[.]]'>[[data.areas[.].name]]</option>
             [[/each]]
           </optgroup>
           [[/each]]
@@ -33,14 +33,14 @@
             <div class="uk-inline">
               {# TODO active check is bad ATM #}
               {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-              [[#with {active: page.area_id == all || page.area_id in bosses}]]
-                <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area_id] ? data.areas[page.area_id].name : page.area_id]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+              [[#with {active: page.kind_id == all || page.area_id in bosses}]]
+                <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area_id] ? data.areas[page.area_id].name : page.kind_id]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
               [[/with]]
               <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify; offset: -10;">
                 <div class="uk-width-1 uk-grid">
                   <div class="uk-width-1">
                     <ul class="uk-nav uk-dropdown-nav">
-                      <li on-click="@this.fire('global_stats_nav', 'page.area_id', all)" class-uk-active="page.area_id === all">
+                      <li on-click="@this.fire('global_stats_nav', 'page.kind_id', all)" class-uk-active="page.kind_id === all">
                         <a>[[all]]</a>
                       </li>
                     </ul>
@@ -71,10 +71,10 @@
     </div>
     <div class="uk-width-auto">
       <h6 class="uk-font-family-secondary uk-text-uppercase">Time Frame</h6>
-      <button class="uk-button uk-width-auto@m uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era_id].name]]<i class="material-icons">expand_more</i></button>
+      <button class="uk-button uk-width-auto@m uk-width-1-1 uk-margin-right@l" type="button">[[page.era_id ? eras[page.era_id].name : "Most recent"]]<i class="material-icons">expand_more</i></button>
       <div uk-dropdown="mode: click">
           <ul class="uk-nav uk-dropdown-nav">
-            [[#each eras]]
+            [[#each era_order]]
               <li><a on-click="@this.fire('global_stats_nav', 'page.era_id', id)">[[name]]</a></li>
             [[/each]]
           </ul>

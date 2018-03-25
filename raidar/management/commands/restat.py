@@ -421,13 +421,19 @@ class Command(BaseCommand):
             for area in area_queryset.iterator():
                 encounter_queryset = era.encounters.prefetch_related('participations__account').filter(area=area).order_by('?')
                 totals_in_area = initialise_era_area_stats(encounter_queryset.count())
+
+                if area.id in BOSSES:
+                    kind = BOSSES[area.id].kind.name.lower()
+                else:
+                    kind = "unknown"
+                totals_for_kind = navigate(totals_in_era, 'kind', 'All %s bosses' % kind)
                 for encounter in encounter_queryset.iterator():
-                    add_encounter_to_era_area_stats(encounter, totals_in_area, totals_in_era)
+                    add_encounter_to_era_area_stats(encounter, totals_in_area, totals_for_kind)
                 finalise_era_area_stats(era, area, totals_in_area)
                 verbose("Totals for era %s, area %s" % (era, area), totals_in_area)
 
             finalise_era_stats(era, totals_in_era)
-            verbose("Totals for era %s" % era, totals_in_area)
+            verbose("Totals for era %s" % era, totals_in_era)
 
 
         def calculate_user_stats(era):
