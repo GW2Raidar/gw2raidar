@@ -190,6 +190,9 @@
     let suffix = tens == 1 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
     return num + suffix;
   };
+  helpers.clamp = (num, max) => {
+    return Math.min(num, max === undefined ? 100 : max);
+  }
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,

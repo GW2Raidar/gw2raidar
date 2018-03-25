@@ -169,8 +169,8 @@ def _profile_data_for_era(era_user_store):
         'started_at': era_user_store.era.started_at,
         'description': era_user_store.era.description,
         'profile': era_user_store.val,
-        'individual': era_val['All']['individual'],
-        'build': era_val['All']['build'],
+        'individual': _safe_get(lambda: era_val['All']['individual']),
+        'build': _safe_get(lambda: era_val['All']['build']),
     }
 
 @require_GET
