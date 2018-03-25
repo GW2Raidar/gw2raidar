@@ -7,7 +7,9 @@
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
       <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.stats_page]]' on-change="@this.fire('global_stats_nav', 'page.stats_page', page.stats_page)">
         [[#each data.boss_locations]]
+        [[#if all]]
         <option value="[[all]]">[[all]]</option>
+        [[/if]]
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
@@ -38,6 +40,7 @@
               [[/with]]
               <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify; offset: -10;">
                 <div class="uk-width-1 uk-grid">
+                    [[#if all]]
                   <div class="uk-width-1">
                     <ul class="uk-nav uk-dropdown-nav">
                       <li on-click="@this.fire('global_stats_nav', 'page.stats_page', all)" class-uk-active="page.stats_page === all">
@@ -45,6 +48,7 @@
                       </li>
                     </ul>
                 </div>
+                    [[/if]]
                   [[#each wings]]
                     <div class="uk-width-1-[[columns]]@m uk-width-1">
                       <ul class="uk-nav uk-dropdown-nav">
