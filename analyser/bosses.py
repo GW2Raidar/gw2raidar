@@ -454,7 +454,7 @@ IDS = {boss.name: boss.boss_ids[0] for boss in BOSS_ARRAY}
 
 BOSS_LOCATIONS = [
     {
-        "name": "Raid",
+        "name": "Raids",
         "all": 'All raid bosses',
         "columns": 3,
         "wings": [
@@ -495,6 +495,29 @@ BOSS_LOCATIONS = [
                 "bosses": [
                     IDS['Soulless Horror'],
                     IDS['Dhuum'],
+                ],
+            },
+        ],
+    },
+    {
+        "name": "CM Raids",
+        # "all": 'All raid bosses',
+        "columns": 3,
+        "wings": [
+            {
+                "name": "Bastion of the Penitent",
+                "bosses": [
+                    IDS['Cairn (CM)'],
+                    IDS['Mursaat Overseer (CM)'],
+                    IDS['Samarog (CM)'],
+                    IDS['Deimos (CM)'],
+                ],
+            },
+            {
+                "name": "Hall of Chains",
+                "bosses": [
+                    IDS['Soulless Horror (CM)'],
+                    IDS['Dhuum (CM)'],
                 ],
             },
         ],

@@ -3,23 +3,23 @@
   [[#with profile.eras[page.era]]]
     [[#with profile]]
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
-        {# <button class="uk-button">All (45)</button> #}
         [[#each data.boss_locations]]
           <div class="uk-inline">
-            {# TODO active check is bad ATM #}
-            {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-            [[#with page.area == all || page.area in bosses as active]]
+            [[#with (all && page.area == all) || page.area in bosses as active]]
               <button class="uk-button" class-uk-button-primary="active">[[#if active]][[page.area in data.areas ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
             [[/with]]
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
-                <div class="uk-width-1">
-                  <ul class="uk-nav uk-dropdown-nav">
-                    <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
-                      <a href="#">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</a>
-                    </li>
-                  </ul>
-              </div>
+		[[#if all]]
+		  <div class="uk-width-1">
+		    <ul class="uk-nav uk-dropdown-nav">
+		      <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
+			<a href="#">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</a>
+		      </li>
+		    </ul>
+		  </div>
+		[[/if]]
+
                 [[#each wings]]
                   <div class="uk-width-1-[[columns]]@m uk-width-1">
                     <ul class="uk-nav uk-dropdown-nav">
@@ -40,19 +40,24 @@
           </div>
         [[/each]]
       </div>
+
       {# Mobile navigation/filtering #}
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter</h6>
-      <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" id="">
+      <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" value="[[page.area]]">
         [[#each data.boss_locations]]
-          <option>[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</option>
+	  [[#if all && encounter[all]]]
+	    <option value="[[all]]">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</option>
+	  [[else]]
+	    <option disabled>[[all]] (0)</option>
+	  [[/if]]
           [[#each wings]]
             <optgroup label="[[name]]">
               [[#each bosses as boss_id]]
                 [[#if boss_id in encounter]]
-                  <option on-select="@.set({'page.area': boss_id})">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</option>
+                  <option value="[[boss_id]]">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</option>
                 [[else]]
                   {# TODO make visually distinct the dead links #}
-                  <option>[[data.areas[boss_id].name]] (0)</option>
+                  <option disabled>[[data.areas[boss_id].name]] (0)</option>
                 [[/if]]
               [[/each]]
             </optgroup>
