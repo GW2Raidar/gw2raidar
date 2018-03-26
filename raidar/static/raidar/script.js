@@ -721,11 +721,11 @@ ${body}
         }
         if (filters.character) {
           any = true;
-          encounters = encounters.filter(e => e.character == filter.character);
+          encounters = encounters.filter(e => e.character == filters.character);
         }
         if (filters.account) {
           any = true;
-          encounters = encounters.filter(e => e.account == filter.account);
+          encounters = encounters.filter(e => e.account == filters.account);
         }
         if (filters.uploaded_from) {
           let m = filters.uploaded_from.match(dateRE);
