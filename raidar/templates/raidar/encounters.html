@@ -124,14 +124,12 @@ Label of the button should add the encounter type to the button text. i.e. If th
   </div>
 {% endcomment %}
 <div class="uk-visible@m" >
-  [[#if settings.encounterSort.filters]]
-    <button class="uk-button" on-click="encounter_filter_toggle">Clear Filters <i class="material-icons">close</i></button>
-  [[else]]
-    <button class="uk-button" on-click="encounter_filter_toggle">Filters <i class="material-icons">filter_list</i></button>
-
+  <button class="uk-button" on-click="encounter_filter_toggle">Filters <i class="material-icons">filter_list</i></button>
+  [[#if settings.encounterSort.filter.any]]
+    <button class="uk-button" on-click="encounter_filter_clear">Clear Filters <i class="material-icons">close</i></button>
   [[/if]]
 </div>
-[[#if settings.encounterSort.filters]]
+[[#if settings.encounterSort.filter.on]]
 <form class="uk-form-stacked uk-card uk-card-small uk-card-body uk-background-muted">
   <legend class="uk-legend">Filters</legend>
   <div class="uk-width-1-1" uk-grid>
@@ -149,7 +147,7 @@ Label of the button should add the encounter type to the button text. i.e. If th
         <label class="uk-form-label uk-h5" for="encounterSelect">By Encounter</label>
         <div class="uk-form-controls">
           <select id="encounterSelect" class="uk-select" value="[[settings.encounterSort.filter.area]]">
-
+            <option value="[[null]]">-- no filter --</option>
             [[#each encountersAreas]]
               <option value="[[.]]">[[.]]</option>
             [[/each]]
@@ -158,22 +156,26 @@ Label of the button should add the encounter type to the button text. i.e. If th
       </div>
       <div class="uk-margin">
         <label for="#characterName" class="uk-form-label uk-h5">By Character</label>
-        <input class="uk-input" value="[[settings.encounterSort.filter.character]]" placeholder="Character name" list="encountersCharacters">
-        <datalist id="encountersCharacters">
-          [[#each encountersCharacters]]
-            <option value="[[.]]"/>
-          [[/each]]
-        </datalist>
+        <div class="uk-form-controls">
+          <select id="characterSelect" class="uk-select" value="[[settings.encounterSort.filter.character]]">
+            <option value="[[null]]">-- no filter --</option>
+            [[#each encountersCharacters]]
+              <option value="[[.]]">[[.]]</option>
+            [[/each]]
+          </select>
+        </div>
       </div>
 
       <div class="uk-margin">
         <label for="#accountName" class="uk-form-label uk-h5">By Account</label>
-        <input class="uk-input" value="[[settings.encounterSort.filter.account]]" placeholder="Account name" list="encountersAccounts" id="accountName">
-        <datalist id="encountersAccounts">
-          [[#each encountersAccounts]]
-            <option value="[[.]]"/>
-          [[/each]]
-        </datalist>
+        <div class="uk-form-controls">
+          <select id="accountSelect" class="uk-select" value="[[settings.encounterSort.filter.account]]">
+            <option value="[[null]]">-- no filter --</option>
+            [[#each encountersAccounts]]
+              <option value="[[.]]">[[.]]</option>
+            [[/each]]
+          </select>
+        </div>
       </div>
     </div>
     <div class="uk-width-1-2@m">
@@ -219,8 +221,8 @@ Label of the button should add the encounter type to the button text. i.e. If th
       <div class="uk-margin">
         <label for="#category" class="uk-form-label uk-h5">By Category</label>
         <select id="category" as-ukUpdate class="uk-select uk-margin-remove" value="[[settings.encounterSort.filter.category]]">
-          <option value="[[null]]">Any Category</option>
-          <option value="[[0]]">Uncategorised</option>
+          <option value="[[null]]">-- no filter --</option>
+          <option value="[[0]]">-- uncategorised --</option>
           [[#each data.categories:id]]
             <option value="[[parseInt(id)]]">[[.]]</option>
           [[/each]]

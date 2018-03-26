@@ -515,7 +515,7 @@ ${body}
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
     settings: {
-      encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
+      encounterSort: { prop: 'uploaded_at', dir: 'down', filter: { on: false, success: null } },
     },
     uploads: [],
   };
@@ -654,17 +654,17 @@ ${body}
         return password == '' || password !== password2;
       },
       encountersAreas: function encountersAreas() {
-        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.area)));
+        let result = Array.from(new Set(this.get('encounters').map(e => e.area)));
         result.sort();
         return result;
       },
       encountersCharacters: function encountersCharacters() {
-        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.character)));
+        let result = Array.from(new Set(this.get('encounters').map(e => e.character)));
         result.sort();
         return result;
       },
       encountersAccounts: function encountersAccounts() {
-        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.account)));
+        let result = Array.from(new Set(this.get('encounters').map(e => e.account)));
         result.sort();
         return result;
       },
@@ -673,16 +673,19 @@ ${body}
         let filters = this.get('settings.encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
         const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
+        let any = false;
         if (filters.success !== null) {
+          any = true;
           encounters = encounters.filter(e => e.success === filters.success);
         }
         if (filters.area) {
-          let f = filters.area.toLowerCase();
-          encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
+          any = true;
+          encounters = encounters.filter(e => e.area === filters.area);
         }
         if (filters.started_from) {
           let m = filters.started_from.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.started_at >= f);
@@ -691,6 +694,7 @@ ${body}
         if (filters.started_till) {
           let m = filters.started_till.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             if (m[3]) d.setDate(d.getDate() + 1);
             else if (m[2]) d.setMonth(d.getMonth() + 1);
@@ -702,6 +706,7 @@ ${body}
         if (filters.duration_from) {
           let m = filters.duration_from.match(durRE);
           if (m) {
+            any = true;
             let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
             encounters = encounters.filter(e => e.duration >= f);
           }
@@ -709,21 +714,23 @@ ${body}
         if (filters.duration_till) {
           let m = filters.duration_till.match(durRE);
           if (m) {
+            any = true;
             let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
             encounters = encounters.filter(e => e.duration <= f);
           }
         }
         if (filters.character) {
-          let f = filters.character.toLowerCase();
-          encounters = encounters.filter(e => e.character.toLowerCase().startsWith(f));
+          any = true;
+          encounters = encounters.filter(e => e.character == filter.character);
         }
         if (filters.account) {
-          let f = filters.account.toLowerCase();
-          encounters = encounters.filter(e => e.account.toLowerCase().startsWith(f));
+          any = true;
+          encounters = encounters.filter(e => e.account == filter.account);
         }
         if (filters.uploaded_from) {
           let m = filters.uploaded_from.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at >= f);
@@ -732,6 +739,7 @@ ${body}
         if (filters.uploaded_till) {
           let m = filters.uploaded_till.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             if (m[3]) d.setDate(d.getDate() + 1);
             else if (m[2]) d.setMonth(d.getMonth() + 1);
@@ -741,14 +749,17 @@ ${body}
           }
         }
         if (filters.category !== null) {
+          any = true;
           let f = filters.category;
           if (!f) f = null;
           encounters = encounters.filter(e => e.category === f);
         }
         if (filters.tag) {
+          any = true;
           let f = filters.tag.toLowerCase();
           encounters = encounters.filter(e => e.tags.some(t => t.toLowerCase().startsWith(f)));
         }
+        r.set('settings.encounterSort.filter.any', any);
         return encounters;
       },
       encounterSlice: function encounterSlice() {
@@ -1081,12 +1092,13 @@ ${body}
       return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
-      let filters = r.get('settings.encounterSort.filters');
-      r.toggle('settings.encounterSort.filters');
-      if (filters) {
-        r.set('settings.encounterSort.filter.*', null);
-      }
+      r.toggle('settings.encounterSort.filter.on');
       return false;
+    },
+    encounter_filter_clear: function encounterFilterClear(evt) {
+      //let on = r.get('settings.encounterSort.filter.on');
+      r.set('settings.encounterSort.filter.*', null);
+      //r.set('settings.encounterSort.filter.on', on);
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
