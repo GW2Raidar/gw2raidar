@@ -80,17 +80,13 @@ BUFF_TABS = [
         ],
     },
     {
-        'name': 'Offensive Boons',
+        'name': 'Boons',
         'order': [
             'might',
             'fury',
             'quickness',
+            'alacrity',
             'retaliation',
-        ],
-    },
-    {
-        'name': 'Supportive Boons',
-        'order': [
             'protection',
             'aegis',
             'regen',
@@ -103,7 +99,6 @@ BUFF_TABS = [
     {
         'name': 'Offensive Buffs',
         'order': [
-            'alacrity',
             'spirit_of_frost',
             'sun_spirit',
             'spotter',
