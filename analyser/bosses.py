@@ -102,12 +102,12 @@ class Phase:
                 
         if self.phase_skip_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_skip_health * 100):
-                print("Detected skipped phase")
+                print("{0}: Detected skipped phase - past skip health threshold".format(self.name))
                 return current_time    
             
         if self.phase_end_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
-                print("Detected skipped phase")
+                print("{0}: Detected skipped phase - past phase end health".format(self.name))
                 return current_time
             
             relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
@@ -434,10 +434,10 @@ BOSS_ARRAY = [
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Siax', Kind.FRACTAL,[0x4284], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 13000, phase_skip_health = 33),
-        Phase("First split", False, phase_end_damage_start = 13000, phase_skip_health = 33),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 13000, phase_skip_health = 1),
-        Phase("Second split", False, phase_end_damage_start = 13000, phase_skip_health = 1),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 12000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 12000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 12000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 12000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Ensolyss', Kind.FRACTAL,[0x4234], phases = [

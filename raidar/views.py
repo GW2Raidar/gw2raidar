@@ -169,8 +169,8 @@ def _profile_data_for_era(era_user_store):
         'started_at': era_user_store.era.started_at,
         'description': era_user_store.era.description,
         'profile': era_user_store.val,
-        'individual': era_val['All']['individual'],
-        'build': era_val['All']['build'],
+        'individual': _safe_get(lambda: era_val['All']['individual']),
+        'build': _safe_get(lambda: era_val['All']['build']),
     }
 
 @require_GET
@@ -197,14 +197,15 @@ def profile(request):
     return JsonResponse(result)
 
 @require_GET
-def global_stats(request, era_id=None, area_id=None, kind_id=None, json=None):
+def global_stats(request, era_id=None, stats_page=None, json=None):
+    if stats_page is None:
+        stats_page = 'All raid bosses'
+
     if not json:
         return _html_response(request, {
             "name": "global_stats",
             "era_id": era_id,
-            "area_id": area_id,
-            "kind_id": kind_id,
-            "mobile_selector": area_id if area_id else kind_id
+            "stats_page": stats_page
         })
     try:
         era_query = Era.objects.all()
@@ -231,14 +232,12 @@ def global_stats(request, era_id=None, area_id=None, kind_id=None, json=None):
             era_id = max(eras.values(), key=lambda z: z['started_at'])['id']
         era = Era.objects.get(id=era_id)
 
-        if area_id is None and kind_id is None:
-            kind_id = 'All raid bosses'
-
-        if kind_id:
-            raw_data = era.val["kind"].get(kind_id, {})
-        else:
-            area = Area.objects.get(id=area_id)
+        try:
+            area = Area.objects.get(id=int(stats_page))
             raw_data = EraAreaStore.objects.get(era=era, area=area).val
+        except:
+            raw_data = era.val["kind"].get(stats_page, {})
+
         stats = raw_data['All']
 
         #reduce size of json for global stats view

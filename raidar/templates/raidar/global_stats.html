@@ -5,9 +5,11 @@
 
       {# Mobile navigation/filtering #}
       <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
-      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.mobile_selector]]' on-change="@this.fire('global_stats_nav', Number(page.mobile_selector) > 0 ? 'page.area_id': 'page.kind_id', page.mobile_selector)">
+      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.stats_page]]' on-change="@this.fire('global_stats_nav', 'page.stats_page', page.stats_page)">
         [[#each data.boss_locations]]
+        [[#if all]]
         <option value="[[all]]">[[all]]</option>
+        [[/if]]
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
@@ -33,24 +35,26 @@
             <div class="uk-inline">
               {# TODO active check is bad ATM #}
               {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-              [[#with {active: page.kind_id == all || page.area_id in bosses}]]
-                <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.area_id] ? data.areas[page.area_id].name : page.kind_id]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+              [[#with {active: page.stats_page == all || page.stats_page in bosses}]]
+                <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.stats_page] ? data.areas[page.stats_page].name : page.stats_page]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
               [[/with]]
               <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify; offset: -10;">
                 <div class="uk-width-1 uk-grid">
+                    [[#if all]]
                   <div class="uk-width-1">
                     <ul class="uk-nav uk-dropdown-nav">
-                      <li on-click="@this.fire('global_stats_nav', 'page.kind_id', all)" class-uk-active="page.kind_id === all">
+                      <li on-click="@this.fire('global_stats_nav', 'page.stats_page', all)" class-uk-active="page.stats_page === all">
                         <a>[[all]]</a>
                       </li>
                     </ul>
                 </div>
+                    [[/if]]
                   [[#each wings]]
                     <div class="uk-width-1-[[columns]]@m uk-width-1">
                       <ul class="uk-nav uk-dropdown-nav">
                         <li class="uk-nav-header uk-margin-top">[[name]]</li>
                         [[#each bosses]]
-                          <li on-click="@this.fire('global_stats_nav', 'page.area_id', .)" class-uk-active="page.area_id == ."><a>[[data.areas[.].name]]</a></li>
+                          <li on-click="@this.fire('global_stats_nav', 'page.stats_page', .)" class-uk-active="page.stats_page == ."><a>[[data.areas[.].name]]</a></li>
                         [[/each]]
                       </ul>
                     </div>
