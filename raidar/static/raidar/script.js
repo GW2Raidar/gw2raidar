@@ -515,7 +515,7 @@ ${body}
     persistent_page: { tab: 'combat_stats' },
     encounters: [],
     settings: {
-      encounterSort: { prop: 'uploaded_at', dir: 'down', filter: { on: false, success: null } },
+      encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
     uploads: [],
   };
@@ -1092,13 +1092,11 @@ ${body}
       return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
-      r.toggle('settings.encounterSort.filter.on');
+      r.toggle('settings.encounterSort.filters');
       return false;
     },
     encounter_filter_clear: function encounterFilterClear(evt) {
-      //let on = r.get('settings.encounterSort.filter.on');
       r.set('settings.encounterSort.filter.*', null);
-      //r.set('settings.encounterSort.filter.on', on);
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
