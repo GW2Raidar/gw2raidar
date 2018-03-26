@@ -28,42 +28,46 @@
     </select> -->
     <!-- Era Filter -->
     [[#with stats]]
-    <div class="uk-flex-left uk-visible@m boundary" uk-grid>
-      <div class="uk-button-group uk-width-expand  uk-margin-bottom uk-margin-top">
-          {# <button class="uk-button">All (45)</button> #}
-          [[#each data.boss_locations]]
-            <div class="uk-inline">
-              {# TODO active check is bad ATM #}
-              {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
-              [[#with {active: page.stats_page == all || page.stats_page in bosses}]]
-                <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.stats_page] ? data.areas[page.stats_page].name : page.stats_page]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
-              [[/with]]
-              <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify; offset: -10;">
-                <div class="uk-width-1 uk-grid">
-                    [[#if all]]
-                  <div class="uk-width-1">
-                    <ul class="uk-nav uk-dropdown-nav">
-                      <li on-click="@this.fire('global_stats_nav', 'page.stats_page', all)" class-uk-active="page.stats_page === all">
-                        <a>[[all]]</a>
-                      </li>
-                    </ul>
-                </div>
-                    [[/if]]
-                  [[#each wings]]
-                    <div class="uk-width-1-[[columns]]@m uk-width-1">
-                      <ul class="uk-nav uk-dropdown-nav">
-                        <li class="uk-nav-header uk-margin-top">[[name]]</li>
-                        [[#each bosses]]
-                          <li on-click="@this.fire('global_stats_nav', 'page.stats_page', .)" class-uk-active="page.stats_page == ."><a>[[data.areas[.].name]]</a></li>
-                        [[/each]]
-                      </ul>
+    <div class="uk-flex-left uk-visible@m " uk-grid>
+      <div class="uk-width-expand  uk-margin-bottom uk-margin-top">
+        <div class="uk-width-1-1 boundary">
+          <div class="uk-button-group ">
+              {# <button class="uk-button">All (45)</button> #}
+              [[#each data.boss_locations]]
+                <div class="uk-inline">
+                  {# TODO active check is bad ATM #}
+                  {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
+                  [[#with {active: page.stats_page == all || page.stats_page in bosses}]]
+                    <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.stats_page] ? data.areas[page.stats_page].name : page.stats_page]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+                  [[/with]]
+                  <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+                    <div class="uk-width-1 uk-grid">
+                        [[#if all]]
+                      <div class="uk-width-1">
+                        <ul class="uk-nav uk-dropdown-nav">
+                          <li on-click="@this.fire('global_stats_nav', 'page.stats_page', all)" class-uk-active="page.stats_page === all">
+                            <a>[[all]]</a>
+                          </li>
+                        </ul>
                     </div>
-                  [[/each]]
+                        [[/if]]
+                      [[#each wings]]
+                        <div class="uk-width-1-[[columns]]@m uk-width-1">
+                          <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header uk-margin-top">[[name]]</li>
+                            [[#each bosses]]
+                              <li on-click="@this.fire('global_stats_nav', 'page.stats_page', .)" class-uk-active="page.stats_page == ."><a>[[data.areas[.].name]]</a></li>
+                            [[/each]]
+                          </ul>
+                        </div>
+                      [[/each]]
+                    </div>
+                  </div>
                 </div>
-              </div>
+              [[/each]]
             </div>
-          [[/each]]
         </div>
+      </div>
 
       <div class="uk-text-right">
         <h6 class="uk-font-family-secondary uk-text-uppercase">Compare Percentile</h6>
