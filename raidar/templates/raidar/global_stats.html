@@ -200,7 +200,7 @@
                   <div class='r-spec'>
                     <div>
                       <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">[[data.specialisations[professionId][0]]]</h6>
-                      [[#if !(Number(page.area_id)>0)]]
+                      [[#if !(Number(page.stats_page)>0)]]
                       <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> Statistics that combine multiple encounters may be heavily skewed by the fact that different classes are used at different bosses, regardless of sample size ([[lineStats.count]])"><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
                       [[elseif lineStats.count >= 200]]
                       <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size ([[lineStats.count]]) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
