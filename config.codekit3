@@ -65,6 +65,13 @@
 		"oAP": "\/analyser\/__pycache__\/collector.cpython-36.pyc",
 		"oF": 0
 		},
+	"\/analyser\/__pycache__\/postprocessor.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/analyser\/__pycache__\/postprocessor.cpython-36.pyc",
+		"oF": 0
+		},
 	"\/analyser\/__pycache__\/splits.cpython-36.pyc": {
 		"cB": 0,
 		"ft": 8192,
@@ -10186,6 +10193,76 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterfilter.JPG": {
+		"ft": 16384,
+		"iS": 57621,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterfilter.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterpage.JPG": {
+		"ft": 16384,
+		"iS": 132660,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpage.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterpagebossmetrics.jpg": {
+		"ft": 16384,
+		"iS": 62937,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpagebossmetrics.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterpagebuffs.jpg": {
+		"ft": 16384,
+		"iS": 167356,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpagebuffs.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterpageheader.jpg": {
+		"ft": 16384,
+		"iS": 24333,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpageheader.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterpageoverview.jpg": {
+		"ft": 16384,
+		"iS": 129515,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpageoverview.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/encounterpagestats.jpg": {
+		"ft": 16384,
+		"iS": 189637,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpagestats.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/intro\/global_stats.png": {
 		"ft": 32768,
 		"iS": 119747,
@@ -10195,6 +10272,16 @@
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/globalstats.jpg": {
+		"ft": 16384,
+		"iS": 219097,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/globalstats.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"q": 100
 		},
 	"\/raidar\/static\/raidar\/img\/intro\/individual.png": {
@@ -10217,6 +10304,16 @@
 		"oIPL": 1,
 		"opt": 1,
 		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/intro\/personalstats.jpg": {
+		"ft": 16384,
+		"iS": 164017,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/intro\/personalstats.jpg",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"q": 100
 		},
 	"\/raidar\/static\/raidar\/img\/intro\/profile.png": {
@@ -11814,6 +11911,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/TestLogs\/encounters\/arichardson\/20180218-120204.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/encounters\/arichardson\/20180312-225357.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/encounters\/arichardson\/20180312-225357.evtc.zip",
 		"oF": 0
 		},
 	"\/TestLogs\/errors\/47.evtc": {
