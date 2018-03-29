@@ -163,7 +163,7 @@ def index(request, page={ 'name': '' }):
 
 
 def _add_build_data_to_profile(kind, data, profile):
-    if kind not in profile['encounter'] or 'All' not in data:
+    if 'encounter' not in profile or kind not in profile['encounter'] or 'All' not in data:
         return
     data = data['All']
 
@@ -179,6 +179,7 @@ def _profile_data_for_era(era_user_store):
     era = era_user_store.era
     era_val = era.val
     profile = era_user_store.val
+
     for era_area_store in EraAreaStore.objects.filter(era=era):
         _add_build_data_to_profile(str(era_area_store.area_id), era_area_store.val, profile)
     for kind, kind_data in era_val['kind'].items():
