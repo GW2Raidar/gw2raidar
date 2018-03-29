@@ -64,6 +64,7 @@ def _userprops(request):
                                    if account.api_key != "" else "",
                     }
                     for account in accounts],
+                'encounter_count': Encounter.objects.count(),
             }
 
 
@@ -161,16 +162,35 @@ def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
+def _add_build_data_to_profile(kind, data, profile):
+    if 'encounter' not in profile or kind not in profile['encounter'] or 'All' not in data:
+        return
+    data = data['All']
+
+    for archetype, archdata in profile['encounter'][kind]['archetype'].items():
+        for profession, profdata in archdata['profession'].items():
+            for elite, elitedata in profdata['elite'].items():
+                builddata = _safe_get(lambda: data['build'][profession][elite][archetype])
+                if builddata:
+                    elitedata['everyone'] = builddata
+    profile['encounter'][kind]['individual'] = data['individual']
+
 def _profile_data_for_era(era_user_store):
-    era_val = era_user_store.era.val
+    era = era_user_store.era
+    era_val = era.val
+    profile = era_user_store.val
+
+    for era_area_store in EraAreaStore.objects.filter(era=era):
+        _add_build_data_to_profile(str(era_area_store.area_id), era_area_store.val, profile)
+    for kind, kind_data in era_val['kind'].items():
+        _add_build_data_to_profile(kind, kind_data, profile)
+
     return {
         'id': era_user_store.era_id,
-        'name': era_user_store.era.name,
-        'started_at': era_user_store.era.started_at,
-        'description': era_user_store.era.description,
-        'profile': era_user_store.val,
-        'individual': _safe_get(lambda: era_val['All']['individual']),
-        'build': _safe_get(lambda: era_val['All']['build']),
+        'name': era.name,
+        'started_at': era.started_at,
+        'description': era.description,
+        'profile': profile,
     }
 
 @require_GET
@@ -648,8 +668,10 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
+
     result = {
         "notifications": [notification.val for notification in notifications],
+        "encounter_count": Encounter.objects.count(),
         "version": settings.VERSION['id'],
     }
     if notifications:
