@@ -34,11 +34,11 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 format: ('stacks' in data.buffs[code]) ? num : perc,
                 section: page.boon_output ? {
                     name: 'Output',
-                    value: buffs_out[code],
+                    value: buffs_out ? buffs_out[code] : 0,
                     percentiles: pctl(@context.get(`group.buffs_out.per_${code}`))
                   } : {
                     name: 'Uptime',
-                    value: buffs[code],
+                    value: buffs ? buffs[code] : 0,
                     percentiles: pctl(@context.get(`group.buffs.per_${code}`))
                   }
               }]]
@@ -80,10 +80,10 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                   format: ('stacks' in data.buffs[code]) ? num : perc,
                   section: page.boon_output ? {
                       name: 'Output',
-                      value: buffs_out[code]
+                      value: buffs_out ? buffs_out[code] : 0
                     } : {
                       name: 'Uptime',
-                      value: buffs[code]
+                      value: buffs ? buffs[code] : 0
                     }
                 }]]
                   <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
@@ -125,11 +125,11 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                     format: ('stacks' in data.buffs[code]) ? num : perc,
                     section: page.boon_output ? {
                         name: 'Output',
-                        value: buffs_out[code],
+                        value: buffs_out ? buffs_out[code] : 0,
                         percentiles: pctl(@context.get(`archetype.buffs_out.per_${code}`))
                       } : {
                         name: 'Uptime',
-                        value: buffs[code],
+                        value: buffs ? buffs[code] : 0,
                         percentiles: pctl(@context.get(`archetype.buffs.per_${code}`))
                       }
                   }]]
