@@ -1369,6 +1369,7 @@ ${body}
         options.data = { last_id: lastNotificationId };
       }
       $.ajax(options).done(data => {
+        r.set('count', data.count);
         if (data.last_id) {
           lastNotificationId = data.last_id;
         }

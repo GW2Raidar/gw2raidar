@@ -64,6 +64,7 @@ def _userprops(request):
                                    if account.api_key != "" else "",
                     }
                     for account in accounts],
+                'encounter_count': Encounter.objects.count(),
             }
 
 
@@ -666,8 +667,10 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
+
     result = {
         "notifications": [notification.val for notification in notifications],
+        "encounter_count": Encounter.objects.count(),
         "version": settings.VERSION['id'],
     }
     if notifications:
