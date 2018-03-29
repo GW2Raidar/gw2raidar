@@ -422,6 +422,9 @@ rect.chart {
 .r-global-group-stats-container {
   display: grid;
   grid-auto-flow: row; }
+  @media (min-width: 1200px) {
+    .r-global-group-stats-container.squad .r-global-stats-damage {
+      margin-right: 62px; } }
   .r-global-group-stats-container .r-stats-row {
     display: grid;
     grid-template: "damage damage" "damagein duration";
@@ -429,7 +432,7 @@ rect.chart {
     @media (min-width: 1200px) {
       .r-global-group-stats-container .r-stats-row {
         grid-template: "duration damage damagein";
-        grid-template-columns: 1fr 4fr 2fr;
+        grid-template-columns: 1fr 4fr 1fr;
         grid-gap: 16px; } }
     .r-global-group-stats-container .r-stats-row .r-global-stats-damageIn {
       grid-area: damagein; }

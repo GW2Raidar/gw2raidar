@@ -24,7 +24,7 @@
           <span class="uk-badge uk-text-bold r-bg-0">
             [[formatDate(started_at)]]
           </span>
-          <a href="" class="uk-badge uk-text-bold uk-visible@m">Tag [[encounter.tags]] </a>
+          <a href="" class="uk-badge uk-text-bold uk-visible@m">[[encounter.tags ? 'Tags:' : 'Add Tags']] [[encounter.tags]] </a>
           <div uk-dropdown="mode: click">
             <form class="uk-margin-small uk-width-medium uk-form-stacked uk-text-left" on-submit="set_tags_cat">
               <fieldset class="uk-fieldset">
