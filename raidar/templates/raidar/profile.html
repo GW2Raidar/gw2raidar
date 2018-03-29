@@ -155,13 +155,13 @@
                 [[#each keysWithAllLast(archetype.profession) as professionId]]
                   [[#with archetype.profession[professionId] as profession]]
                     [[#each keysWithAllLast(profession.elite) as eliteId]]
-                      [[#with profession.elite[eliteId] as elite, @this.get(`profile.eras.${page.era}.build.${professionId}.${eliteId}.${archetypeId}`) as stat]]
+                      [[#with profession.elite[eliteId] as elite]]
                         [[#with elite]]
-                          [[#with stat ? {
-                            percentiles_dps: pctl(stat.per_dps),
-                            percentiles_dps_boss: pctl(stat.per_dps_boss)
+                          [[#with everyone ? {
+                            percentiles_dps: pctl(everyone.per_dps),
+                            percentiles_dps_boss: pctl(everyone.per_dps_boss)
                           } : []]]
-                            [[#with stat ? {
+                            [[#with everyone ? {
                               pctl_dps: bsearch(avg_dps, percentiles_dps),
                               pctl_dps_boss: bsearch(avg_dps_boss, percentiles_dps_boss)
                             } : 0]]
@@ -196,22 +196,22 @@
                                     [[#if 'avg_dps' in elite]]
                                       <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-bottom">Total DPS (Average)Max</h6>
                                       <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
-                                        <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max DPS</h6>[[num(max_dps, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps / individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')"/>
-                                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average DPS</h6>[[num(avg_dps, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps / individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')" />
+                                        <rect class="chart chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max DPS</h6>[[num(max_dps, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps / enc.individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')"/>
+                                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average DPS</h6>[[num(avg_dps, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps / enc.individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')" />
                                         <!--
                                         Text with some custom adjustments to deal with alignment issues.
                                         -->
-                                        <text x='[[100 * max_dps / individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps / individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='11'>([[num(avg_dps, 0)]]) [[num(max_dps, 0)]]</text>
+                                        <text x='[[100 * max_dps / enc.individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps / enc.individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='11'>([[num(avg_dps, 0)]]) [[num(max_dps, 0)]]</text>
 
                                       </svg>
                                       <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-top uk-margin-small-bottom">Boss DPS (Average)Max</h6>
                                       <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
-                                        <rect class="chart chart-hover r-bg-[[pctl_dps_boss]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max Boss DPS</h6>[[num(max_dps_boss, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps_boss / individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')"/>
-                                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average Boss DPS</h6>[[num(avg_dps_boss, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps_boss)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps_boss / individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')" />
+                                        <rect class="chart chart-hover r-bg-[[pctl_dps_boss]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max Boss DPS</h6>[[num(max_dps_boss, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps_boss / enc.individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')"/>
+                                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Average Boss DPS</h6>[[num(avg_dps_boss, 0)]] Damage Per Second.<br/><strong>Performance:</strong>[[th(pctl_dps_boss)]] Percentile<br/>Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * avg_dps_boss / enc.individual.max_dps]]%' opacity='0.15' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps_boss', 'Boss DPS')" />
                                         <!--
                                         Text with some custom adjustments to deal with alignment issues.
                                         -->
-                                        <text x='[[100 * max_dps_boss / individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps_boss / individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(avg_dps_boss, 0)]]) [[num(max_dps_boss, 0)]]</text>
+                                        <text x='[[100 * max_dps_boss / enc.individual.max_dps]]%' y='12px' alignment-baseline="hanging" text-anchor="[[(100 * max_dps_boss / enc.individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(avg_dps_boss, 0)]]) [[num(max_dps_boss, 0)]]</text>
                                       </svg>
                                     [[/if]]
                                   </div>
