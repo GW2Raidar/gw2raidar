@@ -10370,16 +10370,6 @@
 		"sC": 3,
 		"tS": 0
 		},
-	"\/raidar\/static\/raidar\/script.js": {
-		"ft": 64,
-		"ma": 0,
-		"mi": 1,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/script-min.js",
-		"oF": 0,
-		"sC": 3,
-		"tS": 0
-		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -10396,13 +10386,6 @@
 		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/account.html",
 		"oF": 1
-		},
-	"\/raidar\/templates\/raidar\/donation_cta.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/donation_cta.html",
-		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/encounter.html": {
 		"cB": 0,
@@ -10430,20 +10413,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/encounter_boss_metrics.html",
-		"oF": 0
-		},
-	"\/raidar\/templates\/raidar\/encounter_buffs.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/encounter_buffs.html",
-		"oF": 0
-		},
-	"\/raidar\/templates\/raidar\/encounter_combat_data.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/encounter_combat_data.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/encounter_filter.html": {
@@ -10537,13 +10506,6 @@
 		"oAP": "\/raidar\/templates\/raidar\/navbar.html",
 		"oF": 0
 		},
-	"\/raidar\/templates\/raidar\/profile.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/profile.html",
-		"oF": 0
-		},
 	"\/raidar\/templates\/raidar\/robots.txt": {
 		"cB": 0,
 		"ft": 8192,
@@ -10577,13 +10539,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/urls.py",
-		"oF": 0
-		},
-	"\/raidar\/views.py": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/views.py",
 		"oF": 0
 		},
 	"\/raidar\/words.txt": {
