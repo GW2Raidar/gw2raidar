@@ -27,6 +27,9 @@
 .r-tooltip-help {
   cursor: help; }
 
+.r-main-nav {
+  background: rgba(31, 28, 44, 0.35); }
+
 .material-icons {
   vertical-align: middle; }
 
