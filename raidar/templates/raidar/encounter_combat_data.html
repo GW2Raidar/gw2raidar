@@ -80,7 +80,7 @@
 	      </svg>
 	    </div>
 	    <div class="r-encounter-damage in">
-	      <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-remove uk-text-uppercase">Damage Received</h6>
+	      <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
 	      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
 		[[#with {
 		  section: {
@@ -105,7 +105,7 @@
 		    <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(recv, 0)]]</strong> damage received and <strong>[[num(recv_dps, 0)]]</strong> per second.[[#if section.avg_recv]]<br/>Squad average is <strong>[[num(section.avg_recv, 0)]]</strong> and <strong>[[num(group.avg_recv_dps, 0)]]</strong> per second.[[/if]]<br/><strong>Performance:</strong> [[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
 
 		    {# text #}
-		    <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'start']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.recv, 0)]]</text>
+		    <text x='[[width < 25 ? 0 : width]]%' y='0' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.recv, 0)]]</text>
 		    {# tick text #}
 		    <text class="" x='[[clamp(100 * (section.percentiles_recv[100 - settings.comparePerc] || 0) / max_max_recv)]]%' y='44px' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'start' : 'middle']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(section.percentiles_recv[100 - settings.comparePerc], 0)]] <tspan fill="#958cbb" alignment-baseline="hanging">([[th(settings.comparePerc)]])</tspan></text>
 		  [[/with]]
@@ -200,7 +200,7 @@
 	      </div>
 
 	      <div class="r-encounter-damage in">
-		<h6 class="uk-font-family-secondary uk-hidden@l uk-margin-remove uk-text-uppercase">Damage Received</h6>
+		<h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
 		<svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
 		  [[#with {
 		    recv: received.total,
@@ -268,7 +268,7 @@
 		  [[#if name]]
 		    <h5 class="uk-margin-remove">[[name]]</h5>
 		  [[else]]
-		    <h5 class="private uk-margin-remove">PRIVATE</h5>
+		    <h5 class="private uk-margin-remove" data-text="PRIVATE">PRIVATE</h5>
 		  [[/if]]
 		</div>
 		<div class="r-encounter-player-image" style="position: relative;">
@@ -331,7 +331,7 @@
                 </div>
 
                 <div class="r-encounter-damage in">
-                  <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-remove uk-text-uppercase">Damage Received</h6>
+                  <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
                   <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
                     [[#with {
                       section: {
