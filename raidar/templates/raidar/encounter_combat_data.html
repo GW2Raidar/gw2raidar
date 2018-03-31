@@ -34,7 +34,7 @@
 	    <div class="r-encounter-player uk-text-right@l"><h5 class="uk-margin-remove">Squad</h5></div>
 	    <div class="r-encounter-damage">
 	      <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-remove uk-text-uppercase">DPS</h6>
-	      <svg class="chart chart-100" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+	      <svg class="chart chart-100" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		[[#with {
 		  section: page.dps_boss ? {
 		      name: 'Boss DPS',
@@ -81,7 +81,7 @@
 	    </div>
 	    <div class="r-encounter-damage in">
 	      <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
-	      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+	      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		[[#with {
 		  section: {
 		      recv: received.total,
@@ -156,7 +156,7 @@
 	    </div>
 	    [[#with phases[page.phase]]]
 	      <div class="r-encounter-damage">
-		<svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+		<svg class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		  [[#with {
 		    section: page.dps_boss ? {
 			name: 'Boss DPS',
@@ -201,7 +201,7 @@
 
 	      <div class="r-encounter-damage in">
 		<h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
-		<svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+		<svg class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		  [[#with {
 		    recv: received.total,
 		    squad_recv: squad.received.total
@@ -303,7 +303,7 @@
                       bsearch(section.dps, section.percentiles_dps) as pctl_dps,
                       clamp(100 * section.dps / max_player_dps) as width
                     ]]
-                      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+                      <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
                         {# line #}
                         <rect class="chart" x='0' y='36px' height='2px' width='[[clamp(100 * section.max_dps / max_player_dps)]]%' fill='#E7CCA9' />
 
@@ -332,7 +332,7 @@
 
                 <div class="r-encounter-damage in">
                   <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
-                  <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="46px" width="100%">
+                  <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
                     [[#with {
                       section: {
                           recv: received.total,
