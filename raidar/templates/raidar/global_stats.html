@@ -1,137 +1,100 @@
 {% load staticfiles %}
 
 [[#with global_stats]]
-  <div id="content" class="uk-margin-top">
-{% comment %}
-    <!--
-
-    Encounter Filter Notes:
-    Label of the button should add the encounter type to the button text. i.e. If they go to Fractals>MAMA it should say 'MAMA - FRACTALS CM' in the button after they select that .
-
-    -->
-      <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom">
-        <button class="uk-button uk-button-default">All (45)</button>
-        <div class="uk-inline">
-            <button class="uk-button uk-button-default uk-button-nor">Raids (20) <i uk-icon="chevron-down"></i></button>
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-                <div class="uk-width-1 uk-grid">
-                    <div class="uk-width-1">
+  <div id="content">
+      {# Mobile navigation/filtering #}
+      <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
+      <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.stats_page]]' on-change="@this.fire('global_stats_nav', 'page.stats_page', page.stats_page)">
+        [[#each data.boss_locations]]
+        [[#if all]]
+        <option value="[[all]]">[[all]]</option>
+        [[/if]]
+          [[#each wings]]
+          <optgroup label="[[name]]">
+            [[#each bosses]]
+              <option value='[[.]]'>[[data.areas[.].name]]</option>
+            [[/each]]
+          </optgroup>
+          [[/each]]
+        [[/each]]
+      </select>
+    <!-- <select as-ukUpdate id="era-selector" class="uk-select uk-width-auto" value='[[page.era_id]]'
+            on-change="refresh_page">
+        <option value="[[null]]">Most recent</option>
+      [[#each eras]]
+        <option value='[[id]]'>[[name]]</option>
+      [[/each]]
+    </select> -->
+    <!-- Era Filter -->
+    [[#with stats]]
+    <div class="uk-flex-left uk-visible@m " uk-grid>
+      <div class="uk-width-expand  uk-margin-bottom uk-margin-top">
+        <div class="uk-width-1-1 boundary">
+          <div class="uk-button-group ">
+              {# <button class="uk-button">All (45)</button> #}
+              [[#each data.boss_locations]]
+                <div class="uk-inline">
+                  {# TODO active check is bad ATM #}
+                  {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
+                  [[#with {active: page.stats_page == all || page.stats_page in bosses}]]
+                    <button class="uk-button" class-uk-button-primary="active">[[#if active]][[data.areas[page.stats_page] ? data.areas[page.stats_page].name : page.stats_page]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+                  [[/with]]
+                  <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+                    <div class="uk-width-1 uk-grid">
+                        [[#if all]]
+                      <div class="uk-width-1">
                         <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#">All Raids Encounters (20)</a></li>
+                          <li on-click="@this.fire('global_stats_nav', 'page.stats_page', all)" class-uk-active="page.stats_page === all">
+                            <a>[[all]]</a>
+                          </li>
                         </ul>
                     </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Spirit Vale - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li>
-                                <a href="#">Vale Guardian (2)</a>
-                            </li>
-                            <li><a href="#">Gorseval (1)</a></li>
-                            <li><a href="#">Sabetha (1)</a></li>
-                        </ul>
+                        [[/if]]
+                      [[#each wings]]
+                        <div class="uk-width-1-[[columns]]@m uk-width-1">
+                          <ul class="uk-nav uk-dropdown-nav">
+                            <li class="uk-nav-header uk-margin-top">[[name]]</li>
+                            [[#each bosses]]
+                              <li on-click="@this.fire('global_stats_nav', 'page.stats_page', .)" class-uk-active="page.stats_page == ."><a>[[data.areas[.].name]]</a></li>
+                            [[/each]]
+                          </ul>
+                        </div>
+                      [[/each]]
                     </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Salvation Pass - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Slothasor (2)</a></li>
-                            <li><a href="#">Trio (1)</a></li>
-                            <li><a href="#">Matthias (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Keep Construct (2)</a></li>
-                            <li><a href="#">Xera (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Cairn (2)</a></li>
-                            <li><a href="#">Mursaat Overseer (2)</a></li>
-                            <li><a href="#">Samarog (1)</a></li>
-                            <li><a href="#">Deimos (1)</a></li>
-                        </ul>
-                    </div>
+                  </div>
                 </div>
-            </div>
-        </div>
-        <div class="uk-inline">
-            <button class="uk-button uk-button-default uk-button-nor  uk-button-primary">Mama - Fractals CM (20) <i uk-icon="chevron-down"></i></button>
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-                <div class="uk-width-1 uk-grid">
-                    <div class="uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#">All Challenge Mode Encounters (5)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Nightmare - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li class='uk-active'>
-                                <a href="#">MAMA (2)</a>
-                            </li>
-                            <li><a href="#">Siax (1)</a></li>
-                            <li><a href="#">Ensolyss (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Shattered Observatory - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Skovald (2)</a></li>
-                            <li><a href="#">Astrilov (1)</a></li>
-                            <li><a href="#">Arkk (1)</a></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="uk-inline">
-            <button class="uk-button uk-button-default">Golem (20) <i uk-icon="chevron-down"></i></button>
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-                <div class="uk-width-1 uk-grid">
-                    <div class="uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li><a href="#">All Golem Encounters (5)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Massive - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li>
-                                <a href="#">Massive Standard Kitty Golem (2)</a>
-                            </li>
-                            <li><a href="#">Massive Average Kitty Golem (1)</a></li>
-                            <li><a href="#">Massive Vital Kitty Golem (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Normal - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Standard Kitty Golem (2)</a></li>
-                            <li><a href="#">Average Kitty Golem (1)</a></li>
-                            <li><a href="#">Vital Kitty Golem (1)</a></li>
-                        </ul>
-                    </div>
-                    <div class="uk-width-1-4@m uk-width-1">
-                        <ul class="uk-nav uk-dropdown-nav">
-                            <li class="uk-nav-header">Special - <a class="uk-display-inline" href="#">All (4)</a></li>
-                            <li><a href="#">Tough Kitty Golem (2)</a></li>
-                        </ul>
-                    </div>
-                </div>
+              [[/each]]
             </div>
         </div>
       </div>
-{% endcomment %}
+
+      <div class="uk-text-right">
+        <h6 class="uk-font-family-secondary uk-text-uppercase">Compare Percentile</h6>
+        [[#each [99, 90, 80, 70, 60, 50, 30] ]]
+          <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" twoway="false" checked="[[settings.compareGlobalPerc.indexOf(.) !== -1]]" on-click="@this.set('settings.compareGlobalPerc', updateCompareGlobalPerc(settings.compareGlobalPerc, .))">
+        <label class="r-percentile-label uk-text-bold" for="[[.]]check"><span class="uk-badge r-bg-[[.]]">[[perc(., 0)]]</span></label>
+        [[/each]]
+      </div>
+    </div>
+    <div class="uk-width-auto">
+      <h6 class="uk-font-family-secondary uk-text-uppercase">Time Frame</h6>
+      <button class="uk-button uk-width-auto@m uk-width-1-1 uk-margin-right@l" type="button">[[page.era_id ? eras[page.era_id].name : "Most recent"]]<i class="material-icons">expand_more</i></button>
+      <div uk-dropdown="mode: click">
+          <ul class="uk-nav uk-dropdown-nav">
+            [[#each era_order]]
+              <li><a on-click="@this.fire('global_stats_nav', 'page.era_id', id)">[[name]]</a></li>
+            [[/each]]
+          </ul>
+      </div>
+    </div>
+<!-- settings.compareGlobalPerc.indexOf(.) !== -1 ? settings.compareGlobalPerc.filter(a => a !== .) :  -->
+
+
+
 
   <div class="uk-clearfix">
-    <div class="uk-float-left">
-      <h2 class="uk-margin-remove">[[page.area_id ? findId(areas, page.area_id).name : "All logs"]]</h2>
-      <h3 class="uk-margin-remove">in the [[page.era_id ? findId(eras, page.era_id).name : "most recent"]] Era</h3>
-    </div>
-    <div class="uk-float-right uk-text-right">
+
+    <!-- <div class="uk-float-right uk-text-right">
       <select as-ukUpdate id="area-selector" class="uk-select" value='[[page.area_id]]'
               on-change="refresh_page">
           <option value="[[null]]">All</option>
@@ -139,106 +102,190 @@
           <option value='[[id]]'>[[name]]</option>
         [[/each]]
       </select>
-      <select as-ukUpdate id="era-selector" class="uk-select" value='[[page.era_id]]'
-              on-change="refresh_page">
-          <option value="[[null]]">Most recent</option>
-        [[#each eras]]
-          <option value='[[id]]'>[[name]]</option>
-        [[/each]]
-      </select>
-    </div>
+
+    </div> -->
 
   </div>
-      <p><strong>Disclaimer: The statistics displayed in this report are based off data available within GW2Raidar only, as such it is not a complete representation of the Guild Wars 2 raiding community. Efforts are made to ensure accuracy, however some anomalies may exist. Only successful runs are included and builds with fewer than 10 data points are not shown.</strong></p>
+      <!-- <p><strong>Disclaimer: The statistics displayed in this report are based off data available within GW2Raidar only, as such it is not a complete representation of the Guild Wars 2 raiding community. Efforts are made to ensure accuracy, however some anomalies may exist. Only successful runs are included and builds with fewer than 10 data points are not shown.</strong></p> -->
 
-  [[#with stats]]
-    <div  class="uk-overflow-auto uk-margin-remove-bottom">
-      <table class="uk-table uk-table-striped uk-table-small">
-         <thead>
-           <tr class="uk-background-secondary">
-             <th class="uk-table-shrink"></th>
-             <th>Duration (seconds)</th>
-             <th>Cleave DPS</th>
-             <th>Boss DPS</th>
-             <th>DPS Received</th>
-           </tr>
-         </thead>
-         <tbody>
-           [[#if group.per_duration]]
-           <td>Full group</td>
-          [[#each [
-              {"percentiles": p_r(group.per_duration), "max": group.max_duration},
-              {"percentiles": p(group.per_dps), "max": group.max_dps},
-              {"percentiles": p(group.per_dps_boss), "max": group.max_dps_boss},
-              {"percentiles": p_r(group.per_dps_received), "max": group.max_dps_received}
-            ] ]]
-              [[#if percentiles]]
-              <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:145px">
-              </td>
-              [[else]]
-              <td></td>
-              [[/if]]
-            [[/each]]
-           [[else]]
-              <tr><td colspan="9">Not enough data to display group statistics</td></tr>
-           [[/if]]
-         </tbody>
-      </table>
+
+      <!-- Grid CSS experiement -->
+      <h2 class="uk-heading-line"><span>Full Group</span></h2>
+      <div class="r-global-stats-container r-global-group-stats-container squad">
+        <div class="r-stats-row r-stats-header uk-visible@l">
+          <div>Duration</div>
+          <div>DPS</div>
+          <div>DPS Recieved</div>
+        </div>
+        <div class="r-stats-row">
+          [[#if group.per_duration]]
+          <div class="r-duration">
+            <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Duration</h6>
+            [[#with {duration_percentiles: p(group.per_duration)}]]
+              [[#each settings.compareGlobalPerc]]
+                <div class="r-duration-item r-bg-[[.]]">[[formatTimeShort(duration_percentiles[100-.])]]
+                </div>
+              [[/each]]
+            [[/with]]
+          </div>
+          <div class="r-global-stats-damage">
+            <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px">
+              [[#with {dps_percentiles: p(group.per_dps), boss_dps_percentiles: p(group.per_dps_boss)}]]
+              [[#each settings.compareGlobalPerc]]
+                <!--
+              Overlapping charts for Boss and Cleave damage
+
+              First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
+
+              Classes assign colors: r-bg-{Percentile} will add the color to that element.
+
+              -->
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[.]]th Percentile</h6>[[num(dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*dps_percentiles[.]/group.max_dps]]%' opacity='0.3' />
+              <!--
+              Second <rect> is full opacity and the same color.
+
+              -->
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[.]]th Percentile</h6>[[num(boss_dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*boss_dps_percentiles[.]/group.max_dps]]%'/>
+                [[#if @index == 0]]
+                  <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                [[elseif @index < settings.compareGlobalPerc.length - 1]]
+                  <text x='[[(100*dps_percentiles[.]/group.max_dps)+0.5]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                [[else]]
+                   <text x='[[100*dps_percentiles[.]/group.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                [[/if]]
+              [[/each]]
+              [[/with]]
+            </svg>
+          </div>
+          <div class="r-global-stats-damageIn">
+            <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">DPS Recieved</h6>
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[4 + settings.compareGlobalPerc.length * 12]]px" width="100%">
+              [[#with {inc_dps_percentiles: p(group.per_dps_received)}]]
+              [[#each settings.compareGlobalPerc]]
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Received | [[.]]th Percentile</h6>[[num(inc_dps_percentiles[100-.],0)]] Damage Per Second" x='0%' y='[[4 + @index * 12]]px' height='8px' width='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%'/>
+                [[#if @index == 0]]
+                  <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='-10' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                [[elseif @index < settings.compareGlobalPerc.length - 1]]
+                  <text x='[[(100*inc_dps_percentiles[100-.]/group.max_dps_received)+0.5]]%' y='[[8 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                [[else]]
+                   <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[14 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                [[/if]]
+              [[/each]]
+              [[/with]]
+            </svg>
+          </div>
+          [[else]]
+            <div class='r-global-stats-damage'>Not enough data to display for group statistics</div>
+          [[/if]]
+        </div>
+      </div>
+
       [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
-      <h3 class="uk-margin-remove-top uk-margin-small-bottom">[[data.archetypes[archetype]]]</h3>
-      <div>
-        <table class="uk-width-1-1 uk-table uk-table-striped uk-table-small">
-          <thead>
-            <tr class="uk-background-secondary">
-              <th class="uk-table-shrink">Specialisation</th>
-              <th class="uk-width-1-6">Cleave DPS</th>
-              <th class="uk-width-1-6">Boss DPS</th>
-              <th class="uk-table-expand" colspan="5">Outgoing buffs</th>
-              <th class="uk-table-shrink">Popularity</th>
-            </tr>
-          </thead>
-          <tbody>
-            [[#each flattenStats(build)]]
-              [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
-                [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]
-                  [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
-                  <tr class="uk-margin-remove" >
-                    <td>
-                      <img class="uk-margin-remove" alt="[[data.specialisations[professionId][eliteId]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[professionId][eliteId]]]_tango_icon_20px.png" />
-                      [[professionId === 'All' ? 'All' : data.specialisations[professionId][eliteId]]]
-                    </td>
+      <h2 class="uk-heading-line"><span>[[data.archetypes[archetype]]]</span></h2>
+
+      <div class="r-global-stats-container">
+        <div class="r-stats-row r-stats-header uk-visible@l">
+          <div></div>
+          <div>Damage Per Second</div>
+          <div>Buffs</div>
+        </div>
+
+        [[#each flattenStats(build)]]
+
+          [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
+            [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]
+              [[#with {buffs: highestBuffs(build[professionId][eliteId][archetypeId].buffs_out)}]]
+                <div class="r-stats-row">
+                  <div class='r-spec'>
+                    <div>
+                      <h6 class="uk-font-family-secondary uk-text-uppercase uk-margin-remove">[[data.specialisations[professionId][0]]]</h6>
+                      [[#if !(Number(page.stats_page)>0)]]
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> Statistics that combine multiple encounters may be heavily skewed by the fact that different classes are used at different bosses, regardless of sample size ([[lineStats.count]])"><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[elseif lineStats.count >= 200]]
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>High Confidence Level</h6> This indicates a large sample size ([[lineStats.count]]) and the statistics shown should be an accurate representation."><i class="material-icons uk-text-success uk-text-small r-global-stats-indicator">stars</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[elseif lineStats.count >= 50]]
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Medium Confidence Level</h6> This indicates a moderate sample size ([[lineStats.count]]) and the statistics are probably a good representation but could contain some outliers that are skewing numbers up or down."><i class="material-icons uk-text-warning uk-text-small r-global-stats-indicator">info</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[else]]
+                      <h5 class="uk-margin-remove r-tooltip-help" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Low Confidence Level</h6> This indicates a small sample size ([[lineStats.count]]) there is enough data to be shown (more than 10 logs) but it's probably heavily skewed by outliers."><i class="material-icons uk-text-danger uk-text-small r-global-stats-indicator">cancel</i>&nbsp;[[data.specialisations[professionId][eliteId]]]</h5>
+                      [[/if]]
+                    </div>
+                    <img alt="[[data.specialisations[professionId][eliteId]]]" src="/static/raidar/img/48px/[[data.specialisations[professionId][eliteId]]]_tango_icon_48px.png">
+                  </div>
+                  <div class="r-global-stats-damage">
+                    <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
+                    <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px">
+                      [[#with {dps_percentiles:p(lineStats.per_dps)}]]
+                      [[#each settings.compareGlobalPerc]]
+
+                        <!--
+                      Overlapping charts for Boss and Cleave damage
+
+                      First <rect> is the "cleave" damage which as a slight opactity drop to the color. Each are positioned exactly at the same X,Y values but different dynamic widths based on data.
+
+                      Classes assign colors: r-bg-{Percentile} will add the color to that element.
+                      -->
+                        <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Total | [[.]]th Percentile</h6>[[num(dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*dps_percentiles[.]/individual.max_dps]]%' opacity='0.3' />
+                      <!--
+                      Second <rect> is full opacity and the same color.
+                      -->
+                      <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Boss | [[.]]th Percentile</h6>[[num(boss_dps_percentiles[.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*boss_dps_percentiles[.]/individual.max_dps]]%'/>
+
+                      <!--
+                      Text with some custom adjustments to deal with alignment issues.
+                      -->
+                      [[#if @index == 0]]
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='0' dominant-baseline="hanging" text-anchor="[[(100*dps_percentiles[.]/individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      [[elseif @index < settings.compareGlobalPerc.length - 1]]
+                      <text x='[[(100*dps_percentiles[.]/individual.max_dps)+0.5]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      [[else]]
+                      <text x='[[100*dps_percentiles[.]/individual.max_dps]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="[[(100*dps_percentiles[.]/individual.max_dps) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>([[num(boss_dps_percentiles[.],0)]]) [[num(dps_percentiles[.],0)]]</text>
+                      [[/if]]
+                      [[/each]]
+                      [[/with]]
+                    </svg>
+                  </div>
+                  <div class="r-global-stats-buffs r-buff-container">
+                    <h6 class="uk-font-family-secondary uk-text-uppercase uk-hidden@l uk-margin-remove">Buffs</h6>
                     [[#each [
-                      {"percentiles": p(lineStats.per_dps), "max": individual.max_dps},
-                      {"percentiles": boss_dps_percentiles, "max": individual.max_dps_boss},
                       buffs[0],
                       buffs[1],
                       buffs[2] ,
                       buffs[3],
                       buffs[4]
                     ] ]]
+                    <div class="r-buff">
                       [[#if percentiles]]
-                      <td class="uk-margin-remove" uk-tooltip title="99th percentile: [[num(percentiles[99], 0)]]<br/>90th percentile: [[num(percentiles[90], 0)]]<br/>median: [[num(percentiles[50], 0)]]" style="[[p_bar(percentiles, max, buff_image)]];min-width:[[buff_image ? 80 : 145]]px">
-                        [[#if buff_image]]
-                          <img class="uk-float-left" src="{% static 'raidar/img/buff/' %}/[[buff_image]].png" alt="[[buff_name]]"/>
+                      [[#with {stackable:buff_name == 'might', pretty_name: buff_name.replace('_',' ')}]]
+                      <div class="r-buff-icon">
+                        <img src="{% static 'raidar/img/buff/' %}/[[buff_name]].png" alt="[[buff_name]]" width="20">
+                      </div>
+                      [[#each settings.compareGlobalPerc]]
+                        [[#if stackable]]
+                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Stacks | [[.]]th Percentile</h6>Average output of [[num(percentiles[.], 0)]] stacks of [[pretty_name]]" class="r-buff-number chart-hover r-bg-[[.]]">[[num(percentiles[.], 0)]]
+                        </div>
+                        [[else]]
+                        <div uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[pretty_name]] Uptime | [[.]]th Percentile</h6>Average output of [[num(percentiles[.], 0)]]% [[pretty_name]] uptime" class="r-buff-number r-bg-[[.]] chart-hover">[[num(percentiles[.], 0)]]<sup>%</sup>
+                      </div>
                         [[/if]]
-                      </td>
+                      [[/each]]
+                      [[/with]]
                       [[else]]
-                      <td></td>
                       [[/if]]
+                    </div>
                     [[/each]]
-                    <td>[[num(lineStats.count/group.count, 2)]]</td>
-                  </tr>
-                  [[/with]]
-                [[/if]]
+                  </div>
+                </div>
               [[/with]]
-            [[else]]
-              <tr><td colspan="9">Not enough data to display for [[data.archetypes[archetype]]] specialisations</td></tr>
-            [[/each]]
-          </tbody>
-        </table>
-        </div>
+            [[/if]]
+          [[/with]]
+        [[else]]
+          <div class="r-stats-row">
+            <div class='r-global-stats-damage'>Not enough data to display for [[data.archetypes[archetype]]] specialisations</div>
+          </div>
+        [[/each]]
+      </div>
       [[/each]]
-    </div>
-  [[/with]]
+    [[/with]]
   </div>
 [[/with]]
