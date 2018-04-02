@@ -17,7 +17,6 @@
     input.value = smiley;
     return input.type === type && 'style' in input && input.value !== smiley;
   })();
-  console.log(inputDateAvailable);
 
 
   Ractive.decorators.ukUpdate = function(node) {
@@ -122,6 +121,22 @@
   helpers.findId = (list, id) => {
     return list.find(a => a.id == id);
   }
+  helpers.round = (n, d=0) => {
+    return n.toFixed(d);
+  }
+  helpers.updateCompareGlobalPerc = (list, clicked) =>
+  {
+    let newList =  list.indexOf(clicked) !== -1
+    ? list.filter(a => a !== clicked)
+    : list.concat([clicked]).sort().reverse()
+
+    if (newList.length === 0) {
+      return list;
+    }
+
+    return newList;
+  }
+
   // adapted from https://stackoverflow.com/a/2901298/240443
   // in accordance to https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Dates_and_numbers#Decimal_points
   // num(1234.5):     1,234.5
@@ -147,7 +162,37 @@
     if (n === undefined) return '';
     return helpers.num(n, d === undefined ? 2 : d) + '%';
   }
-  // TODO load from server
+  // e.g. pctl(per_might)
+  helpers.pctl = base64 => {
+    if (!base64) return [];
+    return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
+  }
+  // e.g. bsearch(might, pctl(per_might))
+  helpers.bsearch = (needle, haystack) => {
+    if (!haystack.length) return 0;
+    let l = 0, h = haystack.length - 1;
+    if (needle > haystack[h]) {
+      return h + 1;
+    }
+    while (l != h) {
+      let m = (l + h) >> 1;
+      if (haystack[m] < needle) {
+        l = m + 1;
+      } else {
+        h = m;
+      }
+    }
+    return h;
+  };
+  helpers.th = num => {
+    let ones = num % 10;
+    let tens = num % 100 - ones;
+    let suffix = tens == 1 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
+    return num + suffix;
+  };
+  helpers.clamp = (num, max) => {
+    return Math.min(num, max === undefined ? 100 : max);
+  }
   helpers.buffImportanceLookup = {
     'might': 80,
     'fury': 10,
@@ -254,6 +299,16 @@
       else if (usec < 100) usec = "0" + usec;
       if (minutes) return minutes + ":" + f0X(seconds) + "." + usec;
       return seconds + "." + usec;
+    } else {
+      return '';
+    }
+  };
+  helpers.formatTimeShort = duration => {
+    if (duration !== undefined) {
+      let seconds = Math.trunc(duration);
+      let minutes = Math.trunc(seconds / 60);
+      seconds -= minutes * 60
+      return minutes + ":" + f0X(seconds);
     } else {
       return '';
     }
@@ -413,7 +468,7 @@ ${rectSvg.join("\n")}
     return reversed;
   }
   helpers.p_bar = (p, max, space_for_image) => {
-    let quantileColours = ['#d7191c', '#fdae61', '#ffffbf', '#a6d96a', '#1a9641']
+    let quantileColours = ['#d7191c', '#fdae61', '#2D81C6', '#BF326D', '#7B09C9']
 
 
     return helpers.svg(helpers.rectangle(0, 5, 80*p[99]/max, 30, new Colour(quantileColours[4]))
@@ -428,7 +483,7 @@ ${rectSvg.join("\n")}
     return `<rect x='${x}%' y='${y}%' height='${height}%' width='${width}%' fill='${colour.css()}'/>`
   }
   helpers.text = (x, y, size, text) => {
-    return `<text x='${x}%' y='${y}%' font-family='Verdana' font-size='${size}'>${text}</text>`
+    return `<text x='${x}%' y='${y}%' font-family='Source Sans Pro' fill='#FCF1E2' font-size='${size}'>${text}</text>`
   }
   helpers.svg = (body) =>  {
     let svg = `
@@ -464,11 +519,17 @@ ${body}
     },
     uploads: [],
   };
+  initData.data.boss_locations.forEach(loc => {
+    loc.bosses = {}
+    loc.wings.forEach(wing => wing.bosses.forEach(id => loc.bosses[id] = true ));
+  });
   let lastNotificationId = window.raidar_data.last_notification_id;
   let storedSettingsJSON = localStorage.getItem('settings');
   if (storedSettingsJSON) {
     Object.assign(initData.settings, JSON.parse(storedSettingsJSON));
   }
+  if (!initData.settings.comparePerc) initData.settings.comparePerc = 50;
+  if (!initData.settings.compareGlobalPerc) initData.settings.compareGlobalPerc = [99,90,50];
   // TODO load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
@@ -506,7 +567,13 @@ ${body}
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
     if (page.era_id) url += '/' + page.era_id;
-    if (page.area_id) url += '/area-' + page.area_id;
+    if (page.stats_page) {
+        if(Number(page.stats_page) > 0) {
+            url += '/area-' + page.stats_page;
+        } else {
+            url += '/' + page.stats_page;
+        }
+    }
     return url;
   }
 
@@ -543,9 +610,12 @@ ${body}
         url: 'profile.json',
       }).then(setData).then(() => {
         let eras = r.get('profile.eras');
-        let latest = eras[eras.length - 1];
+        let eraOrder = Object.values(eras)
+          .filter(era => 'encounter' in era.profile)
+          .sort((e1, e2) => e2.started_at - e1.started_at);
         r.set({
-          'page.era': latest,
+          'page.era': eraOrder[0].id,
+          'profile.era_order': eraOrder,
         });
       });
     },
@@ -555,7 +625,14 @@ ${body}
       });
       $.get({
         url: URLForPage(page).substring(1) + '.json',
-      }).then(setData);
+      }).then(setData).then(() => {
+        let eras = r.get('global_stats.eras');
+        let eraOrder = Object.values(eras)
+          .sort((e1, e2) => e2.started_at - e1.started_at);
+        r.set({
+          'global_stats.stats.era_order': eraOrder,
+        });
+      });
     },
   };
 
@@ -577,17 +654,17 @@ ${body}
         return password == '' || password !== password2;
       },
       encountersAreas: function encountersAreas() {
-        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.area)));
+        let result = Array.from(new Set(this.get('encounters').map(e => e.area)));
         result.sort();
         return result;
       },
       encountersCharacters: function encountersCharacters() {
-        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.character)));
+        let result = Array.from(new Set(this.get('encounters').map(e => e.character)));
         result.sort();
         return result;
       },
       encountersAccounts: function encountersAccounts() {
-        let result = Array.from(new Set(this.get('encountersFiltered').map(e => e.account)));
+        let result = Array.from(new Set(this.get('encounters').map(e => e.account)));
         result.sort();
         return result;
       },
@@ -596,16 +673,19 @@ ${body}
         let filters = this.get('settings.encounterSort.filter');
         const durRE = /^([0-9]+)(?::([0-5]?[0-9](?:\.[0-9]{,3})?)?)?/;
         const dateRE = /^(\d{4})(?:-(?:(\d{1,2})(?:-(?:(\d{1,2}))?)?)?)?$/;
+        let any = false;
         if (filters.success !== null) {
+          any = true;
           encounters = encounters.filter(e => e.success === filters.success);
         }
         if (filters.area) {
-          let f = filters.area.toLowerCase();
-          encounters = encounters.filter(e => e.area.toLowerCase().startsWith(f));
+          any = true;
+          encounters = encounters.filter(e => e.area === filters.area);
         }
         if (filters.started_from) {
           let m = filters.started_from.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.started_at >= f);
@@ -614,6 +694,7 @@ ${body}
         if (filters.started_till) {
           let m = filters.started_till.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             if (m[3]) d.setDate(d.getDate() + 1);
             else if (m[2]) d.setMonth(d.getMonth() + 1);
@@ -625,6 +706,7 @@ ${body}
         if (filters.duration_from) {
           let m = filters.duration_from.match(durRE);
           if (m) {
+            any = true;
             let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
             encounters = encounters.filter(e => e.duration >= f);
           }
@@ -632,21 +714,23 @@ ${body}
         if (filters.duration_till) {
           let m = filters.duration_till.match(durRE);
           if (m) {
+            any = true;
             let f = ((+m[1] || 0) * 60 + (+m[2] || 0));
             encounters = encounters.filter(e => e.duration <= f);
           }
         }
         if (filters.character) {
-          let f = filters.character.toLowerCase();
-          encounters = encounters.filter(e => e.character.toLowerCase().startsWith(f));
+          any = true;
+          encounters = encounters.filter(e => e.character == filters.character);
         }
         if (filters.account) {
-          let f = filters.account.toLowerCase();
-          encounters = encounters.filter(e => e.account.toLowerCase().startsWith(f));
+          any = true;
+          encounters = encounters.filter(e => e.account == filters.account);
         }
         if (filters.uploaded_from) {
           let m = filters.uploaded_from.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             let f = d.getTime() / 1000;
             encounters = encounters.filter(e => e.uploaded_at >= f);
@@ -655,6 +739,7 @@ ${body}
         if (filters.uploaded_till) {
           let m = filters.uploaded_till.match(dateRE);
           if (m) {
+            any = true;
             let d = new Date(+m[1], (+m[2] - 1) || 0, +m[3] || 1);
             if (m[3]) d.setDate(d.getDate() + 1);
             else if (m[2]) d.setMonth(d.getMonth() + 1);
@@ -664,14 +749,17 @@ ${body}
           }
         }
         if (filters.category !== null) {
+          any = true;
           let f = filters.category;
           if (!f) f = null;
           encounters = encounters.filter(e => e.category === f);
         }
         if (filters.tag) {
+          any = true;
           let f = filters.tag.toLowerCase();
           encounters = encounters.filter(e => e.tags.some(t => t.toLowerCase().startsWith(f)));
         }
+        r.set('settings.encounterSort.filter.any', any);
         return encounters;
       },
       encounterSlice: function encounterSlice() {
@@ -737,8 +825,6 @@ ${body}
     window.ga('set', 'page', url);
     window.ga('send', 'pageview');
   }
-
-
 
   function notification(str, style) {
     UIkit.notification(str, style);
@@ -825,6 +911,10 @@ ${body}
     },
     refresh_page: function refreshPage(x) {
       setPage();
+    },
+    global_stats_nav: function global_stats_nav(event, key, val) {
+        r.set(key, val)
+        setPage();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;
@@ -1002,12 +1092,11 @@ ${body}
       return false;
     },
     encounter_filter_toggle: function encounterFilterToggle(evt) {
-      let filters = r.get('settings.encounterSort.filters');
       r.toggle('settings.encounterSort.filters');
-      if (filters) {
-        r.set('settings.encounterSort.filter.*', null);
-      }
       return false;
+    },
+    encounter_filter_clear: function encounterFilterClear(evt) {
+      r.set('settings.encounterSort.filter.*', null);
     },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
@@ -1046,9 +1135,8 @@ ${body}
       return false;
     },
     chart: function chart(evt, archetype, profession, elite, stat, statName) {
-      let era = r.get('page.era');
+      let eraId = r.get('page.era');
       let eras = r.get('profile.eras');
-      let eraId = era.id;
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
@@ -1082,10 +1170,10 @@ ${body}
 <canvas height="${height}" width="${width}"/>
 </div>
             `, {center: true});
-        dialog.$el.css('overflow', 'hidden').addClass('uk-modal-lightbox');
-        dialog.panel.css({width: width, height: height});
+        $(dialog.$el).css('overflow', 'hidden').addClass('uk-modal-lightbox');
+        $(dialog.panel).css({width: width, height: height});
         dialog.caption = $('<div class="uk-modal-caption" uk-transition-hide></div>').appendTo(dialog.panel);
-        let ctx = dialog.$el.find('canvas');
+        let ctx = $(dialog.$el).find('canvas');
         let datasets = [];
         if (globals) {
           datasets.push(graphLineDataset('P99', globals.per[99], [1, 1], "rgba(255, 255, 255, 0)", "rgba(128, 128, 128, 1)", data));
@@ -1281,6 +1369,7 @@ ${body}
         options.data = { last_id: lastNotificationId };
       }
       $.ajax(options).done(data => {
+        r.set('count', data.count);
         if (data.last_id) {
           lastNotificationId = data.last_id;
         }

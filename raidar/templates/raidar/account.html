@@ -1,70 +1,105 @@
-<div class="uk-padding">
-  <form class="uk-grid uk-grid-small">
-    <div class="uk-width-1-4">
-      <input class="uk-input" type="password" placeholder="Old password" value="[[account.old_password]]" required pattern=".{8,}" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')"/>
-    </div>
-    <div class="uk-width-1-4">
-      <input class="uk-input" type="password" placeholder="Change password" value="[[account.password]]" required on-input="@this.set('account.passpattern', @node.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')), @node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')"/>
-    </div>
-    <div class="uk-width-1-4">
-      <input class="uk-input" type="password" placeholder="Confirm password" value="[[account.password2]]" required pattern="[[account.passpattern]]" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please make sure the password fields match')"/>
-    </div>
-    <div class="uk-width-1-4">
-      <button class="uk-button uk-button-primary uk-width-1-1" on-click="change_password">Save</button>
-    </div>
-  </form>
+  <div uk-grid>
+      <div class="uk-width-1-2@m uk-width-1">
+          <ul class="uk-tab" uk-tab="connect: #component-tab-left; animation: uk-animation-fade">
+              <li><a href="#">Change Password</a></li>
+              <li><a href="#">Change Email</a></li>
+              <li><a href="#">Add API Key</a></li>
+              <li><a href="#">Privacy</a></li>
+          </ul>
+          <ul id="component-tab-left" class="uk-switcher">
+            <form class="uk-form-stacked">
+              <div class="uk-margin-bottom">
+                <label class="uk-form-label">Old Password</label>
+                <div class="uk-form-controls">
+                  <input class="uk-input" type="password" placeholder="Old password" value="[[account.old_password]]" required pattern=".{8,}" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')"/>
+                </div>
+              </div>
+              <div class="uk-margin-bottom">
+                <label class="uk-form-label">Change Password</label>
+                <div class="uk-form-controls">
+                  <input class="uk-input" type="password" placeholder="Change password" value="[[account.password]]" required on-input="@this.set('account.passpattern', @node.value.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')), @node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please use at least 8 characters')"/>
+                </div>
+              </div>
+              <div class="uk-margin-bottom">
+                <label class="uk-form-label">Confirm Password</label>
+                <div class="uk-form-controls">
+                  <input class="uk-input" type="password" placeholder="Confirm password" value="[[account.password2]]" required pattern="[[account.passpattern]]" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please make sure the password fields match')"/>
+                </div>
+              </div>
+              <button class="uk-button uk-button-primary" on-click="change_password">Save</button>
 
-  <form class="uk-grid uk-grid-small">
-    <div class="uk-width-3-4">
-      <input class="uk-input" type="email" placeholder="Change email address" value="[[account.email]]" required/>
-    </div>
-    <div class="uk-width-1-4">
-      <button class="uk-button uk-button-primary uk-width-1-1" on-click="change_email">Save</button>
-    </div>
-  </form>
+            </form>
+            <form class="uk-grid uk-grid-small">
+              <div class="uk-width-3-4">
+                <input class="uk-input" type="email" placeholder="Change email address" value="[[account.email]]" required/>
+              </div>
+              <div class="uk-width-1-4">
+                <button class="uk-button uk-button-primary uk-width-1-1" on-click="change_email">Save</button>
+              </div>
+            </form>
+            <form class="uk-grid uk-grid-small">
+              <div class="uk-width-3-4">
+                <input class="uk-input" placeholder="Enter GW2 API key named 'gw2raidar' to link another account" value="[[account.api_key]]" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')"/>
+              </div>
+              <div class="uk-width-1-4">
+                <button class="uk-button uk-button-primary uk-width-1-1" on-click="add_api_key">Save</button>
+              </div>
+              <div class="uk-width-1-1 uk-margin-large-top">
+                <h3>How do I get GW2 API Key?</h3>
 
-  <form class="uk-grid uk-grid-small">
-    <div class="uk-width-3-4">
-      <input class="uk-input" placeholder="Enter GW2 API key named 'gw2raidar' to link another account" value="[[account.api_key]]" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')"/>
-    </div>
-    <div class="uk-width-1-4">
-      <button class="uk-button uk-button-primary uk-width-1-1" on-click="add_api_key">Save</button>
-    </div>
-  </form>
+                <ol>
+                  <li>Go to <a target="arenanet account applications" href="https://account.arena.net/applications" target="_blank">ArenaNet Account Applications</a> and authenticate</li>
+                  <li>Click the "New Key" button</li>
+                  <li>Name your new API key. The name must include the phrase "GW2RAIDAR" in it</li>
+                  <li>GW2 Raidar only requires "account" permission</li>
+                  <li>Click the "Create API Key" button</li>
+                  <li>Your API key will now show; copy it, and paste it into the form above</li>
+                </ol>
 
-  <form class="uk-flex uk-flex-left">
-    <div class="uk-padding-small uk-padding-remove-left">
-      Privacy:
-    </div>
-    <div class="uk-padding-small">
-      <input type="radio" class="uk-input uk-radio" name="[[privacy]]" value="1" id="privacy_private" on-change="privacy">
-      <label for="privacy_private">Private</label>
-    </div>
-    <div class="uk-padding-small">
-      <input type="radio" class="uk-input uk-radio" name="[[privacy]]" value="2" id="privacy_squad" on-change="privacy">
-      <label for="privacy_squad">Squad</label>
-    </div>
-    <div class="uk-padding-small">
-      <input type="radio" class="uk-input uk-radio" name="[[privacy]]" value="3" id="privacy_public" on-change="privacy">
-      <label for="privacy_public">Public</label>
-    </div>
-  </form>
-</div>
+                <h3>It says my Account is already registered to another user</h3>
+                <p>This means that an API key associated with your account has been used already by another GW2 Raidar user to link your GW2 account. You will need to remove the API key in question (shown in the error message) from your GW2 Account, and possibly create a new API key, in order to prove your ownership of that GW2 account and register your GW2 Raidar account.</p>
+              </div>
 
-<table class="uk-padding uk-table">
-  <tr>
-    <th>Linked account</th>
-    <th>API key</th>
-  </tr>
-  [[#each accounts]]
-    <tr>
-      <td>[[name]]</td>
-      <td>[[[api_key.replace(/-X.*X-/, '<span class="ignore">$&</span>')]]]</td>
-    </tr>
-  [[/each]]
-</table>
-
-<p>
-  Note that GW2 Raidar only requires the keys to authenticate your ownership of
-  a GW2 account. Therefore, you only need the default "account" permission.
-</p>
+            </form>
+            <form class="uk-flex uk-flex-left">
+              <div class="uk-padding-small uk-padding-remove-left">
+                Privacy:
+              </div>
+              <div class="uk-padding-small" uk-tooltip="title:Display your account and character names to no-one but yourself; pos: bottom">
+                <input type="radio" class="uk-radio" name="[[privacy]]" value="1" id="privacy_private" on-change="privacy" >
+                <label for="privacy_private">Private</label>
+              </div>
+              <div class="uk-padding-small" uk-tooltip="title:Display your account and character names only to participants in your specific encounter; pos: bottom">
+                <input type="radio" class="uk-radio" name="[[privacy]]" value="2" id="privacy_squad" on-change="privacy">
+                <label for="privacy_squad">Squad</label>
+              </div>
+              <div class="uk-padding-small" uk-tooltip="title:Show your account and character names to everyone; pos: bottom">
+                <input type="radio" class="uk-radio" name="[[privacy]]" value="3" id="privacy_public" on-change="privacy">
+                <label for="privacy_public">Public</label>
+              </div>
+            </form>
+          </ul>
+      </div>
+      <div class="uk-width-1-2@m uk-width-1">
+        <h2 class="uk-margin-remove">Profile: <strong>[[username]]</strong></h2>
+        <div>
+          <span class="ignore">Member since</span> [[formatDate(joined_at)]]
+        </div>
+        <table class="uk-padding uk-table">
+          <tr>
+            <th>Linked account</th>
+            <th>API key</th>
+          </tr>
+          [[#each accounts]]
+            <tr>
+              <td>[[name]]</td>
+              <td>[[[api_key.replace(/-X.*X-/, '<span class="ignore">$&</span>')]]]</td>
+            </tr>
+          [[/each]]
+        </table>
+        <p>
+          Note that GW2 Raidar only requires the keys to authenticate your ownership of
+          a GW2 account. Therefore, you only need the default "account" permission.
+        </p>
+      </div>
+  </div>
