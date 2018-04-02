@@ -9527,30 +9527,30 @@
 		},
 	"\/raidar\/static\/raidar\/img\/background\/header-concept.jpg": {
 		"ft": 16384,
-		"iS": 356717,
+		"iS": 126442,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
 		"oF": 0,
-		"oIPL": 1,
-		"opt": 1,
-		"q": 48
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Aegis.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
 		"ft": 32768,
 		"iS": 1276,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Aegis.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/aegis.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/alacrity.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Alacrity.png": {
 		"ft": 32768,
 		"iS": 1316,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/alacrity.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Alacrity.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9612,33 +9612,33 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/empower_allies.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Empower_Allies.png": {
 		"ft": 32768,
 		"iS": 1390,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/empower_allies.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Empower_Allies.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/fury.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Fury.png": {
 		"ft": 32768,
 		"iS": 1271,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/fury.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Fury.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Glyph_of_Empowerment.png": {
 		"ft": 32768,
 		"iS": 1137,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Glyph_of_Empowerment.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9656,11 +9656,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/might.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Might.png": {
 		"ft": 32768,
 		"iS": 1216,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/might.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Might.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9678,33 +9678,33 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Pinpoint_Distribution.png": {
 		"ft": 32768,
 		"iS": 1398,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Pinpoint_Distribution.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/protection.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Protection.png": {
 		"ft": 32768,
 		"iS": 1221,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/protection.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Protection.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/quickness.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Quickness.png": {
 		"ft": 32768,
 		"iS": 1273,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/quickness.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Quickness.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9733,22 +9733,22 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/retaliation.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Retaliation.png": {
 		"ft": 32768,
 		"iS": 1073,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/retaliation.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Retaliation.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Soothing_Mist.png": {
 		"ft": 32768,
 		"iS": 1336,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Soothing_Mist.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9766,11 +9766,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/spotter.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Spotter.png": {
 		"ft": 32768,
 		"iS": 1312,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/spotter.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Spotter.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9788,33 +9788,33 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Stone_Spirit.png": {
 		"ft": 32768,
 		"iS": 1205,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Stone_Spirit.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Storm_Spirit.png": {
 		"ft": 32768,
 		"iS": 1268,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Storm_Spirit.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Sun_Spirit.png": {
 		"ft": 32768,
 		"iS": 1252,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Sun_Spirit.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
@@ -9832,22 +9832,22 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/Vampiric_Presence.png": {
 		"ft": 32768,
 		"iS": 1392,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Vampiric_Presence.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Vigor.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/vigor.png": {
 		"ft": 32768,
 		"iS": 1337,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/buff\/Vigor.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vigor.png",
 		"oF": 0,
 		"oIPL": 0,
 		"opt": 0,
