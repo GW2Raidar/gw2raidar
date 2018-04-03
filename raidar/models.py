@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from fuzzycount import FuzzyCountManager
 from hashlib import md5
 from analyser.analyser import Profession, Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
@@ -217,6 +218,8 @@ class Encounter(ValueModel):
     gdrive_url = models.CharField(max_length=255, editable=False, null=True, blank=True)
     tags = TaggableManager(blank=True)
     has_evtc = models.BooleanField(default=True, editable=False)
+
+    objects = FuzzyCountManager()
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
