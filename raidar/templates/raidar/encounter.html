@@ -1,73 +1,95 @@
-<div class="uk-clearfix uk-padding-remove-bottom">
+<div class="uk-grid uk-margin-large-bottom uk-margin-small-top">
   [[#with encounter]]
-    <h2 class="uk-margin-remove-bottom uk-float-left [[encounter.success ? 'uk-text-success' : 'uk-text-danger']]">
-      [[name]]
-    </h2>
-    <div class="uk-float-right uk-text-right uk-float-right">
-      <h3 class="uk-margin-remove">
-        <span>[[formatDate(started_at)]]</span>
-        &#32;
-        <span>&#91;[[formatTime(duration)]]&#93;</span>
-      </h3>
-      <div>
-        <span class="ignore">Uploaded as</span>
-        [[#if evtc_url]]
-          <a href="[[evtc_url]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
-        [[elseif downloadable]]
-          <a href="{% url 'download' %}[[page.no]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
-        [[else]]
-          <span [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</span>
-        [[/if]]
-        <span class="ignore">by</span> [[uploaded_by]]
-        <span class="ignore">at</span> [[formatDate(uploaded_at)]]
+
+    <div class="uk-width-1-1 uk-width-1-2@s">
+      <div class="r-media">
+        <img width="70px" src="/static/raidar/img/icon/[[name]].png" alt="[[name]]">
+        <div class="uk-card uk-card-default uk-card-small uk-card-body" uk-drop="delay-show: 250">
+          <div>
+            <span class="ignore">Uploaded as</span>
+            [[#if evtc_url]]
+              <a href="[[evtc_url]]" [[#with evtc_version]]uk-tooltip title=""[[/with]]>[[filename]]</a>
+            [[elseif downloadable]]
+              <a href="{% url 'download' %}[[page.no]]" [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</a>
+            [[else]]
+              <span [[#with evtc_version]]uk-tooltip title="arcdps v[[encounter.evtc_version]]"[[/with]]>[[filename]]</span>
+            [[/if]]
+            <span class="ignore">by</span> [[uploaded_by]]
+            <span class="ignore">at</span> [[formatDate(uploaded_at)]]
+          </div>
+        </div>
+        <div class="r-body">
+          <h2 style='line-height:1;' class="uk-margin-small-bottom">[[name]]</h2>
+          <span class="uk-badge uk-text-bold [[encounter.success ? 'uk-label-success' : 'uk-label-danger']]">[[encounter.success ? 'Success' : 'Wipe']]  ([[formatTime(duration)]])</span>
+          <span class="uk-badge uk-text-bold r-bg-0">
+            [[formatDate(started_at)]]
+          </span>
+          <a href="" class="uk-badge uk-text-bold uk-visible@m">[[encounter.tags ? 'Tags:' : 'Add Tags']] [[encounter.tags]] </a>
+          <div uk-dropdown="mode: click">
+            <form class="uk-margin-small uk-width-medium uk-form-stacked uk-text-left" on-submit="set_tags_cat">
+              <fieldset class="uk-fieldset">
+                <label class="uk-form-label" for="add-category">Category</label>
+                <div class="uk-form-controls">
+                  <select id="add-category" as-ukUpdate class="uk-select uk-margin-small uk-select" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
+                    <option value="[[null]]">No category</option>
+                    [[#each data.categories:id]]
+                      <option value="[[id]]">[[.]]</option>
+                    [[/each]]
+                  </select>
+                </div>
+                [[#if encounter.participated]]
+                  <input width="300px" class="uk-textarea uk-margin-small" placeholder="Tags" as-tagsInput="'encounter.tags'">
+                  <button class="uk-margin-small uk-button uk-button-small uk-button-primary">Save</button>
+                [[else]]
+                  <input width="300px" class="uk-textarea uk-flex-auto uk-margin-small" as-tagsInput="'encounter.tags'" readonly>
+                [[/if]]
+              </fieldset>
+            </form>
+          </div>
+        </div>
       </div>
+    </div>
+    <div class="uk-width-1-2 uk-visible@s uk-text-right">
+      <h6 class="uk-font-family-secondary uk-text-uppercase">Compare Percentile</h6>
+      [[#each [99, 90, 80, 70, 60, 50, 30] ]]
+        <input class="uk-checkbox r-percentile-checkbox" type="checkbox" id="[[.]]check" twoway="false" checked="[[settings.comparePerc == .]]" on-click="@this.set('settings.comparePerc', .)">
+        <label class="r-percentile-label uk-text-bold" for="[[.]]check"><span class="uk-badge r-bg-[[.]]">[[perc(., 0)]]</span></label>
+      [[/each]]
     </div>
   [[/with]]
 </div>
 
-<form class="uk-margin-small uk-flex uk-flex-bottom" on-submit="set_tags_cat">
-  <select as-ukUpdate class="uk-select uk-margin-small uk-form-small" style="width: 150px" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
-    <option value="[[null]]">No category</option>
-    [[#each data.categories:id]]
-      <option value="[[id]]">[[.]]</option>
-    [[/each]]
-  </select>
-  [[#if encounter.participated]]
-    <input class="uk-flex-auto uk-margin-small" placeholder="Tags" as-tagsInput="'encounter.tags'">
-    <button class="uk-margin-small uk-button uk-button-small uk-button-primary">Save</button>
-  [[else]]
-    <input class="uk-flex-auto uk-margin-small" as-tagsInput="'encounter.tags'" readonly>
-  [[/if]]
-</form>
 
 
-<nav class="uk-navbar-container navbar-secondary" uk-navbar>
+<nav class="uk-navbar-container uk-navbar-transparent" uk-navbar>
   <div class="uk-navbar-left">
-    <ul class="uk-navbar-nav">
-      <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Combat Stats</a></li>
-      <li class="[[persistent_page.tab == 'boon_uptime' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_uptime')">Boon Uptime</a></li>
-      <li class="[[persistent_page.tab == 'boon_output' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boon_output')">Boon Output</a></li>
+    <ul uk-tab="swiping: true;">
+      <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Overview</a></li>
+      <li class="[[persistent_page.tab == 'boons' || persistent_page.tab == 'offensive_buffs' || persistent_page.tab == 'supportive_buffs' ? 'uk-active' : '']]"><a href="#">Buffs <i class="material-icons">keyboard_arrow_down</i></a></li>
+      <div uk-dropdown="mode: click">
+          <ul class="uk-nav uk-dropdown-nav">
+            <li><a on-click="@this.set('persistent_page.tab', 'boons')">Boons</a></li>
+            <li><a on-click="@this.set('persistent_page.tab', 'offensive_buffs')">Offensive Buffs</a></li>
+            <li><a on-click="@this.set('persistent_page.tab', 'supportive_buffs')">Supportive Buffs</a></li>
+          </ul>
+      </div>
+
       <li class="[[persistent_page.tab == 'boss_metrics' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'boss_metrics')">Boss Metrics</a></li>
     </ul>
   </div>
-  <div class="uk-navbar-right">
-    <ul class="uk-navbar-nav">
+  <div class="uk-navbar-right uk-visible@m">
+    <ul uk-tab="swiping: true;">
       [[#each encounter.phase_order]]
-      <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="[[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+        <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="uk-flex-last [[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
       [[/each]]
     </ul>
   </div>
 </nav>
 
-<div class="uk-overflow-auto">
-</div>
-
 [[#if persistent_page.tab == 'combat_stats']]
   {% include 'raidar/encounter_combat_data.html' %}
-[[elseif persistent_page.tab == 'boon_uptime']]
-  {% include 'raidar/encounter_boon_uptime.html' %}
-[[elseif persistent_page.tab == 'boon_output']]
-  {% include 'raidar/encounter_boon_output.html' %}
+[[elseif persistent_page.tab == 'boons' || persistent_page.tab == 'offensive_buffs' || persistent_page.tab == 'supportive_buffs']]
+  {% include 'raidar/encounter_buffs.html' %}
 [[elseif persistent_page.tab == 'boss_metrics']]
   {% include 'raidar/encounter_boss_metrics.html' %}
 [[/if]]

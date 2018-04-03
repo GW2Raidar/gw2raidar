@@ -10,7 +10,7 @@ from . import views
 from .api_v2 import views as api_v2_views
 
 urlpatterns = [
-    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about))(?:/(?P<no>\w+))?$', views.named, name = "named"),
+    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about|framework))(?:/(?P<no>\w+))?$', views.named, name = "named"),
     url(r'^initial.json$', views.initial, name = "initial"),
     url(r'^login.json$', views.login, name = "login"),
     url(r'^logout.json$', views.logout, name = "logout"),
@@ -36,7 +36,7 @@ urlpatterns = [
     url(r'^$', views.index, name = "index"),
     url(r'^robots.txt$', TemplateView.as_view(template_name='raidar/robots.txt'), name="robots"),
     # XXX HACK separate API
-    url(r'^(?:api/)?global_stats(?:/(?P<era_id>[0-9]+))?(?:/area-(?P<area_id>[0-9]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
+    url(r'^(?:api/)?global_stats(?:/(?P<era_id>[0-9]+))?(?:/(?:area-)?(?P<stats_page>[0-9]+|[A-Za-z ]+))?(?P<json>\.json)?$', views.global_stats, name = "global_stats"),
 ]
 
 class ObtainAuthToken(rest_auth_views.ObtainAuthToken):
