@@ -22,22 +22,22 @@ START_RESOLUTION = 60
 
 
 # XXX TODO Move to a separate module, does not really belong here
-gdrive_service = None
-if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
-    try:
-        from oauth2client.service_account import ServiceAccountCredentials
-        from httplib2 import Http
-        from apiclient import discovery
-        from googleapiclient.http import MediaFileUpload
+# gdrive_service = None
+# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+#     try:
+#         from oauth2client.service_account import ServiceAccountCredentials
+#         from httplib2 import Http
+#         from apiclient import discovery
+#         from googleapiclient.http import MediaFileUpload
 
-        scopes = ['https://www.googleapis.com/auth/drive.file']
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-        http_auth = credentials.authorize(Http())
-        gdrive_service = discovery.build('drive', 'v3', http=http_auth)
-    except ImportError:
-        # No Google Drive support
-        pass
+#         scopes = ['https://www.googleapis.com/auth/drive.file']
+#         credentials = ServiceAccountCredentials.from_json_keyfile_name(
+#                 settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+#         http_auth = credentials.authorize(Http())
+#         gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+#     except ImportError:
+#         # No Google Drive support
+#         pass
 
 
 
@@ -266,9 +266,9 @@ class Encounter(ValueModel):
         )
 
 def _delete_encounter_file(sender, instance, using, **kwargs):
-    if gdrive_service and instance.gdrive_id:
-        gdrive_service.files().delete(
-                fileId=instance.gdrive_id).execute()
+    # if gdrive_service and instance.gdrive_id:
+    #     gdrive_service.files().delete(
+    #             fileId=instance.gdrive_id).execute()
     try:
         os.remove(instance.diskname())
     except FileNotFoundError:
