@@ -9656,6 +9656,28 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/buff\/lead_attacks.png": {
+		"ft": 32768,
+		"iS": 2824,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/lead_attacks.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/buff\/lotus_training.png": {
+		"ft": 32768,
+		"iS": 19863,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/buff\/lotus_training.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/buff\/Might.png": {
 		"ft": 32768,
 		"iS": 1216,
