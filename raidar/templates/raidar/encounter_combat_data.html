@@ -386,7 +386,7 @@
                         }
                     }]]
                       [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
-                        <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+                        <div class="r-encounter-buff r-tooltip-help [[section.value > 0 ? ' ' : 'uk-invisible' ]]" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
                           <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                           <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
                           <span class="r-buff-number r-bg-[[settings.comparePerc]] compare">[[format(section.percentiles[settings.comparePerc], 1)]]</span>
