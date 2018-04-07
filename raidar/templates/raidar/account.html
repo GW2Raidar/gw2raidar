@@ -1,12 +1,30 @@
   <div uk-grid>
       <div class="uk-width-1-2@m uk-width-1">
           <ul class="uk-tab" uk-tab="connect: #component-tab-left; animation: uk-animation-fade">
-              <li><a href="#">Change Password</a></li>
-              <li><a href="#">Change Email</a></li>
-              <li><a href="#">Add API Key</a></li>
-              <li><a href="#">Privacy</a></li>
+            <li><a href="#">Appearance</a></li>
+            <li><a href="#">Change Password</a></li>
+            <li><a href="#">Change Email</a></li>
+            <li><a href="#">Add API Key</a></li>
+            <li><a href="#">Privacy</a></li>
           </ul>
           <ul id="component-tab-left" class="uk-switcher">
+            <form class="uk-stacked">
+              <h5 class="uk-margin-small-bottom">
+                Percentile colors
+              </h5>
+              [[#each palettes:id]]
+                <label>
+                  <input type="radio" class="uk-radio" name="[[settings.palette]]" value="[[id]]">
+                  [[name]]
+                </label>
+                &nbsp;
+              [[/each]]
+              <br/>
+              [[#each Array(101)]]
+                <span style="background-color: [[pctl2col(@index)]]">&nbsp;</span>
+              [[/each]]
+            </form>
+
             <form class="uk-form-stacked">
               <div class="uk-margin-bottom">
                 <label class="uk-form-label">Old Password</label>
