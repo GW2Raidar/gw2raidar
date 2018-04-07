@@ -555,8 +555,8 @@ ${body}
     palettes: {
       default: {
         name: "Default",
-        breaks: [50, 60, 70, 80, 90, 99].map(x => nextDown(x)),
-        colours: ["#6A656B", "#CF9329", "#BE7C15", "#4883A8", "#3C6FCE", "#5F42DE", "#903CC9"],
+        breaks: [30, 60, 99].map(x => nextDown(x)),
+        colours: ["#6A656B", "#3C6FCE", "#903CC9"],
         interpolated: true,
       },
       rarity: {

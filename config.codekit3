@@ -6165,32 +6165,6 @@
 		"oS": 0,
 		"uL": 1
 		},
-	"\/node_modules\/uikit\/src\/scss\/raidar-colorblind.scss": {
-		"aP": 0,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/raidar-colorblind.css",
-		"oF": 3,
-		"oS": 3,
-		"uL": 1
-		},
-	"\/node_modules\/uikit\/src\/scss\/raidar-rainbow.scss": {
-		"aP": 0,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/css\/raidar-rainbow.css",
-		"oF": 3,
-		"oS": 3,
-		"uL": 1
-		},
 	"\/node_modules\/uikit\/src\/scss\/raidar.css": {
 		"aP": 1,
 		"bl": 0,
@@ -6253,32 +6227,6 @@
 		"oS": 0,
 		"uL": 1
 		},
-	"\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_colorblind.scss": {
-		"aP": 0,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 1,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_colorblind.scss",
-		"oF": 0,
-		"oS": 0,
-		"uL": 1
-		},
-	"\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_rainbow.scss": {
-		"aP": 0,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 1,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_rainbow.scss",
-		"oF": 0,
-		"oS": 0,
-		"uL": 1
-		},
 	"\/node_modules\/uikit\/src\/scss\/raidar\/4-settings.scss": {
 		"aP": 0,
 		"bl": 0,
@@ -6327,32 +6275,6 @@
 		"ma": 0,
 		"oA": 1,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins.scss",
-		"oF": 0,
-		"oS": 0,
-		"uL": 1
-		},
-	"\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_colorblind.scss": {
-		"aP": 0,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 1,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_colorblind.scss",
-		"oF": 0,
-		"oS": 0,
-		"uL": 1
-		},
-	"\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_rainbow.scss": {
-		"aP": 0,
-		"bl": 0,
-		"dP": 10,
-		"dS": 0,
-		"ft": 4,
-		"ma": 0,
-		"oA": 1,
-		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_rainbow.scss",
 		"oF": 0,
 		"oS": 0,
 		"uL": 1
@@ -6481,7 +6403,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/breadcrumb.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6611,7 +6533,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/dotnav.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6806,7 +6728,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/marker.scss",
 		"oF": 0,
 		"oS": 0,
@@ -7014,7 +6936,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/spinner.scss",
 		"oF": 0,
 		"oS": 0,
@@ -9749,7 +9671,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Alacrity.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/alacrity.png": {
 		"ft": 32768,
 		"iS": 1316,
 		"oA": 0,
@@ -9815,7 +9737,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Empower_Allies.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/empower_allies.png": {
 		"ft": 32768,
 		"iS": 1390,
 		"oA": 0,
@@ -9826,7 +9748,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Fury.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/fury.png": {
 		"ft": 32768,
 		"iS": 1271,
 		"oA": 0,
@@ -9837,7 +9759,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Glyph_of_Empowerment.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png": {
 		"ft": 32768,
 		"iS": 1137,
 		"oA": 0,
@@ -9881,7 +9803,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Might.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/might.png": {
 		"ft": 32768,
 		"iS": 1216,
 		"oA": 0,
@@ -9903,7 +9825,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Pinpoint_Distribution.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png": {
 		"ft": 32768,
 		"iS": 1398,
 		"oA": 0,
@@ -9914,7 +9836,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Protection.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/protection.png": {
 		"ft": 32768,
 		"iS": 1221,
 		"oA": 0,
@@ -9925,7 +9847,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Quickness.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/quickness.png": {
 		"ft": 32768,
 		"iS": 1273,
 		"oA": 0,
@@ -9958,7 +9880,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Retaliation.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/retaliation.png": {
 		"ft": 32768,
 		"iS": 1073,
 		"oA": 0,
@@ -9969,7 +9891,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Soothing_Mist.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png": {
 		"ft": 32768,
 		"iS": 1336,
 		"oA": 0,
@@ -9991,7 +9913,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Spotter.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/spotter.png": {
 		"ft": 32768,
 		"iS": 1312,
 		"oA": 0,
@@ -10013,7 +9935,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Stone_Spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png": {
 		"ft": 32768,
 		"iS": 1205,
 		"oA": 0,
@@ -10024,7 +9946,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Storm_Spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png": {
 		"ft": 32768,
 		"iS": 1268,
 		"oA": 0,
@@ -10035,7 +9957,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Sun_Spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png": {
 		"ft": 32768,
 		"iS": 1252,
 		"oA": 0,
@@ -10057,7 +9979,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Vampiric_Presence.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png": {
 		"ft": 32768,
 		"iS": 1392,
 		"oA": 0,
@@ -10612,9 +10534,9 @@
 		"ft": 64,
 		"ma": 0,
 		"mi": 1,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/static\/raidar\/script-min.js",
-		"oF": 0,
+		"oF": 1,
 		"sC": 3,
 		"tS": 0
 		},
