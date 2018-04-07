@@ -237,6 +237,13 @@
 		"oAP": "\/gw2raidar\/__pycache__\/settings.cpython-36.pyc",
 		"oF": 0
 		},
+	"\/gw2raidar\/__pycache__\/settings_local.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/gw2raidar\/__pycache__\/settings_local.cpython-36.pyc",
+		"oF": 0
+		},
 	"\/gw2raidar\/__pycache__\/urls.cpython-36.pyc": {
 		"cB": 0,
 		"ft": 8192,
@@ -256,6 +263,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/gw2raidar\/settings.py",
+		"oF": 0
+		},
+	"\/gw2raidar\/settings_local.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/gw2raidar\/settings_local.py",
 		"oF": 0
 		},
 	"\/gw2raidar\/settings_local.py.example": {
@@ -6151,6 +6165,32 @@
 		"oS": 0,
 		"uL": 1
 		},
+	"\/node_modules\/uikit\/src\/scss\/raidar-colorblind.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-colorblind.css",
+		"oF": 3,
+		"oS": 3,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar-rainbow.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-rainbow.css",
+		"oF": 3,
+		"oS": 3,
+		"uL": 1
+		},
 	"\/node_modules\/uikit\/src\/scss\/raidar.css": {
 		"aP": 1,
 		"bl": 0,
@@ -6172,6 +6212,149 @@
 		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
 		"oF": 3,
 		"oS": 3,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/1-type.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/1-type.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/2-colors.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/2-colors.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_colorblind.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_colorblind.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_rainbow.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles_rainbow.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/4-settings.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/4-settings.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/5-mixins.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/5-mixins.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/6-styles.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/6-styles.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_colorblind.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_colorblind.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_rainbow.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins_rainbow.scss",
+		"oF": 0,
+		"oS": 0,
 		"uL": 1
 		},
 	"\/node_modules\/uikit\/src\/scss\/theme\/_import.scss": {
@@ -8461,6 +8644,26 @@
 		"oAP": "\/raidar\/models.py",
 		"oF": 0
 		},
+	"\/raidar\/static\/raidar\/css\/raidar-colorblind.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-colorblind-min.css",
+		"oF": 0,
+		"oS": 3
+		},
+	"\/raidar\/static\/raidar\/css\/raidar-rainbow.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-rainbow-min.css",
+		"oF": 0,
+		"oS": 3
+		},
 	"\/raidar\/static\/raidar\/css\/raidar.css": {
 		"aP": 1,
 		"bl": 0,
@@ -9531,9 +9734,9 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
 		"oF": 0,
-		"oIPL": 1,
-		"opt": 1,
-		"q": 48
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
 		},
 	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
 		"ft": 32768,
@@ -9552,8 +9755,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/alacrity.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9629,8 +9832,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/fury.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9640,8 +9843,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9684,8 +9887,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/might.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9706,8 +9909,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9717,8 +9920,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/protection.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9728,8 +9931,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/quickness.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9761,8 +9964,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/retaliation.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9772,8 +9975,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9794,8 +9997,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/spotter.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9827,8 +10030,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
@@ -9838,8 +10041,8 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png",
 		"oF": 0,
-		"oIPL": 0,
-		"opt": 0,
+		"oIPL": 1,
+		"opt": 1,
 		"oT": 1,
 		"q": 100
 		},
