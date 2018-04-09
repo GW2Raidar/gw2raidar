@@ -406,20 +406,6 @@
       return good.blend(barcss.average, 1 - (val - avg) / (max - avg));
     }
   }
-  helpers.pctl2col = percentile => {
-    let palette = r.get('palette');
-    let index = helpers.bsearch(percentile, palette.breaks);
-    let colour;
-    if (palette.interpolated) {
-      if (percentile < 0) return palette.colours[0];
-      if (percentile >= palette.breaks[palette.breaks.length - 1]) return palette.colours[palette.colours.length - 1];
-      let ratio = 1 - (palette.breaks[index] - percentile) / (palette.breaks[index] - (index ? palette.breaks[index - 1] : 0))
-      colour = new Colour(palette.colours[index]).blend(new Colour(palette.colours[index + 1]), ratio).css()
-    } else {
-      colour = palette.colours[index];
-    }
-    return colour;
-  }
   helpers.bar = (actual, average, min, max, top, flip) => {
     if (!average) return helpers.bar1(actual, top);
 
@@ -552,26 +538,6 @@ ${body}
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
     uploads: [],
-    palettes: {
-      default: {
-        name: "Default",
-        breaks: [30, 60, 99].map(x => nextDown(x)),
-        colours: ["#6A656B", "#3C6FCE", "#903CC9"],
-        interpolated: true,
-      },
-      rarity: {
-        name: "Rarity",
-        breaks: [50, 60, 70, 80, 90, 99].map(x => nextDown(x)),
-        colours: ["#705E72", "#3D7099", "#316629", "#CCB966", "#B28536", "#993D64", "#8941BA"],
-        interpolated: false,
-      },
-      colourblind: {
-        name: "Colourblind",
-        breaks: [50, 60, 70, 80, 90, 99].map(x => nextDown(x)),
-        colours: ["#715651", "#CF9329", "#BE7C15", "#4883A8", "#7D57A1", "#5F42DE", "#C3ADD7"],
-        interpolated: false,
-      },
-    },
   };
   initData.data.boss_locations.forEach(loc => {
     loc.bosses = {}
@@ -705,9 +671,6 @@ ${body}
     template: '#template',
     data: initData,
     computed: {
-      palette: function palette() {
-        return this.get('palettes')[this.get('settings.palette') || 'default'];
-      },
       changePassBad: function changePassBad() {
         let password = this.get('account.password'),
             password2 = this.get('account.password2');

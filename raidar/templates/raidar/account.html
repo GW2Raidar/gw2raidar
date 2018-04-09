@@ -12,7 +12,20 @@
               <h5 class="uk-margin-small-bottom">
                 Percentile colors
               </h5>
-              [[#each palettes:id]]
+              [[#each [
+                {
+                  name: "Default",
+                  id: "default"
+                },
+                {
+                  name: "Rainbow",
+                  id: "rainbow"
+                },
+                {
+                  name: "Colorblind",
+                  id: "colorblind"
+                }
+              ] ]]
                 <label>
                   <input type="radio" class="uk-radio" name="[[settings.palette]]" value="[[id]]">
                   [[name]]
@@ -21,7 +34,7 @@
               [[/each]]
               <br/>
               [[#each Array(101)]]
-                <span style="background-color: [[pctl2col(@index)]]">&nbsp;</span>
+                <span class="r-bg-[[@index]]" style="border:none">&nbsp;</span>
               [[/each]]
             </form>
 
