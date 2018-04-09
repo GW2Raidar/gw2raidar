@@ -10,7 +10,7 @@ from . import views
 from .api_v2 import views as api_v2_views
 
 urlpatterns = [
-    url(r'^(?P<name>encounters|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about|framework))(?:/(?P<no>\w+))?$', views.named, name = "named"),
+    url(r'^(?P<name>encounters|leaderboards|profile|uploads|account|register|login|index|reset_pw|thank-you|info-(?:help|releasenotes|contact|about|framework))(?:/(?P<no>\w+))?$', views.named, name = "named"),
     url(r'^initial.json$', views.initial, name = "initial"),
     url(r'^login.json$', views.login, name = "login"),
     url(r'^logout.json$', views.logout, name = "logout"),
@@ -24,6 +24,7 @@ urlpatterns = [
     url(r'^set_tags_cat.json$', views.set_tags_cat, name = "set_tags_cat"),
     url(r'^contact.json$', views.contact, name = "contact"),
     url(r'^poll.json$', views.poll, name = "poll"),
+    url(r'^poll.leaderboards$', views.poll, name = "leaderboards"),
     url(r'^change_email.json$', views.change_email, name = "change_email"),
     url(r'^change_password.json$', views.change_password, name = "change_password"),
     url(r'^add_api_key.json$', views.add_api_key, name = "add_api_key"),

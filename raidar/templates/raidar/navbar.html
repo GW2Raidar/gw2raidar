@@ -5,6 +5,7 @@
       [[#if username]]
         <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Personal Stats</a></li>
         <li class="[[page.name=='encounters' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
+        <li class="[[page.name=='leaderboards' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'leaderboards'})">Leaderboards</a></li>
       [[#if is_staff]]
         <li class="uk-hidden@m "><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
       [[/if]]

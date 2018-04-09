@@ -10976,6 +10976,13 @@
 		"oAP": "\/raidar\/templates\/raidar\/intro.html",
 		"oF": 1
 		},
+	"\/raidar\/templates\/raidar\/leaderboards.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/leaderboards.html",
+		"oF": 0
+		},
 	"\/raidar\/templates\/raidar\/navbar.html": {
 		"cB": 0,
 		"ft": 8192,

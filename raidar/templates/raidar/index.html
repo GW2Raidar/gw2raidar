@@ -315,6 +315,10 @@
 
                 {% include 'raidar/info_about.html' %}
 
+              [[elseif page.name == "leaderboards"]]
+
+                {% include 'raidar/leaderboards.html' %}
+                {% include 'raidar/donation_cta.html' %}
               [[elseif page.name == "global_stats"]]
 
                 {% include 'raidar/global_stats.html' %}
