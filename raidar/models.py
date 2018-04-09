@@ -3,6 +3,7 @@ from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from fuzzycount import FuzzyCountManager
 from hashlib import md5
 from analyser.analyser import Profession, Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
@@ -22,22 +23,22 @@ START_RESOLUTION = 60
 
 
 # XXX TODO Move to a separate module, does not really belong here
-gdrive_service = None
-if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
-    try:
-        from oauth2client.service_account import ServiceAccountCredentials
-        from httplib2 import Http
-        from apiclient import discovery
-        from googleapiclient.http import MediaFileUpload
+# gdrive_service = None
+# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+#     try:
+#         from oauth2client.service_account import ServiceAccountCredentials
+#         from httplib2 import Http
+#         from apiclient import discovery
+#         from googleapiclient.http import MediaFileUpload
 
-        scopes = ['https://www.googleapis.com/auth/drive.file']
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-        http_auth = credentials.authorize(Http())
-        gdrive_service = discovery.build('drive', 'v3', http=http_auth)
-    except ImportError:
-        # No Google Drive support
-        pass
+#         scopes = ['https://www.googleapis.com/auth/drive.file']
+#         credentials = ServiceAccountCredentials.from_json_keyfile_name(
+#                 settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+#         http_auth = credentials.authorize(Http())
+#         gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+#     except ImportError:
+#         # No Google Drive support
+#         pass
 
 
 
@@ -218,6 +219,8 @@ class Encounter(ValueModel):
     tags = TaggableManager(blank=True)
     has_evtc = models.BooleanField(default=True, editable=False)
 
+    objects = FuzzyCountManager()
+
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
 
@@ -266,9 +269,9 @@ class Encounter(ValueModel):
         )
 
 def _delete_encounter_file(sender, instance, using, **kwargs):
-    if gdrive_service and instance.gdrive_id:
-        gdrive_service.files().delete(
-                fileId=instance.gdrive_id).execute()
+    # if gdrive_service and instance.gdrive_id:
+    #     gdrive_service.files().delete(
+    #             fileId=instance.gdrive_id).execute()
     try:
         os.remove(instance.diskname())
     except FileNotFoundError:

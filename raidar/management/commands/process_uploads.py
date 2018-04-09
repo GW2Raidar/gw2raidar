@@ -22,6 +22,7 @@ from traceback import format_exc
 logger = log_to_stderr()
 logger.setLevel(logging.INFO)
 
+
 # inspired by https://stackoverflow.com/a/31464349/240443
 class GracefulKiller:
     def __init__(self, queue):
@@ -43,53 +44,53 @@ class GracefulKiller:
 # pip install --upgrade google-api-python-client
 
 
-def get_gdrive_service():
-    return None
+# def get_gdrive_service():
+#     return None
 
-gdrive_service = None
-if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
-    try:
-        from oauth2client.service_account import ServiceAccountCredentials
-        from httplib2 import Http
-        from apiclient import discovery
-        from googleapiclient.http import MediaFileUpload
-        from googleapiclient.errors import HttpError
+# gdrive_service = None
+# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+#     try:
+#         from oauth2client.service_account import ServiceAccountCredentials
+#         from httplib2 import Http
+#         from apiclient import discovery
+#         from googleapiclient.http import MediaFileUpload
+#         from googleapiclient.errors import HttpError
 
-        def get_gdrive_service():
-            scopes = ['https://www.googleapis.com/auth/drive.file']
-            credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                    settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-            http_auth = credentials.authorize(Http())
-            gdrive_service = discovery.build('drive', 'v3', http=http_auth)
-            return gdrive_service
+#         def get_gdrive_service():
+#             scopes = ['https://www.googleapis.com/auth/drive.file']
+#             credentials = ServiceAccountCredentials.from_json_keyfile_name(
+#                     settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+#             http_auth = credentials.authorize(Http())
+#             gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+#             return gdrive_service
 
-        gdrive_service = get_gdrive_service()
+#         gdrive_service = get_gdrive_service()
 
-        try:
-            gdrive_folder = Variable.get('gdrive_folder')
-        except Variable.DoesNotExist:
-            metadata = {
-                'name' : 'GW2 Raidar Files',
-                'mimeType' : 'application/vnd.google-apps.folder'
-            }
-            folder = gdrive_service.files().create(
-                    body=metadata, fields='id').execute()
-            gdrive_folder = folder.get('id')
+#         try:
+#             gdrive_folder = Variable.get('gdrive_folder')
+#         except Variable.DoesNotExist:
+#             metadata = {
+#                 'name' : 'GW2 Raidar Files',
+#                 'mimeType' : 'application/vnd.google-apps.folder'
+#             }
+#             folder = gdrive_service.files().create(
+#                     body=metadata, fields='id').execute()
+#             gdrive_folder = folder.get('id')
 
-            permission = {
-                'role': 'reader',
-                'type': 'anyone',
-                'allowFileDiscovery': False
-            }
-            result = gdrive_service.permissions().create(
-                fileId=gdrive_folder,
-                body=permission,
-                fields='id',
-            ).execute()
+#             permission = {
+#                 'role': 'reader',
+#                 'type': 'anyone',
+#                 'allowFileDiscovery': False
+#             }
+#             result = gdrive_service.permissions().create(
+#                 fileId=gdrive_folder,
+#                 body=permission,
+#                 fields='id',
+#             ).execute()
 
-            Variable.set('gdrive_folder', gdrive_folder)
-    except ImportError:
-        pass
+#             Variable.set('gdrive_folder', gdrive_folder)
+#     except ImportError:
+#         pass
 
 
 if hasattr(settings, 'UPLOAD_DIR'):
@@ -168,12 +169,14 @@ class Command(BaseCommand):
         if multi:
             from Crypto import Random
             Random.atfork()
-        self.gdrive_service = get_gdrive_service()
+        # self.gdrive_service = get_gdrive_service()
         try:
             while True:
                 upload = queue.get_nowait()
-                logger.info(upload.filename)
+                logger.info("starting %s (%s)" % (upload.filename, upload.diskname()))
+                start = time()
                 self.analyse_upload(upload)
+                logger.info("finished in %.2fs" % (time() - start))
         except Empty:
             logger.info("done")
 
@@ -321,31 +324,34 @@ class Command(BaseCommand):
                     "encounter_url_id": encounter.url_id,
                 })
 
-            if self.gdrive_service:
-                media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
-                try:
-                    if encounter.gdrive_id:
-                        result = self.gdrive_service.files().update(
-                                fileId=encounter.gdrive_id,
-                                media_body=media,
-                            ).execute()
-                    else:
-                        metadata = {
-                                'name': upload.filename,
-                                'parents': [gdrive_folder],
-                            }
-                        gdrive_file = self.gdrive_service.files().create(
-                                body=metadata, media_body=media,
-                                fields='id, webContentLink',
-                            ).execute()
-                        encounter.gdrive_id = gdrive_file['id']
-                        encounter.gdrive_url = gdrive_file['webContentLink']
-                        encounter.save()
-                except HttpError as e:
-                    logger.error(e)
-                    pass
+            # if self.gdrive_service:
+            #     media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
+            #     try:
+            #         if encounter.gdrive_id:
+            #             result = self.gdrive_service.files().update(
+            #                     fileId=encounter.gdrive_id,
+            #                     media_body=media,
+            #                 ).execute()
+            #         else:
+            #             metadata = {
+            #                     'name': upload.filename,
+            #                     'parents': [gdrive_folder],
+            #                 }
+            #             gdrive_file = self.gdrive_service.files().create(
+            #                     body=metadata, media_body=media,
+            #                     fields='id, webContentLink',
+            #                 ).execute()
+            #             encounter.gdrive_id = gdrive_file['id']
+            #             encounter.gdrive_url = gdrive_file['webContentLink']
+            #             encounter.save()
+            #     except HttpError as e:
+            #         logger.error(e)
+            #         pass
+            #
+            logger.info("saved")
 
         except (EvtcParseException, EvtcAnalysisException, BadZipFile) as e:
+            logger.info("known error: %s" % str(e))
             Notification.objects.create(user=upload.uploaded_by, val={
                 "type": "upload_error",
                 "upload_id": upload.id,
@@ -354,6 +360,7 @@ class Command(BaseCommand):
 
         # for diagnostics and catching new exceptions
         except Exception as e:
+            logger.info("unknown error: %s" % str(e))
             exc = format_exc()
             path = os.path.join(upload_dir, 'errors')
             os.makedirs(path, exist_ok=True)

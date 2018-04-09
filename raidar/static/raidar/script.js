@@ -77,6 +77,26 @@
     error("Error communicating to server");
   })
 
+  // adapted from https://gist.github.com/Yaffle/4654250
+  const EPSILON = Math.pow(2, -52);
+  const MAX_VALUE = Number.MAX_VALUE;
+  const MIN_VALUE = Math.pow(2, -1022);
+  function nextUp(x) {
+    if (x !== x) return x;
+    if (x === -1 / 0) return -MAX_VALUE;
+    if (x === +1 / 0) return +1 / 0;
+    if (x === +MAX_VALUE) return +1 / 0;
+    const y = x * (x < 0 ? 1 - EPSILON / 2 : 1 + EPSILON);
+    if (y === x) y = MIN_VALUE * EPSILON > 0 ? x + MIN_VALUE * EPSILON : x + MIN_VALUE;
+    if (y === +1 / 0) y = +MAX_VALUE;
+    const b = x + (y - x) / 2;
+    if (x < b && b < y) y = b;
+    const c = (y + x) / 2;
+    if (x < c && c < y) y = c;
+    return y === 0 ? -0 : y;
+  }
+  function nextDown(x) { return -nextUp(-x); }
+
   function f0X(x) {
     return (x < 10) ? "0" + x : x;
   }
@@ -386,6 +406,20 @@
       return good.blend(barcss.average, 1 - (val - avg) / (max - avg));
     }
   }
+  helpers.pctl2col = percentile => {
+    let palette = r.get('palette');
+    let index = helpers.bsearch(percentile, palette.breaks);
+    let colour;
+    if (palette.interpolated) {
+      if (percentile < 0) return palette.colours[0];
+      if (percentile >= palette.breaks[palette.breaks.length - 1]) return palette.colours[palette.colours.length - 1];
+      let ratio = 1 - (palette.breaks[index] - percentile) / (palette.breaks[index] - (index ? palette.breaks[index - 1] : 0))
+      colour = new Colour(palette.colours[index]).blend(new Colour(palette.colours[index + 1]), ratio).css()
+    } else {
+      colour = palette.colours[index];
+    }
+    return colour;
+  }
   helpers.bar = (actual, average, min, max, top, flip) => {
     if (!average) return helpers.bar1(actual, top);
 
@@ -518,6 +552,26 @@ ${body}
       encounterSort: { prop: 'uploaded_at', dir: 'down', filters: false, filter: { success: null } },
     },
     uploads: [],
+    palettes: {
+      default: {
+        name: "Default",
+        breaks: [30, 60, 99].map(x => nextDown(x)),
+        colours: ["#6A656B", "#3C6FCE", "#903CC9"],
+        interpolated: true,
+      },
+      rarity: {
+        name: "Rarity",
+        breaks: [50, 60, 70, 80, 90, 99].map(x => nextDown(x)),
+        colours: ["#705E72", "#3D7099", "#316629", "#CCB966", "#B28536", "#993D64", "#8941BA"],
+        interpolated: false,
+      },
+      colourblind: {
+        name: "Colourblind",
+        breaks: [50, 60, 70, 80, 90, 99].map(x => nextDown(x)),
+        colours: ["#715651", "#CF9329", "#BE7C15", "#4883A8", "#7D57A1", "#5F42DE", "#C3ADD7"],
+        interpolated: false,
+      },
+    },
   };
   initData.data.boss_locations.forEach(loc => {
     loc.bosses = {}
@@ -642,12 +696,18 @@ ${body}
 
 
 
+  let initPage = initData.page;
+  initData.page = { name: "loading" };
+
   // Ractive
-  let r = new Ractive({
+  const r = new Ractive({
     el: '#container',
     template: '#template',
     data: initData,
     computed: {
+      palette: function palette() {
+        return this.get('palettes')[this.get('settings.palette') || 'default'];
+      },
       changePassBad: function changePassBad() {
         let password = this.get('account.password'),
             password2 = this.get('account.password2');
@@ -791,6 +851,10 @@ ${body}
     page: setPage,
   });
 
+
+  setPage(initPage);
+
+
   r.observe('settings', (newValue, oldValue, keyPath) => {
     localStorage.setItem('settings', JSON.stringify(newValue));
   });
@@ -816,10 +880,10 @@ ${body}
     }
     return false;
   }
-  let url = URLForPage(initData.page);
-  history.replaceState(initData.page, null, url);
-  if (pageInit[initData.page.name]) {
-    pageInit[initData.page.name](initData.page);
+  let url = URLForPage(initPage);
+  history.replaceState(initPage, null, url);
+  if (pageInit[initPage.name]) {
+    pageInit[initPage.name](initPage);
   }
   if (window.ga) {
     window.ga('set', 'page', url);
