@@ -170,7 +170,7 @@ USE_TZ = True
 
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'static_compress.CompressedManifestStaticFilesStorage'
 
 # Other
 

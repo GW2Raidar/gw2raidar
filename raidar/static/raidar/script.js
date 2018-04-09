@@ -77,6 +77,26 @@
     error("Error communicating to server");
   })
 
+  // adapted from https://gist.github.com/Yaffle/4654250
+  const EPSILON = Math.pow(2, -52);
+  const MAX_VALUE = Number.MAX_VALUE;
+  const MIN_VALUE = Math.pow(2, -1022);
+  function nextUp(x) {
+    if (x !== x) return x;
+    if (x === -1 / 0) return -MAX_VALUE;
+    if (x === +1 / 0) return +1 / 0;
+    if (x === +MAX_VALUE) return +1 / 0;
+    const y = x * (x < 0 ? 1 - EPSILON / 2 : 1 + EPSILON);
+    if (y === x) y = MIN_VALUE * EPSILON > 0 ? x + MIN_VALUE * EPSILON : x + MIN_VALUE;
+    if (y === +1 / 0) y = +MAX_VALUE;
+    const b = x + (y - x) / 2;
+    if (x < b && b < y) y = b;
+    const c = (y + x) / 2;
+    if (x < c && c < y) y = c;
+    return y === 0 ? -0 : y;
+  }
+  function nextDown(x) { return -nextUp(-x); }
+
   function f0X(x) {
     return (x < 10) ? "0" + x : x;
   }
@@ -642,8 +662,11 @@ ${body}
 
 
 
+  let initPage = initData.page;
+  initData.page = { name: "loading" };
+
   // Ractive
-  let r = new Ractive({
+  const r = new Ractive({
     el: '#container',
     template: '#template',
     data: initData,
@@ -791,6 +814,10 @@ ${body}
     page: setPage,
   });
 
+
+  setPage(initPage);
+
+
   r.observe('settings', (newValue, oldValue, keyPath) => {
     localStorage.setItem('settings', JSON.stringify(newValue));
   });
@@ -816,10 +843,10 @@ ${body}
     }
     return false;
   }
-  let url = URLForPage(initData.page);
-  history.replaceState(initData.page, null, url);
-  if (pageInit[initData.page.name]) {
-    pageInit[initData.page.name](initData.page);
+  let url = URLForPage(initPage);
+  history.replaceState(initPage, null, url);
+  if (pageInit[initPage.name]) {
+    pageInit[initPage.name](initPage);
   }
   if (window.ga) {
     window.ga('set', 'page', url);
