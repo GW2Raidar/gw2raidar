@@ -1385,7 +1385,7 @@ ${body}
     setTimeout(loop, 1000);
   }
 
-  const POLL_TIME = 10000;
+  const POLL_TIME = 30000;
   function pollNotifications() {
     if (r.get('username')) {
       let options = {
@@ -1396,7 +1396,6 @@ ${body}
         options.data = { last_id: lastNotificationId };
       }
       $.ajax(options).done(data => {
-        r.set('count', data.count);
         if (data.last_id) {
           lastNotificationId = data.last_id;
         }
