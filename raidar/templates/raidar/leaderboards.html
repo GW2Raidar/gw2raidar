@@ -1,18 +1,29 @@
 {% load staticfiles %}
-
+<div class="r-toggle uk-font-family-secondary uk-text-small uk-text-uppercase">Fastest Kills
+  <a href="#" class="uk-active">this Week</a>
+  |
+  <a href="#">This Era</a>
+</div>
 <div class="r-leaderboard-wing">
-  <h4 class="uk-font-family-secondary r-leaderboard-heading">Spirit Vale</h4>
-  <div class="r-leaderboard-encounter">
+  <h4 class="uk-font-family-secondary r-leaderboard-heading uk-margin-remove">Spirit Vale</h4>
+  <div class="r-leaderboard-encounter" class-expanded="VG" on-click="toggle('VG')">
     <img src="/static/raidar/img/icon/Vale Guardian.png" alt="">
     <h2 class="uk-margin-remove-bottom">Vale Guardian</h2>
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <!-- Same as our other rect graphs -->
+          <rect class="chart r-bg-99"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-99" x='0' y='18px' height='16px' width='80%'/>
+
+          <!-- Ranking -->
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">1</text>
+
+          <!-- Encounter Duration -->
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+
+          <!-- Encounter DPS (Boss) Total like it is on Global Stats -->
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -57,11 +68,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-          <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">2</text>
-          <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-90"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-90" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">2</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -106,11 +117,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-          <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">3</text>
-          <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-80"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-80" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">3</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -155,11 +166,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-          <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">4</text>
-          <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-70"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-70" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">4</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -204,11 +215,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-          <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">5</text>
-          <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-60"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-60" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">5</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -253,754 +264,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-          <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">6</text>
-          <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-        </svg>
-      </div>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">7</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">8</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">9</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">10</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-  </div>
-  <div class="r-leaderboard-encounter">
-    <img src="/static/raidar/img/icon/Gorseval.png" alt="Gorseval">
-    <h2 class="uk-margin-remove-bottom">Gorseval</h2>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">1</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">2</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">3</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">4</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">5</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">6</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">7</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">8</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">9</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-rank">10</div>
-      <div class="r-duration">10:32.32</div>
-      <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-        <rect class="chart chart-hover r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-        <rect class="chart chart-hover r-bg-99" height='100%' width='80%'/>
-        <text x="6px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-        <text x="36px" y="14px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-        <text x="36px" y="32px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-      </svg>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-  </div>
-  <div class="r-leaderboard-encounter expanded">
-    <img src="/static/raidar/img/icon/Sabetha.png" alt="Sabetha">
-    <h2 class="uk-margin-remove-bottom">Sabetha</h2>
-    <div class="r-leaderboard-row">
-      <div class="r-damage">
-        <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-50"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-50" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">6</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -1045,11 +313,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-40"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-40" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">7</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -1094,11 +362,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-30"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-30" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">8</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -1143,11 +411,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-20"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-20" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">9</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -1192,256 +460,11 @@
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-        </svg>
-      </div>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-damage">
-        <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-        </svg>
-      </div>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-damage">
-        <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-        </svg>
-      </div>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-damage">
-        <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-        </svg>
-      </div>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-damage">
-        <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
-        </svg>
-      </div>
-      <div class="r-buffs">
-        <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-         <div class="r-buff">
-           <div class="r-buff-icon">
-             <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-           </div>
-           <div class="r-buff-number r-bg-99">100%</div>
-         </div>
-     </div>
-      <div class="r-composition">
-        <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-        <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-        <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-        <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-        <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-        <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-      </div>
-    </div>
-    <div class="r-leaderboard-row">
-      <div class="r-damage">
-        <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-          <rect class="chart r-bg-99"  x='0%' y='0' height='100%' width='100%' opacity='0.3' />
-          <rect class="chart r-bg-99" height='100%' width='80%'/>
-          <text x="8px" y="25px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.2901960784313726)" opacity="0.4" font-size="46">1</text>
-          <text x="40px" y="15px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
-          <text x="40px" y="33px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
+          <rect class="chart r-bg-10"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
+          <rect class="chart r-bg-10" x='0' y='18px' height='16px' width='80%'/>
+          <text x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(0, 0, 0, 0.4)" opacity="0.4" font-size="80">10</text>
+          <text x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="600" fill="rgba(255, 255, 255, 0.8)" font-size="20">10m 32.53s</text>
+          <text x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" font-weight="600" fill="rgba(255,255,255, 0.6)" font-size="12">(62,320) 85,321 DPS</text>
         </svg>
       </div>
       <div class="r-buffs">
@@ -1484,4 +507,7 @@
       </div>
     </div>
   </div>
+
+
+
 </div>

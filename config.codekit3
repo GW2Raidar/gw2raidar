@@ -5567,6 +5567,19 @@
 		"oS": 0,
 		"uL": 1
 		},
+	"\/node_modules\/uikit\/src\/scss\/components\/gradient.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/gradient.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
 	"\/node_modules\/uikit\/src\/scss\/components\/grid.scss": {
 		"aP": 0,
 		"bl": 0,

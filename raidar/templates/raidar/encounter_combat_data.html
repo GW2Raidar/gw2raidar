@@ -4,13 +4,13 @@
   <div class="r-encounter-stats-container uk-background-default uk-margin-remove-bottom" style="z-index: 980;" uk-sticky="bottom: #offset">
     <div class="r-stats-row r-stats-header">
       <div class="uk-visible@l">Spec</div>
-      <div class="r-buff-toggle">
+      <div class="r-toggle">
         <a href="#" class-uk-active="page.dps_boss" on-click="@.set({'page.dps_boss': true}) && false">Boss DPS</a>
         |
         <a href="#" class-uk-active="!page.dps_boss" on-click="@.set({'page.dps_boss': false}) && false">Total DPS</a>
     </div>
       <div class="uk-visible@l">Damage Received</div>
-      <div class="r-buff-toggle uk-text-right uk-text-left@m">
+      <div class="r-toggle uk-text-right uk-text-left@m">
         <a href="#" class-uk-active="!page.boon_output" on-click="@.set({'page.boon_output': false}) && false">Uptime</a>
         |
         <a href="#" class-uk-active="page.boon_output" on-click="@.set({'page.boon_output': true}) && false">Output</a>
