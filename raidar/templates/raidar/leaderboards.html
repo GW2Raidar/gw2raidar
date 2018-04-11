@@ -1,14 +1,52 @@
 {% load staticfiles %}
-<div class="r-toggle uk-font-family-secondary uk-text-small uk-text-uppercase">Fastest Kills
-  <a href="#" class="uk-active">this Week</a>
-  |
-  <a href="#">This Era</a>
+<div class="uk-flex">
+  <div class="r-toggle uk-font-family-secondary uk-text-small uk-text-uppercase uk-width-expand">
+     <div uk-form-custom="target: > * > span.time">
+
+         <select>
+             <option value="1" default>This week</option>
+             <option disabled>──────────</option>
+             <optgroup label="2018">
+               <option value="2">1/24-2/1</option>
+               <option value="2">1/17-24</option>
+               <option value="3">1/9-16</option>
+               <option value="4">1/2-8</option>
+             </optgroup>
+             <optgroup label="2017">
+               <option value="2">1/24-2/1</option>
+               <option value="2">1/17-24</option>
+               <option value="3">1/9-16</option>
+               <option value="4">1/2-8</option>
+             </optgroup>
+         </select>
+         <span>
+             <span class="uk-active">Fastest Kills</span> <span class="uk-active time"></span> <i class="material-icons">keyboard_arrow_down</i> |
+         </span>
+     </div>
+     <div uk-form-custom="target: > * > span.era">
+         <select>
+             <option value="1" default>This Era</option>
+             <option disabled>──────────</option>
+             <option value="4">Prehistoric</option>
+         </select>
+         <span>
+             <span class="era"></span> <i class="material-icons">keyboard_arrow_down</i>
+         </span>
+     </div>
+  </div>
+  <div class="uk-button-group">
+    <a href="#" class="uk-button uk-inline uk-active">Raids</a><a href="#" class="uk-button uk-inline">CM Fractals</a>
+  </div>
 </div>
+
+
 <div class="r-leaderboard-wing">
-  <h4 class="uk-font-family-secondary r-leaderboard-heading uk-margin-remove">Spirit Vale</h4>
+  <div class="r-toggle uk-h3 uk-font-family-secondary r-leaderboard-heading uk-margin-remove uk-text-uppercase">
+    <a href="" class="uk-active">Spirit Vale</a> | <a href="">CM</a>
+  </div>
   <div class="r-leaderboard-encounter" class-expanded="VG" on-click="toggle('VG')">
     <img src="/static/raidar/img/icon/Vale Guardian.png" alt="">
-    <h2 class="uk-margin-remove-bottom">Vale Guardian</h2>
+    <h2 class="uk-margin-remove-bottom ">Vale Guardian</h2>
     <div class="r-leaderboard-row">
       <div class="r-damage">
         <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
