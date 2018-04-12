@@ -158,16 +158,16 @@
           </div>
           <div class="r-global-stats-damageIn">
             <h6 class="uk-font-family-secondary uk-margin-small-bottom uk-text-uppercase uk-hidden@l">DPS Recieved</h6>
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[12 + settings.compareGlobalPerc.length * 12]]px" width="100%" preserveAspectRatio="xMinYMax meet">
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" width="100%" preserveAspectRatio="xMinYMax meet">
               [[#with {inc_dps_percentiles: p(group.per_dps_received)}]]
               [[#each settings.compareGlobalPerc]]
-              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Received | [[.]]th Percentile</h6>[[num(inc_dps_percentiles[100-.],0)]] Damage Per Second" x='0%' y='[[4 + @index * 12]]px' height='8px' width='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%'/>
+              <rect class="chart chart-hover r-bg-[[.]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Received | [[.]]th Percentile</h6>[[num(inc_dps_percentiles[100-.],0)]] Damage Per Second" x='0%' y='[[14 + @index * 12]]px' height='8px' width='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%'/>
                 [[#if @index == 0]]
-                  <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[@index * 12]]px' dominant-baseline="baseline" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                  <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[10 + @index * 12]]px' dominant-baseline="baseline" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
                 [[elseif @index < settings.compareGlobalPerc.length - 1]]
-                  <text x='[[(100*inc_dps_percentiles[100-.]/group.max_dps_received)+1]]%' y='[[8 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                  <text x='[[(100*inc_dps_percentiles[100-.]/group.max_dps_received)+1]]%' y='[[18 + @index * 12]]px' dominant-baseline="middle" text-anchor="start" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
                 [[else]]
-                   <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[14 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
+                   <text x='[[100*inc_dps_percentiles[100-.]/group.max_dps_received]]%' y='[[24 + @index * 12]]px' dominant-baseline="hanging" text-anchor="end" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='11'>[[num(inc_dps_percentiles[100-.],0)]]</text>
                 [[/if]]
               [[/each]]
               [[/with]]

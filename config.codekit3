@@ -7,7 +7,7 @@
 		"uuidString": "3A760E32-0043-4CD2-BC39-87DDAA2502C6"
 		}
 	],
-"creatorBuild": "26330",
+"creatorBuild": "26680",
 "files": {
 	"\/.gitignore": {
 		"cB": 0,
@@ -7391,6 +7391,7 @@
 	"\/node_modules\/uikit\/tests\/images\/avatar.jpg": {
 		"ft": 16384,
 		"iS": 209460,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/avatar.jpg",
 		"oF": 0,
@@ -7401,6 +7402,7 @@
 	"\/node_modules\/uikit\/tests\/images\/dark.jpg": {
 		"ft": 16384,
 		"iS": 620841,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/dark.jpg",
 		"oF": 0,
@@ -7421,6 +7423,7 @@
 	"\/node_modules\/uikit\/tests\/images\/light.jpg": {
 		"ft": 16384,
 		"iS": 219675,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/light.jpg",
 		"oF": 0,
@@ -7431,6 +7434,7 @@
 	"\/node_modules\/uikit\/tests\/images\/photo.jpg": {
 		"ft": 16384,
 		"iS": 1027131,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/photo.jpg",
 		"oF": 0,
@@ -7441,6 +7445,7 @@
 	"\/node_modules\/uikit\/tests\/images\/size-h.jpg": {
 		"ft": 16384,
 		"iS": 253773,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/size-h.jpg",
 		"oF": 0,
@@ -7451,6 +7456,7 @@
 	"\/node_modules\/uikit\/tests\/images\/size-v.jpg": {
 		"ft": 16384,
 		"iS": 353642,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/size-v.jpg",
 		"oF": 0,
@@ -7461,6 +7467,7 @@
 	"\/node_modules\/uikit\/tests\/images\/size1.jpg": {
 		"ft": 16384,
 		"iS": 181960,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/size1.jpg",
 		"oF": 0,
@@ -7471,6 +7478,7 @@
 	"\/node_modules\/uikit\/tests\/images\/size2.jpg": {
 		"ft": 16384,
 		"iS": 158763,
+		"jF": 0,
 		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/tests\/images\/size2.jpg",
 		"oF": 0,
@@ -9666,6 +9674,7 @@
 	"\/raidar\/static\/raidar\/img\/background\/header-concept.jpg": {
 		"ft": 16384,
 		"iS": 126442,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
 		"oF": 0,
@@ -10655,6 +10664,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterfilter.JPG": {
 		"ft": 16384,
 		"iS": 57621,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterfilter.jpg",
 		"oF": 0,
@@ -10665,6 +10675,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterpage.JPG": {
 		"ft": 16384,
 		"iS": 132660,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpage.jpg",
 		"oF": 0,
@@ -10675,6 +10686,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterpagebossmetrics.jpg": {
 		"ft": 16384,
 		"iS": 62937,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpagebossmetrics.jpg",
 		"oF": 0,
@@ -10685,6 +10697,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterpagebuffs.jpg": {
 		"ft": 16384,
 		"iS": 167356,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpagebuffs.jpg",
 		"oF": 0,
@@ -10695,6 +10708,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterpageheader.jpg": {
 		"ft": 16384,
 		"iS": 24333,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpageheader.jpg",
 		"oF": 0,
@@ -10705,6 +10719,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterpageoverview.jpg": {
 		"ft": 16384,
 		"iS": 129515,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpageoverview.jpg",
 		"oF": 0,
@@ -10715,6 +10730,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/encounterpagestats.jpg": {
 		"ft": 16384,
 		"iS": 189637,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/encounterpagestats.jpg",
 		"oF": 0,
@@ -10736,6 +10752,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/globalstats.jpg": {
 		"ft": 16384,
 		"iS": 219097,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/globalstats.jpg",
 		"oF": 0,
@@ -10768,6 +10785,7 @@
 	"\/raidar\/static\/raidar\/img\/intro\/personalstats.jpg": {
 		"ft": 16384,
 		"iS": 164017,
+		"jF": 0,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/intro\/personalstats.jpg",
 		"oF": 0,
@@ -12437,7 +12455,8 @@
 	"creationDate": 531249016,
 	"displayValue": "gw2raidar",
 	"displayValueWasSetByUser": 1,
-	"iconImageName": "meme-wonka"
+	"iconImageName": "meme-wonka",
+	"iconImageWasSetByUser": 0
 	},
 "projectSettings": {
 	"abortBuildOnError": 1,
@@ -14240,6 +14259,7 @@
 		"autoOutputPathReplace1": "",
 		"autoOutputPathReplace2": "",
 		"autoOutputPathStyle": 0,
+		"outputFormat": 0,
 		"quality": 100
 		},
 	"languageDefaultsJS": {
