@@ -315,9 +315,6 @@ Label of the button should add the encounter type to the button text. i.e. If th
             <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
           [[/if]]
         </th>
-        <th class="uk-width-expand">
-          Tags
-        </th>
       </tr>
 
 
@@ -325,12 +322,13 @@ Label of the button should add the encounter type to the button text. i.e. If th
 
     [[#each encounterSlice]]
       <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]" uk-scroll="el:#top;">
-        <td colspan="2">
-          <h5 class="[[success ? 'uk-text-success' : 'uk-text-danger']] uk-margin-remove">[[area]]</h5>
-          <p class="uk-text-small uk-margin-remove">[[formatDate(started_at)]]</p>
-        </td>
-        <td>
-          &#91;[[formatTime(duration)]]&#93;
+        <td colspan="3">
+          <h4 class="uk-margin-remove">[[area]]</h4>
+          <span class="uk-badge uk-text-bold [[success ? 'uk-label-success' : 'uk-label-danger']]">[[success ? 'Success' : 'Wipe']]  ([[formatTime(duration)]])</span>
+          <span class="uk-badge uk-text-bold r-bg-0">[[formatDate(started_at)]]</span>
+            [[#each tags]]
+              <span class="tag uk-badge uk-text-bold" style="margin-right:2px;">[[.]]</span>
+            [[/each]]
         </td>
         <td colspan="2">
             <div class="max-content-width">
@@ -345,19 +343,11 @@ Label of the button should add the encounter type to the button text. i.e. If th
         <td class="uk-visible@m">
           [[category ? data.categories[category] : '']]
         </td>
-        <td class="uk-visible@m">
-          <div class="tags-input uk-background-secondary">
-            [[#each tags]]
-              <span class="tag">[[.]]</span>
-            [[/each]]
-          </div>
-        </td>
       </a>
     [[/each]]
   </table>
 </div>
 
-<hr class="uk-divider-icon">
 <ul class="uk-pagination uk-flex-center">
   [[#each encounterPages]]
     [[#if a || d]]
