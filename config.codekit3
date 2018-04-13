@@ -237,6 +237,13 @@
 		"oAP": "\/gw2raidar\/__pycache__\/settings.cpython-36.pyc",
 		"oF": 0
 		},
+	"\/gw2raidar\/__pycache__\/settings_local.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/gw2raidar\/__pycache__\/settings_local.cpython-36.pyc",
+		"oF": 0
+		},
 	"\/gw2raidar\/__pycache__\/urls.cpython-36.pyc": {
 		"cB": 0,
 		"ft": 8192,
@@ -256,6 +263,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/gw2raidar\/settings.py",
+		"oF": 0
+		},
+	"\/gw2raidar\/settings_local.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/gw2raidar\/settings_local.py",
 		"oF": 0
 		},
 	"\/gw2raidar\/settings_local.py.example": {
@@ -6174,6 +6188,97 @@
 		"oS": 3,
 		"uL": 1
 		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/1-type.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/1-type.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/2-colors.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/2-colors.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/3-percentiles.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/4-settings.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/4-settings.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/5-mixins.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/5-mixins.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/6-styles.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/6-styles.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
+	"\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/raidar\/7-percentiles-mixins.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
 	"\/node_modules\/uikit\/src\/scss\/theme\/_import.scss": {
 		"aP": 0,
 		"bl": 0,
@@ -6298,7 +6403,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/breadcrumb.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6428,7 +6533,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/dotnav.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6623,7 +6728,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/marker.scss",
 		"oF": 0,
 		"oS": 0,
@@ -6831,7 +6936,7 @@
 		"dS": 0,
 		"ft": 4,
 		"ma": 0,
-		"oA": 1,
+		"oA": 2,
 		"oAP": "\/node_modules\/uikit\/src\/scss\/theme\/spinner.scss",
 		"oF": 0,
 		"oS": 0,
@@ -8461,6 +8566,26 @@
 		"oAP": "\/raidar\/models.py",
 		"oF": 0
 		},
+	"\/raidar\/static\/raidar\/css\/raidar-colorblind.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-colorblind-min.css",
+		"oF": 0,
+		"oS": 3
+		},
+	"\/raidar\/static\/raidar\/css\/raidar-rainbow.css": {
+		"aP": 1,
+		"bl": 0,
+		"ft": 16,
+		"ma": 0,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar-rainbow-min.css",
+		"oF": 0,
+		"oS": 3
+		},
 	"\/raidar\/static\/raidar\/css\/raidar.css": {
 		"aP": 1,
 		"bl": 0,
@@ -9531,9 +9656,9 @@
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/background\/header-concept.jpg",
 		"oF": 0,
-		"oIPL": 1,
-		"opt": 1,
-		"q": 48
+		"oIPL": 0,
+		"opt": 0,
+		"q": 100
 		},
 	"\/raidar\/static\/raidar\/img\/buff\/aegis.png": {
 		"ft": 32768,
@@ -9546,7 +9671,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Alacrity.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/alacrity.png": {
 		"ft": 32768,
 		"iS": 1316,
 		"oA": 0,
@@ -9612,7 +9737,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Empower_Allies.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/empower_allies.png": {
 		"ft": 32768,
 		"iS": 1390,
 		"oA": 0,
@@ -9623,7 +9748,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Fury.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/fury.png": {
 		"ft": 32768,
 		"iS": 1271,
 		"oA": 0,
@@ -9634,7 +9759,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Glyph_of_Empowerment.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/glyph_of_empowerment.png": {
 		"ft": 32768,
 		"iS": 1137,
 		"oA": 0,
@@ -9678,7 +9803,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Might.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/might.png": {
 		"ft": 32768,
 		"iS": 1216,
 		"oA": 0,
@@ -9700,7 +9825,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Pinpoint_Distribution.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/pinpoint_distribution.png": {
 		"ft": 32768,
 		"iS": 1398,
 		"oA": 0,
@@ -9711,7 +9836,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Protection.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/protection.png": {
 		"ft": 32768,
 		"iS": 1221,
 		"oA": 0,
@@ -9722,7 +9847,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Quickness.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/quickness.png": {
 		"ft": 32768,
 		"iS": 1273,
 		"oA": 0,
@@ -9755,7 +9880,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Retaliation.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/retaliation.png": {
 		"ft": 32768,
 		"iS": 1073,
 		"oA": 0,
@@ -9766,7 +9891,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Soothing_Mist.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/soothing_mist.png": {
 		"ft": 32768,
 		"iS": 1336,
 		"oA": 0,
@@ -9788,7 +9913,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Spotter.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/spotter.png": {
 		"ft": 32768,
 		"iS": 1312,
 		"oA": 0,
@@ -9810,7 +9935,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Stone_Spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/stone_spirit.png": {
 		"ft": 32768,
 		"iS": 1205,
 		"oA": 0,
@@ -9821,7 +9946,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Storm_Spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/storm_spirit.png": {
 		"ft": 32768,
 		"iS": 1268,
 		"oA": 0,
@@ -9832,7 +9957,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Sun_Spirit.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/sun_spirit.png": {
 		"ft": 32768,
 		"iS": 1252,
 		"oA": 0,
@@ -9854,7 +9979,7 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/buff\/Vampiric_Presence.png": {
+	"\/raidar\/static\/raidar\/img\/buff\/vampiric_presence.png": {
 		"ft": 32768,
 		"iS": 1392,
 		"oA": 0,
@@ -9870,6 +9995,292 @@
 		"iS": 1337,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/img\/buff\/vigor.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/android-icon-144x144.png": {
+		"ft": 32768,
+		"iS": 10563,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/android-icon-144x144.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/android-icon-192x192.png": {
+		"ft": 32768,
+		"iS": 14004,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/android-icon-192x192.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/android-icon-36x36.png": {
+		"ft": 32768,
+		"iS": 2274,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/android-icon-36x36.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/android-icon-48x48.png": {
+		"ft": 32768,
+		"iS": 2828,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/android-icon-48x48.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/android-icon-72x72.png": {
+		"ft": 32768,
+		"iS": 4548,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/android-icon-72x72.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/android-icon-96x96.png": {
+		"ft": 32768,
+		"iS": 6614,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/android-icon-96x96.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-114x114.png": {
+		"ft": 32768,
+		"iS": 8069,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-114x114.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-120x120.png": {
+		"ft": 32768,
+		"iS": 8434,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-120x120.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-144x144.png": {
+		"ft": 32768,
+		"iS": 10563,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-144x144.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-152x152.png": {
+		"ft": 32768,
+		"iS": 11422,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-152x152.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-180x180.png": {
+		"ft": 32768,
+		"iS": 14058,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-180x180.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-57x57.png": {
+		"ft": 32768,
+		"iS": 3403,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-57x57.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-60x60.png": {
+		"ft": 32768,
+		"iS": 3675,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-60x60.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-72x72.png": {
+		"ft": 32768,
+		"iS": 4548,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-72x72.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-76x76.png": {
+		"ft": 32768,
+		"iS": 4964,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-76x76.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon-precomposed.png": {
+		"ft": 32768,
+		"iS": 14576,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon-precomposed.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/apple-icon.png": {
+		"ft": 32768,
+		"iS": 14576,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/apple-icon.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/browserconfig.xml": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/browserconfig.xml",
+		"oF": 0
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/favicon-16x16.png": {
+		"ft": 32768,
+		"iS": 1163,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/favicon-16x16.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/favicon-32x32.png": {
+		"ft": 32768,
+		"iS": 2104,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/favicon-32x32.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/favicon-96x96.png": {
+		"ft": 32768,
+		"iS": 6614,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/favicon-96x96.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/favicon.ico": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/favicon.ico",
+		"oF": 0
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/manifest.json": {
+		"ft": 524288,
+		"oA": 1,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/manifest-min.json",
+		"oF": 0,
+		"oO": 0,
+		"oS": 1
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/ms-icon-144x144.png": {
+		"ft": 32768,
+		"iS": 10563,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/ms-icon-144x144.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/ms-icon-150x150.png": {
+		"ft": 32768,
+		"iS": 11188,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/ms-icon-150x150.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/ms-icon-310x310.png": {
+		"ft": 32768,
+		"iS": 29214,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/ms-icon-310x310.png",
+		"oF": 0,
+		"oIPL": 1,
+		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/favicon\/ms-icon-70x70.png": {
+		"ft": 32768,
+		"iS": 4407,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/favicon\/ms-icon-70x70.png",
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
@@ -10464,9 +10875,9 @@
 		"ft": 64,
 		"ma": 0,
 		"mi": 1,
-		"oA": 0,
+		"oA": 1,
 		"oAP": "\/raidar\/static\/raidar\/script-min.js",
-		"oF": 0,
+		"oF": 1,
 		"sC": 3,
 		"tS": 0
 		},
