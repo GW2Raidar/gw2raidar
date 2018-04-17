@@ -22,7 +22,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
       [[#with encounter.phases[page.phase]]]
       <div class="r-encounter-stats-container squad">
         <div class="r-stats-row r-stats-buffs">
-          <div class="r-encounter-player uk-text-right [[self && 'compare-show']]">
+          <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]">
             <div>
                 <h5 class="uk-margin-remove">Squad</h5>
             </div>
@@ -62,7 +62,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
 
           <!-- <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5> -->
           <div class="r-stats-row r-stats-buffs r-party">
-            <div class="r-encounter-player uk-text-right" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with events]]
+            <div class="r-encounter-player uk-text-right@m" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with events]]
                   Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
                   Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
                   Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
@@ -99,7 +99,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
         [[#each members]]
           [[#with phases[page.phase]]]
             <div class="r-stats-row r-stats-buffs r-member activity-[[#with phases[page.phase].events]][[#with encounter]][[num(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]]">
-              <div class="r-encounter-player uk-text-right [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if account]]<strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
+              <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if account]]<strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
                 <strong>Deaths:</strong> [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
                 <strong>Downed:</strong> [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
                 <strong>Disconnects:</strong> [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
