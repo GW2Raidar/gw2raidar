@@ -207,7 +207,7 @@
   helpers.th = num => {
     let ones = num % 10;
     let tens = num % 100 - ones;
-    let suffix = tens == 1 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
+    let suffix = tens == 10 ? "th" : ones == 1 ? "st" : ones == 2 ? "nd" : ones == 3 ? "rd" : "th";
     return num + suffix;
   };
   helpers.clamp = (num, max) => {
