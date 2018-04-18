@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '2.0.0b2',
-        'timestamp': 1522687686, # date +%s
+        'id': '2.1.2',
+        'timestamp': 1523339887, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -170,7 +170,7 @@ USE_TZ = True
 
 STATIC_ROOT = '/static/'
 STATIC_URL = '/static/'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.ManifestStaticFilesStorage'
+STATICFILES_STORAGE = 'static_compress.CompressedManifestStaticFilesStorage'
 
 # Other
 
