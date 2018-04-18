@@ -14,8 +14,8 @@ import os
 from dateutil import parser
 
 VERSION = {
-        'id': '2.1.3',
-        'timestamp': 1524025836, # date +%s
+        'id': '2.1.3b2',
+        'timestamp': 1524027864, # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
