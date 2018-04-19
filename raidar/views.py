@@ -671,7 +671,6 @@ def poll(request):
 
     result = {
         "notifications": [notification.val for notification in notifications],
-        "encounter_count": Encounter.objects.count(),
         "version": settings.VERSION['id'],
     }
     if notifications:

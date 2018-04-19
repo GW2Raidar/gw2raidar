@@ -1,5 +1,9 @@
 <nav class="uk-navbar uk-navbar-transparent uk-navbar-container">
   <div class="uk-navbar-left">
+    <div class="uk-logo">
+      <img class="uk-visible@m uk-margin-top uk-margin-bottom" src="{% static 'raidar/img/logo/full-logo.svg' %}" alt="GW2 Raidar Logo" uk-svg>
+      <img width="40" height="40" class="uk-hidden@m" src="{% static 'raidar/img/logo/mark-logo.svg' %}" alt="GW2 Raidar Logo" uk-svg>
+    </div>
     <ul class="uk-navbar-nav r-navbar-hover">
       <li class="[[page.name=='leaderboards' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'leaderboards'})">Leaderboards</a></li>
       <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>

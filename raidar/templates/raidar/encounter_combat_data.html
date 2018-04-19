@@ -34,7 +34,7 @@
 	    <div class="r-encounter-player uk-text-right@l"><h5 class="uk-margin-remove">Squad</h5></div>
 	    <div class="r-encounter-damage">
 	      <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-remove uk-text-uppercase">DPS</h6>
-	      <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% 60px" class="chart chart-100" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
+	      <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" class="chart chart-100" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		[[#with {
 		  section: page.dps_boss ? {
 		      name: 'Boss DPS',
@@ -62,13 +62,13 @@
 
 		    [[#if page.dps_boss]]
 		      {#  total DPS backdrop #}
-		      <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_max_dps)]]%' opacity='0.3' />
+		      <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_max_dps)]]%' opacity='0.3' />
 		    [[/if]]
 		    {# primary DPS graph #}
-		    <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.<br/><strong>Performance:</strong> [[th(pctl_dps)]] Percentile[[#if section.avg_dps]]<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>.[[/if]]" x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps / max_max_dps)]]%' opacity='1' />
+		    <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.<br/><strong>Performance:</strong> [[th(pctl_dps)]] Percentile[[#if section.avg_dps]]<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>.[[/if]]" x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps / max_max_dps)]]%' opacity='1' />
 		    [[#unless page.dps_boss]]
 		      {# boss DPS overlay #}
-		      <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_boss / max_max_dps)]]%' opacity='0.15' />
+		      <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_boss / max_max_dps)]]%' opacity='0.15' />
 		    [[/unless]]
 
 		    {# text #}
@@ -81,7 +81,7 @@
 	    </div>
 	    <div class="r-encounter-damage in uk-visible@m">
 	      <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
-	      <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% 60px" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
+	      <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		[[#with {
 		  section: {
 		      recv: received.total,
@@ -102,7 +102,7 @@
 		    <rect class="chart" x='[[clamp(100 * (section.percentiles_recv[100 - settings.comparePerc] || 0) / max_max_recv)]]%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
 
 		    {# graph #}
-		    <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(recv, 0)]]</strong> damage received and <strong>[[num(recv_dps, 0)]]</strong> per second.[[#if section.avg_recv]]<br/>Squad average is <strong>[[num(section.avg_recv, 0)]]</strong> and <strong>[[num(group.avg_recv_dps, 0)]]</strong> per second.[[/if]]<br/><strong>Performance:</strong> [[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
+		    <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(recv, 0)]]</strong> damage received and <strong>[[num(recv_dps, 0)]]</strong> per second.[[#if section.avg_recv]]<br/>Squad average is <strong>[[num(section.avg_recv, 0)]]</strong> and <strong>[[num(group.avg_recv_dps, 0)]]</strong> per second.[[/if]]<br/><strong>Performance:</strong> [[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
 
 		    {# text #}
 		    <text x='[[width < 25 ? 0 : width]]%' y='-1px' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.recv, 0)]]</text>
@@ -128,7 +128,7 @@
 		    }
 		}]]
 		  [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
-		    <div class="r-encounter-buff" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+		    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
 		      <img src="[[buff.icon]]" alt="[[buff.name]]"/>
 		      <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]] </span>
 		      <span class="r-buff-number r-bg-[[settings.comparePerc]] compare">[[format(section.percentiles[settings.comparePerc], 1)]]</span>
@@ -156,7 +156,7 @@
 	    </div>
 	    [[#with phases[page.phase]]]
 	      <div class="r-encounter-damage">
-		<svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% 60px" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
+		<svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		  [[#with {
 		    section: page.dps_boss ? {
 			name: 'Boss DPS',
@@ -182,13 +182,13 @@
 
 		      [[#if page.dps_boss]]
 			{# total DPS backdrop #}
-			<rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-101" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_max_dps)]]%' opacity='0.3' />
+			<rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-101" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_max_dps)]]%' opacity='0.3' />
 		      [[/if]]
 		      {# primary DPS Graph #}
-		      <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-101" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.[[#if section.avg_dps]]<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>.[[/if]]" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
+		      <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-101" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.[[#if section.avg_dps]]<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]]</strong>.[[/if]]" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
 		      [[#unless page.dps_boss]]
 			{# boss DPS overlay #}
-			<rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_boss / max_max_dps)]]%' opacity='0.15' />
+			<rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_boss / max_max_dps)]]%' opacity='0.15' />
 		      [[/unless]]
 		      {# line text #}
 		      <text x='[[clamp(100 * section.squad_dps / max_max_dps)]]%' y='42px' alignment-baseline="hanging" text-anchor="[[(clamp(100 * section.squad_dps / max_max_dps)) < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#958cbb'  font-size='11'>Squad</text>
@@ -201,7 +201,7 @@
 
 	      <div class="r-encounter-damage in uk-visible@m">
 		<h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
-		<svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% 60px" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
+		<svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
 		  [[#with {
 		    recv: received.total,
 		    squad_recv: squad.received.total
@@ -232,7 +232,7 @@
 			value: buffs ? buffs[code] : 0
 		      }
 		  } ]]
-		    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
+		    <div class="r-encounter-buff r-tooltip-help" uk-tooltip="pos:bottom-left; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5>">
 		      <img src="[[buff.icon]]" title="[[buff.name]]" alt="[[buff.name]]"/>
 		      <span class="r-buff-number r-bg-101">[[format(section.value, 1)]]</span>
 		    </div>
@@ -242,12 +242,12 @@
 
 	      <div class='r-encounter-misc uk-visible@l'>
 		[[#with actual]]
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Critical: [[perc(crit)]]">C</div>
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Scholar Uptime: [[perc(scholar)]]">S</div>
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Flanking Uptime: [[perc(flanking)]]">F</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Critical: [[perc(crit)]]">C</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Scholar Uptime: [[perc(scholar)]]">S</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Flanking Uptime: [[perc(flanking)]]">F</div>
 		[[/with]]
 		[[#with shielded]]
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left" title="Barrier: [[num(total, 0)]]">B</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Barrier: [[num(total, 0)]]">B</div>
 		[[/with]]
 	      </div>
 	    [[/with]]
@@ -257,7 +257,7 @@
 	  [[#each members]]
 	    {# MEMBER #}
 	    <div class="r-stats-row r-member compare-hover activity-[[#with phases[page.phase].events]][[#with encounter]][[round(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100)]][[/with]][[/with]]">
-	      <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if name]]<strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
+	      <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350; title:[[#if name]]<strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
 		<strong>Deaths:</strong> [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
 		<strong>Downed:</strong> [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
 		<strong>Disconnects:</strong> [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
@@ -303,7 +303,7 @@
                       bsearch(section.dps, section.percentiles_dps) as pctl_dps,
                       clamp(100 * section.dps / max_player_dps) as width
                     ]]
-                      <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% 60px" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
+                      <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
                         {# line #}
                         <rect class="chart" x='0' y='36px' height='2px' width='[[clamp(100 * section.max_dps / max_player_dps)]]%' fill='#E7CCA9' />
 
@@ -312,13 +312,13 @@
 
                         [[#if page.dps_boss]]
                           {# total DPS backdrop #}
-                          <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_player_dps)]]%' opacity='0.3' />
+                          <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_player_dps)]]%' opacity='0.3' />
                         [[/if]]
                         {# primary DPS graph #}
-                        <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.<br/><strong>Performance:</strong> [[th(pctl_dps)]] Percentile[[#if section.avg_dps]]<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]][[/if]]</strong>." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps / max_player_dps)]]%' opacity='1' />
+                        <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name]]</h5><strong>[[num(section.dps, 0)]]</strong> DPS.<br/><strong>Performance:</strong> [[th(pctl_dps)]] Percentile[[#if section.avg_dps]]<br/>This role's average [[section.name]] is <strong>[[num(section.avg_dps, 0)]][[/if]]</strong>." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps / max_player_dps)]]%' opacity='1' />
                         [[#unless page.dps_boss]]
                           {# boss DPS overlay #}
-                          <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_boss / max_player_dps)]]%' opacity='0.15' />
+                          <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover" on-click="@.set({'page.dps_boss': true}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_boss]]</h5><strong>[[num(section.dps_boss, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_boss / max_player_dps)]]%' opacity='0.15' />
                         [[/unless]]
 
                         {# text #}
@@ -332,7 +332,7 @@
 
                 <div class="r-encounter-damage in uk-visible@m">
                   <h6 class="uk-font-family-secondary uk-hidden@l uk-margin-small-bottom uk-text-uppercase">Damage Received</h6>
-                  <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% 60px" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
+                  <svg xml:space="preserve" preserveAspectRatio="xMinYMax meet" class="chart" xmlns='http://www.w3.org/2000/svg' height="56px" width="100%">
                     [[#with {
                       section: {
                           recv: received.total,
@@ -353,9 +353,9 @@
                         <rect class="chart" x='[[clamp(100 * (section.percentiles_recv[100 - settings.comparePerc] || 0) / max_player_recv)]]%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
 
                         {# graph #}
-                        <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(section.recv, 0)]]</strong> damage received.[[#if section.avg_recv]]<br />This role's average is <strong>[[num(section.avg_recv, 0)]]</strong>.[[/if]]<br/><strong>Performance:</strong>[[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1'/>
+                        <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(section.recv, 0)]]</strong> damage received.[[#if section.avg_recv]]<br />This role's average is <strong>[[num(section.avg_recv, 0)]]</strong>.[[/if]]<br/><strong>Performance:</strong>[[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1'/>
                         {# barrier overlay #}
-                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Barrier</h5>Up to <strong>[[num(section.shield_recv, 0)]] ([[perc(100 * section.shield_recv / section.recv)]])</strong> damage absorbed by barrier" x='[[clamp(100 * (section.recv - section.shield_recv) / max_player_recv)]]%' y='16px' height='16px' width='[[clamp(100 * section.shield_recv / max_player_recv)]]%' opacity='0.6' fill='#FCF1E2'/>
+                        <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Barrier</h5>Up to <strong>[[num(section.shield_recv, 0)]] ([[perc(100 * section.shield_recv / section.recv)]])</strong> damage absorbed by barrier" x='[[clamp(100 * (section.recv - section.shield_recv) / max_player_recv)]]%' y='16px' height='16px' width='[[clamp(100 * section.shield_recv / max_player_recv)]]%' opacity='0.6' fill='#FCF1E2'/>
 
                         {# text #}
                         <text x='[[width < 35 ? 0 : width]]%' y='-1px' alignment-baseline="hanging" text-anchor="[[width < 35 ? 'start' : 'middle']]" font-family='Source Sans Pro' fill='#FCF1E2'  font-size='14'>[[num(section.recv, 0)]]</text>
@@ -386,7 +386,7 @@
                         }
                     }]]
                       [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
-                        <div class="r-encounter-buff r-tooltip-help [[section.value > 0 ? ' ' : 'uk-invisible' ]]" uk-tooltip="pos:bottom-left" title="<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
+                        <div class="r-encounter-buff r-tooltip-help [[section.value > 0 ? ' ' : 'uk-invisible' ]]" uk-tooltip="pos:bottom-left; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[buff.name]] [[section.name]]</h5><strong>Performance:</strong> [[th(buff_pctl)]] Percentile">
                           <img src="[[buff.icon]]" alt="[[buff.name]]"/>
                           <span class="r-buff-number r-bg-[[buff_pctl]]">[[format(section.value, 1)]]</span>
                           <span class="r-buff-number r-bg-[[settings.comparePerc]] compare">[[format(section.percentiles[settings.comparePerc], 1)]]</span>
@@ -422,10 +422,10 @@
                       pctl_flanking: archetype ? bsearch(actual.flanking, section.percentiles_flanking) : 0,
                       pctl_shielded: archetype ? bsearch(actual.shielded, section.percentiles_shielded) : 0
                     }]]
-                      <div class="uk-badge r-bg-[[pctl_crit]]" uk-tooltip="pos: left" title="<strong>Critical:</strong> [[perc(actual.crit)]][[#if archetype]]<br/><strong>Average:</strong> [[perc(section.avg_crit)]]<br/><strong>Performance:</strong> [[th(pctl_crit)]] Percentile[[/if]]">C</div>
-                      <div class="uk-badge r-bg-[[pctl_scholar]]" uk-tooltip="pos: left" title="<strong>Scholar Uptime:</strong> [[perc(actual.scholar)]][[#if archetype]]<br/><strong>Average:</strong> [[perc(section.avg_scholar)]]<br/><strong>Performance:</strong> [[th(pctl_scholar)]] Percentile[[/if]]">S</div>
-                      <div class="uk-badge r-bg-[[pctl_flanking]]" uk-tooltip="pos: left" title="<strong>Flanking Uptime:</strong> [[perc(actual.flanking)]][[#if archetype]]<br/><strong>Average:</strong> [[perc(section.avg_flanking)]]<br/><strong>Performance:</strong> [[th(pctl_flanking)]] Percentile[[/if]]">F</div>
-                      <div class="uk-badge r-bg-[[pctl_shielded]]" uk-tooltip="pos: left" title="<strong>Barrier:</strong> [[num(actual.shielded, 0)]][[#if archetype]]<br/><strong>Average:</strong> [[num(section.avg_shielded, 0)]]<br/><strong>Performance:</strong> [[th(pctl_shielded)]] Percentile[[/if]]">B</div>
+                      <div class="uk-badge r-bg-[[pctl_crit]]" uk-tooltip="pos: left; title:<strong>Critical:</strong> [[perc(actual.crit)]][[#if archetype]]<br/><strong>Average:</strong> [[perc(section.avg_crit)]]<br/><strong>Performance:</strong> [[th(pctl_crit)]] Percentile[[/if]]">C</div>
+                      <div class="uk-badge r-bg-[[pctl_scholar]]" uk-tooltip="pos: left; title:<strong>Scholar Uptime:</strong> [[perc(actual.scholar)]][[#if archetype]]<br/><strong>Average:</strong> [[perc(section.avg_scholar)]]<br/><strong>Performance:</strong> [[th(pctl_scholar)]] Percentile[[/if]]">S</div>
+                      <div class="uk-badge r-bg-[[pctl_flanking]]" uk-tooltip="pos: left; title:<strong>Flanking Uptime:</strong> [[perc(actual.flanking)]][[#if archetype]]<br/><strong>Average:</strong> [[perc(section.avg_flanking)]]<br/><strong>Performance:</strong> [[th(pctl_flanking)]] Percentile[[/if]]">F</div>
+                      <div class="uk-badge r-bg-[[pctl_shielded]]" uk-tooltip="pos: left; title:<strong>Barrier:</strong> [[num(actual.shielded, 0)]][[#if archetype]]<br/><strong>Average:</strong> [[num(section.avg_shielded, 0)]]<br/><strong>Performance:</strong> [[th(pctl_shielded)]] Percentile[[/if]]">B</div>
                     [[/with]]
                   [[/with]]
                 </div>

@@ -386,5 +386,5 @@ class Command(BaseCommand):
             upload.delete()
 
     def clean_up(self, *args, **options):
-        # delete Notifications older than 15s (assuming poll is every 10s)
-        Notification.objects.filter(created_at__lt=time() - 15).delete()
+        # delete Notifications older than 45s (assuming poll is every 30s)
+        Notification.objects.filter(created_at__lt=time() - 45).delete()

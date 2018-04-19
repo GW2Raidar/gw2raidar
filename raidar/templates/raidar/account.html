@@ -38,7 +38,6 @@
               [[/each]]
             </form>
 
-
             <form class="uk-form-stacked">
               <div class="uk-margin-bottom">
                 <label class="uk-form-label">Old Password</label>
@@ -59,8 +58,21 @@
                 </div>
               </div>
               <button class="uk-button uk-button-primary" on-click="change_password">Save</button>
-
             </form>
+
+            <form class="uk-grid uk-grid-small">
+              <div class="uk-width-1-1 uk-margin-bottom">
+                <p><strong>Current Email:</strong> [[account.email]]</p>
+              </div>
+              <div class="uk-width-3-4">
+
+                <input class="uk-input" type="email" placeholder="Change email address" value="[[account.email]]" required/>
+              </div>
+              <div class="uk-width-1-4">
+                <button class="uk-button uk-button-primary uk-width-1-1" on-click="change_email">Save</button>
+              </div>
+            </form>
+
             <form class="uk-grid uk-grid-small">
               <div class="uk-width-3-4">
                 <input class="uk-input" placeholder="Enter GW2 API key named 'gw2raidar' to link another account" value="[[account.api_key]]" required pattern="^[0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{20}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12}$" on-input="@node.setCustomValidity(''), @node.validity.patternMismatch && @node.setCustomValidity('Please paste a valid GW2 API key')"/>
@@ -83,8 +95,8 @@
                 <h3>It says my Account is already registered to another user</h3>
                 <p>This means that an API key associated with your account has been used already by another GW2 Raidar user to link your GW2 account. You will need to remove the API key in question (shown in the error message) from your GW2 Account, and possibly create a new API key, in order to prove your ownership of that GW2 account and register your GW2 Raidar account.</p>
               </div>
-
             </form>
+
             <form class="uk-flex uk-flex-left">
               <div class="uk-padding-small uk-padding-remove-left">
                 Privacy:
