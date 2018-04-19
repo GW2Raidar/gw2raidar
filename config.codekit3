@@ -10868,6 +10868,26 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/logo\/full-logo.svg": {
+		"ft": 2097152,
+		"miP": 0,
+		"oA": 2,
+		"oAP": "\/raidar\/static\/raidar\/img\/logo\/full-logo.svg",
+		"oF": 0,
+		"opt": 0,
+		"plM": 3758088159,
+		"prP": 0
+		},
+	"\/raidar\/static\/raidar\/img\/logo\/mark-logo.svg": {
+		"ft": 2097152,
+		"miP": 0,
+		"oA": 2,
+		"oAP": "\/raidar\/static\/raidar\/img\/logo\/mark-logo.svg",
+		"oF": 0,
+		"opt": 0,
+		"plM": 3758088159,
+		"prP": 0
+		},
 	"\/raidar\/static\/raidar\/img\/patreon\/become_a_patron_button.png": {
 		"ft": 32768,
 		"iS": 3086,
