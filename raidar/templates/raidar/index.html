@@ -23,10 +23,6 @@
       integrity="sha256-UGwvyUFH6Qqn0PSyQVw4q3vIX0wV1miKTracNJzAWPc="
       crossorigin="anonymous" defer></script>
     <link href="{% static 'raidar/css/raidar.css' %}" rel="stylesheet">
-    <!-- <link href="{% static 'raidar/css/raidar-rainbow.css' %}" rel="stylesheet"> -->
-    <!-- <link href="{% static 'raidar/css/raidar-colorblind.css' %}" rel="stylesheet"> -->
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons"
-      rel="stylesheet">
     <script src="https://npmcdn.com/tags-input@1.1.1/tags-input.js" defer></script>
     <link href="https://npmcdn.com/tags-input@1.1.1/tags-input.css" rel="stylesheet">
     <script>
@@ -475,6 +471,14 @@
             r.src=t+h._hjSettings.hjid+j+h._hjSettings.hjsv;
             a.appendChild(r);
         })(window,document,'https://static.hotjar.com/c/hotjar-','.js?sv=');
+    </script>
+    <script src="https://ajax.googleapis.com/ajax/libs/webfont/1.5.18/webfont.js"></script>
+    <script>
+     WebFont.load({
+        google: {
+          families: ['Source Code Pro:400,700', 'Source Sans Pro:300,400,400i,600,700', 'Material Icons']
+        }
+      });
     </script>
   </body>
 </html>
