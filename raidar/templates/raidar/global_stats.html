@@ -130,7 +130,7 @@
           </div>
           <div class="r-global-stats-damage">
             <h6 class="uk-font-family-secondary uk-margin-remove-bottom uk-text-uppercase uk-hidden@l">Damage Per Second</h6>
-            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" xml:space="preserve" preserveAspectRatio="xMinYMax meet" viewBox="0 0 100% [[24 + settings.compareGlobalPerc.length * 12]]">
+            <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="[[24 + settings.compareGlobalPerc.length * 12]]px" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
               [[#with {dps_percentiles: p(group.per_dps), boss_dps_percentiles: p(group.per_dps_boss)}]]
               [[#each settings.compareGlobalPerc]]
                 <!--
