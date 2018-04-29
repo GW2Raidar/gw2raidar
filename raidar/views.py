@@ -1,12 +1,14 @@
 from .models import *
 from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
-from analyser.bosses import BOSSES
+from analyser.bosses import BOSSES, BOSS_LOCATIONS
+from analyser.buffs import BUFF_TYPES, BUFF_TABS, StackType
 from django.conf import settings
 from django.contrib.auth import authenticate, login as auth_login, logout as auth_logout, update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core import serializers
 from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
@@ -62,11 +64,12 @@ def _userprops(request):
                                    if account.api_key != "" else "",
                     }
                     for account in accounts],
+                'encounter_count': Encounter.objects.count(),
             }
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
+    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag').iterator()
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
@@ -80,6 +83,12 @@ def _login_successful(request, user):
 
 
 
+def _buff_data(buff):
+    data = { "name": buff.name }
+    if buff.stacking == StackType.INTENSITY:
+        data["stacks"] = buff.capacity
+    data["icon"] = static("raidar/img/buff/%s.png" % buff.code)
+    return data
 
 def _html_response(request, page, data={}):
     response = _userprops(request)
@@ -94,14 +103,16 @@ def _html_response(request, page, data={}):
             "name": boss.name,
             "kind": boss.kind,
         } for id, boss in BOSSES.items()}
+    response['boss_locations'] = BOSS_LOCATIONS
     response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}
     response['categories'] = {category.id: category.name for category in Category.objects.all()}
+    response['buffs'] = { buff.code: _buff_data(buff) for buff in BUFF_TYPES }
+    response['buff_tabs'] = BUFF_TABS
     response['page'] = page
     response['debug'] = settings.DEBUG
     response['version'] = settings.VERSION
     if request.user.is_authenticated:
         response['privacy'] = request.user.user_profile.privacy
-    if request.user.is_authenticated:
         try:
             last_notification = request.user.notifications.latest('id')
             response['last_notification_id'] = last_notification.id
@@ -151,6 +162,37 @@ def index(request, page={ 'name': '' }):
     return _html_response(request, page)
 
 
+def _add_build_data_to_profile(kind, data, profile):
+    if 'encounter' not in profile or kind not in profile['encounter'] or 'All' not in data:
+        return
+    data = data['All']
+
+    for archetype, archdata in profile['encounter'][kind]['archetype'].items():
+        for profession, profdata in archdata['profession'].items():
+            for elite, elitedata in profdata['elite'].items():
+                builddata = _safe_get(lambda: data['build'][profession][elite][archetype])
+                if builddata:
+                    elitedata['everyone'] = builddata
+    profile['encounter'][kind]['individual'] = data['individual']
+
+def _profile_data_for_era(era_user_store):
+    era = era_user_store.era
+    era_val = era.val
+    profile = era_user_store.val
+
+    for era_area_store in EraAreaStore.objects.filter(era=era):
+        _add_build_data_to_profile(str(era_area_store.area_id), era_area_store.val, profile)
+    for kind, kind_data in era_val['kind'].items():
+        _add_build_data_to_profile(kind, kind_data, profile)
+
+    return {
+        'id': era_user_store.era_id,
+        'name': era.name,
+        'started_at': era.started_at,
+        'description': era.description,
+        'profile': profile,
+    }
+
 @require_GET
 def profile(request):
     if not request.user.is_authenticated:
@@ -159,15 +201,9 @@ def profile(request):
     user = request.user
     queryset = EraUserStore.objects.filter(user=user).select_related('era')
     try:
-        eras = [{
-                'id': era_user_store.era_id,
-                'name': era_user_store.era.name,
-                'started_at': era_user_store.era.started_at,
-                'description': era_user_store.era.description,
-                'profile': era_user_store.val,
-            } for era_user_store in queryset]
+        eras = { era_user_store.era.id: _profile_data_for_era(era_user_store) for era_user_store in queryset}
     except EraUserStore.DoesNotExist:
-        eras = []
+        eras = {}
 
     profile = {
         'username': user.username,
@@ -181,23 +217,26 @@ def profile(request):
     return JsonResponse(result)
 
 @require_GET
-def global_stats(request, era_id=None, area_id=None, json=None):
+def global_stats(request, era_id=None, stats_page=None, json=None):
+    if stats_page is None:
+        stats_page = 'All raid bosses'
+
     if not json:
         return _html_response(request, {
             "name": "global_stats",
             "era_id": era_id,
-            "area_id": area_id
+            "stats_page": stats_page
         })
     try:
         era_query = Era.objects.all()
-        eras = [{
+        eras = {era.id: {
                 'name': era.name,
                 'id': era.id,
                 'started_at': era.started_at,
                 'description': era.description
-            } for era in era_query]
+            } for era in era_query}
     except Era.DoesNotExist:
-        eras = []
+        eras = {}
 
     try:
         area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
@@ -210,13 +249,15 @@ def global_stats(request, era_id=None, area_id=None, json=None):
 
     try:
         if era_id is None:
-            era_id = eras[0]['id']
+            era_id = max(eras.values(), key=lambda z: z['started_at'])['id']
         era = Era.objects.get(id=era_id)
-        if area_id is None:
-            raw_data = era.val
-        else:
-            area = Area.objects.get(id=area_id)
+
+        try:
+            area = Area.objects.get(id=int(stats_page))
             raw_data = EraAreaStore.objects.get(era=era, area=area).val
+        except:
+            raw_data = era.val["kind"].get(stats_page, {})
+
         stats = raw_data['All']
 
         #reduce size of json for global stats view
@@ -322,6 +363,9 @@ def encounter(request, url_id=None, json=None):
                     private = True
                     encounter_showable = False
 
+    max_player_dps = max(_safe_get(lambda: data['Metrics']['damage']['To']['*All']['dps']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
+    max_player_recv = max(_safe_get(lambda: data['Metrics']['damage']['From']['*All']['total']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
+
     data = {
         "encounter": {
             "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
@@ -339,6 +383,8 @@ def encounter(request, url_id=None, json=None):
             "phase_order": phases,
             "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
+            "max_player_dps": max_player_dps,
+            "max_player_recv": max_player_recv,
             "phases": {
                 phase: {
                     'duration': encounter.duration if phase == "All" else _safe_get(lambda: dump['Category']['encounter']['Phase'][phase]['duration']),
@@ -357,6 +403,7 @@ def encounter(request, url_id=None, json=None):
             "parties": parties,
         }
     }
+
     if encounter_showable or request.user.is_staff:
         if encounter.gdrive_url:
             data['encounter']['evtc_url'] = encounter.gdrive_url;
@@ -621,6 +668,7 @@ def poll(request):
     last_id = request.POST.get('last_id')
     if last_id:
         notifications = notifications.filter(id__gt=last_id)
+
     result = {
         "notifications": [notification.val for notification in notifications],
         "version": settings.VERSION['id'],

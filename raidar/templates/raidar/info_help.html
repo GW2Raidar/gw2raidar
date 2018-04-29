@@ -1,216 +1,332 @@
 {% load staticfiles %}
-<h2>What is GW2 Raidar?</h2>
 
-<p>With the advent and increased usage of DPS meters, there have been a number of different parsers released to analyse, in detail, combat statistics and logs for post review.</p>
+<div uk-grid>
+  <div class="uk-width-1-6@m uk-width-1-1">
+    <ul class="uk-nav uk-tab uk-tab-left" uk-sticky="offset: 16; media: @m;" uk-scrollspy-nav="closest: li; scroll: true">
+        <li class="uk-active"><a href="#what" uk-scroll>What is GW2 Raidar?</a></li>
+        <li><a href="#getting-started" uk-scroll>Getting Started</a></li>
+        <li><a href="#uploading" uk-scroll>Uploading Logs</a></li>
+        <li><a href="#how-it-works" uk-scroll>How GW2 Raidar Works</a></li>
+        <li><a href="#encounter-list" uk-scroll>Encounter List</a></li>
+        <li><a href="#encounter-page" uk-scroll>Encounter Page</a></li>
+        <li><a href="#personal-stats" uk-scroll>Personal Stats</a></li>
+        <li><a href="#global-stats" uk-scroll>Global Stats</a></li>
+        <li><a href="#api" uk-scroll>API</a></li>
+        <li><a href="#faq" uk-scroll>FAQ</a></li>
+    </ul>
+  </div>
 
-<p>While current encounter reports are great, they currently lack one thing, context. GW2 Raidar’s approach to log parsing is slightly different. By retaining high level data about uploaded encounters, GW2 Raidar will allow you compare your individual and squad performance against everyone else’s which will allow you to further analyse your post fight logs.</p>
+  <div class='uk-width-2-3@m uk-width-1-1'>
+    <h2 id="what">What is GW2 Raidar?</h2>
 
-<p>With GW2 Raidar you can:</p>
+    <p>With the advent and increased usage of DPS meters, there have been a number of different parsers released to analyse, in detail, combat statistics and logs for post review.</p>
 
-<ul>
-  <li>See at a top level your performance and your squad’s performance at a glance</li>
-  <li>See how your and your squads metrics compare to current global metrics</li>
-  <li>See what the top group metrics and what professions are most popular for each encounter</li>
-  <li>Upload 1 log per encounter and have everyone in the squad access the encounter automatically via their GW2 Raidar account</li>
-  <li>Link multiple Guild Wars 2 accounts to a single GW2 Raidar account for a consolidated single view across all your raid characters</li>
-  <li>See your personal raid statistics compared to global metrics</li>
-  <li>Redownload previous encounter log files to parse through another website or application.</li>
-</ul>
+    <p>While current encounter reports are great, they currently lack one thing, context. GW2 Raidar’s approach to log parsing is slightly different. By retaining high level data about uploaded encounters, GW2 Raidar will allow you compare your individual and squad performance against everyone else’s which will allow you to further analyse your post fight logs.</p>
 
-<h2>Getting Started</h2>
+    <p>With GW2 Raidar you can:</p>
 
-<p>Getting started is easy. Simply create a new account on the website. You will need to provide in addition to your desired login credentials, your Guild Wars 2 API Key to confirm your ownership of a Guild Wars 2 Account.</p>
-
-<p>GW2 Raidar will automatically get your GW2 account name and associated characters. Any encounters that have been uploaded with your GW2 account in them will show up straight away in your Encounters page. </p>
-
-<h2>Uploading Logs</h2>
-
-<p>To upload your logs, simply drag and drop your log files into the browser window. GW2 Raidar supports both uncompressed and compressed logs. You can access results of each log by clicking on the name in the encounter list. </p>
-
-<p>Due to the need to update global statistics, GW2 Raidar utilises a batch processing system. As such, analysing may take a few minutes, however once a log is uploaded, it will always be analysed, even if you leave the website! </p>
-
-<h2>Encounters</h2>
-
-<p>On each Encounter page, you’ll be shown a few different sections of statistics as per below. For all statistics (with the exception of Party stats), the following colour codes apply to values displayed:</p>
-
-<ul>
-  <li>Purple (Legendary): 99th Percentile or higher performance</li>
-  <li>Pink (Ascended): 90th Percentile or higher performance</li>
-  <li>Orange (Exotic): 80th Percentile or higher performance</li>
-  <li>Yellow (Rare): 70th Percentile or higher performance</li>
-  <li>Green (Uncommon): 60th Percentile or higher performance</li>
-  <li>Blue (Common): 50th Percentile or higher performance</li>
-  <li>Grey: Less than 50th percentile performance</li>
-</ul>
-
-<h3>Squad</h3>
-
-<img src="{% static 'raidar/img/intro/squad.png' %}"/>
-<p>Shows total squad values. The first number denotes your squad’s totals with the second number denoting the current global average</p>
-
-<h3>Party</h3>
-
-<img src="{% static 'raidar/img/intro/party.png' %}"/>
-<p>Allows you compare individual party information to see performance of each sub group. These have no averages. </p>
-
-<h3>Individual</h3>
-
-<img src="{% static 'raidar/img/intro/individual.png' %}"/>
-<p>Shows individual values. The first number denotes individual values with the second number denoting the current global average. All averages are based on the detected archetype e.g. a Support Druid will have different averages compared to a Condi Druid.</p>
-
-<p>Individual archetypes are denoted by the icon to the left of the profession icon.</p>
-
-<h3>Boon Output</h3>
-
-<img src="{% static 'raidar/img/intro/boons.png' %}"/>
-<p>Boon output is shown in the Boon Outputs tab in encounter view as well as in the Global Stats view. Boon output in general is defined as the total amount of boons applied by a player (including to themselves). There are two measurments of boon output depending on the type of boon measured:
-  
-  <ul>
-    <li><b>Intensity</b>: E.g. Might. Intensity boons are measured by a stack count. So a boon output of 100 might would mean on average, across the entire fight, the player was able to maintain 20 stacks of might on 5 players or 10 stacks of might on 10 players or any other combination.</li>
-    <li><b>Duration</b>: E.g. Quickness. Duration boons are measured by a uptime percentage. So a boon output of 500% quickness would mean on average, across the entire fight, the player was able to maintain 100% quickness on 5 players or 50% quickness on 10 players or any other combination</li>
-</ul>
-
-<h2>Personal Stats</h2>
-
-<img src="{% static 'raidar/img/intro/profile.png' %}"/>
-<p>The Personal Stats page allows you to review your overall raid performance based on specific archetype roles you play in raids across all your characters. So for example if you have 2 power tempests, across two accounts, they'll be combined into a single power tempest view on this page.</p>
-
-<p>Stats are filterable down at various levels and allows you to compare yourself against the global metrics. Selecting an encounter on each filter will show you your overall performance on that encounter according to DPS. Clicking on a value in the table will bring up a graph showing your performance over time compared to the global average and multiple increasing percentiles for that particular archetype and encounter combination. All stats are seggregated by Eras which is used to denote major changes to the Meta.</p>
-
-<img src="{% static 'raidar/img/intro/profile_graph.png' %}"/>
-
-<h2>Global Stats</h2>
-
-<img src="{% static 'raidar/img/intro/global_stats.png' %}"/>
-<p>The Global Stats allows you to view global metrics for every encounter recorded in GW2Raidar. You can see at a glance, which DPS classes are most effective on each boss and performance of these classes according to average number and top tier players. Simply select the encounter you're interested in and the data will update accordingly. All stats are seggregated by Eras which is used to denote major changes to the Meta.</p>
-  
-  
-<h2>API</h2>
-
-<p>GW2 Raidar provides a functional API to allow you to automatically upload files to the GW2Raidar servers for processing from anywhere. The API(v2) provides the following functions below. The API documentation can also be found <a href="/api/v2/swagger#" target="_blank"> here</a></p>
-
-<h3>Authentication Token</h3>
-<p>Retrieve token to use in Authorisaton header for all requests</p>
     <ul>
-      <li><b>Method</b>: HTTP POST</li>
-      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/token</li>
-      <li><b>Parameters</b>:
-        <ul>
-          <li><i>username</i> - GW2Raidar Username</li>
-          <li><i>password</i> - GW2Raidar Password</li>
-        </ul>
-      </li>
-      <li><b>Responses</b>:
-        <ul>
-          <li><i>200</i> - Successful Login, Token Returned</li>
-        </ul>
-      </li>
-      <li><b>Example</b>:
-        <pre><code>curl -F "username=<em>USERNAME</em>" -F "password=<em>PASSWORD</em>" https://www.gw2raidar.com/api/v2/token</code></pre>
-      </li>
+      <li>See at a top level your performance and your squad’s performance at a glance</li>
+      <li>See how your and your squads metrics compare to current global metrics</li>
+      <li>See what the top group metrics and what professions are most popular for each encounter</li>
+      <li>Upload 1 log per encounter and have everyone in the squad access the encounter automatically via their GW2 Raidar account</li>
+      <li>Link multiple Guild Wars 2 accounts to a single GW2 Raidar account for a consolidated single view across all your raid characters</li>
+      <li>See your personal raid statistics compared to global metrics</li>
+      <li>Redownload previous encounter log files to parse through another website or application.</li>
     </ul>
 
-<h3>Upload Files</h3>
-<p>Upload log files to GW2Raidar</p>
+    <h2 id="getting-started">Getting Started</h2>
+
+    <p>Getting started is easy. Simply create a new account on the website. You will need to provide in addition to your desired login credentials, your Guild Wars 2 API Key to confirm your ownership of a Guild Wars 2 Account.</p>
+
+    <p>GW2 Raidar will automatically get your GW2 account name and associated characters. Any encounters that have been uploaded with your GW2 account in them will show up straight away in your Encounters page. </p>
+
+    <h2 id="uploading">Uploading Logs</h2>
+
+    <p>To upload your logs, simply drag and drop your log files into the browser window. GW2 Raidar supports both uncompressed and compressed logs. You can access results of each log by clicking on the name in the encounter list. </p>
+
+    <p>Due to the need to update global statistics, GW2 Raidar utilises a batch processing system. As such, analysing may take a few minutes, however once a log is uploaded, it will always be analysed, even if you leave the website! </p>
+
+    <h2 id="how-it-works">How GW2 Raidar Works</h2>
+
+    <p>Each boss fight tracked by GW2 Raidar is classified as an <b>encounter</b>. Encounters are the primary reporting and analytics pages in GW2 Raidar and will have unique URLs ending in a 5 word combination. All encounter URLs are publically shareable (but not listed) so you can share them with your friends, guild and community.</p>
+
+    <p>GW2 Raidar not only provides information about individual but also collates all that data into global statistics that can be used to measure performance. Only successful encounters are included in global statistics data. In addition, all data is segregated by date blocks called <b>Eras</b>. Eras are used to denote when major balance patches occur that result in shifts in the meta and/or significant mechanic changes.</p>
+
+    <p>A uniform colour scheme is used for metrics to help you understand them at a glance. They are listed below:</p>
+
     <ul>
-      <li><b>Method</b>: HTTP PUT</li>
-      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/encounters/new</li>
-      <li><b>Parameters</b>:
-        <ul>
-          <li><i>file</i> - The log file</li>
-          <li><i>category</i> - (Optional) Category the encounter should be filed under </li>
-          <li><i>tags</i> - (Optional) Tags to assign to the encounter. Comma delimited.</li>
-        </ul>
-      </li>
-      <li><b>Responses</b>:
-        <ul>
-          <li><i>200</i> - Successful Upload</li>
-          <li><i>401</i> - Invalid Username/Password</li>
-          <li><i>400</i> - Invalid File / File Error</li>
-        </ul>
-      </li>
-      <li><b>Example</b>:
-        <pre><code>curl -H "Authorization: Token TOKEN -F "file=@<em>FILEPATH</em>" https://www.gw2raidar.com/api/v2/encounters/new</code></pre>
-      </li>
+      <li>Purple (Legendary): 99th Percentile or higher performance</li>
+      <li>Pink (Ascended): 90th Percentile or higher performance</li>
+      <li>Orange (Exotic): 80th Percentile or higher performance</li>
+      <li>Yellow (Rare): 70th Percentile or higher performance</li>
+      <li>Green (Uncommon): 60th Percentile or higher performance</li>
+      <li>Blue (Common): 50th Percentile or higher performance</li>
+      <li>Grey: Less than 50th percentile performance</li>
     </ul>
 
-<h3>Encounter List</h3>
-<p>Retrieve list of encounters for the user. Encounter list includes URL name for the encounter, timestamp, area_id, any tags and categories, and success/fail flag</p>
+
+    <h2 id="encounter-list">Encounters List</h2>
+
+    <p>Each boss fight tracked by GW2 Raidar is classified as an <b>encounter</b>. Encounters are the primary reporting and analytics pages in GW2 Raidar and will have unique URLs ending in a 5 word combination. All encounter URLs are publically shareable (but not listed) so you can share them with your friends, guild and community.</p>
+
+    <p>The encounters page lists all encounters linked to your GW2 Raidar account, whether they have been uploaded by you or by another participant of that encounter. To view an encounter, simply click on the encounter you're interested in and it will bring you to that specific encounter's page.</p>
+
+    <img src="{% static 'raidar/img/intro/encounterpage.JPG' %}"/>
+
+    <p>You can use the filter function to filter the encounter list and find the encounter you're after. You can also sort the list by clicking on the encounter table header text.</p>
+
+    <img src="{% static 'raidar/img/intro/encounterfilter.JPG' %}"/>
+
+
+    <h2 id="encounter-page">Encounters Page</h2>
+
+    <p>The encounters page allows you to analyse you and your group's performance for that encounter. Most metrics are compared to the same metrics captured globally by all GW2 Raidar users.</p>
+
+    <img src="{% static 'raidar/img/intro/encounterpageoverview.jpg' %}"/>
+
+    <p>At the top of each encounter page, the following information and functions are available</p>
+
+    <img src="{% static 'raidar/img/intro/encounterpageheader.jpg' %}"/>
+
+    <ol>
+    <li>Name of the encounter</li>
+    <li>Whether the encounter was a Success or Fail and elapsed time</li>
+    <li>When the encounter was uploaded.</li>
+    <li>Any tags or categories associated with the encounter. Clicking on this will allow you classify and tag your encounter for easier sorting later.</li>
+    <li>Select what global metric you want to compare to</li>
+    </ol>
+
+    <h3>Overview</h3>
+
+    <p>The overview tab provides details of the encounter that are most important upfront. Metrics are split into 3 levels for analysis<p>
+
     <ul>
-      <li><b>Method</b>: HTTP GET</li>
-      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/encounters</li>
-      <li><b>Parameters</b>:
-        <ul>
-          <li><i>limit</i> - (Optional) Limit number of encounters returned</li>
-          <li><i>since</i> - (Optional) Earliest encounter time returned (UNIX Timestamp)</li>
-          <li><i>area_id</i> - (Optional) Specify encounters for a specific Area ID</li>
-          <li><i>success</i> - (Optional) Return successful (TRUE) or unsuccessful (FALSE) encounters.</li>
-        </ul>
-      </li>
-      <li><b>Responses</b>:
-        <ul>
-          <li><i>200</i> - Success, array of encounters</li>
-        </ul>
-      </li>
-      <li><b>Example</b>:
-        <pre><code>curl -H "Authorization: Token TOKEN https://www.gw2raidar.com/api/v2/encounters</code></pre>
-      </li>
+    <li>Squad</li>
+    <li>Sub Squad (Party)</li>
+    <li>Individual</li>
     </ul>
 
-<h3>Encounter Categories</h3>
-<p>Retrieve list of category IDs</p>
- <ul>
-      <li><b>Method</b>: HTTP GET</li>
-      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/categories</li>
-      <li><b>Returns</b>: List of encounter categories 
- </ul>
+    <img src="{% static 'raidar/img/intro/encounterpagestats.jpg' %}"/>
 
-<h3>Boss Areas</h3>
-<p>Retrieve list of Boss Area IDs</p>
- <ul>
-      <li><b>Method</b>: HTTP GET</li>
-      <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/areas</li>
-      <li><b>Returns</b>: List of Boss Area IDs
- </ul>
+    <ol>
+    <li>Different tabs showing various information about the encounter</li>
+    <li>Squad Totals</li>
+    <li>Sub-squad Totals</li>
+    <li>Player name, class and archetype. Hovering over this will also show account name and participation</li>
+    <li>Toggle between highlighting boss DPS or cleave DPS</li>
+    <li>DPS for both boss and cleave. Hovering over the bar will also show percentile performance to the nearest percentile</li>
+    <li>Total Damage taken. Hovering over the bar will also show percentile performance to the nearest percentile</li>
+    <li>Toggle between showing boon uptime or boon output</li>
+    <li>Primary boon metrics(MFQA)</li>
+    <li>Crit, Scholar, Flanking and Barrier metrics. Hovering over each icon will also show percentile performance to the nearest percentile</li>
+    <li>Bar to show uptime, dead and disconnected proportion</li>
+    <li>Toggle to show phase specific statistics or total encounter</li>
+    </ol>
 
-<h3>Example Auto Uploader Projects</h3>
-<ul>
-  <li><a href="https://github.com/hittingray/gw2-raidar-uploader-newest" target=_blank>Hittingray - GW2 Raidar Log Uploader</a></li>
-  <li><a href="https://github.com/M4xZ3r0/GW2RaidTool" target=_blank>M4xZ3r0 - GW2RaidTool </a></li>
-</ul>
+    <h3>Buffs</h3>
 
-<h2>FAQ</h2>
-<h3>How do I get GW2 API Key?</h3>
+    <p>The Buff tab will allow you to further look into to boon and buff uptime and output. The three options are:</p>
 
-<ol>
-  <li>Go to <a target="arenanet account applications" href="https://account.arena.net/applications" target="_blank">ArenaNet Account Applications</a> and authenticate</li>
-  <li>Click the "New Key" button</li>
-  <li>Name your new API key. The name must include the phrase "GW2RAIDAR" in it</li>
-  <li>GW2 Raidar only requires "account" permission</li>
-  <li>Click the "Create API Key" button</li>
-  <li>Your API key will now show; copy it, and paste it into the GW2 Raidar <a href="{% url 'register' %}" on-click="@this.page('register')">Register</a> form</li>
-</ol>
+    <ul>
+    <li>Boons: All boons</li>
+    <li>Offensive Buffs: Offensive buffs provided by profession specific skills and traits</li>
+    <li>Defensive Buffs: Defensive buffs provided by profession specific skills and traits</li>
+    </ul>
 
-<h3>It says my Account is already registered to another user</h3>
-<p>This means that an API key associated with your account has been used already by another GW2 Raidar user to link your GW2 account. You will need to remove the API key in question (shown in the error message) from your GW2 Account, and possibly create a new API key, in order to prove your ownership of that GW2 account and register your GW2 Raidar account.</p>
+    <img src="{% static 'raidar/img/intro/encounterpagebuffs.jpg' %}"/>
 
-<h3>What combat logs does GW2 Raider Support?</h3>
-<p>Combat logs generated by <a href="https://www.deltaconnected.com/arcdps/" target="_blank">arcdps</a> (both uncompressed and compressed). To enable logging in ARCDPS:</p>
-<ol>
-  <li>Press ALT + SHIFT + T, this will bring up the ARC settings window</li>
-  <li>Under the 'Config' section ensure 'SAVE EVTC LOGS ON ENCOUNTERS' is ticked</li>
-  <li>We recommend also ticking 'USE NPC NAME IN EVTC PATH' for easier tracking and 'COMPRESS EVTC WITH PS (WIN 10)' to reduce the size of your logs. Note that compression requires Windows 10</li>
-  <li>Logs are stored by default after each raid boss kill / attempt under 'My Documents/Guild Wars 2/addons/arcdps/arcdps.cbtlogs'</li>
-</ol>
+    <p>Boon output is shown in the Boon Outputs tab in encounter view as well as in the Global Stats view. Boon output in general is defined as the total amount of boons applied by a player (including to themselves). There are two measurments of boon output depending on the type of boon measured:
 
-<h3>Can I make my info private?</h3>
-<p>You can change your privacy settings in your Account tab. There are three options to choose from:</p>
-<ol>
-  <li><strong>Private</strong>: Display your account and character names to no-one but yourself</li>
-  <li><strong>Squad</strong>: Display your account and character names only to participants in your specific encounter</li>
-  <li><strong>Public</strong>: Show your account and character names to everyone</li>
-</ol>
-<p>Privacy options will apply to all accounts and characters linked to your GW2R account.</p>
+      <ul>
+        <li><b>Intensity</b>: E.g. Might. Intensity boons are measured by a stack count. So a boon output of 100 might would mean on average, across the entire fight, the player was able to maintain 20 stacks of might on 5 players or 10 stacks of might on 10 players or any other combination.</li>
+        <li><b>Duration</b>: E.g. Quickness. Duration boons are measured by a uptime percentage. So a boon output of 500% quickness would mean on average, across the entire fight, the player was able to maintain 100% quickness on 5 players or 50% quickness on 10 players or any other combination</li>
+    </ul>
 
-<h3>What encounters are taken into account for averages?</h3>
-<p>Only encounters marked as successful runs will be included in average statistics. Averages are also isolated by different balance patches (Eras).</p>
+    <h3>Boss Metrics</h3>
+
+    <p>The Boss metrics tab shows count and/or durations related to encounter mechanics and attacks detected by GW2 Raidar.Hovering over the header will provide additional descriptions of the mechanics listed</p>
+
+    <img src="{% static 'raidar/img/intro/encounterpagebossmetrics.jpg' %}"/>
+
+
+    <h2 id="personal-stats">Personal Stats</h2>
+
+    <p>The Personal Stats page allows you to review your overall raid performance based on specific archetype roles you play in raids across all your characters. So for example if you have 2 power tempests, across two accounts, they'll be combined into a single power tempest view on this page.</p>
+
+    <img src="{% static 'raidar/img/intro/personalstats.jpg' %}"/>
+
+    <ol>
+    <li>Allows to select which level of information to see on the page. </li>
+    <li>Select the Era for data shown</li>
+    <li>Overall uptime across all encounters selected</li>
+    <li>What archetype is shown out of Support, Power and Condition</li>
+    <li>Shows the profession for that archetype and lists number of encounters played with that archetype</li>
+    <li>Shows Boss and Cleave DPS across all encounters as an average and maximum</li>
+    </ol>
+
+    <p>Clicking on a bar graph will bring up a graph showing your performance over time compared to the global metrics for that particular archetype and encounter combination. </p>
+
+    <img src="{% static 'raidar/img/intro/profile_graph.png' %}"/>
+
+    <h2 id="global-stats">Global Stats</h2>
+
+    <p>The Global Stats allows you to view global metrics for every encounter recorded in GW2Raidar. You can see at a glance, which DPS classes are most effective on each boss and performance of these classes according to average number and top tier players. Simply select the encounter you're interested in and the data will update accordingly.</p>
+
+    <img src="{% static 'raidar/img/intro/globalstats.jpg' %}"/>
+
+    <ol>
+    <li>Select which metrics you want to view</li>
+    <li>Select the Era for the metrics shown</li>
+    <li>Select the percentile values you want displayed on screen</li>
+    <li>Full group level metrics which outline duration, DPS and damage received for groups</li>
+    <li>Archetype shown from Power, Condi and Support</li>
+    <li>Confidence level is a quick indicator of number of data points used to collate data. Green is a large number of data points, yellow is some and red is a few. Hovering over the icon will display exact number of data points</li>
+    <li>Display boonput metrics for the archetype</li>
+    </ol>
+
+    <h2 id="api">API</h2>
+
+    <p>GW2 Raidar provides a functional API to allow you to automatically upload files to the GW2Raidar servers for processing from anywhere. The API(v2) provides the following functions below. The API documentation can also be found <a href="/api/v2/swagger#" target="_blank"> here</a></p>
+
+    <h3>Authentication Token</h3>
+    <p>Retrieve token to use in Authorisaton header for all requests</p>
+        <ul>
+          <li><b>Method</b>: HTTP POST</li>
+          <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/token</li>
+          <li><b>Parameters</b>:
+            <ul>
+              <li><i>username</i> - GW2Raidar Username</li>
+              <li><i>password</i> - GW2Raidar Password</li>
+            </ul>
+          </li>
+          <li><b>Responses</b>:
+            <ul>
+              <li><i>200</i> - Successful Login, Token Returned</li>
+            </ul>
+          </li>
+          <li><b>Example</b>:
+            <pre><code>curl -F "username=<em>USERNAME</em>" -F "password=<em>PASSWORD</em>" https://www.gw2raidar.com/api/v2/token</code></pre>
+          </li>
+        </ul>
+
+    <h3>Upload Files</h3>
+    <p>Upload log files to GW2Raidar</p>
+        <ul>
+          <li><b>Method</b>: HTTP PUT</li>
+          <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/encounters/new</li>
+          <li><b>Parameters</b>:
+            <ul>
+              <li><i>file</i> - The log file</li>
+              <li><i>category</i> - (Optional) Category the encounter should be filed under </li>
+              <li><i>tags</i> - (Optional) Tags to assign to the encounter. Comma delimited.</li>
+            </ul>
+          </li>
+          <li><b>Responses</b>:
+            <ul>
+              <li><i>200</i> - Successful Upload</li>
+              <li><i>401</i> - Invalid Username/Password</li>
+              <li><i>400</i> - Invalid File / File Error</li>
+            </ul>
+          </li>
+          <li><b>Example</b>:
+            <pre><code>curl -H "Authorization: Token <em>TOKEN</em>" -F "file=@<em>FILEPATH</em>" https://www.gw2raidar.com/api/v2/encounters/new</code></pre>
+          </li>
+        </ul>
+
+    <h3>Encounter List</h3>
+    <p>Retrieve list of encounters for the user. Encounter list includes URL name for the encounter, timestamp, area_id, any tags and categories, and success/fail flag</p>
+        <ul>
+          <li><b>Method</b>: HTTP GET</li>
+          <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/encounters</li>
+          <li><b>Parameters</b>:
+            <ul>
+              <li><i>limit</i> - (Optional) Limit number of encounters returned</li>
+              <li><i>since</i> - (Optional) Earliest encounter time returned (UNIX Timestamp)</li>
+              <li><i>area_id</i> - (Optional) Specify encounters for a specific Area ID</li>
+              <li><i>success</i> - (Optional) Return successful (TRUE) or unsuccessful (FALSE) encounters.</li>
+            </ul>
+          </li>
+          <li><b>Responses</b>:
+            <ul>
+              <li><i>200</i> - Success, array of encounters</li>
+            </ul>
+          </li>
+          <li><b>Example</b>:
+            <pre><code>curl -H "Authorization: Token <em>TOKEN</em>" https://www.gw2raidar.com/api/v2/encounters</code></pre>
+          </li>
+        </ul>
+
+    <h3>Encounter Categories</h3>
+    <p>Retrieve list of category IDs</p>
+     <ul>
+          <li><b>Method</b>: HTTP GET</li>
+          <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/categories</li>
+          <li><b>Returns</b>: List of encounter categories</li>
+          <li><b>Example</b>:
+            <pre><code>curl -H "Authorization: Token <em>TOKEN</em>" https://www.gw2raidar.com/api/v2/categories</code></pre>
+          </li>
+     </ul>
+
+    <h3>Boss Areas</h3>
+    <p>Retrieve list of Boss Area IDs</p>
+     <ul>
+          <li><b>Method</b>: HTTP GET</li>
+          <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/areas</li>
+          <li><b>Returns</b>: List of Boss Area IDs</li>
+          <li><b>Example</b>:
+            <pre><code>curl -H "Authorization: Token <em>TOKEN</em>" https://www.gw2raidar.com/api/v2/areas</code></pre>
+          </li>
+     </ul>
+
+    <h3>Boss Areas</h3>
+    <p>Retrieve list of Boss Area IDs</p>
+     <ul>
+          <li><b>Method</b>: HTTP GET</li>
+          <li><b>Endpoint</b>: https://www.gw2raidar.com/api/v2/areas</li>
+          <li><b>Returns</b>: List of Boss Area IDs
+     </ul>
+
+    <h3>Example Auto Uploader Projects</h3>
+    <ul>
+      <li><a href="https://github.com/hittingray/gw2-raidar-uploader-newest" target=_blank>Hittingray - GW2 Raidar Log Uploader</a></li>
+      <li><a href="https://github.com/M4xZ3r0/GW2RaidTool" target=_blank>M4xZ3r0 - GW2RaidTool </a></li>
+    </ul>
+
+    <h2 id="faq">FAQ</h2>
+    <h3>How do I get GW2 API Key?</h3>
+
+    <ol>
+      <li>Go to <a target="arenanet account applications" href="https://account.arena.net/applications" target="_blank">ArenaNet Account Applications</a> and authenticate</li>
+      <li>Click the "New Key" button</li>
+      <li>Name your new API key. The name must include the phrase "GW2RAIDAR" in it</li>
+      <li>GW2 Raidar only requires "account" permission</li>
+      <li>Click the "Create API Key" button</li>
+      <li>Your API key will now show; copy it, and paste it into the GW2 Raidar <a href="{% url 'register' %}" on-click="@this.page('register')">Register</a> form</li>
+    </ol>
+
+    <h3>It says my Account is already registered to another user</h3>
+    <p>This means that an API key associated with your account has been used already by another GW2 Raidar user to link your GW2 account. You will need to remove the API key in question (shown in the error message) from your GW2 Account, and possibly create a new API key, in order to prove your ownership of that GW2 account and register your GW2 Raidar account.</p>
+
+    <h3>What combat logs does GW2 Raider Support?</h3>
+    <p>Combat logs generated by <a href="https://www.deltaconnected.com/arcdps/" target="_blank">arcdps</a> (both uncompressed and compressed). To enable logging in ARCDPS:</p>
+    <ol>
+      <li>Press ALT + SHIFT + T, this will bring up the ARC settings window</li>
+      <li>Under the 'Config' section ensure 'SAVE EVTC LOGS ON ENCOUNTERS' is ticked</li>
+      <li>We recommend also ticking 'USE NPC NAME IN EVTC PATH' for easier tracking and 'COMPRESS EVTC WITH PS (WIN 10)' to reduce the size of your logs. Note that compression requires Windows 10</li>
+      <li>Logs are stored by default after each raid boss kill / attempt under 'My Documents/Guild Wars 2/addons/arcdps/arcdps.cbtlogs'</li>
+    </ol>
+
+    <h3>Can I make my info private?</h3>
+    <p>You can change your privacy settings in your Account tab. There are three options to choose from:</p>
+    <ol>
+      <li><strong>Private</strong>: Display your account and character names to no-one but yourself</li>
+      <li><strong>Squad</strong>: Display your account and character names only to participants in your specific encounter</li>
+      <li><strong>Public</strong>: Show your account and character names to everyone</li>
+    </ol>
+    <p>Privacy options will apply to all accounts and characters linked to your GW2R account.</p>
+
+    <h3>What encounters are taken into account for averages?</h3>
+    <p>Only encounters marked as successful runs will be included in average statistics. Averages are also isolated by different balance patches (Eras).</p>
+  </div>
+</div>

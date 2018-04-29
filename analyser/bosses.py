@@ -102,12 +102,12 @@ class Phase:
                 
         if self.phase_skip_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_skip_health * 100):
-                print("Detected skipped phase")
+                print("{0}: Detected skipped phase - past skip health threshold".format(self.name))
                 return current_time    
             
         if self.phase_end_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
-                print("Detected skipped phase")
+                print("{0}: Detected skipped phase - past phase end health".format(self.name))
                 return current_time
             
             relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
@@ -405,24 +405,24 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = skorvald_cm_detector, force_single_party = True, non_cm_allowed = False),
     Boss('Artsariiv', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 3, phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
-        Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
-        Phase("Second split", False, phase_end_damage_start = 10000, phase_skip_health = 1),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 6000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 6000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 6000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 6000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 3, phases =[
-        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 10000, phase_skip_health = 70),
-        Phase("First orb", False, phase_end_damage_start = 10000, phase_skip_health = 70),
-        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 10000, phase_skip_health = 50),
-        Phase("Archdiviner", False, phase_end_damage_start = 10000, phase_skip_health = 50),
-        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 10000, phase_skip_health = 40),
-        Phase("Second orb", False, phase_end_damage_start = 10000, phase_skip_health = 40),
-        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 10000, phase_skip_health = 30),
-        Phase("Gladiator", False, phase_end_damage_start = 10000, phase_skip_health = 30),
-        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 10000, phase_skip_health = 1),
-        Phase("Third orb", False, phase_end_damage_start = 10000, phase_skip_health = 1),
-        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 10000)
+        Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 6000, phase_skip_health = 70),
+        Phase("First orb", False, phase_end_damage_start = 6000, phase_skip_health = 70),
+        Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 6000, phase_skip_health = 50),
+        Phase("Archdiviner", False, phase_end_damage_start = 6000, phase_skip_health = 50),
+        Phase("70-50", True, phase_end_health = 50, phase_end_damage_stop = 6000, phase_skip_health = 40),
+        Phase("Second orb", False, phase_end_damage_start = 6000, phase_skip_health = 40),
+        Phase("50-40", True, phase_end_health = 40, phase_end_damage_stop = 6000, phase_skip_health = 30),
+        Phase("Gladiator", False, phase_end_damage_start = 6000, phase_skip_health = 30),
+        Phase("40-30", True, phase_end_health = 30, phase_end_damage_stop = 6000, phase_skip_health = 1),
+        Phase("Third orb", False, phase_end_damage_start = 6000, phase_skip_health = 1),
+        Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 6000)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('MAMA', Kind.FRACTAL, [0x427d], phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000, phase_skip_health = 50),
@@ -434,10 +434,10 @@ BOSS_ARRAY = [
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Siax', Kind.FRACTAL,[0x4284], phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 13000, phase_skip_health = 33),
-        Phase("First split", False, phase_end_damage_start = 13000, phase_skip_health = 33),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 13000, phase_skip_health = 1),
-        Phase("Second split", False, phase_end_damage_start = 13000, phase_skip_health = 1),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 12000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 12000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 12000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 12000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Ensolyss', Kind.FRACTAL,[0x4234], phases = [
@@ -450,3 +450,129 @@ BOSS_ARRAY = [
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False)
 ]
 BOSSES = {boss.boss_ids[0]: boss for boss in BOSS_ARRAY}
+IDS = {boss.name: boss.boss_ids[0] for boss in BOSS_ARRAY}
+
+BOSS_LOCATIONS = [
+    {
+        "name": "Raids",
+        "all": 'All raid bosses',
+        "columns": 3,
+        "wings": [
+            {
+                "name": "Spirit Vale",
+                "bosses": [
+                    IDS['Vale Guardian'],
+                    IDS['Gorseval'],
+                    IDS['Sabetha'],
+                ],
+            },
+            {
+                "name": "Salvation Pass",
+                "bosses": [
+                    IDS['Slothasor'],
+                    IDS['Bandit Trio'],
+                    IDS['Matthias'],
+                ],
+            },
+            {
+                "name": "Stronghold of the Faithful",
+                "bosses": [
+                    IDS['Keep Construct'],
+                    IDS['Xera'],
+                ],
+            },
+            {
+                "name": "Bastion of the Penitent",
+                "bosses": [
+                    IDS['Cairn'],
+                    IDS['Mursaat Overseer'],
+                    IDS['Samarog'],
+                    IDS['Deimos'],
+                ],
+            },
+            {
+                "name": "Hall of Chains",
+                "bosses": [
+                    IDS['Soulless Horror'],
+                    IDS['Dhuum'],
+                ],
+            },
+        ],
+    },
+    {
+        "name": "CM Raids",
+        # "all": 'All raid bosses',
+        "columns": 3,
+        "wings": [
+            {
+                "name": "Bastion of the Penitent",
+                "bosses": [
+                    IDS['Cairn (CM)'],
+                    IDS['Mursaat Overseer (CM)'],
+                    IDS['Samarog (CM)'],
+                    IDS['Deimos (CM)'],
+                ],
+            },
+            {
+                "name": "Hall of Chains",
+                "bosses": [
+                    IDS['Soulless Horror (CM)'],
+                    IDS['Dhuum (CM)'],
+                ],
+            },
+        ],
+    },
+    {
+        "name": "CM Fractals",
+        "all": 'All fractal bosses',
+        "columns": 4,
+        "wings": [
+            {
+                "name": "Nightmare",
+                "bosses": [
+                    IDS['MAMA'],
+                    IDS['Siax'],
+                    IDS['Ensolyss'],
+                ],
+            },
+            {
+                "name": "Shattered Observatory",
+                "bosses": [
+                    IDS['Skorvald the Shattered'],
+                    IDS['Artsariiv'],
+                    IDS['Arkk'],
+                ],
+            },
+        ],
+    },
+    {
+        "name": "Golems",
+        "all": 'All golem bosses',
+        "columns": 4,
+        "wings": [
+            {
+                "name": "Massive",
+                "bosses": [
+                    IDS['Massive Standard Kitty Golem'],
+                    IDS['Massive Average Kitty Golem'],
+                    IDS['Massive Vital Kitty Golem'],
+                ],
+            },
+            {
+                "name": "Normal",
+                "bosses": [
+                    IDS['Standard Kitty Golem'],
+                    IDS['Average Kitty Golem'],
+                    IDS['Vital Kitty Golem'],
+                ],
+            },
+            {
+                "name": "Special",
+                "bosses": [
+                    IDS['Resistant Kitty Golem'],
+                    IDS['Tough Kitty Golem'],
+                ],
+            },
+        ],
+    },
+]

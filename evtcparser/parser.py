@@ -187,6 +187,7 @@ class Encounter:
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
     def _old_add_inst_id_to_agents(self):
+        
         self.raw_agents = self.agents
         src_agent_map = self.events[['src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
         dst_agent_map = self.events[['dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
@@ -195,6 +196,8 @@ class Encounter:
         self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
         
     def _add_inst_id_to_agents(self):
+        self.events.loc[self.events.state_change == 18, 'dst_agent'] = 0
+
         src_agent_map = self.events[['time', 'src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
         dst_agent_map = self.events[['time', 'dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
 

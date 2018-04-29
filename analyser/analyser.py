@@ -220,13 +220,14 @@ class Analyser:
 
         #construct frame of all power damage to boss, including deltas since last hit.
         boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
-        deltas = boss_power_events.time - boss_power_events.time.shift(1)
-        boss_power_events = boss_power_events.assign(delta = deltas)
-        #print_frame(boss_power_events[boss_power_events.delta >= 3000])
+        previous = boss_power_events.time.shift(1)
+        deltas = boss_power_events.time - previous
+        boss_power_events = boss_power_events.assign(delta = deltas, previous = previous)
+        #print_frame(boss_power_events[boss_power_events.delta >= 1000][['time','previous','delta']])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
         & (from_boss_events.dst_agent > 0)]
-        #print_frame(health_updates)
+        #print_frame(health_updates[['time','dst_agent']])
 
         #construct frame of all boss skill activations
         boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
@@ -346,8 +347,6 @@ class Analyser:
         encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
-        encounter_collector.add_data('end_tick', encounter_end, int)
-        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         is_cm = self.boss_info.cm_detector(events, self.boss_instids)
         encounter_collector.add_data('cm', is_cm)
                 
@@ -361,7 +360,9 @@ class Analyser:
             phase_collector.add_data('end_tick', phase[2], int)
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
 
-        success = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        encounter_collector.add_data('end_tick', encounter_end, int)
+        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
@@ -631,9 +632,14 @@ class Analyser:
                 collector.add_data(None, mean, per_second_per_dst(float))
             else:
                 collector.add_data(None, mean, percentage_per_second_per_dst(float))
-
+                
     def determine_success(self, events, final_boss_events, player_src_events, encounter, health_updates):
-        success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
+        success_time = events.time.max()
+        success = False
+        if (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty):
+            success = True
+            success_time = final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].iloc[-1]['time']
+
         print("Death detected: {0}".format(success))
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
@@ -652,6 +658,7 @@ class Analyser:
                 print("These players survived: {0}".format(surviving_players))
                 if surviving_players:
                     success = True
+                    success_time = self.phases[-1][2]
             print("Probable death of despawn-only boss detected: {0}".format(success))
 
         if (self.boss_info.success_health_limit is not None and
@@ -663,9 +670,14 @@ class Analyser:
 
         if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
             success_types = [55821, 60685]
-            success = not events[(events.state_change == parser.StateChange.REWARD)
-                             & events.value.isin(success_types)].empty
-
+            if (not events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].empty):
+                success = True
+                succsss_time = events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].iloc[-1]['time']
+            else:
+                success = False
+            
             print("Success overridden by reward chest logging: {0}".format(success))
 
-        return success
+        return success, success_time
