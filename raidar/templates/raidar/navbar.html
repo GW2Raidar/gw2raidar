@@ -1,38 +1,27 @@
-<nav class="uk-navbar uk-navbar-container">
+<nav class="uk-navbar uk-navbar-transparent uk-navbar-container">
   <div class="uk-navbar-left">
-    <ul class="uk-navbar-nav">
-      <li>
-        <a href="#">Info</a>
-        <div uk-dropdown="offset: 0; delay-hide: 0" class="uk-navbar-dropdown">
-          <ul class="uk-nav uk-navbar-dropdown-nav">
-            <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-help'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">Help</a></li>
-            <li class="[[page.name=='info-releasenotes' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-releasenotes'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">Release Notes</a></li>
-            <li class="[[page.name=='info-contact' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-contact'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">Contact Us</a></li>
-            <li class="[[page.name=='info-about' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'info-about'}), @global.UIkit.dropdown(@node.parentNode.parentNode.parentNode).hide()">About Us</a></li>
-          </ul>
-        </div>
-      </li>
+    <ul class="uk-navbar-nav r-navbar-hover">
+      <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>
       [[#if username]]
+        <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Personal Stats</a></li>
         <li class="[[page.name=='encounters' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
-        <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Profile</a></li>
-        <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')">Uploads</a></li>
+      [[#if is_staff]]
+        <li class="uk-hidden@m "><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
       [[/if]]
-        <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>
-    </ul>
-  </div>
-  <div class="uk-navbar-right">
-    <ul class="uk-navbar-nav">
-      [[#if username]]
-        [[#if is_staff]]
-          <li><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
-        [[/if]]
-        <li class="[[page.name=='account' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('account')">Account</a></li>
-        <li><a href="#" on-click="auth_logout">Logout</a></li>
+        <li class="uk-hidden@m [[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+        <li class="uk-hidden@m"><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">exit_to_app</i> </a></li>
       [[else]]
-        <li class="[[page.name=='login' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('login')">Login</a></li>
-        <li class="[[page.name=='register' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('register')">Register</a></li>
-        <li class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('reset_pw')">Reset Password</a></li>
+        <li class="uk-hidden@m [[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">input</i> Login</a></li>
+        <li class="uk-hidden@m [[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
       [[/if]]
     </ul>
   </div>
+  <div class="uk-navbar-right uk-visible@m">
+     <ul class="uk-navbar-nav r-navbar-hover">
+       [[#if username]]
+         <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')"><i class="material-icons uk-margin-small-right">file_upload</i>Upload</a></li>
+       [[/if]]
+       <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('info-help')"><i class="material-icons uk-margin-small-right">help_outline</i>Help</a></li>
+     </ul>
+   </div>
 </nav>

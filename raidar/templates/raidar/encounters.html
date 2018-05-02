@@ -1,189 +1,360 @@
 {% load staticfiles %}
 <div class="table-container">
+{% comment %}
+<!--
 
-  <div class="uk-overflow-auto">
-    <table class="uk-table uk-table-striped encounters">
-      <thead>
-        <tr>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="area:up">
-            Area
-            [[#if settings.encounterSort.prop != 'area']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="started_at:down">
-            Time
-            [[#if settings.encounterSort.prop != 'started_at']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="duration:down">
-            Dur.
-            [[#if settings.encounterSort.prop != 'duration']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="character:up">
-            Character
-            [[#if settings.encounterSort.prop != 'character']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="account:up">
-            Account
-            [[#if settings.encounterSort.prop != 'account']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="uploaded_at:down">
-            Upload
-            [[#if settings.encounterSort.prop != 'uploaded_at']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto" on-click="sort_encounters" data-sort="category:up">
-            Category
-            [[#if settings.encounterSort.prop != 'category']]
-              <span uk-icon="icon: minus"></span>
-            [[elseif settings.encounterSort.dir == 'up']]
-              <span uk-icon="icon: chevron-up"></span>
-            [[else]]
-              <span uk-icon="icon: chevron-down"></span>
-            [[/if]]
-          </th>
-          <th class="uk-width-auto">
-            Tags
-            <div class="uk-float-right" on-click="encounter_filter_toggle">
-              [[#if settings.encounterSort.filters]]
-                <span uk-tooltip title="Remove filters" uk-icon="icon: close"></span>
-              [[else]]
-                <span uk-tooltip title="Filters" uk-icon="icon: search"></span>
-              [[/if]]
-            </div>
-          </th>
-        </tr>
+Encounter Filter Notes:
+Label of the button should add the encounter type to the button text. i.e. If they go to Fractals>MAMA it should say 'MAMA - FRACTALS CM' in the button after they select that .
 
-        [[#if settings.encounterSort.filters]]
-          <tr>
-            <th>
-              <div class="uk-button-group">
-                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === true && 'uk-button-primary' || '']]" value="true" on-click="encounter_filter_success"><span uk-icon="icon: check"></span></button>
-                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_success"></button>
-                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === false && 'uk-button-primary' || '']]" value="false" on-click="encounter_filter_success"><span uk-icon="icon: close"></span></button>
-              </div><br/>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.area]]" placeholder="Starts with" list="encountersAreas">
-              <datalist id="encountersAreas">
-                [[#each encountersAreas]]
-                  <option value="[[.]]"/>
-                [[/each]]
-              </datalist>
-            </th>
-            <th>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.started_from]]" placeholder="From" type="date"><br>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.started_till]]" placeholder="Till" type="date">
-            </th>
-            <th>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.duration_from]]" placeholder="From"><br>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.duration_till]]" placeholder="Till">
-            </th>
-            <th>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.character]]" placeholder="Starts with" list="encountersCharacters">
-              <datalist id="encountersCharacters">
-                [[#each encountersCharacters]]
-                  <option value="[[.]]"/>
-                [[/each]]
-              </datalist>
-            </th>
-            <th>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.account]]" placeholder="Starts with" list="encountersAccounts">
-              <datalist id="encountersAccounts">
-                [[#each encountersAccounts]]
-                  <option value="[[.]]"/>
-                [[/each]]
-              </datalist>
-            </th>
-            <th>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.uploaded_from]]" placeholder="From" type="date"><br>
-              <input class="uk-input uk-form-small" value="[[settings.encounterSort.filter.uploaded_till]]" placeholder="Till" type="date">
-            </th>
-            <th>
-              <select as-ukUpdate class="uk-select uk-form-small uk-margin-remove" value="[[settings.encounterSort.filter.category]]">
-                <option value="[[null]]">Any Category</option>
-                <option value="[[0]]">Uncategorised</option>
-                [[#each data.categories:id]]
-                  <option value="[[parseInt(id)]]">[[.]]</option>
-                [[/each]]
-              </select>
-            </th>
-            <th>
-              <input placeholder="Tag search" class="uk-input uk-form-small" value="[[settings.encounterSort.filter.tag]]">
-            </th>
-          </tr>
-        [[/if]]
-      </thead>
-
-      [[#each encounterSlice]]
-        <tr on-click="@this.page({ name: 'encounter', no: url_id })" class="link">
-          <td class="[[success ? 'uk-text-success' : 'uk-text-danger']]">
-            [[area]]
-          </td>
-          <td>
-            [[formatDate(started_at)]]
-          </td>
-          <td>
-            &#91;[[formatTime(duration)]]&#93;
-          </td>
-          <td>
-            <div class="max-content-width">
-              <img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
-              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>
-              [[character]]
+-->
+  <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom">
+    <button class="uk-button uk-button-default">All (45)</button>
+    <div class="uk-inline">
+        <button class="uk-button uk-button-default uk-button-nor">Raids (20) <i uk-icon="chevron-down"></i></button>
+        <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+            <div class="uk-width-1 uk-grid">
+                <div class="uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li><a href="#">All Raids Encounters (20)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Spirit Vale - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li>
+                            <a href="#">Vale Guardian (2)</a>
+                        </li>
+                        <li><a href="#">Gorseval (1)</a></li>
+                        <li><a href="#">Sabetha (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Salvation Pass - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Slothasor (2)</a></li>
+                        <li><a href="#">Trio (1)</a></li>
+                        <li><a href="#">Matthias (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Keep Construct (2)</a></li>
+                        <li><a href="#">Xera (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Stronghold of the Faithful- <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Cairn (2)</a></li>
+                        <li><a href="#">Mursaat Overseer (2)</a></li>
+                        <li><a href="#">Samarog (1)</a></li>
+                        <li><a href="#">Deimos (1)</a></li>
+                    </ul>
+                </div>
             </div>
-          </td>
-          <td>
-            [[account]]
-          </td>
-          <td>
-            [[formatDate(uploaded_at)]]
-          </td>
-          <td>
-            [[category ? data.categories[category] : '']]
-          </td>
-          <td>
-            <div class="tags-input no-background">
-              [[#each tags]]
-                <span class="tag">[[.]]</span>
-              [[/each]]
+        </div>
+    </div>
+    <div class="uk-inline">
+        <button class="uk-button uk-button-default uk-button-nor  uk-button-primary">Mama - Fractals CM (20) <i uk-icon="chevron-down"></i></button>
+        <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+            <div class="uk-width-1 uk-grid">
+                <div class="uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li><a href="#">All Challenge Mode Encounters (5)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Nightmare - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li class='uk-active'>
+                            <a href="#">MAMA (2)</a>
+                        </li>
+                        <li><a href="#">Siax (1)</a></li>
+                        <li><a href="#">Ensolyss (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Shattered Observatory - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Skovald (2)</a></li>
+                        <li><a href="#">Astrilov (1)</a></li>
+                        <li><a href="#">Arkk (1)</a></li>
+                    </ul>
+                </div>
             </div>
-          </td>
-        </tr>
-      [[/each]]
-    </table>
+        </div>
+    </div>
+    <div class="uk-inline">
+        <button class="uk-button uk-button-default">Golem (20) <i uk-icon="chevron-down"></i></button>
+        <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
+            <div class="uk-width-1 uk-grid">
+                <div class="uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li><a href="#">All Golem Encounters (5)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Massive - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li>
+                            <a href="#">Massive Standard Kitty Golem (2)</a>
+                        </li>
+                        <li><a href="#">Massive Average Kitty Golem (1)</a></li>
+                        <li><a href="#">Massive Vital Kitty Golem (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Normal - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Standard Kitty Golem (2)</a></li>
+                        <li><a href="#">Average Kitty Golem (1)</a></li>
+                        <li><a href="#">Vital Kitty Golem (1)</a></li>
+                    </ul>
+                </div>
+                <div class="uk-width-1-4@m uk-width-1">
+                    <ul class="uk-nav uk-dropdown-nav">
+                        <li class="uk-nav-header">Special - <a class="uk-display-inline" href="#">All (4)</a></li>
+                        <li><a href="#">Tough Kitty Golem (2)</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
   </div>
+{% endcomment %}
+<div class="uk-visible@m" >
+  <button class="uk-button" on-click="encounter_filter_toggle">Filters <i class="material-icons">filter_list</i></button>
+  [[#if settings.encounterSort.filter.any]]
+    <button class="uk-button" on-click="encounter_filter_clear">Clear Filters <i class="material-icons">close</i></button>
+  [[/if]]
+</div>
+[[#if settings.encounterSort.filters]]
+<form class="uk-form-stacked uk-card uk-card-small uk-card-body uk-background-muted">
+  <legend class="uk-legend">Filters</legend>
+  <div class="uk-width-1-1" uk-grid>
+    <div class="uk-width-1-4@m">
+      <div class="uk-margin">
+        <label class="uk-form-label uk-h5">By Success</label>
+        <div class="uk-button-group uk-form-controls">
+          <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === true && 'uk-button-primary' || '']]" value="true" on-click="encounter_filter_success"><i class="material-icons uk-text-success">check_circle</i></button>
+          <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_success">None</button>
+          <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.success === false && 'uk-button-primary' || '']]" value="false" on-click="encounter_filter_success"><i class="material-icons uk-text-danger">cancel</i></button>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label class="uk-form-label uk-h5" for="encounterSelect">By Encounter</label>
+        <div class="uk-form-controls">
+          <select id="encounterSelect" class="uk-select" value="[[settings.encounterSort.filter.area]]">
+            <option value="[[null]]">-- no filter --</option>
+            [[#each encountersAreas]]
+              <option value="[[.]]">[[.]]</option>
+            [[/each]]
+          </select>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label for="#characterName" class="uk-form-label uk-h5">By Character</label>
+        <div class="uk-form-controls">
+          <select id="characterSelect" class="uk-select" value="[[settings.encounterSort.filter.character]]">
+            <option value="[[null]]">-- no filter --</option>
+            [[#each encountersCharacters]]
+              <option value="[[.]]">[[.]]</option>
+            [[/each]]
+          </select>
+        </div>
+      </div>
+
+      <div class="uk-margin">
+        <label for="#accountName" class="uk-form-label uk-h5">By Account</label>
+        <div class="uk-form-controls">
+          <select id="accountSelect" class="uk-select" value="[[settings.encounterSort.filter.account]]">
+            <option value="[[null]]">-- no filter --</option>
+            [[#each encountersAccounts]]
+              <option value="[[.]]">[[.]]</option>
+            [[/each]]
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="uk-width-1-2@m">
+      <div class="uk-margin">
+        <label for="" class="uk-form-label uk-h5">By Encounter Duration</label>
+        <div uk-grid>
+          <div class="uk-width-1-2">
+            <input class="uk-input" value="[[settings.encounterSort.filter.duration_from]]" placeholder="Longer than...">
+          </div>
+          <div class="uk-width-1-2">
+            <input class="uk-input" value="[[settings.encounterSort.filter.duration_till]]" placeholder="Shorter than...">
+          </div>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label for="" class="uk-form-label uk-h5">By Encounter Time</label>
+        <div uk-grid>
+          <div class="uk-width-1-2">
+            <label for="timeFrom" class="uk-form-label">From</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.started_from]]" placeholder="From" type="date" id="timeFrom">
+          </div>
+          <div class="uk-width-1-2">
+            <label for="timeTill" class="uk-form-label">Till</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.started_till]]" placeholder="Till" type="date" id="timeTill">
+          </div>
+        </div>
+      </div>
+      <div class="uk-margin">
+        <label for="" class="uk-form-label uk-h5">By Uploaded Time</label>
+        <div uk-grid>
+          <div class="uk-width-1-2">
+            <label for="timeFrom" class="uk-form-label">From</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.uploaded_from]]" placeholder="From" type="date" id="timeFrom">
+          </div>
+          <div class="uk-width-1-2">
+            <label for="timeTill" class="uk-form-label">Till</label>
+            <input class="uk-input" value="[[settings.encounterSort.filter.uploaded_till]]" placeholder="Till" type="date" id="timeTill">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="uk-width-1-4@m">
+      <div class="uk-margin">
+        <label for="#category" class="uk-form-label uk-h5">By Category</label>
+        <select id="category" as-ukUpdate class="uk-select uk-margin-remove" value="[[settings.encounterSort.filter.category]]">
+          <option value="[[null]]">-- no filter --</option>
+          <option value="[[0]]">-- uncategorised --</option>
+          [[#each data.categories:id]]
+            <option value="[[parseInt(id)]]">[[.]]</option>
+          [[/each]]
+        </select>
+      </div>
+
+      <div class="uk-margin">
+        <label for="#tag" class="uk-form-label uk-h5">By Tag</label>
+        <input placeholder="Tag search" class="uk-input" id="tag" value="[[settings.encounterSort.filter.tag]]">
+      </div>
+    </div>
+
+  </div>
+
+
+
+</form>
+
+[[/if]]
+  <table class="uk-table uk-table-striped uk-table-small uk-table-responsive encounters">
+    <thead>
+      <tr>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="area:up">
+          <span>Encounter
+          [[#if settings.encounterSort.prop != 'area']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]</span>
+        </th>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="started_at:down">
+          <span>Time
+          [[#if settings.encounterSort.prop != 'started_at']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]</span>
+        </th>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="duration:down">
+          Dur.
+          [[#if settings.encounterSort.prop != 'duration']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="character:up">
+          Character
+          [[#if settings.encounterSort.prop != 'character']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="account:up">
+          Account
+          [[#if settings.encounterSort.prop != 'account']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="uploaded_at:down">
+          Upload
+          [[#if settings.encounterSort.prop != 'uploaded_at']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-small" on-click="sort_encounters" data-sort="category:up">
+          Category
+          [[#if settings.encounterSort.prop != 'category']]
+            <span>-</span>
+          [[elseif settings.encounterSort.dir == 'up']]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_up</i>
+          [[else]]
+            <i class="material-icons" style="font-size: 16px; vertical-align: text-bottom;">keyboard_arrow_down</i>
+          [[/if]]
+        </th>
+        <th class="uk-width-expand">
+          Tags
+        </th>
+      </tr>
+
+
+    </thead>
+
+    [[#each encounterSlice]]
+      <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]" uk-scroll="el:#top;">
+        <td colspan="2">
+          <h5 class="[[success ? 'uk-text-success' : 'uk-text-danger']] uk-margin-remove">[[area]]</h5>
+          <p class="uk-text-small uk-margin-remove">[[formatDate(started_at)]]</p>
+        </td>
+        <td>
+          &#91;[[formatTime(duration)]]&#93;
+        </td>
+        <td colspan="2">
+            <div class="max-content-width">
+              <p class="uk-margin-remove"><img alt="[[data.archetypes[archetype]]]" src="{% static 'raidar/img/arch/' %}/[[data.archetypes[archetype]]].png"/>
+              <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/20px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_20px.png"/>[[character]]</p>
+              <p class="uk-text-small uk-margin-remove">Account: [[account]]</p>
+            </div>
+        </td>
+        <td class="uk-visible@m">
+          [[formatDate(uploaded_at)]]
+        </td>
+        <td class="uk-visible@m">
+          [[category ? data.categories[category] : '']]
+        </td>
+        <td class="uk-visible@m">
+          <div class="tags-input uk-background-secondary">
+            [[#each tags]]
+              <span class="tag">[[.]]</span>
+            [[/each]]
+          </div>
+        </td>
+      </a>
+    [[/each]]
+  </table>
 </div>
 
 <hr class="uk-divider-icon">

@@ -1,4 +1,5 @@
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
+from analyser.bosses import *
 from multiprocessing import Queue, Process, log_to_stderr
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
@@ -9,7 +10,7 @@ from gw2raidar import settings
 from raidar.models import *
 from sys import exit, stderr
 from time import time
-from zipfile import ZipFile, BadZipFile
+from zipfile import ZipFile, BadZipFile, ZIP_DEFLATED
 from queue import Empty
 import os
 import os.path
@@ -20,6 +21,7 @@ from traceback import format_exc
 
 logger = log_to_stderr()
 logger.setLevel(logging.INFO)
+
 
 # inspired by https://stackoverflow.com/a/31464349/240443
 class GracefulKiller:
@@ -42,53 +44,53 @@ class GracefulKiller:
 # pip install --upgrade google-api-python-client
 
 
-def get_gdrive_service():
-    return None
+# def get_gdrive_service():
+#     return None
 
-gdrive_service = None
-if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
-    try:
-        from oauth2client.service_account import ServiceAccountCredentials
-        from httplib2 import Http
-        from apiclient import discovery
-        from googleapiclient.http import MediaFileUpload
-        from googleapiclient.errors import HttpError
+# gdrive_service = None
+# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+#     try:
+#         from oauth2client.service_account import ServiceAccountCredentials
+#         from httplib2 import Http
+#         from apiclient import discovery
+#         from googleapiclient.http import MediaFileUpload
+#         from googleapiclient.errors import HttpError
 
-        def get_gdrive_service():
-            scopes = ['https://www.googleapis.com/auth/drive.file']
-            credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                    settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-            http_auth = credentials.authorize(Http())
-            gdrive_service = discovery.build('drive', 'v3', http=http_auth)
-            return gdrive_service
+#         def get_gdrive_service():
+#             scopes = ['https://www.googleapis.com/auth/drive.file']
+#             credentials = ServiceAccountCredentials.from_json_keyfile_name(
+#                     settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+#             http_auth = credentials.authorize(Http())
+#             gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+#             return gdrive_service
 
-        gdrive_service = get_gdrive_service()
+#         gdrive_service = get_gdrive_service()
 
-        try:
-            gdrive_folder = Variable.get('gdrive_folder')
-        except Variable.DoesNotExist:
-            metadata = {
-                'name' : 'GW2 Raidar Files',
-                'mimeType' : 'application/vnd.google-apps.folder'
-            }
-            folder = gdrive_service.files().create(
-                    body=metadata, fields='id').execute()
-            gdrive_folder = folder.get('id')
+#         try:
+#             gdrive_folder = Variable.get('gdrive_folder')
+#         except Variable.DoesNotExist:
+#             metadata = {
+#                 'name' : 'GW2 Raidar Files',
+#                 'mimeType' : 'application/vnd.google-apps.folder'
+#             }
+#             folder = gdrive_service.files().create(
+#                     body=metadata, fields='id').execute()
+#             gdrive_folder = folder.get('id')
 
-            permission = {
-                'role': 'reader',
-                'type': 'anyone',
-                'allowFileDiscovery': False
-            }
-            result = gdrive_service.permissions().create(
-                fileId=gdrive_folder,
-                body=permission,
-                fields='id',
-            ).execute()
+#             permission = {
+#                 'role': 'reader',
+#                 'type': 'anyone',
+#                 'allowFileDiscovery': False
+#             }
+#             result = gdrive_service.permissions().create(
+#                 fileId=gdrive_folder,
+#                 body=permission,
+#                 fields='id',
+#             ).execute()
 
-            Variable.set('gdrive_folder', gdrive_folder)
-    except ImportError:
-        pass
+#             Variable.set('gdrive_folder', gdrive_folder)
+#     except ImportError:
+#         pass
 
 
 if hasattr(settings, 'UPLOAD_DIR'):
@@ -167,12 +169,14 @@ class Command(BaseCommand):
         if multi:
             from Crypto import Random
             Random.atfork()
-        self.gdrive_service = get_gdrive_service()
+        # self.gdrive_service = get_gdrive_service()
         try:
             while True:
                 upload = queue.get_nowait()
-                logger.info(upload.filename)
+                logger.info("starting %s (%s)" % (upload.filename, upload.diskname()))
+                start = time()
                 self.analyse_upload(upload)
+                logger.info("finished in %.2fs" % (time() - start))
         except Empty:
             logger.info("done")
 
@@ -205,15 +209,26 @@ class Command(BaseCommand):
             started_at = dump['Category']['encounter']['start']
             duration = dump['Category']['encounter']['duration']
             success = dump['Category']['encounter']['success']
+            boss_name = analyser.boss_info.name
             upload_val = upload.val
-            category_id = upload_val.get('category_id', None)
-            tagstring = upload_val.get('tagstring', '')
-            if duration < 60:
-                raise EvtcAnalysisException('Encounter shorter than 60s')
+            area_id = evtc_encounter.area_id
 
-            era = Era.by_time(started_at)
-            area, _ = Area.objects.get_or_create(id=evtc_encounter.area_id,
-                    defaults={ "name": analyser.boss_info.name })
+            minDuration = 60
+            if BOSSES[area_id].kind == Kind.FRACTAL:
+                minDuration = 30    
+            
+            if duration < minDuration:
+                raise EvtcAnalysisException('Encounter shorter than 60s')
+                        
+            if dump['Category']['encounter']['cm']:
+                boss_name += " (CM)"
+                if analyser.boss_info.non_cm_allowed:
+                    area_id += 0xFF0000
+                            
+            era = Era.by_time(started_at)        
+                
+            area, _ = Area.objects.get_or_create(id=area_id,
+                    defaults={ "name": boss_name })
 
             status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
@@ -226,13 +241,17 @@ class Command(BaseCommand):
                 # uniqueness (along with some fuzzing to started_at)
                 started_at_full, started_at_half = Encounter.calculate_start_guards(started_at)
                 account_hash = Encounter.calculate_account_hash(account_names)
+                filename = upload.filename
+                orig_filename = filename
+                if not zipfile:
+                    filename += ".zip"
                 try:
                     encounter = Encounter.objects.get(
                         Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
                         area=area, account_hash=account_hash
                     )
                     encounter.era = era
-                    encounter.filename = upload.filename
+                    encounter.filename = filename
                     encounter.uploaded_at = upload.uploaded_at
                     encounter.uploaded_by = upload.uploaded_by
                     encounter.duration = duration
@@ -241,22 +260,21 @@ class Command(BaseCommand):
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
-                    encounter.category_id = category_id
-                    encounter.tagstring = tagstring
-                    if not zipfile:
-                        encounter.filename += ".zip"
-                    encounter.save()
+                    encounter.has_evtc = True
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
-                        filename=upload.filename,
+                        filename=filename,
                         uploaded_at=upload.uploaded_at, uploaded_by=upload.uploaded_by,
                         duration=duration, success=success, val=dump,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
-                        category_id=category_id,
-                        account_hash=account_hash
+                        has_evtc=True, account_hash=account_hash
                     )
-                    encounter.tagstring = tagstring
+                if 'category_id' in upload_val:
+                    encounter.category_id = upload_val['category_id']
+                if 'tagstring' in upload_val:
+                    encounter.tagstring = upload_val['tagstring']
+                encounter.save()
 
                 file.close()
                 file = None
@@ -267,22 +285,18 @@ class Command(BaseCommand):
                     zipfile = None
                     os.rename(diskname, new_diskname)
                 else:
-                    with ZipFile(new_diskname, 'w') as zipfile_out:
-                        zipfile_out.write(diskname)
+                    with ZipFile(new_diskname, 'w', ZIP_DEFLATED) as zipfile_out:
+                        zipfile_out.write(diskname, orig_filename)
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
                         name=player['account'])
-                    character, _ = Character.objects.get_or_create(
-                        name=name, account=account,
-                        defaults={
-                            'profession': player['profession']
-                        }
-                    )
                     participation, _ = Participation.objects.update_or_create(
-                        character=character, encounter=encounter,
+                        account=account, encounter=encounter,
                         defaults={
+                            'character': name,
                             'archetype': player['archetype'],
+                            'profession': player['profession'],
                             'party': player['party'],
                             'elite': player['elite']
                         }
@@ -310,31 +324,34 @@ class Command(BaseCommand):
                     "encounter_url_id": encounter.url_id,
                 })
 
-            if self.gdrive_service:
-                media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
-                try:
-                    if encounter.gdrive_id:
-                        result = self.gdrive_service.files().update(
-                                fileId=encounter.gdrive_id,
-                                media_body=media,
-                            ).execute()
-                    else:
-                        metadata = {
-                                'name': upload.filename,
-                                'parents': [gdrive_folder],
-                            }
-                        gdrive_file = self.gdrive_service.files().create(
-                                body=metadata, media_body=media,
-                                fields='id, webContentLink',
-                            ).execute()
-                        encounter.gdrive_id = gdrive_file['id']
-                        encounter.gdrive_url = gdrive_file['webContentLink']
-                        encounter.save()
-                except HttpError as e:
-                    logger.error(e)
-                    pass
+            # if self.gdrive_service:
+            #     media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
+            #     try:
+            #         if encounter.gdrive_id:
+            #             result = self.gdrive_service.files().update(
+            #                     fileId=encounter.gdrive_id,
+            #                     media_body=media,
+            #                 ).execute()
+            #         else:
+            #             metadata = {
+            #                     'name': upload.filename,
+            #                     'parents': [gdrive_folder],
+            #                 }
+            #             gdrive_file = self.gdrive_service.files().create(
+            #                     body=metadata, media_body=media,
+            #                     fields='id, webContentLink',
+            #                 ).execute()
+            #             encounter.gdrive_id = gdrive_file['id']
+            #             encounter.gdrive_url = gdrive_file['webContentLink']
+            #             encounter.save()
+            #     except HttpError as e:
+            #         logger.error(e)
+            #         pass
+            #
+            logger.info("saved")
 
         except (EvtcParseException, EvtcAnalysisException, BadZipFile) as e:
+            logger.info("known error: %s" % str(e))
             Notification.objects.create(user=upload.uploaded_by, val={
                 "type": "upload_error",
                 "upload_id": upload.id,
@@ -343,6 +360,7 @@ class Command(BaseCommand):
 
         # for diagnostics and catching new exceptions
         except Exception as e:
+            logger.info("unknown error: %s" % str(e))
             exc = format_exc()
             path = os.path.join(upload_dir, 'errors')
             os.makedirs(path, exist_ok=True)
@@ -368,5 +386,5 @@ class Command(BaseCommand):
             upload.delete()
 
     def clean_up(self, *args, **options):
-        # delete Notifications older than 15s (assuming poll is every 10s)
-        Notification.objects.filter(created_at__lt=time() - 15).delete()
+        # delete Notifications older than 45s (assuming poll is every 30s)
+        Notification.objects.filter(created_at__lt=time() - 45).delete()

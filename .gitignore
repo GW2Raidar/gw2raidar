@@ -26,3 +26,7 @@
 
 # secret stuff
 /credentials
+
+
+config.codekit3
+.DS_Store

@@ -3,8 +3,9 @@ from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from fuzzycount import FuzzyCountManager
 from hashlib import md5
-from analyser.analyser import Archetype, Elite
+from analyser.analyser import Profession, Archetype, Elite
 from json import loads as json_loads, dumps as json_dumps
 from gw2raidar import settings
 from os.path import join as path_join
@@ -22,22 +23,22 @@ START_RESOLUTION = 60
 
 
 # XXX TODO Move to a separate module, does not really belong here
-gdrive_service = None
-if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
-    try:
-        from oauth2client.service_account import ServiceAccountCredentials
-        from httplib2 import Http
-        from apiclient import discovery
-        from googleapiclient.http import MediaFileUpload
+# gdrive_service = None
+# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+#     try:
+#         from oauth2client.service_account import ServiceAccountCredentials
+#         from httplib2 import Http
+#         from apiclient import discovery
+#         from googleapiclient.http import MediaFileUpload
 
-        scopes = ['https://www.googleapis.com/auth/drive.file']
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(
-                settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-        http_auth = credentials.authorize(Http())
-        gdrive_service = discovery.build('drive', 'v3', http=http_auth)
-    except ImportError:
-        # No Google Drive support
-        pass
+#         scopes = ['https://www.googleapis.com/auth/drive.file']
+#         credentials = ServiceAccountCredentials.from_json_keyfile_name(
+#                 settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
+#         http_auth = credentials.authorize(Http())
+#         gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+#     except ImportError:
+#         # No Google Drive support
+#         pass
 
 
 
@@ -72,7 +73,7 @@ class UserProfile(models.Model):
             (SQUAD, 'Squad'),
             (PUBLIC, 'Public')
         )
-    portrait_url = models.URLField(null=True) # XXX not using... delete?
+    portrait_url = models.URLField(null=True, blank=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
     privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
@@ -115,70 +116,10 @@ class Account(models.Model):
         ordering = ('name',)
 
 
-class Character(models.Model):
-    GUARDIAN = 1
-    WARRIOR = 2
-    ENGINEER = 3
-    RANGER = 4
-    THIEF = 5
-    ELEMENTALIST = 6
-    MESMER = 7
-    NECROMANCER = 8
-    REVENANT = 9
-
-    PROFESSION_CHOICES = (
-            (GUARDIAN, 'Guardian'),
-            (WARRIOR, 'Warrior'),
-            (ENGINEER, 'Engineer'),
-            (RANGER, 'Ranger'),
-            (THIEF, 'Thief'),
-            (ELEMENTALIST, 'Elementalist'),
-            (MESMER, 'Mesmer'),
-            (NECROMANCER, 'Necromancer'),
-            (REVENANT, 'Revenant'),
-        )
-
-    SPECIALISATIONS = { (id, 0): name for id, name in PROFESSION_CHOICES }
-    SPECIALISATIONS.update({
-        (GUARDIAN, 1): 'Dragonhunter',
-        (WARRIOR, 1): 'Berserker',
-        (ENGINEER, 1): 'Scrapper',
-        (RANGER, 1): 'Druid',
-        (THIEF, 1): 'Daredevil',
-        (ELEMENTALIST, 1): 'Tempest',
-        (MESMER, 1): 'Chronomancer',
-        (NECROMANCER, 1): 'Reaper',
-        (REVENANT, 1): 'Herald',
-
-        (GUARDIAN, 2): 'Firebrand',
-        (WARRIOR, 2): 'Spellbreaker',
-        (ENGINEER, 2): 'Holosmith',
-        (RANGER, 2): 'Soulbeast',
-        (THIEF, 2): 'Deadeye',
-        (ELEMENTALIST, 2): 'Weaver',
-        (MESMER, 2): 'Mirage',
-        (NECROMANCER, 2): 'Scourge',
-        (REVENANT, 2): 'Renegade',
-    })
-
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='characters')
-    name = models.CharField(max_length=64, db_index=True)
-    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
-    verified_at = models.DateTimeField(auto_now_add=True) # XXX don't remember this... delete?
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        # name is not necessarily unique, just unique at a time
-        unique_together = ('name', 'account', 'profession')
-        ordering = ('name',)
-
-
 class Era(ValueModel):
     started_at = models.IntegerField(db_index=True)
-    name = models.CharField(max_length=255, null=True)
-    description = models.TextField(null=True)
+    name = models.CharField(max_length=255)
+    description = models.TextField()
 
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
@@ -204,7 +145,7 @@ class Category(models.Model):
 class Upload(ValueModel):
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, related_name='unprocessed_uploads')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='unprocessed_uploads')
 
     def __str__(self):
         return '%s (%s)' % (self.filename, self.uploaded_by.username)
@@ -263,19 +204,22 @@ class Encounter(ValueModel):
     success = models.BooleanField()
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, related_name='uploaded_encounters')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True)
-    characters = models.ManyToManyField(Character, through='Participation', related_name='encounters')
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)
+    accounts = models.ManyToManyField(Account, through='Participation', related_name='encounters')
     # hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
     # Google Drive
-    gdrive_id = models.CharField(max_length=255, editable=False, null=True)
-    gdrive_url = models.CharField(max_length=255, editable=False, null=True)
+    gdrive_id = models.CharField(max_length=255, editable=False, null=True, blank=True)
+    gdrive_url = models.CharField(max_length=255, editable=False, null=True, blank=True)
     tags = TaggableManager(blank=True)
+    has_evtc = models.BooleanField(default=True, editable=False)
+
+    objects = FuzzyCountManager()
 
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
@@ -290,6 +234,10 @@ class Encounter(ValueModel):
         else:
             upload_dir = 'uploads'
         return path_join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
+
+    def update_has_evtc(self):
+        self.has_evtc = os.path.isfile(self.diskname())
+        self.save()
 
     @property
     def tagstring(self):
@@ -321,9 +269,9 @@ class Encounter(ValueModel):
         )
 
 def _delete_encounter_file(sender, instance, using, **kwargs):
-    if gdrive_service and instance.gdrive_id:
-        gdrive_service.files().delete(
-                fileId=instance.gdrive_id).execute()
+    # if gdrive_service and instance.gdrive_id:
+    #     gdrive_service.files().delete(
+    #             fileId=instance.gdrive_id).execute()
     try:
         os.remove(instance.diskname())
     except FileNotFoundError:
@@ -333,6 +281,18 @@ post_delete.connect(_delete_encounter_file, sender=Encounter)
 
 
 class Participation(models.Model):
+    PROFESSION_CHOICES = (
+            (int(Profession.GUARDIAN), 'Guardian'),
+            (int(Profession.WARRIOR), 'Warrior'),
+            (int(Profession.ENGINEER), 'Engineer'),
+            (int(Profession.RANGER), 'Ranger'),
+            (int(Profession.THIEF), 'Thief'),
+            (int(Profession.ELEMENTALIST), 'Elementalist'),
+            (int(Profession.MESMER), 'Mesmer'),
+            (int(Profession.NECROMANCER), 'Necromancer'),
+            (int(Profession.REVENANT), 'Revenant'),
+        )
+
     ARCHETYPE_CHOICES = (
             (int(Archetype.POWER), "Power"),
             (int(Archetype.CONDI), "Condi"),
@@ -348,13 +308,15 @@ class Participation(models.Model):
         )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
-    character = models.ForeignKey(Character, on_delete=models.CASCADE, related_name='participations')
+    character = models.CharField(max_length=64, db_index=True)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='participations')
+    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):
-        return '%s in %s' % (self.character, self.encounter)
+        return '%s (%s) in %s' % (self.character, self.account.name, self.encounter)
 
     def data(self):
         return {
@@ -363,19 +325,20 @@ class Participation(models.Model):
                 'area': self.encounter.area.name,
                 'started_at': self.encounter.started_at,
                 'duration': self.encounter.duration,
-                'character': self.character.name,
-                'account': self.character.account.name,
-                'profession': self.character.profession,
+                'character': self.character,
+                'account': self.account.name,
+                'profession': self.profession,
                 'archetype': self.archetype,
                 'elite': self.elite,
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
                 'category': self.encounter.category_id,
-                'tags': list(self.encounter.tags.names()),
+                #'tags': list(self.encounter.tags.names()),
+                'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
             }
 
     class Meta:
-        unique_together = ('encounter', 'character')
+        unique_together = ('encounter', 'account')
 
 
 class EraAreaStore(ValueModel):
