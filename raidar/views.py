@@ -11,11 +11,10 @@ from django.contrib.auth.tokens import default_token_generator
 from django.contrib.staticfiles.templatetags.staticfiles import static
 from django.core import serializers
 from django.core.mail import EmailMessage
-from django.core.exceptions import UnreadablePostError
 from django.views.decorators.csrf import csrf_exempt
 from smtplib import SMTPException
 from django.db.utils import IntegrityError
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse, HttpResponse, Http404, UnreadablePostError
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.utils import timezone
