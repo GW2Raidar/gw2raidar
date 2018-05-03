@@ -571,29 +571,29 @@ def _perform_upload(request):
 @login_required
 @require_POST
 def upload(request):
-    try:
-        filename, upload = _perform_upload(request)
-        if not upload:
-            return _error(filename)
+    filename, upload = _perform_upload(request)
+    if not upload:
+        return _error(filename)
 
-        return JsonResponse({"filename": filename, "upload_id": upload.id})
-
-    except UnreadablePostError as e:
-        return _error(e)
+    return JsonResponse({"filename": filename, "upload_id": upload.id})
 
 @csrf_exempt
 @require_POST
 @sensitive_post_parameters('password')
 def api_upload(request):
-    user = _perform_login(request)
-    if not user:
-        return _error('Could not authenticate', status=401)
-    auth_login(request, user)
-    filename, upload = _perform_upload(request)
-    if not upload:
-        return _error(filename, status=400)
+    try:
+        user = _perform_login(request)
+        if not user:
+            return _error('Could not authenticate', status=401)
+        auth_login(request, user)
+        filename, upload = _perform_upload(request)
+        if not upload:
+            return _error(filename, status=400)
 
-    return JsonResponse({"filename": filename, "upload_id": upload.id})
+        return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+    except UnreadablePostError as e:
+        return _error(e)
 
 @csrf_exempt
 def api_categories(request):
