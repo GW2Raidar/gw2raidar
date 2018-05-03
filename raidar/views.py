@@ -429,18 +429,15 @@ def initial(request):
 
 @sensitive_variables('password')
 def _perform_login(request):
-    try:
-        username = request.POST.get('username')
-        password = request.POST.get('password')
-        # stayloggedin = request.GET.get('stayloggedin')
-        # if stayloggedin == "true":
-        #     pass
-        # else:
-        #     request.session.set_expiry(0)
+    username = request.POST.get('username')
+    password = request.POST.get('password')
+    # stayloggedin = request.GET.get('stayloggedin')
+    # if stayloggedin == "true":
+    #     pass
+    # else:
+    #     request.session.set_expiry(0)
 
-        return authenticate(username=username, password=password)
-    except UnreadablePostError as e:
-        return _error(e)
+    return authenticate(username=username, password=password)
 
 
 @require_POST
@@ -574,11 +571,15 @@ def _perform_upload(request):
 @login_required
 @require_POST
 def upload(request):
-    filename, upload = _perform_upload(request)
-    if not upload:
-        return _error(filename)
+    try:
+        filename, upload = _perform_upload(request)
+        if not upload:
+            return _error(filename)
 
-    return JsonResponse({"filename": filename, "upload_id": upload.id})
+        return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+    except UnreadablePostError as e:
+        return _error(e)
 
 @csrf_exempt
 @require_POST
