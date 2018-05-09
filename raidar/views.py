@@ -14,7 +14,7 @@ from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from smtplib import SMTPException
 from django.db.utils import IntegrityError
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse, HttpResponse, Http404, UnreadablePostError
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.utils import timezone
@@ -429,15 +429,18 @@ def initial(request):
 
 @sensitive_variables('password')
 def _perform_login(request):
-    username = request.POST.get('username')
-    password = request.POST.get('password')
-    # stayloggedin = request.GET.get('stayloggedin')
-    # if stayloggedin == "true":
-    #     pass
-    # else:
-    #     request.session.set_expiry(0)
+    try:
+        username = request.POST.get('username')
+        password = request.POST.get('password')
+        # stayloggedin = request.GET.get('stayloggedin')
+        # if stayloggedin == "true":
+        #     pass
+        # else:
+        #     request.session.set_expiry(0)
 
-    return authenticate(username=username, password=password)
+        return authenticate(username=username, password=password)
+    except UnreadablePostError as e:
+        return _error(e)
 
 
 @require_POST

@@ -307,7 +307,8 @@ class Analyser:
         if (       (encounter.version < '20170923' and gw_build >= 82356)
                 or (encounter.version < '20171107' and gw_build >= 83945)
                 or (encounter.version < '20180206' and gw_build >= 86181)
-                or (encounter.version < '20180306' and gw_build >= 87045)            
+                or (encounter.version < '20180306' and gw_build >= 87045) 
+                or (encounter.version < '20180508' and gw_build >= 88541)           
                 ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
@@ -347,8 +348,6 @@ class Analyser:
         encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
-        encounter_collector.add_data('end_tick', encounter_end, int)
-        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         is_cm = self.boss_info.cm_detector(events, self.boss_instids)
         encounter_collector.add_data('cm', is_cm)
                 
@@ -362,7 +361,9 @@ class Analyser:
             phase_collector.add_data('end_tick', phase[2], int)
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
 
-        success = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        encounter_collector.add_data('end_tick', encounter_end, int)
+        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         encounter_collector.add_data('success', success, bool)
 
         # saved as a JSON dump
@@ -632,9 +633,14 @@ class Analyser:
                 collector.add_data(None, mean, per_second_per_dst(float))
             else:
                 collector.add_data(None, mean, percentage_per_second_per_dst(float))
-
+                
     def determine_success(self, events, final_boss_events, player_src_events, encounter, health_updates):
-        success = (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty)
+        success_time = events.time.max()
+        success = False
+        if (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty):
+            success = True
+            success_time = final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].iloc[-1]['time']
+
         print("Death detected: {0}".format(success))
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
@@ -653,6 +659,7 @@ class Analyser:
                 print("These players survived: {0}".format(surviving_players))
                 if surviving_players:
                     success = True
+                    success_time = self.phases[-1][2]
             print("Probable death of despawn-only boss detected: {0}".format(success))
 
         if (self.boss_info.success_health_limit is not None and
@@ -664,9 +671,14 @@ class Analyser:
 
         if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
             success_types = [55821, 60685]
-            success = not events[(events.state_change == parser.StateChange.REWARD)
-                             & events.value.isin(success_types)].empty
-
+            if (not events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].empty):
+                success = True
+                succsss_time = events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].iloc[-1]['time']
+            else:
+                success = False
+            
             print("Success overridden by reward chest logging: {0}".format(success))
 
-        return success
+        return success, success_time
