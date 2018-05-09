@@ -1185,7 +1185,7 @@ ${body}
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
-      let areaName = r.get('data.areas')[areaId] || areaId;
+      let areaName = r.get('data.areas')[areaId].name || areaId;
 
       $.post({
         url: 'profile_graph.json',
