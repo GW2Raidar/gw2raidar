@@ -14,7 +14,7 @@ from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from smtplib import SMTPException
 from django.db.utils import IntegrityError
-from django.http import JsonResponse, HttpResponse, Http404
+from django.http import JsonResponse, HttpResponse, Http404, UnreadablePostError
 from django.middleware.csrf import get_token
 from django.shortcuts import render
 from django.utils import timezone
@@ -581,15 +581,19 @@ def upload(request):
 @require_POST
 @sensitive_post_parameters('password')
 def api_upload(request):
-    user = _perform_login(request)
-    if not user:
-        return _error('Could not authenticate', status=401)
-    auth_login(request, user)
-    filename, upload = _perform_upload(request)
-    if not upload:
-        return _error(filename, status=400)
+    try:
+        user = _perform_login(request)
+        if not user:
+            return _error('Could not authenticate', status=401)
+        auth_login(request, user)
+        filename, upload = _perform_upload(request)
+        if not upload:
+            return _error(filename, status=400)
 
-    return JsonResponse({"filename": filename, "upload_id": upload.id})
+        return JsonResponse({"filename": filename, "upload_id": upload.id})
+
+    except UnreadablePostError as e:
+        return _error(e)
 
 @csrf_exempt
 def api_categories(request):
