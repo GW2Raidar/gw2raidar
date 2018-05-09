@@ -188,21 +188,39 @@
     return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
   }
   // e.g. bsearch(might, pctl(per_might))
+  // // find lowest of equals
+  // helpers.bsearch = (needle, haystack) => {
+  //   if (!haystack.length) return 0;
+  //   let l = 0, h = haystack.length - 1;
+  //   if (needle > haystack[h]) {
+  //     return h + 1;
+  //   }
+  //   while (l != h) {
+  //     let m = (l + h) >> 1;
+  //     if (haystack[m] < needle) {
+  //       l = m + 1;
+  //     } else {
+  //       h = m;
+  //     }
+  //   }
+  //   return h;
+  // };
   helpers.bsearch = (needle, haystack) => {
+    // find highest of equals
     if (!haystack.length) return 0;
     let l = 0, h = haystack.length - 1;
     if (needle > haystack[h]) {
       return h + 1;
     }
     while (l != h) {
-      let m = (l + h) >> 1;
-      if (haystack[m] < needle) {
-        l = m + 1;
+      let m = (l + h + 1) >> 1;
+      if (haystack[m] <= needle) {
+        l = m;
       } else {
-        h = m;
+        h = m - 1;
       }
     }
-    return h;
+    return haystack[h] == needle ? h : h + 1;
   };
   helpers.th = num => {
     let ones = num % 10;
@@ -1167,7 +1185,7 @@ ${body}
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
-      let areaName = r.get('data.areas')[areaId] || areaId;
+      let areaName = r.get('data.areas')[areaId].name || areaId;
 
       $.post({
         url: 'profile_graph.json',

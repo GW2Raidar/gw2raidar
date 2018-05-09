@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django.utils.html import format_html
+from django.urls import reverse
 
 from .models import Era, Category, Area, Account, Encounter, Participation, UserProfile
 
@@ -54,6 +55,12 @@ class QuotedSearchModelAdmin(admin.ModelAdmin):
         return queryset, use_distinct
 
 
+def admin_link(instance, title):
+    urlname = 'admin:%s_%s_change' % (instance._meta.app_label, instance._meta.model_name)
+    url = reverse(urlname, args=(instance.id,))
+    return format_html(u'<a href="{}">{}</a>', url, title)
+
+
 
 class EraAdmin(QuotedSearchModelAdmin):
     search_fields = ('^name',)
@@ -67,11 +74,17 @@ class AreaAdmin(QuotedSearchModelAdmin):
     search_fields = ('^name',)
     list_display = ('id', 'name')
 
-class ParticipationInline(admin.TabularInline):
+class EncounterParticipationInline(admin.TabularInline):
+    def account_admin_link(self, instance):
+        return admin_link(instance.account, instance.account.name)
+    account_admin_link.short_description = "Account"
+
     model = Participation
-    extra = 10
-    max_num = 10
-    readonly_fields = ('account', 'elite', 'party')
+    list_display = ('party', 'account_admin_link', 'character', 'profession', 'archetype', 'elite')
+    readonly_fields = ('party', 'account_admin_link', 'character', 'profession', 'elite')
+    exclude = ('account',)
+    ordering = ('party', 'character')
+    extra = 0
 
 class EncounterAdmin(QuotedSearchModelAdmin):
     def url_id_link(self, obj):
@@ -79,20 +92,32 @@ class EncounterAdmin(QuotedSearchModelAdmin):
         return format_html("<a href='../../../encounter/{url_id}'>{url_id}</a>", url_id=obj.url_id)
     url_id_link.short_description = "Link"
 
-    search_fields = ('=url_id', '=filename', '^area__name', '=participations__character', '^participations__account__name', '=participations__account__user__username', '=tags__name', '=category__name')
+    search_fields = ('=url_id', '=filename', '=tags__name', '=category__name')
     list_display = ('filename', 'url_id_link', 'area', 'success', 'category', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
     list_select_related = ('category', 'uploaded_by', 'area')
-    inlines = (ParticipationInline,)
+    inlines = (EncounterParticipationInline,)
     readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_at', 'uploaded_by', 'area', 'filename')
 
     # hack, but... ugly otherwise
     class Media:
         css = { 'all' : ('raidar/hide_admin_original.css',) }
 
+class AccountParticipationInline(admin.TabularInline):
+    def encounter_admin_link(self, instance):
+        return admin_link(instance.encounter, instance.encounter.url_id)
+    encounter_admin_link.short_description = "Encounter"
+
+    model = Participation
+    list_display = ('character', 'encounter_admin_link', 'profession', 'archetype', 'elite')
+    readonly_fields = ('character', 'encounter_admin_link', 'profession', 'elite')
+    exclude = ('encounter', 'party')
+    extra = 0
+
 class AccountAdmin(QuotedSearchModelAdmin):
     search_fields = ('^name', '=user__username')
     list_display = ('name', 'user')
     readonly_fields = ('name',)
+    inlines = (AccountParticipationInline,)
 
     # hack, but... ugly otherwise
     class Media:
