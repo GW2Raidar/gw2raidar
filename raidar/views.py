@@ -145,8 +145,10 @@ def download(request, url_id=None):
         user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
         if user_profile:
             privacy = user_profile[0].privacy
-            if not is_self and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
-                encounter_showable = False
+        else:
+            privacy = UserProfile.SQUAD
+        if not is_self and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+            encounter_showable = False
 
     path = encounter.diskname()
     if isfile(path) and (encounter_showable or request.user.is_staff):
@@ -357,11 +359,13 @@ def encounter(request, url_id=None, json=None):
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
             if user_profile:
                 privacy = user_profile[0].privacy
-                if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
-                    member['name'] = ''
-                    member['account'] = ''
-                    private = True
-                    encounter_showable = False
+            else:
+                privacy = UserProfile.SQUAD
+            if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                member['name'] = ''
+                member['account'] = ''
+                private = True
+                encounter_showable = False
 
     max_player_dps = max(_safe_get(lambda: data['Metrics']['damage']['To']['*All']['dps']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
     max_player_recv = max(_safe_get(lambda: data['Metrics']['damage']['From']['*All']['total']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())

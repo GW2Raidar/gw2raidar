@@ -76,7 +76,7 @@ class UserProfile(models.Model):
     portrait_url = models.URLField(null=True, blank=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
-    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
+    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=SQUAD)
 
     def __str__(self):
         return self.user.username
