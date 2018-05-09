@@ -188,21 +188,39 @@
     return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
   }
   // e.g. bsearch(might, pctl(per_might))
+  // // find lowest of equals
+  // helpers.bsearch = (needle, haystack) => {
+  //   if (!haystack.length) return 0;
+  //   let l = 0, h = haystack.length - 1;
+  //   if (needle > haystack[h]) {
+  //     return h + 1;
+  //   }
+  //   while (l != h) {
+  //     let m = (l + h) >> 1;
+  //     if (haystack[m] < needle) {
+  //       l = m + 1;
+  //     } else {
+  //       h = m;
+  //     }
+  //   }
+  //   return h;
+  // };
   helpers.bsearch = (needle, haystack) => {
+    // find highest of equals
     if (!haystack.length) return 0;
     let l = 0, h = haystack.length - 1;
     if (needle > haystack[h]) {
       return h + 1;
     }
     while (l != h) {
-      let m = (l + h) >> 1;
-      if (haystack[m] < needle) {
-        l = m + 1;
+      let m = (l + h + 1) >> 1;
+      if (haystack[m] <= needle) {
+        l = m;
       } else {
-        h = m;
+        h = m - 1;
       }
     }
-    return h;
+    return haystack[h] == needle ? h : h + 1;
   };
   helpers.th = num => {
     let ones = num % 10;
