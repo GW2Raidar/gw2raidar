@@ -195,11 +195,12 @@ class Encounter:
         agent_map = agent_map[agent_map.inst_id != 0].drop_duplicates().set_index('addr')
         self.agents = self.agents.set_index('addr').join(agent_map).groupby('inst_id').first()
         
-    def _add_inst_id_to_agents(self):
-        self.events.loc[self.events.state_change == 18, 'dst_agent'] = 0
+    def _add_inst_id_to_agents(self):   
+        #ignore higher order state change events because they can have junk values
+        agent_events = self.events[self.events.state_change <= 8]
 
-        src_agent_map = self.events[['time', 'src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
-        dst_agent_map = self.events[['time', 'dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
+        src_agent_map = agent_events[['time', 'src_agent', 'src_instid']].rename(columns={ 'src_agent': 'addr', 'src_instid': 'inst_id'})
+        dst_agent_map = agent_events[['time', 'dst_agent', 'dst_instid']].rename(columns={ 'dst_agent': 'addr', 'dst_instid': 'inst_id'})
 
         agent_map = pd.concat([src_agent_map, dst_agent_map])
         agent_map = agent_map[agent_map.inst_id != 0]
@@ -221,6 +222,7 @@ class Encounter:
         # deal with duplicate inst_id for different addrs
         self.agents = pd.merge(left=self.agents,right=agent_map[['addr', 'new_id']].rename(columns={'new_id' : 'inst_id'}), how='left')
         self.agents.fillna(-1, inplace=True)
+        self.agents[['inst_id']] = self.agents[['inst_id']].astype(np.int64)
         self.agents = self.agents.set_index('inst_id')
         del self.events['old_src_master_instid']
         del self.agents['addr']
