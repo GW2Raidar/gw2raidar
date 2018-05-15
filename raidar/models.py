@@ -358,6 +358,15 @@ class Participation(models.Model):
 class EraAreaStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
+    leaderboards_value = models.TextField(default="{}", editable=False)
+
+    @property
+    def leaderboards(self):
+        return json_loads(self.leaderboards_value)
+
+    @leaderboards.setter
+    def leaderboards(self, value):
+        self.leaderboards_value = json_dumps(value)
 
 
 class EraUserStore(ValueModel):
