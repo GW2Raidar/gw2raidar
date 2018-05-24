@@ -310,6 +310,8 @@ def encounter(request, url_id=None, json=None):
         participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
+    participations = list(encounter.participations.all())
+
     dump = encounter.val
     members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
 
@@ -342,6 +344,13 @@ def encounter(request, url_id=None, json=None):
         for member in party['members']:
             if member['account'] in own_account_names:
                 member['self'] = True
+            matching_participations = list(filter(lambda p: p.character == member['name'], participations))
+            if matching_participations:
+                member['archetype'] = matching_participations[0].archetype
+                member['simple_archetype'] = matching_participations[0].simple_archetype
+                member['archetype_debug_info']= matching_participations[0].archetype_debug_info
+            else:
+                member['archetype_debug_info']= "participation info mismatch"
             member['phases'] = {
                 phase: {
                     'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
@@ -355,6 +364,7 @@ def encounter(request, url_id=None, json=None):
                     'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
                 } for phase in phases
             }
+
 
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
             if user_profile:

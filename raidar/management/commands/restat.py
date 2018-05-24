@@ -13,11 +13,12 @@ from time import time
 import os
 import csv
 from evtcparser.parser import AgentType
-from analyser.postprocessor import something
+from analyser.postprocessor import postprocess
 import pandas as pd
 import numpy as np
 import base64
-
+import traceback
+import sys
 # XXX DEBUG: uncomment to log SQL queries
 # import logging
 # l = logging.getLogger('django.db.backends')
@@ -284,14 +285,14 @@ class Command(BaseCommand):
                 data = encounter.val
                 phases = data['Category']['combat']['Phase']
 
-
-
                 participations = encounter.participations.all()
-                #for participation in participations:
-                    #try:
-                    #something(participation, data)
-                    #except Exception as e:
-                    #    print("Exception in archetype code: ", e)
+                for participation in participations:
+                    try:
+                        postprocess(encounter, participation, data)
+                    except Exception as e:
+                        traceback.print_exc(file=sys.stdout)
+                        print("Exception in archetype code: ", e, type(e))
+                    participation.save()
 
                 for phase, stats_in_phase in phases.items():
                     squad_stats = stats_in_phase['Subgroup']['*All']

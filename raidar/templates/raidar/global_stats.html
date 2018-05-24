@@ -181,7 +181,7 @@
         </div>
       </div>
 
-      [[#each [{archetype: 1}, {archetype: 2}, {archetype: 5}] ]]
+      [[#each [{archetype: 1}, {archetype: 6}, {archetype: 2}, {archetype: 7}, {archetype: 5}] ]]
       <h2 class="uk-heading-line"><span>[[data.archetypes[archetype]]]</span></h2>
 
       <div class="r-global-stats-container">
@@ -191,7 +191,7 @@
           <div>Buffs</div>
         </div>
 
-        [[#each flattenStats(build)]]
+        [[#each flattenStats(build, archetype)]]
 
           [[#with {lineStats: build[professionId][eliteId][archetypeId]}]]
             [[#if professionId != 'All' && eliteId != 'All' && archetypeId == archetype]]

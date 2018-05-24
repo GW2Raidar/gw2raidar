@@ -120,12 +120,13 @@
     });
     return keys;
   };
-  helpers.flattenStats = (build) => {
+  helpers.flattenStats = (build, archetype) => {
     let all = [];
     Object.keys(build || {}).forEach((professionId) => {
       Object.keys(build[professionId] || {}).forEach((eliteId) => {
         Object.keys(build[professionId][eliteId] || {}).forEach((archetypeId) => {
-          if('count' in build[professionId][eliteId][archetypeId])
+          if('count' in build[professionId][eliteId][archetypeId]
+          && professionId != 'All' && eliteId != 'All' && archetypeId == archetype)
             all.push({
               'professionId':professionId,
               'eliteId': eliteId,

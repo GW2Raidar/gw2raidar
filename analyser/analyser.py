@@ -22,11 +22,15 @@ class LogType(IntEnum):
     STATUSREMOVE = 5
 
 class Archetype(IntEnum):
+    NONE = -1
     POWER = 1
     CONDI = 2
     TANK = 3
     HEAL = 4
     SUPPORT = 5
+    HYBRID_POWER = 6
+    HYBRID_CONDI = 7
+    NON_PARTICIPANT = 99
 
 class Elite(IntEnum):
     CORE = 0

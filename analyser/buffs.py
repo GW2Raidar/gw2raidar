@@ -20,14 +20,14 @@ class BuffType:
 BUFF_TYPES = [
         # General Boons
         BuffType('Might', 'might', [740], StackType.INTENSITY, 25, 40, 5),
-        BuffType('Quickness', 'quickness', [1187], StackType.DURATION, 5, 150, 5),
-        BuffType('Fury', 'fury', [725], StackType.DURATION, 9, 150, 1),
+        BuffType('Quickness', 'quickness', [1187], StackType.DURATION, 5, 100, 5),
+        BuffType('Fury', 'fury', [725], StackType.DURATION, 9, 200, 1),
         BuffType('Protection', 'protection', [717], StackType.DURATION, 5, 200, 2),
-        BuffType('Alacrity', 'alacrity', [30328], StackType.DURATION, 9, 150, 5),
+        BuffType('Alacrity', 'alacrity', [30328], StackType.DURATION, 9, 100, 5),
         BuffType('Retaliation', 'retaliation', [873], StackType.DURATION, 5),
         BuffType('Regeneration', 'regen', [718], StackType.DURATION, 5),
         BuffType('Aegis', 'aegis', [743], StackType.DURATION, 5),
-        BuffType('Resistance', 'resist', [26980], StackType.DURATION, 5),
+        BuffType('Resistance', 'resist', [26980], StackType.DURATION, 5, 200, 2),
         BuffType('Stability', 'stab', [1122], StackType.INTENSITY, 25),
         BuffType('Swiftness', 'swift', [719], StackType.DURATION, 9),
         BuffType('Vigor', 'vigor', [726], StackType.DURATION, 5),
@@ -55,7 +55,7 @@ BUFF_TYPES = [
         BuffType('Pinpoint Distribution', 'pinpoint_distribution', [38333], StackType.DURATION, 1, 1, 2),
 
         # Elementalist
-        BuffType('Soothing Mist', 'soothing_mist', [5587], StackType.DURATION, 1, 1, 5),
+        BuffType('Soothing Mist', 'soothing_mist', [5587], StackType.DURATION, 1, 1, 8),
 
         # Necro
         BuffType('Vampiric Presence', 'vampiric_presence', [30285], StackType.DURATION, 1, 1, 1),

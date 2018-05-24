@@ -294,11 +294,15 @@ class Participation(models.Model):
         )
 
     ARCHETYPE_CHOICES = (
+            (int(Archetype.NONE), "None"),
             (int(Archetype.POWER), "Power"),
             (int(Archetype.CONDI), "Condi"),
             (int(Archetype.TANK), "Tank"),
             (int(Archetype.HEAL), "Heal"),
             (int(Archetype.SUPPORT), "Support"),
+            (int(Archetype.HYBRID_POWER), "Power Support"),
+            (int(Archetype.HYBRID_CONDI), "Condi Support"),
+            (int(Archetype.NON_PARTICIPANT), "Non-participant"),
         )
 
     ELITE_CHOICES = (
@@ -312,8 +316,10 @@ class Participation(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='participations')
     profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    simple_archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, default = int(Archetype.NONE))
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
+    archetype_debug_info = models.CharField(max_length=256, default="not processed")
 
     def __str__(self):
         return '%s (%s) in %s' % (self.character, self.account.name, self.encounter)
@@ -329,6 +335,7 @@ class Participation(models.Model):
                 'account': self.account.name,
                 'profession': self.profession,
                 'archetype': self.archetype,
+                'archetype_debug_info': self.archetype_debug_info,
                 'elite': self.elite,
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
