@@ -289,10 +289,10 @@ class Command(BaseCommand):
                 for participation in participations:
                     try:
                         postprocess(encounter, participation, data)
+                        participation.save()
                     except Exception as e:
                         traceback.print_exc(file=sys.stdout)
                         print("Exception in archetype code: ", e, type(e))
-                    participation.save()
 
                 for phase, stats_in_phase in phases.items():
                     squad_stats = stats_in_phase['Subgroup']['*All']

@@ -17,7 +17,7 @@ import os.path
 import logging
 import signal
 from traceback import format_exc
-
+from analyser.postprocessor import postprocess
 
 logger = log_to_stderr()
 logger.setLevel(logging.INFO)
@@ -301,6 +301,12 @@ class Command(BaseCommand):
                             'elite': player['elite']
                         }
                     )
+                    try:
+                        postprocess(encounter, participation, dump)
+                        participation.save()
+                    except Exception as e:
+                        print("Exception in archetype code: ", e, type(e))
+
                     if account.user:
                         Notification.objects.create(user=account.user, val={
                             "type": "upload",
