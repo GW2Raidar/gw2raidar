@@ -296,6 +296,27 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
 
 
 @require_GET
+def leaderboards(request):
+    area_id = request.GET.get('area')
+    era_id = request.GET.get('era')
+    eras = list(Era.objects.order_by('-started_at').values('id', 'name'))
+    if not era_id:
+        era_id = eras[0]['id']
+    if not area_id:
+        area_id = BOSS_LOCATIONS[0]["wings"][0]["bosses"][0]
+    leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
+    leaderboards['eras'] = eras
+    leaderboards['era'] = era_id
+    leaderboards['area'] = area_id
+    result = {
+            'leaderboards': leaderboards,
+            'page.era': era_id,
+            'page.leaderboards.boss': area_id,
+            }
+    return JsonResponse(result)
+
+
+@require_GET
 def encounter(request, url_id=None, json=None):
     try:
         encounter = Encounter.objects.select_related('area', 'uploaded_by').get(url_id=url_id)

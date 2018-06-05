@@ -297,7 +297,8 @@ class Command(BaseCommand):
                     if 'duration' not in weekly_leaderboards:
                         weekly_leaderboards['duration'] = []
                     weekly_leaderboards['duration'].append([encounter.id, encounter.duration])
-                    weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x[1])[:10]
+                    if len(weekly_leaderboards['duration']) > 10:
+                        weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x[1])[:10]
 
 
 

@@ -103,6 +103,12 @@
 
   let helpers = Ractive.defaults.data;
   let allRE = /^All(?: \w+ bosses)?$/;
+  helpers.revSortedKeys = (obj) => {
+    if (!obj) return [];
+    let keys = Object.keys(obj);
+    keys.sort((a, b) => b - a);
+    return keys;
+  }
   helpers.keysWithAllLast = (obj, lookup) => {
     let keys = Object.keys(obj);
     keys.sort((a, b) => {
@@ -301,10 +307,14 @@
     buffInfo.sort((a,b) => b.importance - a.importance);
     return buffInfo;
   }
-  helpers.formatDate = timestamp => {
+  helpers.formatDate = (timestamp, onlyDate) => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
-      return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
+      if (onlyDate) {
+        return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())}`;
+      } else {
+        return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
+      }
     } else {
       return '';
     }
@@ -602,6 +612,30 @@ ${body}
     r.set('loading', false);
   }
 
+  function loadLeaderboards() {
+    let {boss} = r.get('page.leaderboards');
+    let era = r.get('page.era');
+    if (era && boss && era == r.get('leaderboards.era') && boss == r.get('leaderboards.area')) return;
+    r.set('loading', true);
+    $.ajax({
+      type: 'GET',
+      url: 'leaderboards.json',
+      data: {
+        area: boss,
+        era: era,
+      },
+    }).then(setData)
+    .then(() => {
+      let week = r.get('page.leaderboards.week');
+      let weeks = r.get('leaderboards.weekly');
+      if (!week || !(week in weeks)) {
+        weeks = Object.keys(weeks);
+        weeks.sort((a, b) => b - a);
+        r.set('page.leaderboards.week', weeks[0]);
+      }
+    })
+  }
+
   let pageInit = {
     login: page => {
       $('#login_username').select().focus();
@@ -653,6 +687,9 @@ ${body}
           'global_stats.stats.era_order': eraOrder,
         });
       });
+    },
+    leaderboards: page => {
+      loadLeaderboards();
     },
   };
 
@@ -940,8 +977,14 @@ ${body}
       setPage();
     },
     global_stats_nav: function global_stats_nav(event, key, val) {
-        r.set(key, val)
-        setPage();
+      r.set(key, val)
+      setPage();
+    },
+    leaderboards_nav: function leaderboards_nav(evt, where) {
+      if (where) {
+        r.set('page.leaderboards.area', where);
+      }
+      loadLeaderboards();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;

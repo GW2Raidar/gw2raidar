@@ -16,6 +16,7 @@ urlpatterns = [
     url(r'^logout.json$', views.logout, name = "logout"),
     url(r'^register.json$', views.register, name = "register"),
     url(r'^reset_pw.json$', views.reset_pw, name = "reset_pw"),
+    url(r'^leaderboards.json$', views.leaderboards, name = "leaderboards"),
     url(r'^upload.json$', views.upload, name = "upload"),
     url(r'^api/upload.json$', views.api_upload, name = "api_upload"),
     url(r'^api/categories.json$', views.api_categories, name = "api_categories"),
