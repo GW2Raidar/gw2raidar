@@ -297,21 +297,29 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
 
 @require_GET
 def leaderboards(request):
-    area_id = request.GET.get('area')
+    kind = int(request.GET.get('kind', 0))
+    wing = int(request.GET.get('wing', 0))
+    wingdata = BOSS_LOCATIONS[kind]["wings"][wing]
     era_id = request.GET.get('era')
     eras = list(Era.objects.order_by('-started_at').values('id', 'name'))
     if not era_id:
         era_id = eras[0]['id']
-    if not area_id:
-        area_id = BOSS_LOCATIONS[0]["wings"][0]["bosses"][0]
-    leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
-    leaderboards['eras'] = eras
-    leaderboards['era'] = era_id
-    leaderboards['area'] = area_id
+    area_leaderboards = {}
+    for area_id in wingdata["bosses"]:
+        try:
+            leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
+        except EraAreaStore.DoesNotExist:
+            leaderboards = {}
+        area_leaderboards[area_id] = leaderboards
+    area_leaderboards['eras'] = eras
+    area_leaderboards['era'] = era_id
+    area_leaderboards['kind'] = kind
+    area_leaderboards['wing'] = wing
     result = {
-            'leaderboards': leaderboards,
+            'leaderboards': area_leaderboards,
             'page.era': era_id,
-            'page.leaderboards.boss': area_id,
+            'page.leaderboards.area.kind': kind,
+            'page.leaderboards.area.wing': wing,
             }
     return JsonResponse(result)
 

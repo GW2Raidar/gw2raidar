@@ -1,5 +1,6 @@
 "use strict";
 
+
 // Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
   const PAGE_SIZE = 10;
@@ -613,22 +614,36 @@ ${body}
   }
 
   function loadLeaderboards() {
-    let {boss} = r.get('page.leaderboards');
+    let {wing, kind} = r.get('page.leaderboards.area');
     let era = r.get('page.era');
-    if (era && boss && era == r.get('leaderboards.era') && boss == r.get('leaderboards.area')) return;
+    if (era == r.get('leaderboards.era') &&
+        kind == r.get('leaderboards.kind') &&
+        wing == r.get('leaderboards.wing')) {
+      return;
+    }
     r.set('loading', true);
     $.ajax({
       type: 'GET',
       url: 'leaderboards.json',
       data: {
-        area: boss,
+        wing: wing,
+        kind: kind,
         era: era,
       },
     }).then(setData)
     .then(() => {
+      let lb = r.get('leaderboards');
       let week = r.get('page.leaderboards.week');
-      let weeks = r.get('leaderboards.weekly');
-      if (!week || !(week in weeks)) {
+      let weeks = new Set();
+      let addWeek = weeks.add.bind(weeks);
+      let bosses = r.get('data.boss_locations')[kind].wings[wing].bosses;
+      bosses.forEach(boss =>
+        Object.keys(lb[boss].weekly).forEach(addWeek));
+      weeks = Array.from(weeks);
+      weeks.sort((a, b) => b - a);
+      console.log(weeks);
+      r.set('leaderboards.weeks', weeks);
+      if (weeks && (!week || !(week in weeks))) {
         weeks = Object.keys(weeks);
         weeks.sort((a, b) => b - a);
         r.set('page.leaderboards.week', weeks[0]);

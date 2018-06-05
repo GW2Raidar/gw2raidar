@@ -296,9 +296,17 @@ class Command(BaseCommand):
                     weekly_leaderboards = leaderboards_in_area['weekly'][week]
                     if 'duration' not in weekly_leaderboards:
                         weekly_leaderboards['duration'] = []
-                    weekly_leaderboards['duration'].append([encounter.id, encounter.duration])
+                    val = encounter.val
+                    item = {
+                            "id": encounter.id,
+                            "url_id": encounter.url_id,
+                            "duration": encounter.duration,
+                            "dps_boss": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*Boss"]["dps"],
+                            "dps": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"]
+                            }
+                    weekly_leaderboards['duration'].append(item)
                     if len(weekly_leaderboards['duration']) > 10:
-                        weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x[1])[:10]
+                        weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x["dps"], reverse=True)[:10]
 
 
 
