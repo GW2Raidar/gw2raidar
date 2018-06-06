@@ -292,21 +292,26 @@ class Command(BaseCommand):
                 if encounter.success:
                     week = encounter.week()
                     if week not in leaderboards_in_area['weekly']:
-                        leaderboards_in_area['weekly'][week] = {}
+                        leaderboards_in_area['weekly'][week] = {
+                                'duration': [],
+                                'max_max_dps': 0,
+                                }
                     weekly_leaderboards = leaderboards_in_area['weekly'][week]
-                    if 'duration' not in weekly_leaderboards:
-                        weekly_leaderboards['duration'] = []
                     val = encounter.val
+                    comp = [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()]
                     item = {
                             "id": encounter.id,
                             "url_id": encounter.url_id,
                             "duration": encounter.duration,
                             "dps_boss": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*Boss"]["dps"],
-                            "dps": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"]
+                            "dps": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"],
+                            "buffs": _safe_get(lambda: val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["buffs"]["To"]["*All"]),
+                            "comp": comp,
                             }
                     weekly_leaderboards['duration'].append(item)
-                    if len(weekly_leaderboards['duration']) > 10:
-                        weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x["dps"], reverse=True)[:10]
+                    if item['dps'] > weekly_leaderboards['max_max_dps']:
+                        weekly_leaderboards['max_max_dps'] = item['dps']
+                    weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x["duration"])[:10]
 
 
 

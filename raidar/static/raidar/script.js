@@ -641,7 +641,6 @@ ${body}
         Object.keys(lb[boss].weekly).forEach(addWeek));
       weeks = Array.from(weeks);
       weeks.sort((a, b) => b - a);
-      console.log(weeks);
       r.set('leaderboards.weeks', weeks);
       if (weeks && (!week || !(week in weeks))) {
         weeks = Object.keys(weeks);
