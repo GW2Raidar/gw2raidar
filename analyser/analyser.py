@@ -309,7 +309,8 @@ class Analyser:
                 or (encounter.version < '20180206' and gw_build >= 86181)
                 or (encounter.version < '20180306' and gw_build >= 87045) 
                 or (encounter.version < '20180508' and gw_build >= 88541) 
-                or (encounter.version < '20180523' and gw_build >= 88951)           
+                or (encounter.version < '20180523' and gw_build >= 88951) 
+                or (encounter.version < '20180606' and gw_build >= 89380)           
                 ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
