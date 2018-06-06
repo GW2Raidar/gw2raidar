@@ -76,70 +76,51 @@
     [[data.boss_locations[page.leaderboards.area.kind].wings[page.leaderboards.area.wing].name]]
   </div>
   [[#each data.boss_locations[page.leaderboards.area.kind].wings[page.leaderboards.area.wing].bosses as boss]]
-  [[#with leaderboards[boss].weekly[page.leaderboards.area.week] as weekly]]
-    <div class="r-leaderboard-encounter" class-expanded="boss == page.leaderboards.area.boss" on-click="@this.set('page.leaderboards.area.boss', boss)">
-      <img src="/static/raidar/img/icon/[[data.areas[boss].name]].png" alt="">
-      <h2 class="uk-margin-remove-bottom ">[[data.areas[boss].name]]</h2>
-      <a class="uk-h3 uk-margin-remove" class-uk-invisible="boss != page.leaderboards.area.boss" on-click="@this.set('page.leaderboards.area.boss', null) && false"><i class="material-icons">close</i></a>
-      [[#each weekly['duration'] as line]]
-      <div class="r-leaderboard-row">
-        <div class="r-damage">
-          <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
-            <!-- Same as our other rect graphs -->
-            <rect class="chart total r-bg-101"  x='0' y='18px' height='16px' width='100%' opacity='0.3' />
-            <rect class="chart boss r-bg-101" x='0' y='18px' height='16px' width='80%'/>
+    [[#with leaderboards[boss].weekly[page.leaderboards.area.week] as weekly]]
+      <div class="r-leaderboard-encounter" class-expanded="boss == page.leaderboards.area.boss" on-click="@this.set('page.leaderboards.area.boss', boss)">
+        <img src="/static/raidar/img/icon/[[data.areas[boss].name]].png" alt="">
+        <h2 class="uk-margin-remove-bottom ">[[data.areas[boss].name]]</h2>
+        <a class="uk-h3 uk-margin-remove" class-uk-invisible="boss != page.leaderboards.area.boss" on-click="@this.set('page.leaderboards.area.boss', null) && false"><i class="material-icons">close</i></a>
+        [[#each weekly['duration'] as line]]
+        <div class="r-leaderboard-row">
+          <div class="r-damage">
+            <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
+              <!-- Same as our other rect graphs -->
+              <rect class="chart total r-bg-101"  x='0' y='18px' height='16px' width='[[100 * line.dps / weekly.max_max_dps]]%' opacity='0.3' />
+              <rect class="chart boss r-bg-101" x='0' y='18px' height='16px' width='[[100 * line.boss_dps / weekly.max_max_dps]]%'/>
 
-            <!-- Ranking -->
-            <text class="rank" x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" font-size="80">[[@index + 1]]</text>
+              <!-- Ranking -->
+              <text class="rank" x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" font-size="80">[[@index + 1]]</text>
 
-            <!-- Encounter Duration -->
-            <text class="duration" x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(255, 255, 255, 0.8)" font-size="20">[[formatTime(line.duration)]]</text>
+              <!-- Encounter Duration -->
+              <text class="duration" x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(255, 255, 255, 0.8)" font-size="20">[[formatTime(line.duration)]]</text>
 
-            <!-- Encounter DPS (Boss) Total like it is on Global Stats -->
-            <text class="dps" x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" fill="#15141e" font-weight="400" font-size="12">([[num(line.dps_boss, 0)]]) [[num(line.dps, 0)]] DPS</text>
-          </svg>
+              <!-- Encounter DPS (Boss) Total like it is on Global Stats -->
+              <text class="dps" x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" fill="#15141e" font-weight="400" font-size="12">([[num(line.dps_boss, 0)]]) [[num(line.dps, 0)]] DPS</text>
+            </svg>
+          </div>
+          <div class="r-buffs">
+            [[#each ['might', 'fury', 'quickness', 'alacrity'] as buff]]
+              [[#with data.buffs[buff].name as name]]
+                <div class="r-buff">
+                  <div class="r-buff-icon">
+                    <img src="{% static 'raidar/img/buff/' %}/[[name]].png" alt="[[name]]" width="20">
+                  </div>
+                  <div class="r-buff-number r-bg-101">[[perc(line.buffs[buff])]]</div>
+                </div>
+              [[/with]]
+            [[/each]]
+          </div>
+          <div class="r-composition">
+            [[#each line.comp as member]]
+              [[#with data.archetypes[member[0]] as arch, data.specialisations[member[1]][member[2]] as spec]]
+                <img alt="[[arch]] [[spec]]" src="/static/raidar/img/48px/[[spec]]_tango_icon_48px.png">
+              [[/with]]
+            [[/each]]
+          </div>
         </div>
-        <div class="r-buffs">
-          <div class="r-buff">
-            <div class="r-buff-icon">
-              <img src="{% static 'raidar/img/buff/' %}/Might.png" alt="Might" width="20">
-            </div>
-            <div class="r-buff-number r-bg-101">100%</div>
-          </div>
-          <div class="r-buff">
-            <div class="r-buff-icon">
-              <img src="{% static 'raidar/img/buff/' %}/Fury.png" alt="Fury" width="20">
-            </div>
-            <div class="r-buff-number r-bg-101">100%</div>
-          </div>
-          <div class="r-buff">
-            <div class="r-buff-icon">
-              <img src="{% static 'raidar/img/buff/' %}/Quickness.png" alt="Quickness" width="20">
-            </div>
-            <div class="r-buff-number r-bg-101">100%</div>
-          </div>
-          <div class="r-buff">
-            <div class="r-buff-icon">
-              <img src="{% static 'raidar/img/buff/' %}/Alacrity.png" alt="Alacrity" width="20">
-            </div>
-            <div class="r-buff-number r-bg-101">100%</div>
-          </div>
-      </div>
-        <div class="r-composition">
-          <img alt="Weaver" src="/static/raidar/img/48px/Weaver_tango_icon_48px.png">
-          <img alt="Reaper" src="/static/raidar/img/48px/Reaper_tango_icon_48px.png">
-          <img alt="Scourge" src="/static/raidar/img/48px/Scourge_tango_icon_48px.png">
-          <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-          <img alt="Druid" src="/static/raidar/img/48px/Druid_tango_icon_48px.png">
-          <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-          <img alt="Chronomancer" src="/static/raidar/img/48px/Chronomancer_tango_icon_48px.png">
-          <img alt="Warrior" src="/static/raidar/img/48px/Warrior_tango_icon_48px.png">
-          <img alt="Firebrand" src="/static/raidar/img/48px/Firebrand_tango_icon_48px.png">
-          <img alt="Herald" src="/static/raidar/img/48px/Herald_tango_icon_48px.png">
-        </div>
-      </div>
       [[/each]]
-  [[/with]]
+    [[/with]]
   [[/each]]
 
 
