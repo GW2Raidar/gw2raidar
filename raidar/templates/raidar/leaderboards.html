@@ -87,7 +87,7 @@
             <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
               <!-- Same as our other rect graphs -->
               <rect class="chart total r-bg-101"  x='0' y='18px' height='16px' width='[[100 * line.dps / weekly.max_max_dps]]%' opacity='0.3' />
-              <rect class="chart boss r-bg-101" x='0' y='18px' height='16px' width='[[100 * line.boss_dps / weekly.max_max_dps]]%'/>
+              <rect class="chart boss r-bg-101" x='0' y='18px' height='16px' width='[[100 * line.dps_boss / weekly.max_max_dps]]%'/>
 
               <!-- Ranking -->
               <text class="rank" x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" font-size="80">[[@index + 1]]</text>
@@ -101,12 +101,12 @@
           </div>
           <div class="r-buffs">
             [[#each ['might', 'fury', 'quickness', 'alacrity'] as buff]]
-              [[#with data.buffs[buff].name as name]]
+              [[#with data.buffs[buff].name as name, data.buffs[buff].stacks ? num : perc as format]]
                 <div class="r-buff">
                   <div class="r-buff-icon">
                     <img src="{% static 'raidar/img/buff/' %}/[[name]].png" alt="[[name]]" width="20">
                   </div>
-                  <div class="r-buff-number r-bg-101">[[perc(line.buffs[buff])]]</div>
+                  <div class="r-buff-number r-bg-101">[[format(line.buffs[buff], 2)]]</div>
                 </div>
               [[/with]]
             [[/each]]
