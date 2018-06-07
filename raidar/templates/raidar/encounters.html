@@ -6,7 +6,7 @@
 [[/if]]
   <div uk-grid>
     [[#if !settings.encounterSort.filters]]
-    <div class="uk-width-1-4@l uk-width-1-3@m uk-width-1-1">
+    <div class="uk-width-1-4@m uk-width-1-1">
       <form class="uk-form-stacked uk-margin-top">
         <legend class="uk-h6 uk-font-family-secondary uk-text-uppercase uk-text-light">Filters</legend>
 
@@ -116,7 +116,7 @@
       <table  class="uk-table uk-table-striped uk-table-small uk-table-responsive encounters">
         <thead>
           <tr>
-            <th class="uk-width-small" on-click="sort_encounters" data-sort="area:up">
+            <th class="uk-width-small uk-visible@l" on-click="sort_encounters" data-sort="area:up">
               <span>Encounter
               [[#if settings.encounterSort.prop != 'area']]
                 <span>-</span>
