@@ -99,15 +99,15 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
         [[#each members]]
           [[#with phases[page.phase]]]
             <div class="r-stats-row r-stats-buffs r-member activity-[[#with phases[page.phase].events]][[#with encounter]][[num(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]]">
-              <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if account]]<strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
+              <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if account]][[name]]</br><strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
                 <strong>Deaths:</strong> [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
                 <strong>Downed:</strong> [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
                 <strong>Disconnects:</strong> [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
               [[/with]]">
-                <div>
+                <div class="uk-text-truncate">
                   <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[../../archetype]]]</h6>
                   [[#if name]]
-                    <h5 class="uk-margin-remove">[[name]]</h5>
+                    <h5 class="uk-margin-remove uk-text-truncate">[[name]]</h5>
                   [[else]]
                     <h5 class="private uk-margin-remove" data-text="PRIVATE">PRIVATE</h5>
                   [[/if]]
