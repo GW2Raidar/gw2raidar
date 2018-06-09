@@ -8286,6 +8286,13 @@
 		"oAP": "\/raidar\/migrations\/0039_merge_20180318_1122.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0040_eraareastore_leaderboards_value.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0040_eraareastore_leaderboards_value.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8571,6 +8578,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/migrations\/__pycache__\/0039_merge_20180318_1122.cpython-36.pyc",
+		"oF": 0
+		},
+	"\/raidar\/migrations\/__pycache__\/0040_eraareastore_leaderboards_value.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0040_eraareastore_leaderboards_value.cpython-36.pyc",
 		"oF": 0
 		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
@@ -10320,6 +10334,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Arkk.png": {
+		"ft": 32768,
+		"iS": 43999,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Arkk.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Artsariiv (CM).png": {
 		"ft": 32768,
 		"iS": 84640,
@@ -10328,6 +10353,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Artsariiv.png": {
+		"ft": 32768,
+		"iS": 30765,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Artsariiv.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -10416,6 +10452,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Dhuum.png": {
+		"ft": 32768,
+		"iS": 3847,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Dhuum.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -10573,11 +10620,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/icon\/Samarog (CM.png": {
+	"\/raidar\/static\/raidar\/img\/icon\/Samarog (CM).png": {
 		"ft": 32768,
 		"iS": 13900,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Samarog (CM.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Samarog (CM).png",
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
