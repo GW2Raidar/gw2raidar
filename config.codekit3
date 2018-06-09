@@ -10499,6 +10499,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Ensolyss.png": {
+		"ft": 32768,
+		"iS": 55347,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Ensolyss.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Gorseval.png": {
 		"ft": 32768,
 		"iS": 13646,
@@ -10529,6 +10540,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/MAMA.png": {
+		"ft": 32768,
+		"iS": 40041,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/MAMA.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -10653,6 +10675,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Siax.png": {
+		"ft": 32768,
+		"iS": 49412,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Siax.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered (CM).png": {
 		"ft": 32768,
 		"iS": 120880,
@@ -10661,6 +10694,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered.png": {
+		"ft": 32768,
+		"iS": 41182,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
