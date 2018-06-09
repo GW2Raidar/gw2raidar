@@ -2,43 +2,12 @@
 <div class="uk-grid uk-grid-item-match">
   {# Mobile navigation/filtering #}
   <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
-  <select class="uk-select uk-hidden@m uk-margin-bottom" as-ukUpdate id="area-selector"  value='[[page.leaderboards.area]]' on-change="leaderboards_nav">
-    [[#each data.boss_locations:kind_id]]
-      [[#each wings:wing_id]]
-        <optgroup label="[[name]]">
-          [[#each bosses]]
-            <option value='[[{ kind: kind_id, wing: wing_id, boss: .}]]'>[[data.areas[.].name]]</option>
-          [[/each]]
-        </optgroup>
+  <div class="uk-button-group uk-flex-wrap uk-width-1-1 uk-width-auto@s">
+      [[#each data.boss_locations:kind_id]]
+        [[#with page.leaderboards.area.kind == kind_id as active]]
+          <button class="uk-button uk-inline" class-uk-button-primary="active" on-click="@this.fire('leaderboards_nav', {}, { kind: kind_id })">[[name]]</button>
+        [[/with]]
       [[/each]]
-    [[/each]]
-  </select>
-  <div class="uk-flex-left uk-visible@m " uk-grid>
-    <div class="uk-width-expand  uk-margin-bottom uk-margin-top">
-      <div class="uk-width-1-1 boundary">
-        <div class="uk-button-group ">
-          [[#each data.boss_locations:kind_id]]
-            [[#with page.leaderboards.area.kind == kind_id as active]]
-              <button class="uk-button uk-inline" class-uk-button-primary="active">[[#if active]][[page.leaderboards.area.boss ? data.areas[page.leaderboards.area.boss].name : data.boss_locations[page.leaderboards.area.kind].wings[page.leaderboards.area.wing].name]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
-            [[/with]]
-            <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
-              <div class="uk-width-1 uk-grid">
-                [[#each wings:wing_id]]
-                  <div class="uk-width-1-[[columns]]@m uk-width-1">
-                    <ul class="uk-nav uk-dropdown-nav">
-                      <li class="uk-link uk-nav-header uk-margin-top" on-click="@this.fire('leaderboards_nav', {}, { kind: kind_id, wing: wing_id })">[[name]]</li>
-                      [[#each bosses]]
-                        <li on-click="@this.fire('leaderboards_nav', {}, { kind: kind_id, wing: wing_id, boss: . })" class-uk-active="page.leaderboards.area == ."><a>[[data.areas[.].name]]</a></li>
-                      [[/each]]
-                    </ul>
-                  </div>
-                [[/each]]
-              </div>
-            </div>
-          [[/each]]
-        </div>
-      </div>
-    </div>
   </div>
 
   <div class="r-toggle uk-font-family-secondary uk-text-small uk-text-uppercase uk-width-auto@s uk-margin-small-top uk-margin-small-bottom">
