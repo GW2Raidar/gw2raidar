@@ -614,11 +614,9 @@ ${body}
   }
 
   function loadLeaderboards() {
-    let {wing, kind} = r.get('page.leaderboards.area');
+    let kind = r.get('page.leaderboards.kind');
     let era = r.get('page.era');
-    if (era == r.get('leaderboards.era') &&
-        kind == r.get('leaderboards.kind') &&
-        wing == r.get('leaderboards.wing')) {
+    if (era == r.get('leaderboards.era') && kind == r.get('leaderboards.kind')) {
       return;
     }
     r.set('loading', true);
@@ -626,7 +624,6 @@ ${body}
       type: 'GET',
       url: 'leaderboards.json',
       data: {
-        wing: wing,
         kind: kind,
         era: era,
       },
@@ -636,16 +633,20 @@ ${body}
       let week = r.get('page.leaderboards.week');
       let weeks = new Set();
       let addWeek = weeks.add.bind(weeks);
-      let bosses = r.get('data.boss_locations')[kind].wings[wing].bosses;
-      bosses.forEach(boss =>
-        Object.keys(lb[boss].weekly).forEach(addWeek));
+      r.get('data.boss_locations')[kind].wings.forEach(wing =>
+        wing.bosses.forEach(boss =>
+          boss in lb && 'periods' in lb[boss] &&
+          Object.keys(lb[boss].periods).forEach(week => {
+              if (week != 'Era') {
+                weeks.add(week);
+              }
+            })));
       weeks = Array.from(weeks);
       weeks.sort((a, b) => b - a);
+      weeks.push('Era');
       r.set('leaderboards.weeks', weeks);
       if (weeks && (!week || !(week in weeks))) {
-        weeks = Object.keys(weeks);
-        weeks.sort((a, b) => b - a);
-        r.set('page.leaderboards.week', weeks[0]);
+        r.set('page.leaderboards.week', 'Era');
       }
     })
   }
@@ -703,6 +704,7 @@ ${body}
       });
     },
     leaderboards: page => {
+      r.set('page.leaderboards.kind', 0);
       loadLeaderboards();
     },
   };
@@ -994,10 +996,7 @@ ${body}
       r.set(key, val)
       setPage();
     },
-    leaderboards_nav: function leaderboards_nav(evt, where) {
-      if (where) {
-        r.set('page.leaderboards.area', where);
-      }
+    leaderboards_nav: function leaderboards_nav(evt) {
       loadLeaderboards();
     },
     auth_login: function login(x) {

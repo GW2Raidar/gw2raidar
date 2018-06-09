@@ -268,9 +268,18 @@ class Command(BaseCommand):
 
     def calculate_stats(self, last_run, *args, **options):
 
+        def add_leaderboard_stats(container, period, stat, item):
+            if period not in container:
+                container[period] = {}
+            if stat not in container[period]:
+                container[period][stat] = []
+            leaderboards = container[period]
+            leaderboards[stat].append(item)
+            leaderboards[stat] = sorted(leaderboards[stat], key=lambda x: x[stat])[:10]
+
         def initialise_era_area_stats(count):
             leaderboards = {
-                    'weekly': {},
+                    'periods': {},
                 }
             return {}, leaderboards
 
@@ -291,12 +300,6 @@ class Command(BaseCommand):
 
                 if encounter.success:
                     week = encounter.week()
-                    if week not in leaderboards_in_area['weekly']:
-                        leaderboards_in_area['weekly'][week] = {
-                                'duration': [],
-                                'max_max_dps': 0,
-                                }
-                    weekly_leaderboards = leaderboards_in_area['weekly'][week]
                     val = encounter.val
                     comp = [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()]
                     item = {
@@ -308,11 +311,10 @@ class Command(BaseCommand):
                             "buffs": _safe_get(lambda: val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["buffs"]["To"]["*All"]),
                             "comp": comp,
                             }
-                    weekly_leaderboards['duration'].append(item)
-                    if item['dps'] > weekly_leaderboards['max_max_dps']:
-                        weekly_leaderboards['max_max_dps'] = item['dps']
-                    weekly_leaderboards['duration'] = sorted(weekly_leaderboards['duration'], key=lambda x: x["duration"])[:10]
-
+                    add_leaderboard_stats(leaderboards_in_area['periods'], week, 'duration', item)
+                    add_leaderboard_stats(leaderboards_in_area['periods'], 'Era', 'duration', item)
+                    if 'max_max_dps' not in leaderboards_in_area or item['dps'] > leaderboards_in_area['max_max_dps']:
+                        leaderboards_in_area['max_max_dps'] = item['dps']
 
 
                 participations = encounter.participations.all()
@@ -416,7 +418,6 @@ class Command(BaseCommand):
 
         def finalise_era_area_stats(era, area, totals_in_area, leaderboards_in_area):
             finalise_stats(totals_in_area)
-            print(leaderboards_in_area)
             EraAreaStore.objects.update_or_create(
                     era=era, area=area, defaults={
                         "val": totals_in_area,
