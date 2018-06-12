@@ -192,7 +192,7 @@
         </thead>
 
         [[#each encounterSlice]]
-          <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]" uk-scroll="el:#top;">
+          <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
             <td colspan="3">
               <h4 class="uk-margin-remove">[[area]]</h4>
               <span class="uk-badge uk-text-bold [[success ? 'uk-label-success' : 'uk-label-danger']]">[[success ? 'Success' : 'Wipe']]  ([[formatTime(duration)]])</span>

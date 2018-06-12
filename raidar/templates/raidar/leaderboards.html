@@ -49,7 +49,7 @@
           <h2 class="uk-margin-remove-top uk-text-truncate ">[[data.areas[boss].name]]</h2>
           <a class="uk-h3 uk-margin-remove" class-uk-invisible="boss != page.leaderboards.boss" on-click="@this.set('page.leaderboards.boss', null) && false"><i class="material-icons">close</i></a>
           [[#each leaderboard['duration'] as line]]
-            <a class="r-leaderboard-row" href="[[baseURL]]/encounter/[[line.url_id]]" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: line.url_id })" uk-scroll="el:#top;">
+            <a class="r-leaderboard-row" href="[[baseURL]]/encounter/[[line.url_id]]" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: line.url_id })">
               <div class="r-damage">
                 <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
                   <!-- Same as our other rect graphs -->
