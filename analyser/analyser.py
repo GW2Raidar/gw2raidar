@@ -160,7 +160,7 @@ def print_frame(df, *mods):
     dfc = df.copy()
     for name,new_name,func in mods:
         dfc[new_name] = (dfc.index if name == 'index' else dfc[name]).apply(func)
-    with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.height', 100000, 'display.width', 100000):
+    with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.width', 100000):
         print(dfc)
 
 class Analyser:

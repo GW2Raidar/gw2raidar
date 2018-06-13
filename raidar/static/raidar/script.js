@@ -1,5 +1,6 @@
 "use strict";
 
+
 // Acquire Django CSRF token for AJAX, and prefix the base URL
 (function setupAjaxForAuth() {
   const PAGE_SIZE = 10;
@@ -103,6 +104,12 @@
 
   let helpers = Ractive.defaults.data;
   let allRE = /^All(?: \w+ bosses)?$/;
+  helpers.revSortedKeys = (obj) => {
+    if (!obj) return [];
+    let keys = Object.keys(obj);
+    keys.sort((a, b) => b - a);
+    return keys;
+  }
   helpers.keysWithAllLast = (obj, lookup) => {
     let keys = Object.keys(obj);
     keys.sort((a, b) => {
@@ -319,10 +326,14 @@
     buffInfo.sort((a,b) => b.importance - a.importance);
     return buffInfo;
   }
-  helpers.formatDate = timestamp => {
+  helpers.formatDate = (timestamp, onlyDate) => {
     if (timestamp !== undefined) {
       let date = new Date(timestamp * 1000);
-      return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
+      if (onlyDate) {
+        return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())}`;
+      } else {
+        return `${date.getFullYear()}-${f0X(date.getMonth() + 1)}-${f0X(date.getDate())} ${f0X(date.getHours())}:${f0X(date.getMinutes())}:${f0X(date.getSeconds())}`;
+      }
     } else {
       return '';
     }
@@ -620,6 +631,44 @@ ${body}
     r.set('loading', false);
   }
 
+  function loadLeaderboards() {
+    let kind = r.get('page.leaderboards.kind');
+    let era = r.get('page.era');
+    if (era == r.get('leaderboards.era') && kind == r.get('leaderboards.kind')) {
+      return;
+    }
+    r.set('loading', true);
+    $.ajax({
+      type: 'GET',
+      url: 'leaderboards.json',
+      data: {
+        kind: kind,
+        era: era,
+      },
+    }).then(setData)
+    .then(() => {
+      let lb = r.get('leaderboards');
+      let week = r.get('page.leaderboards.week');
+      let weeks = new Set();
+      let addWeek = weeks.add.bind(weeks);
+      r.get('data.boss_locations')[kind].wings.forEach(wing =>
+        wing.bosses.forEach(boss =>
+          boss in lb && 'periods' in lb[boss] &&
+          Object.keys(lb[boss].periods).forEach(week => {
+              if (week != 'Era') {
+                weeks.add(week);
+              }
+            })));
+      weeks = Array.from(weeks);
+      weeks.sort((a, b) => b - a);
+      weeks.push('Era');
+      r.set('leaderboards.weeks', weeks);
+      if (weeks && (!week || !(week in weeks))) {
+        r.set('page.leaderboards.week', 'Era');
+      }
+    })
+  }
+
   let pageInit = {
     login: page => {
       $('#login_username').select().focus();
@@ -671,6 +720,10 @@ ${body}
           'global_stats.stats.era_order': eraOrder,
         });
       });
+    },
+    leaderboards: page => {
+      r.set('page.leaderboards.kind', 0);
+      loadLeaderboards();
     },
   };
 
@@ -848,7 +901,10 @@ ${body}
     if (typeof page == "undefined") {
       page = r.get('page');
     } else {
-      r.set('page', page);
+      r.set('page', page).then(() => {
+        // UIkit.scroll('#container'); // Y U NO WORK
+        window.scrollTo(0, 0);
+      });
     }
     let url = URLForPage(page);
     history.pushState(page, null, url);
@@ -958,8 +1014,11 @@ ${body}
       setPage();
     },
     global_stats_nav: function global_stats_nav(event, key, val) {
-        r.set(key, val)
-        setPage();
+      r.set(key, val)
+      setPage();
+    },
+    leaderboards_nav: function leaderboards_nav(evt) {
+      loadLeaderboards();
     },
     auth_login: function login(x) {
       if (!x.element.node.form.checkValidity()) return;

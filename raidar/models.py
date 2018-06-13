@@ -3,6 +3,8 @@ from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from datetime import datetime, timedelta
+import pytz
 from fuzzycount import FuzzyCountManager
 from hashlib import md5
 from analyser.analyser import Profession, Archetype, Elite
@@ -224,6 +226,18 @@ class Encounter(ValueModel):
     def __str__(self):
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
 
+    # Returns timestamp of closest non-future raid reset (Monday 08:30 UTC)
+    @staticmethod
+    def week_for(started_at):
+        encounter_dt = datetime.utcfromtimestamp(started_at).replace(tzinfo=pytz.UTC)
+        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=8, minute=30, second=0, microsecond=0)
+        if reset_dt > encounter_dt:
+            reset_dt -= timedelta(weeks=1)
+        return int(reset_dt.timestamp())
+
+    def week(self):
+        return Encounter.week_for(self.started_at)
+
     def save(self, *args, **kwargs):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
@@ -344,6 +358,15 @@ class Participation(models.Model):
 class EraAreaStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
+    leaderboards_value = models.TextField(default="{}", editable=False)
+
+    @property
+    def leaderboards(self):
+        return json_loads(self.leaderboards_value)
+
+    @leaderboards.setter
+    def leaderboards(self, value):
+        self.leaderboards_value = json_dumps(value)
 
 
 class EraUserStore(ValueModel):
