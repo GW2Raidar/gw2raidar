@@ -127,7 +127,9 @@
                                 </span>
                                 <ul class="uk-navbar-nav r-navbar-hover">
                                   <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>
+{% comment %}
                                   <li class="[[page.name=='leaderboards' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'leaderboards'})">Leaderboards</a></li>
+{% endcomment %}
                                   [[#if username]]
                                     <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Personal Stats</a></li>
                                     <li class="[[page.name=='encounters' || page.name=='encounter' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
