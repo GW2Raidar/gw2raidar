@@ -883,7 +883,10 @@ ${body}
     if (typeof page == "undefined") {
       page = r.get('page');
     } else {
-      r.set('page', page);
+      r.set('page', page).then(() => {
+        // UIkit.scroll('#container'); // Y U NO WORK
+        window.scrollTo(0, 0);
+      });
     }
     let url = URLForPage(page);
     history.pushState(page, null, url);
