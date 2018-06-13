@@ -54,7 +54,7 @@
                           <ul class="uk-nav uk-dropdown-nav">
                             <li class="uk-nav-header uk-margin-top">[[name]]</li>
                             [[#each bosses]]
-                              <li class-uk-active="page.stats_page == ." ><a on-click="@this.fire('global_stats_nav', 'page.stats_page', .)" href="[[baseURL]]/global_stats/[[data.areas[page.stats_page]]]">[[data.areas[.].name]]</a></li>
+                              <li class-uk-active="page.stats_page == ." ><a on-click="(@event.ctrlKey || @event.metaKey) || @this.fire('global_stats_nav', 'page.stats_page', .)" href="[[baseURL]]/global_stats/area-[[.]]">[[data.areas[.].name]]</a></li>
                             [[/each]]
                           </ul>
                         </div>
