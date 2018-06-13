@@ -312,6 +312,7 @@
 
                         [[#if page.dps_boss]]
                           {# total DPS backdrop #}
+
                           <rect class-chart="typeof page.dps_boss != 'boolean'" class="chart-hover r-bg-[[pctl_dps]]" on-click="@.set({'page.dps_boss': false}) && false" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>[[section.name_total]]</h5><strong>[[num(section.dps_total, 0)]]</strong> DPS.<br/>Click for more details." x='0%' y='16px' height='16px' width='[[clamp(100 * section.dps_total / max_player_dps)]]%' opacity='0.3' />
                         [[/if]]
                         {# primary DPS graph #}

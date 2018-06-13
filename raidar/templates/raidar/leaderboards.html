@@ -1,7 +1,7 @@
 {% load staticfiles %}
 <div class="uk-grid uk-grid-item-match">
   {# Mobile navigation/filtering #}
-  <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-top">Encounter Filter</h6>
+  <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-bottom">Encounter Filter</h6>
   <div class="uk-button-group uk-flex-wrap uk-width-1-1 uk-width-auto@s">
       [[#each data.boss_locations:kind_id]]
         [[#with page.leaderboards.kind == kind_id as active]]
@@ -37,21 +37,19 @@
   </div>
 
 </div>
-<!-- Note: The toggle system doesn't really work the way I want but I couldn't find a better way to mock it up. I'd like to have it so that clicking on the default "encounter" element adds the .expanded class to the whole element and shows the "close" icon, ideally clicking on that would close that element. Currently clicking anywhere on the "expanded" element will close it, which isn't ideal because we want people to be able to click through to encounters. -->
-<div class="r-leaderboard-wing">
-  <!-- Switch for CM included only for those wings that have CM. Otherwise just have text. -->
-  <div class="r-toggle uk-h3 uk-font-family-secondary r-leaderboard-heading uk-margin-remove uk-text-uppercase">
-    [[data.boss_locations[page.leaderboards.kind].name]]
-  </div>
+
+
   [[#each data.boss_locations[page.leaderboards.kind].wings as wing]]
+  <div class="r-leaderboard-wing">
+    <h4 class="uk-font-family-secondary r-leaderboard-heading uk-margin-remove uk-text-uppercase">[[wing.name]]</h4>
     [[#each wing.bosses as boss]]
       [[#with leaderboards[boss].periods[page.leaderboards.week] as leaderboard, leaderboards[boss].max_max_dps as max_max_dps]]
         <div class="r-leaderboard-encounter" class-expanded="boss == page.leaderboards.boss" on-click="@this.set('page.leaderboards.boss', boss)">
-          <img src="/static/raidar/img/icon/[[data.areas[boss].name]].png" alt="">
-          <h2 class="uk-margin-remove-bottom ">[[data.areas[boss].name]]</h2>
+          <img src="/static/raidar/img/icon/[[data.areas[boss].name]].png" alt="[data.areas[boss].name]]" width="50px">
+          <h2 class="uk-margin-remove-top uk-text-truncate ">[[data.areas[boss].name]]</h2>
           <a class="uk-h3 uk-margin-remove" class-uk-invisible="boss != page.leaderboards.boss" on-click="@this.set('page.leaderboards.boss', null) && false"><i class="material-icons">close</i></a>
           [[#each leaderboard['duration'] as line]]
-            <a class="r-leaderboard-row" href="[[baseURL]]/encounter/[[line.url_id]]" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: line.url_id })" uk-scroll="el:#top;">
+            <a class="r-leaderboard-row" href="[[baseURL]]/encounter/[[line.url_id]]" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: line.url_id })">
               <div class="r-damage">
                 <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
                   <!-- Same as our other rect graphs -->
@@ -92,6 +90,5 @@
         </div>
       [[/with]]
     [[/each]]
+    </div>
   [[/each]]
-
-</div>
