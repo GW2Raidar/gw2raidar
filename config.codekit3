@@ -5567,6 +5567,19 @@
 		"oS": 0,
 		"uL": 1
 		},
+	"\/node_modules\/uikit\/src\/scss\/components\/gradient.scss": {
+		"aP": 0,
+		"bl": 0,
+		"dP": 10,
+		"dS": 0,
+		"ft": 4,
+		"ma": 0,
+		"oA": 1,
+		"oAP": "\/node_modules\/uikit\/src\/scss\/components\/gradient.scss",
+		"oF": 0,
+		"oS": 0,
+		"uL": 1
+		},
 	"\/node_modules\/uikit\/src\/scss\/components\/grid.scss": {
 		"aP": 0,
 		"bl": 0,
@@ -6176,12 +6189,12 @@
 		"oS": 3
 		},
 	"\/node_modules\/uikit\/src\/scss\/raidar.scss": {
-		"aP": 0,
+		"aP": 1,
 		"bl": 0,
 		"dP": 10,
 		"dS": 0,
 		"ft": 4,
-		"ma": 0,
+		"ma": 1,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
 		"oF": 3,
@@ -8273,6 +8286,13 @@
 		"oAP": "\/raidar\/migrations\/0039_merge_20180318_1122.py",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/0040_eraareastore_leaderboards_value.py": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/0040_eraareastore_leaderboards_value.py",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__init__.py": {
 		"cB": 0,
 		"ft": 8192,
@@ -8560,6 +8580,13 @@
 		"oAP": "\/raidar\/migrations\/__pycache__\/0039_merge_20180318_1122.cpython-36.pyc",
 		"oF": 0
 		},
+	"\/raidar\/migrations\/__pycache__\/0040_eraareastore_leaderboards_value.cpython-36.pyc": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/migrations\/__pycache__\/0040_eraareastore_leaderboards_value.cpython-36.pyc",
+		"oF": 0
+		},
 	"\/raidar\/migrations\/__pycache__\/__init__.cpython-36.pyc": {
 		"cB": 0,
 		"ft": 8192,
@@ -8603,6 +8630,13 @@
 		"oAP": "\/raidar\/static\/raidar\/css\/raidar-min.css",
 		"oF": 0,
 		"oS": 3
+		},
+	"\/raidar\/static\/raidar\/css\/raidar.css.map": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css.map",
+		"oF": 0
 		},
 	"\/raidar\/static\/raidar\/css\/uikit.min.css": {
 		"aP": 1,
@@ -10307,6 +10341,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Arkk.png": {
+		"ft": 32768,
+		"iS": 43999,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Arkk.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Artsariiv (CM).png": {
 		"ft": 32768,
 		"iS": 84640,
@@ -10315,6 +10360,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Artsariiv.png": {
+		"ft": 32768,
+		"iS": 30765,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Artsariiv.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -10406,6 +10462,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Dhuum.png": {
+		"ft": 32768,
+		"iS": 3847,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Dhuum.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Downed_ally.png": {
 		"ft": 32768,
 		"iS": 19624,
@@ -10439,6 +10506,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Ensolyss.png": {
+		"ft": 32768,
+		"iS": 55347,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Ensolyss.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Gorseval.png": {
 		"ft": 32768,
 		"iS": 13646,
@@ -10469,6 +10547,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/MAMA.png": {
+		"ft": 32768,
+		"iS": 40041,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/MAMA.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -10560,11 +10649,11 @@
 		"oT": 1,
 		"q": 100
 		},
-	"\/raidar\/static\/raidar\/img\/icon\/Samarog (CM.png": {
+	"\/raidar\/static\/raidar\/img\/icon\/Samarog (CM).png": {
 		"ft": 32768,
 		"iS": 13900,
 		"oA": 0,
-		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Samarog (CM.png",
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Samarog (CM).png",
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
@@ -10593,6 +10682,17 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/icon\/Siax.png": {
+		"ft": 32768,
+		"iS": 49412,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Siax.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
+		"oT": 1,
+		"q": 100
+		},
 	"\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered (CM).png": {
 		"ft": 32768,
 		"iS": 120880,
@@ -10601,6 +10701,17 @@
 		"oF": 0,
 		"oIPL": 1,
 		"opt": 1,
+		"oT": 1,
+		"q": 100
+		},
+	"\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered.png": {
+		"ft": 32768,
+		"iS": 41182,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/img\/icon\/Skorvald the Shattered.png",
+		"oF": 0,
+		"oIPL": 0,
+		"opt": 0,
 		"oT": 1,
 		"q": 100
 		},
@@ -10868,6 +10979,26 @@
 		"oT": 1,
 		"q": 100
 		},
+	"\/raidar\/static\/raidar\/img\/logo\/full-logo.svg": {
+		"ft": 2097152,
+		"miP": 0,
+		"oA": 2,
+		"oAP": "\/raidar\/static\/raidar\/img\/logo\/full-logo.svg",
+		"oF": 0,
+		"opt": 0,
+		"plM": 3758088159,
+		"prP": 0
+		},
+	"\/raidar\/static\/raidar\/img\/logo\/mark-logo.svg": {
+		"ft": 2097152,
+		"miP": 0,
+		"oA": 2,
+		"oAP": "\/raidar\/static\/raidar\/img\/logo\/mark-logo.svg",
+		"oF": 0,
+		"opt": 0,
+		"plM": 3758088159,
+		"prP": 0
+		},
 	"\/raidar\/static\/raidar\/img\/patreon\/become_a_patron_button.png": {
 		"ft": 32768,
 		"iS": 3086,
@@ -10885,16 +11016,6 @@
 		"mi": 1,
 		"oA": 1,
 		"oAP": "\/raidar\/static\/raidar\/js\/uikit.min-min.js",
-		"oF": 1,
-		"sC": 3,
-		"tS": 0
-		},
-	"\/raidar\/static\/raidar\/script.js": {
-		"ft": 64,
-		"ma": 0,
-		"mi": 1,
-		"oA": 1,
-		"oAP": "\/raidar\/static\/raidar\/script-min.js",
 		"oF": 1,
 		"sC": 3,
 		"tS": 0
@@ -10986,13 +11107,6 @@
 		"oAP": "\/raidar\/templates\/raidar\/encounters.html",
 		"oF": 0
 		},
-	"\/raidar\/templates\/raidar\/global_stats.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
-		"oF": 0
-		},
 	"\/raidar\/templates\/raidar\/index.html": {
 		"cB": 0,
 		"ft": 8192,
@@ -11048,6 +11162,13 @@
 		"oA": 1,
 		"oAP": "\/raidar\/templates\/raidar\/intro.html",
 		"oF": 1
+		},
+	"\/raidar\/templates\/raidar\/leaderboards.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/leaderboards.html",
+		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/navbar.html": {
 		"cB": 0,
@@ -12437,6 +12558,34 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/TestLogs\/encounters\/arichardson\/20180312-225357.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/3.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/3.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/3.evtc.zip.error": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/3.evtc.zip.error",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/4.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/4.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/4.evtc.zip.error": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/4.evtc.zip.error",
 		"oF": 0
 		},
 	"\/TestLogs\/errors\/47.evtc": {
