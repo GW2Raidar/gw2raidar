@@ -3,9 +3,11 @@
   {# Mobile navigation/filtering #}
   <h6 class="uk-font-family-secondary uk-hidden@s uk-margin-bottom">Encounter Filter</h6>
   <div class="uk-button-group uk-flex-wrap uk-width-1-1 uk-width-auto@s">
-      [[#each data.boss_locations:kind_id]]
-        [[#with page.leaderboards.kind == kind_id as active]]
-          <button class="uk-button uk-inline" class-uk-button-primary="active" on-click="@this.set('page.leaderboards.kind', kind_id) && @this.fire('leaderboards_nav')">[[name]]</button>
+      [[#each [0, 1, 2] as kind_id]]
+        [[#with data.boss_locations[kind_id]]]
+          [[#with page.leaderboards.kind == kind_id as active]]
+            <button class="uk-button uk-inline" class-uk-button-primary="active" on-click="@this.set('page.leaderboards.kind', kind_id) && @this.fire('leaderboards_nav')">[[name]]</button>
+          [[/with]]
         [[/with]]
       [[/each]]
   </div>
