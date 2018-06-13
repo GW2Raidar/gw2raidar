@@ -6189,12 +6189,12 @@
 		"oS": 3
 		},
 	"\/node_modules\/uikit\/src\/scss\/raidar.scss": {
-		"aP": 0,
+		"aP": 1,
 		"bl": 0,
 		"dP": 10,
 		"dS": 0,
 		"ft": 4,
-		"ma": 0,
+		"ma": 1,
 		"oA": 0,
 		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css",
 		"oF": 3,
@@ -8631,6 +8631,13 @@
 		"oF": 0,
 		"oS": 3
 		},
+	"\/raidar\/static\/raidar\/css\/raidar.css.map": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/css\/raidar.css.map",
+		"oF": 0
+		},
 	"\/raidar\/static\/raidar\/css\/uikit.min.css": {
 		"aP": 1,
 		"bl": 0,
@@ -11013,16 +11020,6 @@
 		"sC": 3,
 		"tS": 0
 		},
-	"\/raidar\/static\/raidar\/script.js": {
-		"ft": 64,
-		"ma": 0,
-		"mi": 1,
-		"oA": 1,
-		"oAP": "\/raidar\/static\/raidar\/script-min.js",
-		"oF": 1,
-		"sC": 3,
-		"tS": 0
-		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -11108,13 +11105,6 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/encounters.html",
-		"oF": 0
-		},
-	"\/raidar\/templates\/raidar\/global_stats.html": {
-		"cB": 0,
-		"ft": 8192,
-		"oA": 0,
-		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/index.html": {
@@ -12568,6 +12558,34 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/TestLogs\/encounters\/arichardson\/20180312-225357.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/3.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/3.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/3.evtc.zip.error": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/3.evtc.zip.error",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/4.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/4.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/errors\/4.evtc.zip.error": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/errors\/4.evtc.zip.error",
 		"oF": 0
 		},
 	"\/TestLogs\/errors\/47.evtc": {
