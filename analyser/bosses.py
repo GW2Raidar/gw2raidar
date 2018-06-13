@@ -470,7 +470,7 @@ BOSS_LOCATIONS = [
                 "name": "Salvation Pass",
                 "bosses": [
                     IDS['Slothasor'],
-                    IDS['Bandit Trio'],
+                    # IDS['Bandit Trio'],
                     IDS['Matthias'],
                 ],
             },
