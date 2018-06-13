@@ -268,8 +268,20 @@ class Command(BaseCommand):
 
     def calculate_stats(self, last_run, *args, **options):
 
+        def add_leaderboard_stats(container, period, stat, item):
+            if period not in container:
+                container[period] = {}
+            if stat not in container[period]:
+                container[period][stat] = []
+            leaderboards = container[period]
+            leaderboards[stat].append(item)
+            leaderboards[stat] = sorted(leaderboards[stat], key=lambda x: x[stat])[:10]
+
         def initialise_era_area_stats(count):
-            return {}
+            leaderboards = {
+                    'periods': {},
+                }
+            return {}, leaderboards
 
         def initialise_era_user_stats(count):
             return {}
@@ -278,7 +290,7 @@ class Command(BaseCommand):
             return {}
 
 
-        def add_encounter_to_era_area_stats(encounter, totals_in_area, totals_in_era):
+        def add_encounter_to_era_area_stats(encounter, totals_in_area, totals_in_era, leaderboards_in_area):
             try:
                 boss = BOSSES[encounter.area_id]
                 data = encounter.val
@@ -286,12 +298,26 @@ class Command(BaseCommand):
 
 
 
+                if encounter.success:
+                    week = encounter.week()
+                    val = encounter.val
+                    comp = [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()]
+                    item = {
+                            "id": encounter.id,
+                            "url_id": encounter.url_id,
+                            "duration": encounter.duration,
+                            "dps_boss": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*Boss"]["dps"],
+                            "dps": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"],
+                            "buffs": _safe_get(lambda: val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["buffs"]["To"]["*All"]),
+                            "comp": comp,
+                            }
+                    add_leaderboard_stats(leaderboards_in_area['periods'], week, 'duration', item)
+                    add_leaderboard_stats(leaderboards_in_area['periods'], 'Era', 'duration', item)
+                    if 'max_max_dps' not in leaderboards_in_area or item['dps'] > leaderboards_in_area['max_max_dps']:
+                        leaderboards_in_area['max_max_dps'] = item['dps']
+
+
                 participations = encounter.participations.all()
-                #for participation in participations:
-                    #try:
-                    #something(participation, data)
-                    #except Exception as e:
-                    #    print("Exception in archetype code: ", e)
 
                 for phase, stats_in_phase in phases.items():
                     squad_stats = stats_in_phase['Subgroup']['*All']
@@ -390,10 +416,13 @@ class Command(BaseCommand):
                 raise RestatException("Error in %s" % participation)
 
 
-        def finalise_era_area_stats(era, area, totals_in_area):
+        def finalise_era_area_stats(era, area, totals_in_area, leaderboards_in_area):
             finalise_stats(totals_in_area)
             EraAreaStore.objects.update_or_create(
-                    era=era, area=area, defaults={ "val": totals_in_area })
+                    era=era, area=area, defaults={
+                        "val": totals_in_area,
+                        "leaderboards": leaderboards_in_area,
+                    })
 
         def finalise_era_user_stats(era, user, totals_for_player):
             finalise_stats(totals_for_player)
@@ -420,7 +449,7 @@ class Command(BaseCommand):
             area_queryset = Area.objects.all()
             for area in area_queryset.iterator():
                 encounter_queryset = era.encounters.prefetch_related('participations__account').filter(area=area).order_by('?')
-                totals_in_area = initialise_era_area_stats(encounter_queryset.count())
+                totals_in_area, leaderboards_in_area = initialise_era_area_stats(encounter_queryset.count())
 
                 if area.id in BOSSES:
                     kind = BOSSES[area.id].kind.name.lower()
@@ -428,8 +457,8 @@ class Command(BaseCommand):
                     kind = "unknown"
                 totals_for_kind = navigate(totals_in_era, 'kind', 'All %s bosses' % kind)
                 for encounter in encounter_queryset.iterator():
-                    add_encounter_to_era_area_stats(encounter, totals_in_area, totals_for_kind)
-                finalise_era_area_stats(era, area, totals_in_area)
+                    add_encounter_to_era_area_stats(encounter, totals_in_area, totals_for_kind, leaderboards_in_area)
+                finalise_era_area_stats(era, area, totals_in_area, leaderboards_in_area)
                 verbose("Totals for era %s, area %s" % (era, area), totals_in_area)
 
             finalise_era_stats(era, totals_in_era)
