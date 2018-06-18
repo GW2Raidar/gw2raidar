@@ -96,7 +96,7 @@ class Specialization(IntEnum):
     SPELLBREAKER = 61
     FIREBRAND = 62
     RENEGADE = 63
-      
+
 def per_second(f):
     return portion_of(f, ContextType.DURATION)
 
@@ -160,7 +160,6 @@ def print_frame(df, *mods):
     dfc = df.copy()
     for name,new_name,func in mods:
         dfc[new_name] = (dfc.index if name == 'index' else dfc[name]).apply(func)
-    with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.height', 100000, 'display.width', 100000):
         print(dfc)
 
 class Analyser:
@@ -171,14 +170,14 @@ class Analyser:
             ['dst_instid']].groupby('dst_instid').size().rename('hit_count')
         agents = agents.join(agents_that_get_hit_a_lot)
         agents.hit_count.fillna(0, inplace=True)
-        
+
         #Fix player parties
         if (self.boss_info.force_single_party) | (not agents[(agents.prof >= 1) & (agents.prof <= 9) & (agents.party == 0)].empty):
             agents.loc[(agents.prof >= 1) & (agents.prof <= 9), 'party'] = 1
-        
+
         #identify specific ones we care about
         players = agents[(agents.prof >= 1) & (agents.prof <= 9)]
-                
+
         if len(players) < 1:
             raise EvtcAnalysisException("No players found in this log")
         elif len(players) > 50:
@@ -189,7 +188,7 @@ class Analyser:
                          & (agents.prof < 0)
                          & (agents.hit_count >= 100))]
         final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
-        
+
         #set up important preprocessed data
         self.subgroups = dict([(number, subgroup.index.values) for number, subgroup in players.groupby("party")])
 
@@ -266,7 +265,7 @@ class Analyser:
         self.phases = [a for (a,i) in zip(all_phases, self.boss_info.phases) if i.important]
         print("Important phases:")
         list(map(print_phase, self.phases))
-        
+
         if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
             raise EvtcAnalysisException("Initial phase missing or skipped")
 
@@ -307,7 +306,7 @@ class Analyser:
         if (       (encounter.version < '20170923' and gw_build >= 82356)
                 or (encounter.version < '20171107' and gw_build >= 83945)
                 or (encounter.version < '20180206' and gw_build >= 86181)
-                or (encounter.version < '20180306' and gw_build >= 87045)            
+                or (encounter.version < '20180306' and gw_build >= 87045)
                 ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
@@ -351,7 +350,7 @@ class Analyser:
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         is_cm = self.boss_info.cm_detector(events, self.boss_instids)
         encounter_collector.add_data('cm', is_cm)
-                
+
         if not is_cm and not self.boss_info.non_cm_allowed:
             raise EvtcAnalysisException("Only cm encounters allowed for {}".format(self.boss_info.name))
 
@@ -567,7 +566,7 @@ class Analyser:
                            percentage_of(ContextType.TOTAL_DAMAGE_FROM_SOURCE_TO_DESTINATION))
 
     #Section: buff stats
-    
+
     def collect_outgoing_buffs(self, collector, buff_data):
         destination_collector = collector.with_key(Group.DESTINATION, "*All");
         phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
@@ -579,7 +578,7 @@ class Analyser:
             phase_data = self._split_buff_by_phase(buff_data, phase[1], phase[2])
             destination_collector.set_context_value(ContextType.DURATION, phase[2] - phase[1])
             destination_collector.with_key(Group.PHASE, "{0}".format(phase[0])).run(self.collect_buffs_by_source, phase_data)
-            
+
     def collect_incoming_buffs(self, collector, buff_data):
         source_collector = collector.with_key(Group.SOURCE, "*All");
         phase_data = self._split_buff_by_phase(buff_data, self.start_time, self.end_time)
@@ -596,7 +595,7 @@ class Analyser:
         split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'dst_instid', self.subgroups, self.players)
 
     def collect_buffs_by_source(self, collector, buff_data):
-        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'src_instid', self.subgroups, self.players)                            
+        split_by_player_groups(collector, self.collect_buffs_by_type, buff_data, 'src_instid', self.subgroups, self.players)
     def collect_buffs_by_type(self, collector, buff_data):
         #collector.with_key(Group.PHASE, "All").run(self.collect_buffs_by_target, buff_data);
         if len(buff_data) > 0:
@@ -646,7 +645,7 @@ class Analyser:
                 player_interesting_events = player_src_events[(player_src_events.src_instid.isin(self.player_instids)) &
                                                  (player_src_events.state_change.isin(interest_state_changes)) & (player_src_events.time < self.end_time)]
                 values = player_interesting_events.groupby('src_instid').last().reset_index()
-                
+
                 dead_players = values[values.state_change.isin(end_state_changes)].src_instid.unique()
                 print("These players died: {0}".format(dead_players))
                 surviving_players = list(filter(lambda a: a not in dead_players, self.player_instids))

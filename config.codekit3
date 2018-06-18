@@ -11020,6 +11020,16 @@
 		"sC": 3,
 		"tS": 0
 		},
+	"\/raidar\/static\/raidar\/script.js": {
+		"ft": 64,
+		"ma": 0,
+		"mi": 1,
+		"oA": 0,
+		"oAP": "\/raidar\/static\/raidar\/script-min.js",
+		"oF": 0,
+		"sC": 3,
+		"tS": 0
+		},
 	"\/raidar\/static\/raidar\/style.css": {
 		"aP": 1,
 		"bl": 0,
@@ -11105,6 +11115,13 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/raidar\/templates\/raidar\/encounters.html",
+		"oF": 0
+		},
+	"\/raidar\/templates\/raidar\/global_stats.html": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/raidar\/templates\/raidar\/global_stats.html",
 		"oF": 0
 		},
 	"\/raidar\/templates\/raidar\/index.html": {
@@ -11256,6 +11273,475 @@
 		"ft": 8192,
 		"oA": 0,
 		"oAP": "\/soloraidar.py",
+		"oF": 0
+		},
+	"\/TestLogs\/10.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/10.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/11.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/11.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/12.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/12.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/13.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/13.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/14.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/14.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/15.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/15.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/16.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/16.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/17.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/17.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/18.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/18.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/19.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/19.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/20.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/20.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/21.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/21.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/22.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/22.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/23.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/23.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/24.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/24.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/25.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/25.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/26.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/26.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/27.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/27.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/28.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/28.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/29.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/29.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/30.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/30.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/31.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/31.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/32.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/32.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/33.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/33.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/34.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/34.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/35.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/35.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/36.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/36.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/37.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/37.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/38.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/38.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/39.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/39.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/40.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/40.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/41.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/41.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/42.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/42.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/43.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/43.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/44.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/44.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/45.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/45.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/46.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/46.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/47.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/47.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/48.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/48.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/49.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/49.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/5.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/5.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/50.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/50.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/51.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/51.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/52.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/52.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/53.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/53.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/54.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/54.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/55.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/55.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/56.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/56.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/57.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/57.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/58.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/58.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/59.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/59.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/6.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/6.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/60.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/60.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/61.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/61.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/62.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/62.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/63.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/63.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/64.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/64.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/65.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/65.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/66.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/66.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/67.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/67.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/68.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/68.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/69.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/69.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/7.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/7.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/70.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/70.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/71.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/71.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/8.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/8.evtc.zip",
+		"oF": 0
+		},
+	"\/TestLogs\/9.evtc.zip": {
+		"cB": 0,
+		"ft": 8192,
+		"oA": 0,
+		"oAP": "\/TestLogs\/9.evtc.zip",
 		"oF": 0
 		},
 	"\/TestLogs\/encounters\/arichardson\/20170901-211115.evtc": {
