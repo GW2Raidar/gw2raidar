@@ -102,7 +102,7 @@
 		    <rect class="chart" x='[[clamp(100 * (section.percentiles_recv[100 - settings.comparePerc] || 0) / max_max_recv)]]%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
 
 		    {# graph #}
-		    <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(recv, 0)]]</strong> damage received and <strong>[[num(recv_dps, 0)]]</strong> per second.[[#if section.avg_recv]]<br/>Squad average is <strong>[[num(section.avg_recv, 0)]]</strong> and <strong>[[num(group.avg_recv_dps, 0)]]</strong> per second.[[/if]]<br/><strong>Performance:</strong> [[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
+		    <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Damage Received</h5><strong>[[num(recv, 0)]]</strong> damage received and <strong>[[num(recv_dps, 0)]]</strong> per second.[[#if section.avg_recv]]<br/>Squad average is <strong>[[num(section.avg_recv, 0)]]</strong> and <strong>[[num(group.avg_recv_dps, 0)]]</strong> per second.[[/if]]<br/><strong>Performance:</strong> [[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1' />
 
 		    {# text #}
 		    <text x='[[width < 25 ? 0 : width]]%' y='-1px' alignment-baseline="hanging" text-anchor="[[width < 25 ? 'begin' : 'end']]" font-family='Source Sans Pro' fill='#FCF1E2' font-size='14'>[[num(section.recv, 0)]]</text>
@@ -354,7 +354,7 @@
                         <rect class="chart" x='[[clamp(100 * (section.percentiles_recv[100 - settings.comparePerc] || 0) / max_player_recv)]]%' y='36px' height='6px' width='2px' fill='#E7CCA9' />
 
                         {# graph #}
-                        <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>DPS Received</h5><strong>[[num(section.recv, 0)]]</strong> damage received.[[#if section.avg_recv]]<br />This role's average is <strong>[[num(section.avg_recv, 0)]]</strong>.[[/if]]<br/><strong>Performance:</strong>[[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1'/>
+                        <rect class="chart chart-hover r-bg-[[pctl_recv]]" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Damage Received</h5><strong>[[num(section.recv, 0)]]</strong> damage received.[[#if section.avg_recv]]<br />This role's average is <strong>[[num(section.avg_recv, 0)]]</strong>.[[/if]]<br/><strong>Performance:</strong>[[th(pctl_recv)]] Percentile" x='0%' y='16px' height='16px' width='[[width]]%' opacity='1'/>
                         {# barrier overlay #}
                         <rect class="chart chart-hover" uk-tooltip="pos: bottom-left; delay: 350; title:<h5 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Barrier</h5>Up to <strong>[[num(section.shield_recv, 0)]] ([[perc(100 * section.shield_recv / section.recv)]])</strong> damage absorbed by barrier" x='[[clamp(100 * (section.recv - section.shield_recv) / max_player_recv)]]%' y='16px' height='16px' width='[[clamp(100 * section.shield_recv / max_player_recv)]]%' opacity='0.6' fill='#FCF1E2'/>
 
