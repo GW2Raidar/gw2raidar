@@ -62,7 +62,7 @@
                   <text class="rank" x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" font-size="80">[[@index + 1]]</text>
 
                   <!-- Encounter Duration -->
-                  <text class="duration" x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(255, 255, 255, 0.8)" font-size="20">[[formatTime(line.duration)]]</text>
+                  <text class="duration" x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(255, 255, 255, 0.8)" font-size="20"><tspan>[[formatTime(line.duration)]]</tspan> <tspan class="r-remaining">(6:25.532 remaining)</tspan></text>
 
                   <!-- Encounter DPS (Boss) Total like it is on Global Stats -->
                   <text class="dps" x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" fill="#15141e" font-weight="400" font-size="12">([[num(line.dps_boss, 0)]]) [[num(line.dps, 0)]] DPS</text>
