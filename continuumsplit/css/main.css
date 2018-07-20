@@ -113,6 +113,30 @@ textarea {
     justify-content: space-around;
 }
 
+.replay-main {
+	display: flex;
+}
+
+.replay-detail-body {
+	display: table;
+}
+
+.replay-detail-row {
+	display: table-row;
+}
+
+.replay-detail-item {
+	display: table-cell;
+}
+
+progress:after {
+  content: attr(value);
+  display: flex;
+  flex-direction: row-reverse;
+  padding-right: 2px;
+  font-size: small;
+}
+
 /* ==========================================================================
    Helper classes
    ========================================================================== */

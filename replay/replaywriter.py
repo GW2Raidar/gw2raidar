@@ -2,10 +2,12 @@ from enum import IntEnum
 from evtcparser import *
 import pandas as pd
 import numpy as np
+from analyser.analyser import LogType
 from functools import reduce
 import json
 import ctypes
 import struct
+import math as math
 
 def convert2f(val):
     class VECTOR2(ctypes.Structure):
@@ -15,6 +17,18 @@ def convert2f(val):
     long = ctypes.c_ulonglong(val)
     ctypes.memmove(ctypes.addressof(vec),ctypes.addressof(long),8)
     return [vec.x, vec.y]
+
+def convertHeading(val):
+    size = np.linalg.norm(val)
+    if size < 0.0000001:
+        return np.nan
+    unit = val / np.linalg.norm(val)
+    angle = np.arccos(np.dot([0,1],unit))
+    heading = angle
+    
+    if unit[0] > 0:
+        heading = 2 * math.pi - angle
+    return heading
 
 def convertf(val):
     class VECTOR1(ctypes.Structure):
@@ -35,11 +49,20 @@ class ReplayWriter:
         self.start_time = analyser.start_time
         self.end_time = analyser.end_time
         self.events['time'] = self.events['time'].apply(lambda x : (x - self.start_time) / 1000.0)        
+        self.damage_events = self.events[(self.events.state_change == 0)&((self.events.type == LogType.POWER)|(self.events.type == LogType.CONDI))]
+        self.damage_events = self.damage_events.assign(damage =
+                                         np.where(self.damage_events.type == LogType.POWER,
+                                                  self.damage_events['value'],
+                                                  self.damage_events['buff_dmg']))
+        self.damage_events = self.damage_events[self.damage_events.damage > 0]
+        
     
     def writePlayerData(self, agentId, dataOut):
         self.writeAgentData(agentId, dataOut)
         dataOut["base-state"][str(agentId)]["color"] = "#BBDDFF"
         dataOut["base-state"][str(agentId)]["state"] = 'Up'
+        
+        self.writeBossDamageTrack(agentId, dataOut)
         
         stateChangeEvents = self.events[(self.events.src_instid == agentId) & ((self.events.state_change == 3)|(self.events.state_change == 4)|(self.events.state_change == 5))]
         if len(stateChangeEvents) > 0:
@@ -61,6 +84,36 @@ class ReplayWriter:
         agent = self.agents.loc[agentId]
         agentData = {"name" : agent["name"]}
         dataOut["base-state"][str(agentId)] = agentData
+                
+        self.writePositionTracks(agentId, dataOut)
+        
+    def writeDirectionTrack(self, agentId, dataOut):
+        agent = self.agents.loc[agentId]
+        
+        trackHeading = {"path" : [str(agentId), "heading"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "slerp"}
+        dataOut["tracks"] += [trackHeading]
+        
+        dirEvents = self.events[(self.events.src_instid == agentId) & (self.events.state_change == 20)]
+        dirEvents = dirEvents.assign(xy=pd.Series(dirEvents['dst_agent'].apply(convert2f)).values)
+        dirEvents = dirEvents.assign(heading=pd.Series(dirEvents['xy'].apply(convertHeading)).values)
+        dirEvents = dirEvents.dropna()
+        
+        dataOut["base-state"][str(agentId)]["heading"] = dirEvents.iloc[0]['heading']
+        
+        trackHeading["data"] = []
+        gap = 0.55
+        offsetTime = 0.3
+        lastTime = dirEvents.iloc[0]['time'] - offsetTime
+        lastEvent = None
+        for event in dirEvents[['time', 'heading']].itertuples():
+            if event.time - lastTime > gap and not lastEvent is None:
+                trackHeading["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[2]}]
+            trackHeading["data"] += [{'time' : event[1], 'value' : event[2]}]
+            lastEvent = event
+            lastTime = event[1]
+                
+    def writePositionTracks(self, agentId, dataOut):
+        agent = self.agents.loc[agentId]
         trackx = {"path" : [str(agentId), "position", "x"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
         tracky = {"path" : [str(agentId), "position", "y"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
         trackz = {"path" : [str(agentId), "position", "z"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
@@ -100,6 +153,22 @@ class ReplayWriter:
             trackz["data"] += [{'time' : event[1], 'value' : event[4]}]
             lastEvent = event
             lastTime = event[1]
+            
+    def writeBossDamageTrack(self, agentId, dataOut):
+        agent = self.agents.loc[agentId]
+        
+        trackDamage = {"path" : [str(agentId), "bossdamage"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "floor"}
+                
+        events = self.damage_events[(self.damage_events.ult_src_instid == agentId) & (self.damage_events.damage > 0) & (self.damage_events.iff == 1) & (self.damage_events.dst_instid.isin(self.boss_instids))]
+        events['bossdamagesum'] = events.value.cumsum() + events.buff_dmg.cumsum()
+        
+        if len(events) > 0:
+            dataOut["base-state"][str(agentId)]["bossdamage"] = 0
+            dataOut["tracks"] += [trackDamage]
+
+            trackDamage["data"] = []
+            for event in events[['time', 'bossdamagesum']].itertuples():
+                trackDamage["data"] += [{'time' : event[1], 'value' : int(event[2])}]
         
     def generateReplay(self):
         data = {"info" : {}, "base-state" : {}, "tracks" : []}
@@ -111,5 +180,5 @@ class ReplayWriter:
             self.writeBossData(actorId, data)     
         #for actorId in (list(self.agents[self.agents.prof == 19474].index.values)):
         #    self.writeWallData(actorId, data)
-            
+
         return json.dumps(data)

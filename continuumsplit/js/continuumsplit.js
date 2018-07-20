@@ -1,5 +1,141 @@
 'use strict'
 
+/*
+
+TODO:
+
+Display:
+ - Class icons
+ - Boss icon?
+ - Facing
+ - Improve selection display
+ 
+Metrics
+ - Focus selection
+ - Cleave Dps
+ - Buffs
+ - Boss health
+ - Incoming Damage
+ - Phase
+ - Single target detail pane
+ - Skill log
+
+Graphs
+ - DPS 
+
+
+Maps:
+ - High res maps (That_Shaman ?)
+ - Map out coords
+ [ ] VG
+ [ ] Gorse
+ [ ] Sab
+ [ ] Sloth
+ [ ] Matthias
+ [ ] KC
+ [ ] Xera
+ [ ] Cairn
+ [ ] Mo
+ [ ] Samarog
+ [ ] Deimos
+ [ ] SH
+ [ ] Dhuum
+ 
+Map specific mechanics:
+
+VG:
+ - RGB circle
+ - Glowing sectors
+Gorse:
+ - Charging circle
+ - Orbs
+ - Eggs
+Sab:
+ - Flame wall
+ - Cannon state
+ - Bomb
+ - Platform health?
+Sloth:
+ - Mushrooms/poison?
+ - Slubling form
+ - Fire breath
+ - Rock stun
+ - Fixate
+ - Poison
+ - CC phases
+Matthias:
+ - Poison
+ - Afflicted
+ - Fountain state
+ - Icey patch
+ - Tornado
+ - Chosen
+ - Shield
+ - Sacrifice
+ - Bombs
+ - Hadoken?
+KC
+ - Statues
+ - Statue explosion
+ - Fixates
+ - Bomb
+ - Pizza slices?
+ - Outer ring (CM)
+Xera
+ - Shards
+ - Empowered
+ - Nuggets
+ - Orb eating
+ - Wall
+Cairn
+ - Big arm thing
+ - Pushes
+ - Black waves
+ - Circles? Probably not
+ - Stunned
+ - Agony
+ - Teleport countdown (CM)
+Mo
+ - Protect/Dispel/Claim
+ - Floor state
+ - Soldiers/etc
+ - Spikes
+Samarog
+ - Shockwave
+ - Thunk
+ - Spears
+ - Stun
+ - Rigom/Galosh
+ - Friends
+Deimos
+ - Up/Down
+ - Hands?
+ - Slices
+ - Oil
+ - Tears
+ - Bubble
+ - Saul health
+SH
+ - Dead
+ - Scythes
+ - Shrinking platform
+ - Walls
+ - Fixate
+Dhuum
+ - Circle
+ - Enforcer
+ - Deadling
+ - Green circles
+ - Suck
+ - Upper area/pacman
+ - Fissures ? I wish
+ - Echo (CM)
+ - Bubble (end phase?)
+ - pizza
+ - bomb
+ - shackles
+*/
+
 class AreaBox {
 	constructor(left, right, top, bottom) {
 		this.left = left;
@@ -54,6 +190,8 @@ class Replay {
 		this.speeds = [1, 2, 4, 8]
 		// Which speed is selected
 		this.speedIndex = 0
+		// The portion of width used by the canvas - the rest is for details
+		this.canvasPortion = 0.5
 		
 	    // Image providing all the icons
 		this.iconsImage = new Image();
@@ -65,18 +203,21 @@ class Replay {
 				
 		// Generate html
 		this.rootElement = $(domId)
-		this.rootElement.append("<div class='replay-container'><div class='replay-display'><canvas class='replay-canvas'></canvas></div>"
+		this.rootElement.append("<div class='replay-container'>" 
+		+ "<div class='replay-main'><div class='replay-display'><canvas class='replay-canvas'></canvas></div>"
+		+ "<div class='replay-details'></div></div>"
 		+ "<div class='replay-controls'>"
 		+ "<button type='button' class='replay-play'><img src='img/play.png'/></button>"
 		+ "<input type='range' class='replay-seekbar' value=0></input>"
 		+ "<button type='button' class='replay-speed'>1x</button>"
 		+ "<button type='button' class='replay-fullscreen'><img src='img/fullscreen.png'/></button>"
-		+ "<div class='replay-times'><div class='replay-current-time'>0:00</div> / <div class='replay-total-time'>0:00</div></div></div></div>");
+		+ "<div class='replay-times'><div class='replay-current-time'>0:00</div> / <div class='replay-total-time'>0:00</div></div></div>"
+		+ "</div>");
 		this.rootElement.css("width", width + "px")
 				
 		// Setup canvas
 		this.canvas = this.rootElement.find('.replay-canvas')[0]
-		this.canvas.width = width
+		this.canvas.width = width * this.canvasPortion
 		this.canvas.height = height
 		this.canvas.addEventListener("click", function (event) {
 			replay.clicked(event.offsetX, event.offsetY)
@@ -125,6 +266,8 @@ class Replay {
 		
 		this.currentTime = this.rootElement.find('.replay-current-time')
 		this.totalTime = this.rootElement.find('.replay-total-time')
+		
+		this.details = this.rootElement.find('.replay-details')
 	}
 	
 	// Load Replay
@@ -166,8 +309,11 @@ class Replay {
 				case 'lerp':
 				    track.sampleFunc = Replay.lerp
 					break;
+				case 'slerp':
+					track.sampleFunc = Replay.slerp
+					break;
 				default:
-					track.sampleFunc = Replay.trunc
+					track.sampleFunc = Replay.floor
 			}
 			
 			switch (track['update-type']) {
@@ -199,7 +345,7 @@ class Replay {
 				console.log("Fullscreen exit not supported")
 			}
 			
-			this.canvas.width = this.windowW
+			this.canvas.width = this.windowW * this.canvasPortion
 			this.canvas.height = this.windowH
 			this.rootElement.css("width", this.windowW)
 			this.imageDst = this.calcDstBox()
@@ -220,7 +366,7 @@ class Replay {
 				return
 			}
 			this.fullscreen = true
-			this.canvas.width = window.innerWidth;
+			this.canvas.width = window.innerWidth * this.canvasPortion
 			this.canvas.height = window.innerHeight;
 			this.rootElement.css("width", window.innerWidth)
 			this.imageDst = this.calcDstBox()
@@ -280,6 +426,7 @@ class Replay {
 	setFrame(time) {
 		this.generateFrame(time)
 		this.renderFrame()
+		this.updateDetails()
 		this.currentTime.text(Replay.printTime(this.frameTime))
 		this.seekbar.val(Math.trunc(time))
 	}
@@ -334,6 +481,31 @@ class Replay {
 		
 	}
 	
+	updateDetails() {
+		let frameTime = this.frameTime
+		this.details.html("")
+		let detailBody = "<div><div class='replay-detail-heading'>Boss DPS</div><div class='replay-detail-body'>"
+		let items = []
+		$.each(this.frame, function(name, data) {
+			if (data["bossdamage"] != null) {
+				if (frameTime > 0) {
+					items.push({"data" : data, "value" : parseInt(data["bossdamage"]) / frameTime})
+				} else {
+					items.push({"data" : data, "value" : 0})
+				}
+			}
+		})
+		items.sort(function (a, b) {
+			return b.value - a.value;
+		});
+		
+		$.each(items, function(index, item) {
+			detailBody += "<div class='replay-detail-row'><div class='replay-detail-item'>" + item.data["name"] + "</div><progress class='replay-detail-item' max='50000' value='" + parseInt(item.value) + "'></progress></div>"
+		})
+		detailBody += "</div></div>"
+		this.details.html(detailBody)
+	}
+	
 	static decodeUnicode(s) {
 		return decodeURIComponent(JSON.parse('"' + s + '"'));
 	}
@@ -355,7 +527,7 @@ class Replay {
 			offsetX = Math.trunc((this.canvas.width - width) / 2.0)
 		} else {
 			width = this.canvas.width;
-			height = Math.trunc(1 / imageScale * this.canvas.height);
+			height = Math.trunc(1 / imageScale * this.canvas.width);
 			offsetY = Math.trunc((this.canvas.height - height) / 2.0)
 		}		
 		return new AreaBox(offsetX, offsetX + width, offsetY, offsetY + height)
@@ -432,6 +604,24 @@ class Replay {
 	
 	static lerp(a, b, t) {
 		return a + (b - a) * t
+	}
+	
+	static slerp(a, b, t) {
+		if (a - b > Math.PI) {
+			let result = Replay.lerp(a, b + 2 * Math.PI, t) 
+			if (result > 2 * Math.PI) {
+				result -= 2 * Math.PI
+			}
+			return result
+		} else if (b - a > Math.PI) {
+			let result = Replay.lerp(a + 2 * Math.PI, b, t) 
+			if (result > 2 * Math.PI) {
+				result -= 2 * Math.PI
+			}
+			return result
+		} else {
+			return Replay.lerp(a, b, t)
+		}
 	}
 
 	static printTime(time) {
