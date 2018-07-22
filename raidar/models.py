@@ -230,7 +230,7 @@ class Encounter(ValueModel):
     @staticmethod
     def week_for(started_at):
         encounter_dt = datetime.utcfromtimestamp(started_at).replace(tzinfo=pytz.UTC)
-        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=8, minute=30, second=0, microsecond=0)
+        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=7, minute=30, second=0, microsecond=0)
         if reset_dt > encounter_dt:
             reset_dt -= timedelta(weeks=1)
         return int(reset_dt.timestamp())
