@@ -19,7 +19,7 @@ class EncounterSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Encounter
-        fields = ('url_id', 'started_at', 'area_id', 'category_id', 'tags', 'success')
+        fields = ('url_id', 'started_at', 'filename', 'area_id', 'category_id', 'tags', 'success')
 
 class EncounterListView(generics.ListAPIView):
     """
