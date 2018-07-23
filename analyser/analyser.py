@@ -671,20 +671,22 @@ class Analyser:
 
         print_frame(events[events.state_change == parser.StateChange.REWARD][['value', 'src_agent', 'dst_agent']])
 
-        success_types = []
+#        success_types = []
         if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
             success_types = [55821, 60685]
-        if self.boss_info.kind == Kind.FRACTAL and encounter.version >= '20170905':
-            success_types = [13]
+#        if self.boss_info.kind == Kind.FRACTAL and encounter.version >= '20170905':
+#            success_types = [13]
 
-        if success_types:
-            if (not events[(events.state_change == parser.StateChange.REWARD)
+#        if success_types:
+           if (not events[(events.state_change == parser.StateChange.REWARD)
                              & events.value.isin(success_types)].empty):
                 success = True
                 success_time = events[(events.state_change == parser.StateChange.REWARD)
                              & events.value.isin(success_types)].iloc[-1]['time']
-            elif self.boss_info.kind == Kind.RAID or self.boss_info.despawns_instead_of_dying:
-                success = False #Fractals without reward chests might just be re-runs.
+                 else:
+            success = False
+#            elif self.boss_info.kind == Kind.RAID or self.boss_info.despawns_instead_of_dying:
+#                success = False #Fractals without reward chests might just be re-runs.
             
             print("Success overridden by reward chest logging: {0}".format(success))
 
