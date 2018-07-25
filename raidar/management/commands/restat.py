@@ -256,10 +256,11 @@ class Command(BaseCommand):
         encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
         for encounter in encounter_queryset.iterator():
             filename = encounter.diskname()
-            try:
-                os.unlink(filename)
-            except FileNotFoundError:
-                pass
+            if filename:
+                try:
+                    os.unlink(filename)
+                except FileNotFoundError:
+                    pass
             encounter.has_evtc = False
             encounter.save()
             if is_there_space_now():

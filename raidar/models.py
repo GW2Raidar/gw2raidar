@@ -168,10 +168,12 @@ class Upload(ValueModel):
         unique_together = ('filename', 'uploaded_by')
 
 def _delete_upload_file(sender, instance, using, **kwargs):
-    try:
-        os.remove(instance.diskname())
-    except FileNotFoundError:
-        pass
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
 
 post_delete.connect(_delete_upload_file, sender=Upload)
 
@@ -296,10 +298,12 @@ def _delete_encounter_file(sender, instance, using, **kwargs):
     # if gdrive_service and instance.gdrive_id:
     #     gdrive_service.files().delete(
     #             fileId=instance.gdrive_id).execute()
-    try:
-        os.remove(instance.diskname())
-    except FileNotFoundError:
-        pass
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
 
 post_delete.connect(_delete_encounter_file, sender=Encounter)
 
