@@ -117,8 +117,16 @@ textarea {
 	display: flex;
 }
 
-.replay-detail-body {
+.replay-detail-table {
 	display: table;
+}
+
+.replay-detail-player-rows {
+	display: table-row-group;
+}
+
+.replay-detail-header-row {
+	display: table-header-group;
 }
 
 .replay-detail-row {
@@ -127,14 +135,18 @@ textarea {
 
 .replay-detail-item {
 	display: table-cell;
+	width: 10%;
 }
 
-progress:after {
-  content: attr(value);
-  display: flex;
-  flex-direction: row-reverse;
-  padding-right: 2px;
-  font-size: small;
+.replay-bar-background {
+	background-color: #DDDDDD;
+}
+
+.replay-bar {
+	background-color: #caffcc;
+	text-align: left; 
+    line-height: 26px;
+    color: black;
 }
 
 /* ==========================================================================

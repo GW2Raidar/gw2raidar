@@ -1,3 +1,5 @@
 //loadReplay('replay-canvas', 'test.json')
 var replay = new Replay('#replay', 800, 400)
+var replay1 = new Replay('#replay-1', 800, 400)
 replay.loadReplay('test.json')
+replay1.loadReplay('shtest.json')

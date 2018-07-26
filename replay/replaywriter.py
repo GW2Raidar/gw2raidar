@@ -19,6 +19,7 @@ def convert2f(val):
     return [vec.x, vec.y]
 
 def convertHeading(val):
+    val[1] *= -1
     size = np.linalg.norm(val)
     if size < 0.0000001:
         return np.nan
@@ -26,7 +27,7 @@ def convertHeading(val):
     angle = np.arccos(np.dot([0,1],unit))
     heading = angle
     
-    if unit[0] > 0:
+    if unit[0] < 0:
         heading = 2 * math.pi - angle
     return heading
 
@@ -61,8 +62,10 @@ class ReplayWriter:
         self.writeAgentData(agentId, dataOut)
         dataOut["base-state"][str(agentId)]["color"] = "#BBDDFF"
         dataOut["base-state"][str(agentId)]["state"] = 'Up'
+        dataOut["base-state"][str(agentId)]["type"] = "Player"
         
         self.writeBossDamageTrack(agentId, dataOut)
+        self.writeCleaveDamageTrack(agentId, dataOut)
         
         stateChangeEvents = self.events[(self.events.src_instid == agentId) & ((self.events.state_change == 3)|(self.events.state_change == 4)|(self.events.state_change == 5))]
         if len(stateChangeEvents) > 0:
@@ -75,10 +78,12 @@ class ReplayWriter:
     def writeBossData(self, agentId, dataOut):
         self.writeAgentData(agentId, dataOut)
         dataOut["base-state"][str(agentId)]["color"] = "#FF0000"
+        dataOut["base-state"][str(agentId)]["type"] = "Boss"
         
     def writeWallData(self, agentId, dataOut):
         self.writeAgentData(agentId, dataOut)
         dataOut["base-state"][str(agentId)]["color"] = "#FF0000"
+        dataOut["base-state"][str(agentId)]["type"] = "EnemyEffect"
     
     def writeAgentData(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
@@ -86,31 +91,33 @@ class ReplayWriter:
         dataOut["base-state"][str(agentId)] = agentData
                 
         self.writePositionTracks(agentId, dataOut)
+        self.writeDirectionTrack(agentId, dataOut)
         
     def writeDirectionTrack(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
         
         trackHeading = {"path" : [str(agentId), "heading"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "slerp"}
-        dataOut["tracks"] += [trackHeading]
-        
-        dirEvents = self.events[(self.events.src_instid == agentId) & (self.events.state_change == 20)]
+                
+        dirEvents = self.events[(self.events.src_instid == agentId) & (self.events.state_change == 21)]
         dirEvents = dirEvents.assign(xy=pd.Series(dirEvents['dst_agent'].apply(convert2f)).values)
         dirEvents = dirEvents.assign(heading=pd.Series(dirEvents['xy'].apply(convertHeading)).values)
         dirEvents = dirEvents.dropna()
         
-        dataOut["base-state"][str(agentId)]["heading"] = dirEvents.iloc[0]['heading']
-        
-        trackHeading["data"] = []
-        gap = 0.55
-        offsetTime = 0.3
-        lastTime = dirEvents.iloc[0]['time'] - offsetTime
-        lastEvent = None
-        for event in dirEvents[['time', 'heading']].itertuples():
-            if event.time - lastTime > gap and not lastEvent is None:
-                trackHeading["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[2]}]
-            trackHeading["data"] += [{'time' : event[1], 'value' : event[2]}]
-            lastEvent = event
-            lastTime = event[1]
+        if len(dirEvents) > 0:
+            dataOut["base-state"][str(agentId)]["heading"] = dirEvents.iloc[0]['heading']
+            dataOut["tracks"] += [trackHeading]
+
+            trackHeading["data"] = []
+            gap = 0.8
+            offsetTime = 0.5
+            lastTime = dirEvents.iloc[0]['time'] - offsetTime
+            lastEvent = None
+            for event in dirEvents[['time', 'heading']].itertuples():
+                if event.time - lastTime > gap and not lastEvent is None:
+                    trackHeading["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[2]}]
+                trackHeading["data"] += [{'time' : event[1], 'value' : event[2]}]
+                lastEvent = event
+                lastTime = event[1]
                 
     def writePositionTracks(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
@@ -118,13 +125,7 @@ class ReplayWriter:
         tracky = {"path" : [str(agentId), "position", "y"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
         trackz = {"path" : [str(agentId), "position", "z"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
         moveEvents = self.events[(self.events.src_instid == agentId) & (self.events.state_change == 19)]
-      
-        trackx["start-time"] = moveEvents.iloc[0].time
-        tracky["start-time"] = moveEvents.iloc[0].time
-        trackz["start-time"] = moveEvents.iloc[0].time
-        dataOut["tracks"] += [trackx]
-        dataOut["tracks"] += [tracky]
-        dataOut["tracks"] += [trackz]
+        
         moveEvents = moveEvents.assign(xy=pd.Series(moveEvents['dst_agent'].apply(convert2f)).values)
         moveEvents = moveEvents.assign(x=pd.Series(moveEvents['xy'].apply(lambda x: x[0])).values)
         moveEvents = moveEvents.assign(y=pd.Series(moveEvents['xy'].apply(lambda x: x[1])).values)
@@ -134,40 +135,57 @@ class ReplayWriter:
         tracky["data"] = []
         trackz["data"] = []
 
-        dataOut["base-state"][str(agentId)]["position"] = {}
-        dataOut["base-state"][str(agentId)]["position"]["x"] = moveEvents.iloc[0]['x']
-        dataOut["base-state"][str(agentId)]["position"]["y"] = moveEvents.iloc[0]['y']
-        dataOut["base-state"][str(agentId)]["position"]["z"] = moveEvents.iloc[0]['z']
-        
-        gap = 0.55
-        offsetTime = 0.3
-        lastTime = moveEvents.iloc[0]['time'] - offsetTime
-        lastEvent = None
-        for event in moveEvents[['time', 'x', 'y', 'z']].itertuples():
-            if event.time - lastTime > gap and not lastEvent is None:
-                trackx["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[2]}]
-                tracky["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[3]}]
-                trackz["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[4]}]
-            trackx["data"] += [{'time' : event[1], 'value' : event[2]}]
-            tracky["data"] += [{'time' : event[1], 'value' : event[3]}]
-            trackz["data"] += [{'time' : event[1], 'value' : event[4]}]
-            lastEvent = event
-            lastTime = event[1]
+        if len(moveEvents) > 0:
+            trackx["start-time"] = moveEvents.iloc[0].time
+            tracky["start-time"] = moveEvents.iloc[0].time
+            trackz["start-time"] = moveEvents.iloc[0].time
+            dataOut["tracks"] += [trackx]
+            dataOut["tracks"] += [tracky]
+            dataOut["tracks"] += [trackz]
+            dataOut["base-state"][str(agentId)]["position"] = {}
+            dataOut["base-state"][str(agentId)]["position"]["x"] = moveEvents.iloc[0]['x']
+            dataOut["base-state"][str(agentId)]["position"]["y"] = moveEvents.iloc[0]['y']
+            dataOut["base-state"][str(agentId)]["position"]["z"] = moveEvents.iloc[0]['z']
+
+            gap = 0.55
+            offsetTime = 0.3
+            lastTime = moveEvents.iloc[0]['time'] - offsetTime
+            lastEvent = None
+            for event in moveEvents[['time', 'x', 'y', 'z']].itertuples():
+                if event.time - lastTime > gap and not lastEvent is None:
+                    trackx["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[2]}]
+                    tracky["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[3]}]
+                    trackz["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[4]}]
+                trackx["data"] += [{'time' : event[1], 'value' : event[2]}]
+                tracky["data"] += [{'time' : event[1], 'value' : event[3]}]
+                trackz["data"] += [{'time' : event[1], 'value' : event[4]}]
+                lastEvent = event
+                lastTime = event[1]
             
     def writeBossDamageTrack(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
-        
         trackDamage = {"path" : [str(agentId), "bossdamage"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "floor"}
-                
         events = self.damage_events[(self.damage_events.ult_src_instid == agentId) & (self.damage_events.damage > 0) & (self.damage_events.iff == 1) & (self.damage_events.dst_instid.isin(self.boss_instids))]
         events['bossdamagesum'] = events.value.cumsum() + events.buff_dmg.cumsum()
         
         if len(events) > 0:
             dataOut["base-state"][str(agentId)]["bossdamage"] = 0
             dataOut["tracks"] += [trackDamage]
-
             trackDamage["data"] = []
             for event in events[['time', 'bossdamagesum']].itertuples():
+                trackDamage["data"] += [{'time' : event[1], 'value' : int(event[2])}]
+                
+    def writeCleaveDamageTrack(self, agentId, dataOut):
+        agent = self.agents.loc[agentId]
+        trackDamage = {"path" : [str(agentId), "cleavedamage"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "floor"}
+        events = self.damage_events[(self.damage_events.ult_src_instid == agentId) & (self.damage_events.damage > 0) & (self.damage_events.iff == 1)]
+        events['damagesum'] = events.value.cumsum() + events.buff_dmg.cumsum()
+        
+        if len(events) > 0:
+            dataOut["base-state"][str(agentId)]["cleavedamage"] = 0
+            dataOut["tracks"] += [trackDamage]
+            trackDamage["data"] = []
+            for event in events[['time', 'damagesum']].itertuples():
                 trackDamage["data"] += [{'time' : event[1], 'value' : int(event[2])}]
         
     def generateReplay(self):

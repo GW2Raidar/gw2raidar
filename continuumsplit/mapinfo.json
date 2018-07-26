@@ -1,0 +1,36 @@
+{
+	"Soulless Horror" : [
+		{
+			"image" : "img/Hall_of_Chains_map.jpg",
+			"imageCoords" : {
+			    "left" : 350,
+				"right" : 525,
+				"top" : 400,
+				"bottom" : 550
+			},
+			"worldCoords" : {
+				"left" : -13125,
+				"right" : -8862,
+				"top" : 2688,
+				"bottom" : -965
+			}
+		}
+	],
+	"Vale Guardian" : [
+		{
+			"image" : "img/vg_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 675,
+				"bottom" : 675
+			},
+			"worldCoords" : {
+				"left" : -6314.84,
+				"right" : -3184.84,
+				"top" : -19041,
+				"bottom" : -22171
+			}
+		}
+	]	
+}

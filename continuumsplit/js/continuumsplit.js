@@ -6,9 +6,7 @@ TODO:
 
 Display:
  - Class icons
- - Boss icon?
- - Facing
- - Improve selection display
+  - Improve selection display
  
 Metrics
  - Focus selection
@@ -175,6 +173,8 @@ class Replay {
 		
 		// The size to render dots
 		this.dotSize = 2
+		// The size to render boids
+		this.boidSize = 2.5
 		// The size to render icons
 		this.iconSize = 6
 		// Window size (remember for leaving full screen)
@@ -201,11 +201,22 @@ class Replay {
 		}
 		this.iconsImage.src = "img/icons.png"
 				
+        $.get("mapinfo.json", function(data) {
+			replay.mapInfo = data;
+			if (replay.replayData != null) {
+				loadReplayData(replay.replayData)
+			}
+		});
+				
 		// Generate html
 		this.rootElement = $(domId)
 		this.rootElement.append("<div class='replay-container'>" 
 		+ "<div class='replay-main'><div class='replay-display'><canvas class='replay-canvas'></canvas></div>"
-		+ "<div class='replay-details'></div></div>"
+		+ "<div class='replay-details'>"
+		+ "<div class='replay-detail-bossinfo'></div>"
+		+ "<div class='replay-detail-player-section'>"
+		+ "<div class='replay-detail-table'><div class='replay-detail-header-row'><div class='replay-detail-item'>Player</div><div class='replay-detail-item'>Boss DPS</div><div class='replay-detail-item'>Cleave DPS</div></div>"
+		+ "<div class='replay-detail-player-rows'></div></div></div></div></div>"
 		+ "<div class='replay-controls'>"
 		+ "<button type='button' class='replay-play'><img src='img/play.png'/></button>"
 		+ "<input type='range' class='replay-seekbar' value=0></input>"
@@ -267,37 +278,107 @@ class Replay {
 		this.currentTime = this.rootElement.find('.replay-current-time')
 		this.totalTime = this.rootElement.find('.replay-total-time')
 		
-		this.details = this.rootElement.find('.replay-details')
+		this.playerDetails = this.rootElement.find('.replay-detail-player-rows')
+	}
+	
+	updateDetails() {
+		let frameTime = this.frameTime
+		$.each(this.frame, function(name, data) {
+			if (data.bossdpsDisplay != null) {
+				if (frameTime > 0) {
+					data.bossdpsDisplay.setValue(Math.trunc(parseInt(data["bossdamage"]) / frameTime))
+				} else {
+					data.bossdpsDisplay.setValue(0)
+				}
+				
+			}
+			if (data.cleavedpsDisplay != null) {
+				if (frameTime > 0) {
+					data.cleavedpsDisplay.setValue(Math.trunc(parseInt(data["cleavedamage"]) / frameTime))
+				} else {
+					data.cleavedpsDisplay.setValue(0)
+				}
+				
+			}
+		})
+		
+		this.playerDetails.children().sort(function(a, b) {
+			return parseInt($($(b).children()[1]).text()) - parseInt($($(a).children()[1]).text());
+		}).appendTo(this.playerDetails)
 	}
 	
 	// Load Replay
 	
 	loadReplay(replayUrl) {
 		let replay = this;
+		replay.replayData = null;
 		$.get(replayUrl, function(data) {
-			replay.loadReplayData(data);
+			replay.replayData = data;
+			if (replay.mapInfo != null) {
+				replay.loadReplayData(data);
+			}
 		});
 	}
 	
 	loadReplayData(replayData) {
 		this.replayData = replayData;
 		this.setupTracks(replayData.tracks);
+		this.addPlayerDetailRows(replayData['base-state'])
 		let replay = this;
+		let maps = this.mapInfo[replayData.info.encounter];
+		
 		this.mapImage = new Image();
 		this.mapImage.onload = function() {
 			replay.ready = true
 			replay.setFrame(0)
 		}
-		this.mapImage.src = "img/Hall_of_Chains_map.jpg";
+		this.mapImage.src = maps[0].image;
 		
 		//this.coords = new AreaBox(-12151, -9526, 1976, -274)
-		this.coords = new AreaBox(-13125, -8862, 2688, -965)
-		this.imageSrc = new AreaBox(350, 525, 400, 550)		
+		this.coords = new AreaBox(maps[0].worldCoords.left, maps[0].worldCoords.right, maps[0].worldCoords.top, maps[0].worldCoords.bottom)
+		this.imageSrc = new AreaBox(maps[0].imageCoords.left, maps[0].imageCoords.right, maps[0].imageCoords.top, maps[0].imageCoords.bottom)		
 		this.imageDst = this.calcDstBox()
 		this.duration = this.replayData.info.duration
 		this.seekbar.attr("max", this.duration)
 		this.totalTime.text(Replay.printTime(Math.trunc(this.duration)))
 		this.currentTime.text(Replay.printTime(0))
+	}
+	
+	addPlayerDetailRows(actorData) {
+		let replay = this;
+		this.playerDetails.html("")
+		$.each(actorData, function(name, data) {
+			if (data["type"] == "Player") {
+				let row = $(document.createElement('div'))
+				row.addClass('replay-detail-row')
+				let nameDisplay = $(document.createElement('div'))
+				nameDisplay.addClass('replay-detail-item')
+				nameDisplay.text(data["name"])
+				row.append(nameDisplay)
+				data.bossdpsDisplay = replay.createDisplayBar(50000)
+				data.bossdpsDisplay.addClass('replay-detail-item')
+				row.append(data.bossdpsDisplay)
+				data.cleavedpsDisplay = replay.createDisplayBar(50000)
+				data.cleavedpsDisplay.addClass('replay-detail-item')
+				row.append(data.cleavedpsDisplay)
+				replay.playerDetails.append(row)
+			}
+		})
+	}
+	
+	createDisplayBar(maxValue) {
+		let barRoot = $(document.createElement('div'))
+		barRoot.addClass('replay-bar-background')
+		let barFill = $(document.createElement('div'))
+		barFill.addClass('replay-bar')
+		barRoot.append(barFill)
+		barRoot.setValue = function(value) {
+			barFill.value = value
+			barFill.text(value)
+			barFill.css('width', Math.trunc(100 * value / maxValue) + '%')
+		}
+		
+		return barRoot;
 	}
 	
 	// Private: Configures tracks after load
@@ -448,6 +529,9 @@ class Replay {
 		this.context.drawImage(this.mapImage, this.imageSrc.left, this.imageSrc.top, this.imageSrc.width, this.imageSrc.height, this.imageDst.left, this.imageDst.top, this.imageDst.width, this.imageDst.height);		
 		let replay = this;
 		$.each(this.frame, function(name, data) {
+			if (data.position == null) {
+				return;
+			}
 			let pos = replay.convertCoords(data.position.x, data.position.y)
 			switch (data.state) {
 				case 'Down':
@@ -460,7 +544,21 @@ class Replay {
 					let color = data.color
 					replay.context.fillStyle=color;
 					replay.context.beginPath()			
-					replay.context.arc(pos.x, pos.y, replay.dotSize * scale, 0, 2 * Math.PI, false)
+					if (data.heading != null) {						
+						let headingX = Math.sin(data.heading)
+						let headingY = Math.cos(data.heading)
+						let headingX1 = Math.sin(data.heading + 0.8 * Math.PI)
+						let headingY1 = Math.cos(data.heading + 0.8 * Math.PI)
+						let headingX2 = Math.sin(data.heading - 0.8 * Math.PI)
+						let headingY2 = Math.cos(data.heading - 0.8 * Math.PI)
+						replay.context.moveTo(pos.x + scale * replay.boidSize * headingX, pos.y + scale * replay.boidSize * headingY)
+						replay.context.lineTo(pos.x + scale * replay.boidSize * headingX1, pos.y + scale * replay.boidSize * headingY1)
+						replay.context.lineTo(pos.x + scale * replay.boidSize * headingX2, pos.y + scale * replay.boidSize * headingY2)
+						replay.context.closePath()
+					} else {
+						replay.context.arc(pos.x, pos.y, replay.boidSize * scale, 0, Math.PI, false)
+					}
+
 					replay.context.fill()
 			}
 		});
@@ -470,7 +568,7 @@ class Replay {
 			this.context.beginPath()			
 			this.context.lineWidth=scale * 0.4;
 			this.context.strokeStyle="#FFFFFF";
-			this.context.arc(pos.x, pos.y, replay.dotSize * scale, 0, 2 * Math.PI, false)
+			this.context.arc(pos.x, pos.y, replay.boidSize * scale, 0, 2 * Math.PI, false)
 			this.context.stroke()
 			this.context.font = Math.trunc(scale * 8) + 'px arial'
 			this.context.fillText(Replay.decodeUnicode(this.frame[this.selected].name), 0, scale * 8)
@@ -480,38 +578,13 @@ class Replay {
 		}
 		
 	}
-	
-	updateDetails() {
-		let frameTime = this.frameTime
-		this.details.html("")
-		let detailBody = "<div><div class='replay-detail-heading'>Boss DPS</div><div class='replay-detail-body'>"
-		let items = []
-		$.each(this.frame, function(name, data) {
-			if (data["bossdamage"] != null) {
-				if (frameTime > 0) {
-					items.push({"data" : data, "value" : parseInt(data["bossdamage"]) / frameTime})
-				} else {
-					items.push({"data" : data, "value" : 0})
-				}
-			}
-		})
-		items.sort(function (a, b) {
-			return b.value - a.value;
-		});
 		
-		$.each(items, function(index, item) {
-			detailBody += "<div class='replay-detail-row'><div class='replay-detail-item'>" + item.data["name"] + "</div><progress class='replay-detail-item' max='50000' value='" + parseInt(item.value) + "'></progress></div>"
-		})
-		detailBody += "</div></div>"
-		this.details.html(detailBody)
-	}
-	
 	static decodeUnicode(s) {
 		return decodeURIComponent(JSON.parse('"' + s + '"'));
 	}
 	
 	getScale() {
-		return this.imageDst.width / this.imageSrc.width;
+		return 30 * this.imageDst.width / Math.abs(this.coords.width);
 	}
 	
 	calcDstBox() {
