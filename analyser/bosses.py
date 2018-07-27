@@ -411,7 +411,7 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 6000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
-    Boss('Arkk', Kind.FRACTAL, [0x455f], despawns_instead_of_dying = True, success_health_limit = 1, phases =[
+    Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 1, phases =[
         Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 6000, phase_skip_health = 70),
         Phase("First orb", False, phase_end_damage_start = 6000, phase_skip_health = 70),
         Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 6000, phase_skip_health = 50),
