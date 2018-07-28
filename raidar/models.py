@@ -3,6 +3,8 @@ from django.db.models.signals import post_save, post_delete
 from django.db.models import Q
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
+from datetime import datetime, timedelta
+import pytz
 from fuzzycount import FuzzyCountManager
 from hashlib import md5
 from analyser.analyser import Profession, Archetype, Elite
@@ -76,7 +78,7 @@ class UserProfile(models.Model):
     portrait_url = models.URLField(null=True, blank=True) # XXX not using... delete?
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
-    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=PUBLIC)
+    privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=SQUAD)
 
     def __str__(self):
         return self.user.username
@@ -148,7 +150,11 @@ class Upload(ValueModel):
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='unprocessed_uploads')
 
     def __str__(self):
-        return '%s (%s)' % (self.filename, self.uploaded_by.username)
+        if self.uploaded_by:
+            uploader = self.uploaded_by.username
+        else:
+            uploader = 'Unknown'
+        return '%s (%s)' % (self.filename, uploader)
 
     def diskname(self):
         if hasattr(settings, 'UPLOAD_DIR'):
@@ -162,10 +168,12 @@ class Upload(ValueModel):
         unique_together = ('filename', 'uploaded_by')
 
 def _delete_upload_file(sender, instance, using, **kwargs):
-    try:
-        os.remove(instance.diskname())
-    except FileNotFoundError:
-        pass
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
 
 post_delete.connect(_delete_upload_file, sender=Upload)
 
@@ -222,13 +230,31 @@ class Encounter(ValueModel):
     objects = FuzzyCountManager()
 
     def __str__(self):
-        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
+        if self.uploaded_by:
+            uploader = self.uploaded_by.username
+        else:
+            uploader = 'Unknown'
+        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, uploader, self.id)
+
+    # Returns timestamp of closest non-future raid reset (Monday 08:30 UTC)
+    @staticmethod
+    def week_for(started_at):
+        encounter_dt = datetime.utcfromtimestamp(started_at).replace(tzinfo=pytz.UTC)
+        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=7, minute=30, second=0, microsecond=0)
+        if reset_dt > encounter_dt:
+            reset_dt -= timedelta(weeks=1)
+        return int(reset_dt.timestamp())
+
+    def week(self):
+        return Encounter.week_for(self.started_at)
 
     def save(self, *args, **kwargs):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
         super(Encounter, self).save(*args, **kwargs)
 
     def diskname(self):
+        if not self.uploaded_by:
+            return None
         if hasattr(settings, 'UPLOAD_DIR'):
             upload_dir = settings.UPLOAD_DIR
         else:
@@ -272,10 +298,12 @@ def _delete_encounter_file(sender, instance, using, **kwargs):
     # if gdrive_service and instance.gdrive_id:
     #     gdrive_service.files().delete(
     #             fileId=instance.gdrive_id).execute()
-    try:
-        os.remove(instance.diskname())
-    except FileNotFoundError:
-        pass
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
 
 post_delete.connect(_delete_encounter_file, sender=Encounter)
 
@@ -344,6 +372,15 @@ class Participation(models.Model):
 class EraAreaStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
     area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
+    leaderboards_value = models.TextField(default="{}", editable=False)
+
+    @property
+    def leaderboards(self):
+        return json_loads(self.leaderboards_value)
+
+    @leaderboards.setter
+    def leaderboards(self, value):
+        self.leaderboards_value = json_dumps(value)
 
 
 class EraUserStore(ValueModel):

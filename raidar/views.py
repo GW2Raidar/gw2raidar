@@ -145,8 +145,10 @@ def download(request, url_id=None):
         user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
         if user_profile:
             privacy = user_profile[0].privacy
-            if not is_self and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
-                encounter_showable = False
+        else:
+            privacy = UserProfile.SQUAD
+        if not is_self and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+            encounter_showable = False
 
     path = encounter.diskname()
     if isfile(path) and (encounter_showable or request.user.is_staff):
@@ -296,6 +298,31 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
 
 
 @require_GET
+def leaderboards(request):
+    kind = int(request.GET.get('kind', 0))
+    bosses = [boss for wing in BOSS_LOCATIONS[kind]["wings"] for boss in wing["bosses"]]
+    era_id = request.GET.get('era')
+    eras = list(Era.objects.order_by('-started_at').values('id', 'name'))
+    if not era_id:
+        era_id = eras[0]['id']
+    area_leaderboards = {}
+    for area_id in bosses:
+        try:
+            leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
+        except EraAreaStore.DoesNotExist:
+            leaderboards = {}
+        area_leaderboards[area_id] = leaderboards
+    area_leaderboards['eras'] = eras
+    area_leaderboards['era'] = era_id
+    area_leaderboards['kind'] = kind
+    result = {
+            'leaderboards': area_leaderboards,
+            'page.era': era_id,
+            }
+    return JsonResponse(result)
+
+
+@require_GET
 def encounter(request, url_id=None, json=None):
     try:
         encounter = Encounter.objects.select_related('area', 'uploaded_by').get(url_id=url_id)
@@ -357,11 +384,13 @@ def encounter(request, url_id=None, json=None):
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
             if user_profile:
                 privacy = user_profile[0].privacy
-                if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
-                    member['name'] = ''
-                    member['account'] = ''
-                    private = True
-                    encounter_showable = False
+            else:
+                privacy = UserProfile.SQUAD
+            if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                member['name'] = ''
+                member['account'] = ''
+                private = True
+                encounter_showable = False
 
     max_player_dps = max(_safe_get(lambda: data['Metrics']['damage']['To']['*All']['dps']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
     max_player_recv = max(_safe_get(lambda: data['Metrics']['damage']['From']['*All']['total']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())

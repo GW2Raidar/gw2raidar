@@ -4,21 +4,20 @@
     [[#with profile]]
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
         [[#each data.boss_locations]]
-          <div class="uk-inline">
             [[#with (all && page.area == all) || page.area in bosses as active]]
-              <button class="uk-button" class-uk-button-primary="active">[[#if active]][[page.area in data.areas ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+              <button class="uk-button uk-inline" class-uk-button-primary="active">[[#if active]][[page.area in data.areas ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
             [[/with]]
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
-		[[#if all]]
-		  <div class="uk-width-1">
-		    <ul class="uk-nav uk-dropdown-nav">
-		      <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
-			<a href="#">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</a>
-		      </li>
-		    </ul>
-		  </div>
-		[[/if]]
+          		[[#if all]]
+          		  <div class="uk-width-1">
+          		    <ul class="uk-nav uk-dropdown-nav">
+          		      <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
+          			<a href="#">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</a>
+          		      </li>
+          		    </ul>
+          		  </div>
+          		[[/if]]
 
                 [[#each wings]]
                   <div class="uk-width-1-[[columns]]@m uk-width-1">
@@ -37,7 +36,6 @@
                 [[/each]]
               </div>
             </div>
-          </div>
         [[/each]]
       </div>
 

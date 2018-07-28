@@ -160,7 +160,7 @@ def print_frame(df, *mods):
     dfc = df.copy()
     for name,new_name,func in mods:
         dfc[new_name] = (dfc.index if name == 'index' else dfc[name]).apply(func)
-    with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.height', 100000, 'display.width', 100000):
+    with pd.option_context('display.max_rows', 9999999, 'display.max_columns', 500, 'display.width', 100000):
         print(dfc)
 
 class Analyser:
@@ -307,7 +307,10 @@ class Analyser:
         if (       (encounter.version < '20170923' and gw_build >= 82356)
                 or (encounter.version < '20171107' and gw_build >= 83945)
                 or (encounter.version < '20180206' and gw_build >= 86181)
-                or (encounter.version < '20180306' and gw_build >= 87045)            
+                or (encounter.version < '20180306' and gw_build >= 87045) 
+                or (encounter.version < '20180508' and gw_build >= 88541) 
+                or (encounter.version < '20180523' and gw_build >= 88951) 
+                or (encounter.version < '20180606' and gw_build >= 89380)           
                 ):
             raise EvtcAnalysisException("This log's arc version and GW2 build are not fully compatible. Update arcdps!")
 
