@@ -94,7 +94,7 @@ class EvtcParseException(BaseException):
     pass
 
 
-AGENT_DTYPE = np.dtype([
+AGENT_LEGACY_DTYPE = np.dtype([
         ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
         ('prof', np.int32),
         ('elite', np.int32),
@@ -103,6 +103,19 @@ AGENT_DTYPE = np.dtype([
         ('condition', np.int32),
         ('name', '|S64'),
     ], True)
+
+AGENT_20180725_DTYPE = np.dtype([
+    ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
+    ('prof', np.int32),
+    ('elite', np.int32),
+    ('toughness', np.int16),
+    ('concentration',np.int16),
+    ('healing', np.int16),
+    ('pad1',np.int16),
+    ('condition', np.int16),
+    ('pad2',np.int16),
+    ('name', '|S64'),
+], True)
 
 SKILL_DTYPE = np.dtype([
         ('id', np.int32),
@@ -154,9 +167,14 @@ class Encounter:
         self.version = version.decode(ENCODING).rstrip('\0')
 
     def _read_agents(self, file):
+        if self.version < "20180725":
+            dtype = AGENT_LEGACY_DTYPE
+        else:
+            dtype = AGENT_20180725_DTYPE
         num_agents, = struct.unpack("<i", file.read(4))
-        agents_string = file.read(AGENT_DTYPE.itemsize * num_agents)
-        self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=AGENT_DTYPE, count=num_agents))
+        agents_string = file.read(dtype.itemsize * num_agents)
+        
+        self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=dtype, count=num_agents))
         split = self.agents.name.str.split(b'\x00:?', expand=True)
         if len(split.columns) > 1:
             self.agents['name'] = split[0].str.decode(ENCODING)
