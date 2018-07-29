@@ -2,7 +2,7 @@ from enum import IntEnum
 from evtcparser import *
 import pandas as pd
 import numpy as np
-from analyser.analyser import LogType
+import analyser as ana
 from functools import reduce
 import json
 import ctypes
@@ -50,22 +50,35 @@ class ReplayWriter:
         self.start_time = analyser.start_time
         self.end_time = analyser.end_time
         self.events['time'] = self.events['time'].apply(lambda x : (x - self.start_time) / 1000.0)        
-        self.damage_events = self.events[(self.events.state_change == 0)&((self.events.type == LogType.POWER)|(self.events.type == LogType.CONDI))]
+        self.damage_events = self.events[(self.events.state_change == 0)&((self.events.type == ana.analyser.LogType.POWER)|(self.events.type == ana.analyser.LogType.CONDI))]
         self.damage_events = self.damage_events.assign(damage =
-                                         np.where(self.damage_events.type == LogType.POWER,
+                                         np.where(self.damage_events.type == ana.analyser.LogType.POWER,
                                                   self.damage_events['value'],
                                                   self.damage_events['buff_dmg']))
         self.damage_events = self.damage_events[self.damage_events.damage > 0]
+        self.buff_data = analyser.buff_data.copy()
+        self.buff_data['time'] = self.buff_data['time'].apply(lambda x : (x - self.start_time) / 1000.0)
         
     
     def writePlayerData(self, agentId, dataOut):
         self.writeAgentData(agentId, dataOut)
+        agent = self.agents.loc[agentId]
         dataOut["base-state"][str(agentId)]["color"] = "#BBDDFF"
         dataOut["base-state"][str(agentId)]["state"] = 'Up'
         dataOut["base-state"][str(agentId)]["type"] = "Player"
+        elite = 0
+        if agent.elite == 0:
+            elite = 0
+        elif agent.elite < 55:
+            elite = 1
+        else:
+            elite = 2
+        dataOut["base-state"][str(agentId)]["class"] = ana.analyser.SPECIALISATIONS[ana.analyser.Profession(agent.prof), elite]
+            
         
         self.writeBossDamageTrack(agentId, dataOut)
         self.writeCleaveDamageTrack(agentId, dataOut)
+        self.writeBuffTracks(agentId, dataOut)
         
         stateChangeEvents = self.events[(self.events.src_instid == agentId) & ((self.events.state_change == 3)|(self.events.state_change == 4)|(self.events.state_change == 5))]
         if len(stateChangeEvents) > 0:
@@ -77,6 +90,7 @@ class ReplayWriter:
         
     def writeBossData(self, agentId, dataOut):
         self.writeAgentData(agentId, dataOut)
+        self.writeHealthUpdates(agentId, dataOut)
         dataOut["base-state"][str(agentId)]["color"] = "#FF0000"
         dataOut["base-state"][str(agentId)]["type"] = "Boss"
         
@@ -92,6 +106,38 @@ class ReplayWriter:
                 
         self.writePositionTracks(agentId, dataOut)
         self.writeDirectionTrack(agentId, dataOut)
+        
+    def writeBuffTracks(self, agentId, dataOut):
+        dataOut["base-state"][str(agentId)]["buff"] = {}
+        for buffType in ana.buffs.BUFF_TYPES:
+            buffData = self.buff_data[(self.buff_data.dst_instid == agentId)&(self.buff_data.buff == buffType.code)]
+            if len(buffData) > 0:
+                dataOut["base-state"][str(agentId)]["buff"][buffType.code] = 0
+                track = {"path" : [str(agentId), "buff", buffType.code], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "floor"}
+                track["data"] = []
+                dataOut["tracks"] += [track]
+                for event in buffData[['time', 'stacks']].itertuples():
+                    track["data"] += [{'time' : event[1], 'value' : int(event[2])}]
+        
+    def writeHealthUpdates(self, agentId, dataOut):
+        agent = self.agents.loc[agentId]
+        
+        healthEvents = self.events[(self.events.src_instid == agentId) & (self.events.state_change == 8)]
+        
+        if len(healthEvents) > 0:
+            dataOut["base-state"][str(agentId)]["health"] = 100
+            trackHealth = {"path" : [str(agentId), "health"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
+            trackHealth["data"] = []
+            dataOut["tracks"] += [trackHealth]
+            gap = 5
+            lastTime = 0
+            lastValue = 100.0
+            for event in healthEvents[['time', 'dst_agent']].itertuples():
+                if event[1] - lastTime > gap:
+                    trackHealth["data"] += [{'time': event[1] - 0.1, 'value': lastValue}]
+                trackHealth["data"] += [{'time' : event[1], 'value' : event[2]/100.0}]
+                lastTime = event[1]
+                lastValue = event[2] / 100.0
         
     def writeDirectionTrack(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
@@ -164,7 +210,7 @@ class ReplayWriter:
             
     def writeBossDamageTrack(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
-        trackDamage = {"path" : [str(agentId), "bossdamage"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "floor"}
+        trackDamage = {"path" : [str(agentId), "bossdamage"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
         events = self.damage_events[(self.damage_events.ult_src_instid == agentId) & (self.damage_events.damage > 0) & (self.damage_events.iff == 1) & (self.damage_events.dst_instid.isin(self.boss_instids))]
         events['bossdamagesum'] = events.value.cumsum() + events.buff_dmg.cumsum()
         

@@ -32,5 +32,73 @@
 				"bottom" : -22171
 			}
 		}
-	]	
+	],
+	"Gorseval" : [
+		{
+			"image" : "img/Spirit_Vale_map.jpg",
+			"imageCoords" : {
+				"left" : 391,
+				"top" : 428,
+				"right" : 617,
+				"bottom" : 654
+			},
+			"worldCoords" : {
+				"left" : -1396.5,
+				"right" : 4607.165,
+				"top" : -1483.975,
+				"bottom" : -7487.665				
+			}
+		}
+	],
+	"Sabetha" : [
+		{
+			"image" : "img/Spirit_Vale_map.jpg",
+			"imageCoords" : {
+				"left" : 113,
+				"top" : 110,
+				"right" : 386,
+				"bottom" : 383
+			},
+			"worldCoords" : {
+				"left" : -8478.425,
+				"right" : -1677.995,
+				"top" : 6757.185,
+				"bottom" : -43.245
+			}
+		}
+	],
+	"Slothasor" : [
+		{
+			"image" : "img/sloth_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 299,
+				"bottom" : 358
+			},
+			"worldCoords" : {
+				"left" : 6113.85,
+				"right" : 9806.5,
+				"top" : 1457.9,
+				"bottom" : -2963.4
+			}
+		}
+	],
+	"Matthias" : [
+		{
+			"image" : "img/matt_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 244,
+				"bottom" : 244
+			},
+			"worldCoords" : {
+				"left" : -7667.88,
+				"right" : -4088.4,
+				"top" : 7675.79,
+				"bottom" : 4096.31
+			}
+		}
+	]
 }

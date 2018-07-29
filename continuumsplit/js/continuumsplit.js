@@ -10,8 +10,7 @@ Display:
  
 Metrics
  - Focus selection
- - Cleave Dps
- - Buffs
+  - Buffs
  - Boss health
  - Incoming Damage
  - Phase
@@ -213,7 +212,7 @@ class Replay {
 		this.rootElement.append("<div class='replay-container'>" 
 		+ "<div class='replay-main'><div class='replay-display'><canvas class='replay-canvas'></canvas></div>"
 		+ "<div class='replay-details'>"
-		+ "<div class='replay-detail-bossinfo'></div>"
+		+ "<div class='replay-detail-bossinfo'><div class='replay-boss-name'></div><div class='replay-boss-health'></div></div>"
 		+ "<div class='replay-detail-player-section'>"
 		+ "<div class='replay-detail-table'><div class='replay-detail-header-row'><div class='replay-detail-item'>Player</div><div class='replay-detail-item'>Boss DPS</div><div class='replay-detail-item'>Cleave DPS</div></div>"
 		+ "<div class='replay-detail-player-rows'></div></div></div></div></div>"
@@ -278,12 +277,16 @@ class Replay {
 		this.currentTime = this.rootElement.find('.replay-current-time')
 		this.totalTime = this.rootElement.find('.replay-total-time')
 		
+		this.bossNameDisplay = this.rootElement.find('.replay-boss-name')
 		this.playerDetails = this.rootElement.find('.replay-detail-player-rows')
 	}
 	
 	updateDetails() {
 		let frameTime = this.frameTime
 		$.each(this.frame, function(name, data) {
+			if (data.healthDisplay != null && data.health != null) {
+				data.healthDisplay.setValue(data.health.toFixed(2))
+			}
 			if (data.bossdpsDisplay != null) {
 				if (frameTime > 0) {
 					data.bossdpsDisplay.setValue(Math.trunc(parseInt(data["bossdamage"]) / frameTime))
@@ -334,7 +337,6 @@ class Replay {
 		}
 		this.mapImage.src = maps[0].image;
 		
-		//this.coords = new AreaBox(-12151, -9526, 1976, -274)
 		this.coords = new AreaBox(maps[0].worldCoords.left, maps[0].worldCoords.right, maps[0].worldCoords.top, maps[0].worldCoords.bottom)
 		this.imageSrc = new AreaBox(maps[0].imageCoords.left, maps[0].imageCoords.right, maps[0].imageCoords.top, maps[0].imageCoords.bottom)		
 		this.imageDst = this.calcDstBox()
@@ -342,6 +344,7 @@ class Replay {
 		this.seekbar.attr("max", this.duration)
 		this.totalTime.text(Replay.printTime(Math.trunc(this.duration)))
 		this.currentTime.text(Replay.printTime(0))
+		this.bossNameDisplay.text(this.replayData.info.encounter)
 	}
 	
 	addPlayerDetailRows(actorData) {
@@ -362,6 +365,11 @@ class Replay {
 				data.cleavedpsDisplay.addClass('replay-detail-item')
 				row.append(data.cleavedpsDisplay)
 				replay.playerDetails.append(row)
+			} else if (data["type"] == "Boss") {
+				let bossHealthDisplay = replay.createDisplayBar(100) 
+				bossHealthDisplay.setValue(100)
+				replay.rootElement.find('.replay-boss-health').append(bossHealthDisplay);
+				data.healthDisplay = bossHealthDisplay
 			}
 		})
 	}
