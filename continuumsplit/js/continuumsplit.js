@@ -199,14 +199,7 @@ class Replay {
 			replay.deadSprite = new Sprite(replay.iconsImage, new AreaBox(0, 31, 0, 32))
 		}
 		this.iconsImage.src = "img/icons.png"
-				
-        $.get("mapinfo.json", function(data) {
-			replay.mapInfo = data;
-			if (replay.replayData != null) {
-				loadReplayData(replay.replayData)
-			}
-		});
-				
+						
 		// Generate html
 		this.rootElement = $(domId)
 		this.rootElement.append("<div class='replay-container'>" 
@@ -279,6 +272,13 @@ class Replay {
 		
 		this.bossNameDisplay = this.rootElement.find('.replay-boss-name')
 		this.playerDetails = this.rootElement.find('.replay-detail-player-rows')
+		
+		$.get("mapinfo.json", function(data) {
+			replay.mapInfo = data;
+			if (replay.replayData != null) {
+				replay.loadReplayData(replay.replayData)
+			}
+		});
 	}
 	
 	updateDetails() {
@@ -329,22 +329,44 @@ class Replay {
 		this.addPlayerDetailRows(replayData['base-state'])
 		let replay = this;
 		let maps = this.mapInfo[replayData.info.encounter];
+
+		replay.maps = []
 		
-		this.mapImage = new Image();
-		this.mapImage.onload = function() {
-			replay.ready = true
-			replay.setFrame(0)
-		}
-		this.mapImage.src = maps[0].image;
-		
-		this.coords = new AreaBox(maps[0].worldCoords.left, maps[0].worldCoords.right, maps[0].worldCoords.top, maps[0].worldCoords.bottom)
-		this.imageSrc = new AreaBox(maps[0].imageCoords.left, maps[0].imageCoords.right, maps[0].imageCoords.top, maps[0].imageCoords.bottom)		
-		this.imageDst = this.calcDstBox()
+		$.each(maps, function(index, mapData) {
+			let map = {"ready" : false}
+			replay.maps.push(map)
+			map.image = new Image();
+			map.image.onload = function() {
+				map.ready = true;
+				replay.checkReplayReady();
+			}
+			map.image.src = mapData.image;
+			map.coords = new AreaBox(mapData.worldCoords.left, mapData.worldCoords.right, mapData.worldCoords.top, mapData.worldCoords.bottom)
+			map.imageSrc = new AreaBox(mapData.imageCoords.left, mapData.imageCoords.right, mapData.imageCoords.top, mapData.imageCoords.bottom)
+			map.imageDst = replay.calcDstBox(map, index, maps.length)
+			if (mapData.heightRange != null) {
+				map.heightRange = {"min" : mapData.heightRange.min, "max" : mapData.heightRange.max}
+			}
+		});
 		this.duration = this.replayData.info.duration
 		this.seekbar.attr("max", this.duration)
 		this.totalTime.text(Replay.printTime(Math.trunc(this.duration)))
 		this.currentTime.text(Replay.printTime(0))
 		this.bossNameDisplay.text(this.replayData.info.encounter)
+	}
+	
+	checkReplayReady() {
+		let replay = this;
+		let ready = true;
+		$.each(this.maps, function(index, map) {
+			if (!map.ready) {
+				ready = false;
+			}
+		})
+		if (ready) {
+			this.ready = true;
+			this.setFrame(0);
+		}
 	}
 	
 	addPlayerDetailRows(actorData) {
@@ -420,6 +442,7 @@ class Replay {
 	// Controls	
 		
 	toggleFullscreen() {
+		let replay = this
 		if (this.fullscreen) {
 			this.fullscreen = false
 			if (document.exitFullscreen) {
@@ -433,11 +456,13 @@ class Replay {
 			} else {
 				console.log("Fullscreen exit not supported")
 			}
-			
 			this.canvas.width = this.windowW * this.canvasPortion
 			this.canvas.height = this.windowH
 			this.rootElement.css("width", this.windowW)
-			this.imageDst = this.calcDstBox()
+			
+			$.each(this.maps, function(index, map) {
+				map.imageDst = replay.calcDstBox(map, index, replay.maps.length)
+			});
 			this.renderFrame(this.frameTime)
 		} else {
 
@@ -458,7 +483,9 @@ class Replay {
 			this.canvas.width = window.innerWidth * this.canvasPortion
 			this.canvas.height = window.innerHeight;
 			this.rootElement.css("width", window.innerWidth)
-			this.imageDst = this.calcDstBox()
+			$.each(this.maps, function(index, map) {
+				map.imageDst = replay.calcDstBox(map, index, replay.maps.length)
+			});
 			
 			this.renderFrame(this.frameTime)
 		}
@@ -530,17 +557,23 @@ class Replay {
 	}
 	
 	renderFrame() {
-		let scale = this.getScale();
+		let replay = this;
+		
 		this.context.clearRect(0,0,this.canvas.width, this.canvas.height);
 		this.context.fillStyle="#000000";
 		this.context.fillRect(0,0,this.canvas.width, this.canvas.height);
-		this.context.drawImage(this.mapImage, this.imageSrc.left, this.imageSrc.top, this.imageSrc.width, this.imageSrc.height, this.imageDst.left, this.imageDst.top, this.imageDst.width, this.imageDst.height);		
-		let replay = this;
+		$.each(this.maps, function(index, map) {
+			replay.context.drawImage(map.image, map.imageSrc.left, map.imageSrc.top, map.imageSrc.width, map.imageSrc.height, map.imageDst.left, map.imageDst.top, map.imageDst.width, map.imageDst.height);
+		});
+				
+		
 		$.each(this.frame, function(name, data) {
 			if (data.position == null) {
 				return;
 			}
-			let pos = replay.convertCoords(data.position.x, data.position.y)
+			let map = replay.findMap(data.position);
+			let scale = replay.getScale(map);
+			let pos = replay.convertCoords(map, data.position.x, data.position.y)
 			switch (data.state) {
 				case 'Down':
 					replay.downSprite.render(replay.context, pos.x, pos.y, replay.iconSize * scale);
@@ -572,7 +605,9 @@ class Replay {
 		});
 		
 		if (this.selected) {
-			let pos = replay.convertCoords(this.frame[this.selected].position.x, this.frame[this.selected].position.y)
+			let map = this.findMap(this.frame[this.selected].position)
+			let scale = this.getScale(map)
+			let pos = replay.convertCoords(map, this.frame[this.selected].position.x, this.frame[this.selected].position.y)
 			this.context.beginPath()			
 			this.context.lineWidth=scale * 0.4;
 			this.context.strokeStyle="#FFFFFF";
@@ -586,38 +621,56 @@ class Replay {
 		}
 		
 	}
+	
+	findMap(pos) {
+		let map = null;
+		if (this.maps.length == 1) {
+			map = this.maps[0];
+		} else {
+			$.each(this.maps, function(index, mapData) {
+				if (pos.z > mapData.heightRange.min && pos.z < mapData.heightRange.max) {
+					map = mapData
+					return;
+				}
+			})
+		}
+		return map
+	}
 		
 	static decodeUnicode(s) {
 		return decodeURIComponent(JSON.parse('"' + s + '"'));
 	}
 	
-	getScale() {
-		return 30 * this.imageDst.width / Math.abs(this.coords.width);
+	getScale(map) {
+		return 30 * map.imageDst.width / Math.abs(map.coords.width);
 	}
 	
-	calcDstBox() {
-		let imageScale = (this.imageSrc.right - this.imageSrc.left) / (this.imageSrc.bottom - this.imageSrc.top);
-		let canvasScale = this.canvas.width / this.canvas.height;
+	calcDstBox(map, mapNumber, numberOfMaps) {
+		let availableHeight = this.canvas.height / numberOfMaps
+		let imageScale = (map.imageSrc.right - map.imageSrc.left) / (map.imageSrc.bottom - map.imageSrc.top);
+		let canvasScale = this.canvas.width / availableHeight;
 		let offsetX = 0
 		let offsetY = 0
 		let width = 0
 		let height = 0
 		if (canvasScale > imageScale) {
-			width = Math.trunc(imageScale * this.canvas.height);
-			height = this.canvas.height;
+			width = Math.trunc(imageScale * availableHeight);
+			height = availableHeight;
 			offsetX = Math.trunc((this.canvas.width - width) / 2.0)
 		} else {
 			width = this.canvas.width;
 			height = Math.trunc(1 / imageScale * this.canvas.width);
-			offsetY = Math.trunc((this.canvas.height - height) / 2.0)
-		}		
+			offsetY = Math.trunc((availableHeight - height) / 2.0)
+		}
+        offsetY += mapNumber * availableHeight
+		
 		return new AreaBox(offsetX, offsetX + width, offsetY, offsetY + height)
 	}
 
-	convertCoords(x, y) {
+	convertCoords(map, x, y) {
 		return new Point(
-			(x - this.coords.left) / this.coords.width * this.imageDst.width + this.imageDst.left,
-			(y - this.coords.top) / this.coords.height * this.imageDst.height + this.imageDst.top
+			(x - map.coords.left) / map.coords.width * map.imageDst.width + map.imageDst.left,
+			(y - map.coords.top) / map.coords.height * map.imageDst.height + map.imageDst.top
 		)
 	}
 	
@@ -626,24 +679,46 @@ class Replay {
 	}
 	
 	clicked(x, y) {
-		let rangeSqrd = this.getScale() * this.getScale() * this.dotSize * this.dotSize;
-		let closest = null;
-		let closestDist = rangeSqrd;
-		let replay = this;
-		$.each(this.frame, function(name, data) {
-			let pos = replay.convertCoords(data.position.x, data.position.y)
-			let relDist = replay.distSqrd(pos.x,pos.y,x, y)
-			if (relDist < closestDist) {
-				closest = name;
-				closestDist = relDist;
-			}
-		});
-		
-		this.selected = closest;
+		let map = this.getMapFromCanvasPos(x,y)
+		if (map == null) {
+			this.selected = null;
+		} else {
+			let rangeSqrd = this.getScale(map) * this.getScale(map) * this.dotSize * this.dotSize;
+			let closest = null;
+			let closestDist = rangeSqrd;
+			let replay = this;
+			$.each(this.frame, function(name, data) {
+				if (data.position == null) {
+					return;
+				}
+				if (map.heightRange != null && (data.position.z < map.heightRange.min || data.position.z > map.heightRange.max)) {
+					return;
+				}
+				let pos = replay.convertCoords(map, data.position.x, data.position.y)
+				let relDist = replay.distSqrd(pos.x,pos.y,x, y)
+				if (relDist < closestDist) {
+					closest = name;
+					closestDist = relDist;
+				}
+			});
+			
+			this.selected = closest;
+		}
 		
 		if (!this.playing) {
 			this.renderFrame();
 		}
+	}
+	
+	getMapFromCanvasPos(x,y) {
+		let result = null;
+		let replay = this;
+		$.each(this.maps, function(index, map) {
+			if (map.imageDst.left <= x && map.imageDst.right > x && map.imageDst.top <= y && map.imageDst.bottom > y) {
+				result = map;
+			}
+		})
+		return result;
 	}
 	
 	

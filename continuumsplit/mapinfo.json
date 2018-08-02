@@ -1,46 +1,29 @@
 {
-	"Soulless Horror" : [
-		{
-			"image" : "img/Hall_of_Chains_map.jpg",
-			"imageCoords" : {
-			    "left" : 350,
-				"right" : 525,
-				"top" : 400,
-				"bottom" : 550
-			},
-			"worldCoords" : {
-				"left" : -13125,
-				"right" : -8862,
-				"top" : 2688,
-				"bottom" : -965
-			}
-		}
-	],
 	"Vale Guardian" : [
 		{
 			"image" : "img/vg_arena.jpg",
 			"imageCoords" : {
 				"left" : 0,
 				"top" : 0,
-				"right" : 675,
-				"bottom" : 675
+				"right" : 600,
+				"bottom" : 600
 			},
 			"worldCoords" : {
-				"left" : -6314.84,
-				"right" : -3184.84,
-				"top" : -19041,
-				"bottom" : -22171
+				"left" : -6414.84,
+				"right" : -3084.84,
+				"top" : -18941,
+				"bottom" : -22271
 			}
 		}
 	],
 	"Gorseval" : [
 		{
-			"image" : "img/Spirit_Vale_map.jpg",
+			"image" : "img/gorse_arena.jpg",
 			"imageCoords" : {
-				"left" : 391,
-				"top" : 428,
-				"right" : 617,
-				"bottom" : 654
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
 			},
 			"worldCoords" : {
 				"left" : -1396.5,
@@ -52,12 +35,12 @@
 	],
 	"Sabetha" : [
 		{
-			"image" : "img/Spirit_Vale_map.jpg",
+			"image" : "img/sab_arena.jpg",
 			"imageCoords" : {
-				"left" : 113,
-				"top" : 110,
-				"right" : 386,
-				"bottom" : 383
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
 			},
 			"worldCoords" : {
 				"left" : -8478.425,
@@ -98,6 +81,114 @@
 				"right" : -4088.4,
 				"top" : 7675.79,
 				"bottom" : 4096.31
+			}
+		}
+	],
+	"Cairn" : [
+		{
+			"image" : "img/cairn_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 13016.77,
+				"right" : 15698.77,
+				"top" : 3323.93,
+				"bottom" : 641.93
+			}
+		}
+	],
+	"Mursaat Overseer" : [
+		{
+			"image" : "img/mo_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 1264.02,
+				"right" : 3862.02,
+				"top" : 5286.61,
+				"bottom" : 2688.61 
+			}
+		}
+	],
+	"Samarog" : [
+		{
+			"image" : "img/sam_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -6636.22,
+				"right" : -2196.22,
+				"top" : 5772.29,
+				"bottom" : 1332.29
+			}
+		}
+	],
+	"Deimos" : [
+		{
+			"image" : "img/deimos_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -9672.93,
+				"right" : -7272.93,
+				"top" : 4178.56,
+				"bottom" : 1778.56
+			},
+			"heightRange" : {
+				"min" : -5000,
+				"max" : 3500
+			}
+		},
+		{
+			"image" : "img/deimos_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 600,
+				"bottom" : 1200
+			},
+			"worldCoords" : {
+				"left" : -9312.93,
+				"right" : -6912.93,
+				"top" : 5360.56,
+				"bottom" : 2960.56
+			},
+			"heightRange" : {
+				"min" : -50000,
+				"max" : -5000
+			}
+		}
+	],
+	"Soulless Horror" : [
+		{
+			"image" : "img/Hall_of_Chains_map.jpg",
+			"imageCoords" : {
+			    "left" : 350,
+				"right" : 525,
+				"top" : 400,
+				"bottom" : 550
+			},
+			"worldCoords" : {
+				"left" : -13125,
+				"right" : -8862,
+				"top" : 2688,
+				"bottom" : -965
 			}
 		}
 	]
