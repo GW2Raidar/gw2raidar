@@ -177,18 +177,18 @@
 	],
 	"Soulless Horror" : [
 		{
-			"image" : "img/Hall_of_Chains_map.jpg",
+			"image" : "img/sh_arena.jpg",
 			"imageCoords" : {
-			    "left" : 350,
-				"right" : 525,
-				"top" : 400,
-				"bottom" : 550
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
 			},
 			"worldCoords" : {
-				"left" : -13125,
-				"right" : -8862,
-				"top" : 2688,
-				"bottom" : -965
+				"left" : -12263.97,
+				"right" : -8963.97,
+				"top" : 2478.34,
+				"bottom" : -821.66
 			}
 		}
 	]
