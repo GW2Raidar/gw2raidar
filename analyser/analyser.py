@@ -459,7 +459,7 @@ class Analyser:
         # player archetypes
         players = players.assign(archetype=Archetype.POWER)
         players.loc[players.condition >= 5, 'archetype'] = Archetype.CONDI
-        players.loc[(players.toughness >= 5) | (players.healing >= 5), 'archetype'] = Archetype.SUPPORT
+        players.loc[(players.toughness >= 5) | (players.healing >= 5) | (players.concentration >= 5), 'archetype'] = Archetype.SUPPORT
         collector.group(self.collect_individual_player_status, players, ('name', Group.PLAYER))
 
     def collect_individual_player_status(self, collector, player):
@@ -474,6 +474,7 @@ class Analyser:
         collector.add_data('toughness', only_entry['toughness'], int)
         collector.add_data('healing', only_entry['healing'], int)
         collector.add_data('condition', only_entry['condition'], int)
+        collector.add_data('concentration', only_entry['condition'], int)
         collector.add_data('archetype', only_entry['archetype'], Archetype)
         collector.add_data('party', only_entry['party'], int)
         collector.add_data('account', only_entry['account'], str)
