@@ -474,7 +474,7 @@ class Analyser:
         collector.add_data('toughness', only_entry['toughness'], int)
         collector.add_data('healing', only_entry['healing'], int)
         collector.add_data('condition', only_entry['condition'], int)
-        collector.add_data('concentration', only_entry['condition'], int)
+        collector.add_data('concentration', only_entry['concentration'], int)
         collector.add_data('archetype', only_entry['archetype'], Archetype)
         collector.add_data('party', only_entry['party'], int)
         collector.add_data('account', only_entry['account'], str)
