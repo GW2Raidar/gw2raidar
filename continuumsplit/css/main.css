@@ -117,12 +117,31 @@ textarea {
 	display: flex;
 }
 
+.replay-details {
+	width: 100%;
+	margin-left: 4px;
+}
+
 .replay-detail-table {
 	display: table;
+	width: 100%;
+}
+
+.replay-detail-name-column {
+	width: 50%;
+}
+
+.replay-detail-cleave-dps-column {
+	width: 25%;
+}
+
+.replay-detail-boss-dps-column {
+	width: 25%;
 }
 
 .replay-detail-player-rows {
 	display: table-row-group;
+	height: 20px;
 }
 
 .replay-detail-header-row {
@@ -135,17 +154,241 @@ textarea {
 
 .replay-detail-item {
 	display: table-cell;
+	vertical-align: middle;
+	padding-right: 5px;
 }
 
 .replay-bar-background {
 	background-color: #DDDDDD;
+	border-radius: 10px;
+	border: solid black 1px;
+	line-height: 20px;
 }
 
 .replay-bar {
 	background-color: #caffcc;
 	text-align: left; 
-    line-height: 26px;
-    color: black;
+    color: #00000000;
+	border-radius: 10px;
+	clip-path: inset(0% 0% 0% 0%);
+	line-height: 18px;
+}
+
+.replay-bar-label {
+    position: absolute;
+	margin-top: -19px;
+	line-height: 20px;
+	margin-left: 10px;
+}
+
+.replay-class-necromancer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -32px;
+}
+
+.replay-class-reaper {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -52px;
+}
+
+.replay-class-scourge {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -72px;
+}
+
+.replay-class-ranger {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -32px;
+}
+
+.replay-class-druid {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -52px;
+}
+
+.replay-class-soulbeast {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -72px;
+}
+
+.replay-class-engineer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -32px;
+}
+
+.replay-class-scrapper {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -52px;
+}
+
+.replay-class-holosmith {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -72px;
+}
+
+.replay-class-thief {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -32px;
+}
+
+.replay-class-daredevil {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -52px;
+}
+
+.replay-class-deadeye {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -72px;
+}
+
+.replay-class-mesmer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -32px;
+}
+
+.replay-class-chrono {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -52px;
+}
+
+.replay-class-mirage {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -72px;
+}
+
+.replay-class-mesmer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -32px;
+}
+
+.replay-class-chronomancer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -52px;
+}
+
+.replay-class-mirage {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -72px;
+}
+
+.replay-class-elementalist {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -32px;
+}
+
+.replay-class-tempest {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -52px;
+}
+
+.replay-class-weaver {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -72px;
+}
+
+.replay-class-revenant {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -32px;
+}
+
+.replay-class-herald {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -52px;
+}
+
+.replay-class-renegade {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -72px;
+}
+
+.replay-class-warrior {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -32px;
+}
+
+.replay-class-berserker {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -52px;
+}
+
+.replay-class-spellbreaker {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -72px;
+}
+
+.replay-class-guardian {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -180px -32px;
+}
+
+.replay-class-dragonhunter {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -180px -52px;
+}
+
+.replay-class-firebrand {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -180px -72px;
 }
 
 /* ==========================================================================

@@ -6,13 +6,11 @@ TODO:
 
 Display:
  - Class icons
-  - Improve selection display
+ - Improve selection display
  
 Metrics
  - Focus selection
   - Buffs
- - Boss health
- - Incoming Damage
  - Phase
  - Single target detail pane
  - Skill log
@@ -207,7 +205,7 @@ class Replay {
 		+ "<div class='replay-details'>"
 		+ "<div class='replay-detail-bossinfo'><div class='replay-boss-name'></div><div class='replay-boss-health'></div></div>"
 		+ "<div class='replay-detail-player-section'>"
-		+ "<div class='replay-detail-table'><div class='replay-detail-header-row'><div class='replay-detail-item'>Player</div><div class='replay-detail-item'>Boss DPS</div><div class='replay-detail-item'>Cleave DPS</div></div>"
+		+ "<div class='replay-detail-table'><div class='replay-detail-header-row'><div class='replay-detail-item'></div><div class='replay-detail-item replay-detail-player-column'>Player</div><div class='replay-detail-item replay-detail-boss-dps-column'>Boss DPS</div><div class='replay-detail-item replay-detail-cleave-dps-column'>Cleave DPS</div></div>"
 		+ "<div class='replay-detail-player-rows'></div></div></div></div></div>"
 		+ "<div class='replay-controls'>"
 		+ "<button type='button' class='replay-play'><img src='img/play.png'/></button>"
@@ -279,6 +277,7 @@ class Replay {
 				replay.loadReplayData(replay.replayData)
 			}
 		});
+		
 	}
 	
 	updateDetails() {
@@ -376,22 +375,31 @@ class Replay {
 			if (data["type"] == "Player") {
 				let row = $(document.createElement('div'))
 				row.addClass('replay-detail-row')
+				let classIcon = $(document.createElement('div'))
+				classIcon.addClass('replay-class-' + data["class"].toLowerCase())
+				row.append(classIcon)
 				let nameDisplay = $(document.createElement('div'))
 				nameDisplay.addClass('replay-detail-item')
 				nameDisplay.text(data["name"])
 				row.append(nameDisplay)
 				data.bossdpsDisplay = replay.createDisplayBar(50000)
-				data.bossdpsDisplay.addClass('replay-detail-item')
-				row.append(data.bossdpsDisplay)
+				let dpsItem = $(document.createElement('div'))
+				dpsItem.addClass('replay-detail-item')
+				dpsItem.append(data.bossdpsDisplay)
+				row.append(dpsItem)
 				data.cleavedpsDisplay = replay.createDisplayBar(50000)
-				data.cleavedpsDisplay.addClass('replay-detail-item')
-				row.append(data.cleavedpsDisplay)
+				let cleaveItem = $(document.createElement('div'))
+				cleaveItem.addClass('replay-detail-item')
+				cleaveItem.append(data.cleavedpsDisplay)
+				row.append(cleaveItem)
 				replay.playerDetails.append(row)
 			} else if (data["type"] == "Boss") {
-				let bossHealthDisplay = replay.createDisplayBar(100) 
-				bossHealthDisplay.setValue(100)
-				replay.rootElement.find('.replay-boss-health').append(bossHealthDisplay);
-				data.healthDisplay = bossHealthDisplay
+				if (data["health"] != null) {
+					let bossHealthDisplay = replay.createDisplayBar(100) 
+					bossHealthDisplay.setValue(100)
+					replay.rootElement.find('.replay-boss-health').append(bossHealthDisplay);
+					data.healthDisplay = bossHealthDisplay
+				}
 			}
 		})
 	}
@@ -401,11 +409,16 @@ class Replay {
 		barRoot.addClass('replay-bar-background')
 		let barFill = $(document.createElement('div'))
 		barFill.addClass('replay-bar')
+		let barLabel = $(document.createElement('div'))
+		barLabel.addClass('replay-bar-label')
+		
 		barRoot.append(barFill)
+		barRoot.append(barLabel)
 		barRoot.setValue = function(value) {
 			barFill.value = value
 			barFill.text(value)
-			barFill.css('width', Math.trunc(100 * value / maxValue) + '%')
+			barFill.css('clip-path', "inset(0% " + (100 - 100 * value / maxValue) + '% 0% 0%)')
+			barLabel.text(value)
 		}
 		
 		return barRoot;
@@ -463,7 +476,7 @@ class Replay {
 			$.each(this.maps, function(index, map) {
 				map.imageDst = replay.calcDstBox(map, index, replay.maps.length)
 			});
-			this.renderFrame(this.frameTime)
+			this.setFrame(this.frameTime)
 		} else {
 
 			let replayRoot = this.rootElement[0]
@@ -487,7 +500,7 @@ class Replay {
 				map.imageDst = replay.calcDstBox(map, index, replay.maps.length)
 			});
 			
-			this.renderFrame(this.frameTime)
+			this.setFrame(this.frameTime)
 		}
 	}
 	

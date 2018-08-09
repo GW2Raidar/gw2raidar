@@ -124,7 +124,7 @@ class ReplayWriter:
         
         healthEvents = self.events[(self.events.src_instid == agentId) & (self.events.state_change == 8)]
         
-        if len(healthEvents) > 0:
+        if len(healthEvents) > 1:
             dataOut["base-state"][str(agentId)]["health"] = 100
             trackHealth = {"path" : [str(agentId), "health"], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "lerp"}
             trackHealth["data"] = []
@@ -134,7 +134,7 @@ class ReplayWriter:
             lastValue = 100.0
             for event in healthEvents[['time', 'dst_agent']].itertuples():
                 if event[1] - lastTime > gap:
-                    trackHealth["data"] += [{'time': event[1] - 0.1, 'value': lastValue}]
+                    trackHealth["data"] += [{'time': event[1] - 1.5, 'value': lastValue}]
                 trackHealth["data"] += [{'time' : event[1], 'value' : event[2]/100.0}]
                 lastTime = event[1]
                 lastValue = event[2] / 100.0
@@ -202,6 +202,10 @@ class ReplayWriter:
                     trackx["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[2]}]
                     tracky["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[3]}]
                     trackz["data"] += [{'time' : event[1] - offsetTime, 'value' : lastEvent[4]}]
+                if not lastEvent is None and abs(event[4] - lastEvent[4]) > 700:
+                    trackx["data"] += [{'time' : event[1] - 0.001, 'value' : lastEvent[2]}]
+                    tracky["data"] += [{'time' : event[1] - 0.001, 'value' : lastEvent[3]}]
+                    trackz["data"] += [{'time' : event[1] - 0.001, 'value' : lastEvent[4]}]
                 trackx["data"] += [{'time' : event[1], 'value' : event[2]}]
                 tracky["data"] += [{'time' : event[1], 'value' : event[3]}]
                 trackz["data"] += [{'time' : event[1], 'value' : event[4]}]

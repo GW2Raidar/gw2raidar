@@ -56,14 +56,14 @@
 			"imageCoords" : {
 				"left" : 0,
 				"top" : 0,
-				"right" : 299,
-				"bottom" : 358
+				"right" : 600,
+				"bottom" : 600
 			},
 			"worldCoords" : {
 				"left" : 6113.85,
 				"right" : 9806.5,
 				"top" : 1457.9,
-				"bottom" : -2963.4
+				"bottom" : -2247.1
 			}
 		}
 	],
@@ -73,8 +73,8 @@
 			"imageCoords" : {
 				"left" : 0,
 				"top" : 0,
-				"right" : 244,
-				"bottom" : 244
+				"right" : 600,
+				"bottom" : 600
 			},
 			"worldCoords" : {
 				"left" : -7667.88,
