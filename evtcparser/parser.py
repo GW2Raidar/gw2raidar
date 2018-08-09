@@ -167,10 +167,7 @@ class Encounter:
         self.version = version.decode(ENCODING).rstrip('\0')
 
     def _read_agents(self, file):
-        if self.version < "20180724":
-            dtype = AGENT_LEGACY_DTYPE
-        else:
-            dtype = AGENT_20180724_DTYPE
+        dtype = AGENT_20180724_DTYPE
         num_agents, = struct.unpack("<i", file.read(4))
         agents_string = file.read(dtype.itemsize * num_agents)
         
