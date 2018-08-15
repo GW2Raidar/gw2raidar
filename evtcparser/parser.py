@@ -104,7 +104,7 @@ AGENT_LEGACY_DTYPE = np.dtype([
         ('name', '|S64'),
     ], True)
 
-AGENT_20180725_DTYPE = np.dtype([
+AGENT_20180724_DTYPE = np.dtype([
     ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
     ('prof', np.int32),
     ('elite', np.int32),
@@ -167,10 +167,7 @@ class Encounter:
         self.version = version.decode(ENCODING).rstrip('\0')
 
     def _read_agents(self, file):
-        if self.version < "20180725":
-            dtype = AGENT_LEGACY_DTYPE
-        else:
-            dtype = AGENT_20180725_DTYPE
+        dtype = AGENT_20180724_DTYPE
         num_agents, = struct.unpack("<i", file.read(4))
         agents_string = file.read(dtype.itemsize * num_agents)
         
