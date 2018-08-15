@@ -405,10 +405,10 @@ BOSS_ARRAY = [
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = skorvald_cm_detector, force_single_party = True, non_cm_allowed = False),
     Boss('Artsariiv', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 1, phases = [
-        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 6000, phase_skip_health = 33),
-        Phase("First split", False, phase_end_damage_start = 6000, phase_skip_health = 33),
-        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 6000, phase_skip_health = 1),
-        Phase("Second split", False, phase_end_damage_start = 6000, phase_skip_health = 1),
+        Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 4000, phase_skip_health = 33),
+        Phase("First split", False, phase_end_damage_start = 4000, phase_skip_health = 33),
+        Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 4000, phase_skip_health = 1),
+        Phase("Second split", False, phase_end_damage_start = 4000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
     Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 1, phases =[
