@@ -123,37 +123,43 @@ textarea {
 }
 
 .replay-detail-table {
-	display: table;
 	width: 100%;
 }
 
-.replay-detail-name-column {
-	width: 50%;
+.replay-detail-name {
+	width: 175px;
 }
 
-.replay-detail-cleave-dps-column {
-	width: 25%;
+.replay-detail-cleave-dps-column,
+.replay-detail-cleave {
+	width: 95px;
+	text-align: left;
 }
 
-.replay-detail-boss-dps-column {
-	width: 25%;
+.replay-detail-boss-dps-column ,
+.replay-detail-dps {
+	width: 95px;
+	text-align: left;
 }
 
 .replay-detail-player-rows {
-	display: table-row-group;
 	height: 20px;
 }
 
 .replay-detail-header-row {
-	display: table-header-group;
+	display: flex;
 }
 
 .replay-detail-row {
-	display: table-row;
+	display: flex;
+	flex-wrap: wrap;
+}
+
+.replay-detail-player-column {
+	width: 195px;
 }
 
 .replay-detail-item {
-	display: table-cell;
 	vertical-align: middle;
 	padding-right: 5px;
 }
@@ -179,6 +185,18 @@ textarea {
 	margin-top: -19px;
 	line-height: 20px;
 	margin-left: 10px;
+}
+
+.replay-detail-bossinfo {
+	margin-bottom: 10px;
+}
+
+.replay-boss-name {
+	font-size: 22px;
+}
+
+.replay-selected {
+	font-weight: bold;
 }
 
 .replay-class-necromancer {
@@ -272,7 +290,7 @@ textarea {
 	background-position: -80px -32px;
 }
 
-.replay-class-chrono {
+.replay-class-chronomancer {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
@@ -286,109 +304,123 @@ textarea {
 	background-position: -80px -72px;
 }
 
-.replay-class-mesmer {
+.replay-class-elementalist {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -100px -32px;
 }
 
-.replay-class-chronomancer {
+.replay-class-tempest {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -100px -52px;
 }
 
-.replay-class-mirage {
+.replay-class-weaver {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -100px -72px;
 }
 
-.replay-class-elementalist {
+.replay-class-revenant {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -120px -32px;
 }
 
-.replay-class-tempest {
+.replay-class-herald {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -120px -52px;
 }
 
-.replay-class-weaver {
+.replay-class-renegade {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -120px -72px;
 }
 
-.replay-class-revenant {
+.replay-class-warrior {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -140px -32px;
 }
 
-.replay-class-herald {
+.replay-class-berserker {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -140px -52px;
 }
 
-.replay-class-renegade {
+.replay-class-spellbreaker {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -140px -72px;
 }
 
-.replay-class-warrior {
+.replay-class-guardian {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -160px -32px;
 }
 
-.replay-class-berserker {
+.replay-class-dragonhunter {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -160px -52px;
 }
 
-.replay-class-spellbreaker {
+.replay-class-firebrand {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
 	background-position: -160px -72px;
 }
 
-.replay-class-guardian {
+.replay-buff-fury {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
-	background-position: -180px -32px;
+	background-position: 0px -92px;
 }
 
-.replay-class-dragonhunter {
+.replay-buff-aegis {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
-	background-position: -180px -52px;
+	background-position: -20px -92px;
 }
 
-.replay-class-firebrand {
+.replay-buff-alacrity {
 	width: 20px;
 	height: 20px;
 	background-image: url('../img/icons.png');
-	background-position: -180px -72px;
+	background-position: -40px -92px;
+}
+
+.replay-buff-might {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -92px;
+}
+
+.replay-buff-protection {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -92px;
 }
 
 /* ==========================================================================

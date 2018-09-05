@@ -84,6 +84,40 @@
 			}
 		}
 	],
+	"Keep Construct" : [
+		{
+			"image" : "img/kc_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -5851.43,
+				"right" : -1900.43,
+				"top" : 11250.79,
+				"bottom" : 7299.79
+			}
+		}
+	],
+	"Xera" : [
+		{
+			"image" : "img/xera_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -6522.73,
+				"right" : 713.27,
+				"top" : 856.59,
+				"bottom" : -6379.41
+			}
+		}
+	],
 	"Cairn" : [
 		{
 			"image" : "img/cairn_arena.jpg",
@@ -189,6 +223,23 @@
 				"right" : -8963.97,
 				"top" : 2478.34,
 				"bottom" : -821.66
+			}
+		}
+	],
+	"Dhuum" : [
+		{
+			"image" : "img/dhuum_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 13826.9,
+				"right" : 18386.9,
+				"top" : 3052.4,
+				"bottom" : -1507.6
 			}
 		}
 	]
