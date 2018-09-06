@@ -163,6 +163,55 @@ var Replay;
 			context.drawImage(this.image, this.srcArea.left, this.srcArea.top, this.srcArea.width, this.srcArea.height, x - 0.5 * size, y - 0.5 * size, size, size);
 		}
 	}
+	
+	class PlayerDetail {
+		constructor(playerId, playerData, replay, maxDps, maxCleave) {
+			playerData.detailDisplay = this;
+			
+			this.element = $(document.createElement('div'))
+			this.element.addClass('replay-detail-row')
+			
+			let classIcon = $(document.createElement('div'))
+			classIcon.addClass('replay-class-' + playerData["class"].toLowerCase())
+			this.element.append(classIcon)
+			
+			let nameDisplay = $(document.createElement('div'))
+			nameDisplay.addClass('replay-detail-item')
+			nameDisplay.addClass('replay-detail-name')
+			nameDisplay.text(playerData["name"])		
+			this.element.append(nameDisplay)
+			
+			let bossDpsBar = createDisplayBar(maxDps)
+			let dpsItem = $(document.createElement('div'))
+			dpsItem.addClass('replay-detail-item')
+			dpsItem.addClass('replay-detail-dps')
+			dpsItem.append(bossDpsBar)
+			this.element.append(dpsItem)
+			
+			this.setBossDps = function(amount) {
+				bossDpsBar.setValue(amount)
+			}
+						
+			let cleaveDpsBar = createDisplayBar(maxCleave)
+			let cleaveItem = $(document.createElement('div'))
+			cleaveItem.addClass('replay-detail-item')
+			cleaveItem.addClass('replay-detail-cleave')
+			cleaveItem.append(cleaveDpsBar)
+			this.element.append(cleaveItem)
+			
+			this.setCleave = function(amount) {
+				cleaveDpsBar.setValue(amount)
+			}
+			
+			/*let protectionBuff = $(document.createElement('div'))
+					protectionBuff.addClass('replay-buff-protection')
+					row.append(protectionBuff)*/
+			
+			this.element.on("click", function () {
+				replay.selectActor(playerId);
+			});
+		}
+	}
 	    
 	
 	Replay = class {
@@ -343,46 +392,18 @@ var Replay;
 			}
 		}
 		
-		// TODO: Class-ify player details
 		addPlayerDetailRows(actorData) {
 			let replay = this;
 			this.playerDetails.html("")
 			replay.detailsLookup = {}
 			$.each(actorData, function(name, data) {
 				if (data["type"] == "Player") {
-					let row = $(document.createElement('div'))
-					row.addClass('replay-detail-row')
-					let classIcon = $(document.createElement('div'))
-					classIcon.addClass('replay-class-' + data["class"].toLowerCase())
-					row.append(classIcon)
-					let nameDisplay = $(document.createElement('div'))
-					nameDisplay.addClass('replay-detail-item')
-					nameDisplay.addClass('replay-detail-name')
-					nameDisplay.text(data["name"])
-					row.append(nameDisplay)
-					data.bossdpsDisplay = replay.createDisplayBar(50000)
-					let dpsItem = $(document.createElement('div'))
-					dpsItem.addClass('replay-detail-item')
-					dpsItem.addClass('replay-detail-dps')
-					dpsItem.append(data.bossdpsDisplay)
-					row.append(dpsItem)
-					data.cleavedpsDisplay = replay.createDisplayBar(50000)
-					let cleaveItem = $(document.createElement('div'))
-					cleaveItem.addClass('replay-detail-item')
-					cleaveItem.addClass('replay-detail-cleave')
-					cleaveItem.append(data.cleavedpsDisplay)
-					row.append(cleaveItem)
-					row.on("click", function () {
-						replay.selectActor(name);
-					});
-					/*let protectionBuff = $(document.createElement('div'))
-					protectionBuff.addClass('replay-buff-protection')
-					row.append(protectionBuff)*/
-					replay.playerDetails.append(row)
-					replay.detailsLookup[name] = row;
+					let playerDetail = new PlayerDetail(name, data, replay, 50000, 50000)
+					replay.playerDetails.append(playerDetail.element)
+					replay.detailsLookup[name] = playerDetail;
 				} else if (data["type"] == "Boss") {
 					if (data["health"] != null) {
-						let bossHealthDisplay = replay.createDisplayBar(100) 
+						let bossHealthDisplay = createDisplayBar(100) 
 						bossHealthDisplay.setValue(100)
 						replay.rootElement.find('.replay-boss-health').append(bossHealthDisplay);
 						data.healthDisplay = bossHealthDisplay
@@ -390,6 +411,8 @@ var Replay;
 				}
 			})
 		}
+		
+
 		
 		// Private: Configures tracks after load
 		setupTracks(tracks) {
@@ -621,21 +644,14 @@ var Replay;
 				if (data.healthDisplay != null && data.health != null) {
 					data.healthDisplay.setValue(data.health.toFixed(2))
 				}
-				if (data.bossdpsDisplay != null) {
+				if (data.detailDisplay != null) {
 					if (frameTime > 0) {
-						data.bossdpsDisplay.setValue(Math.trunc(parseInt(data["bossdamage"]) / frameTime))
+						data.detailDisplay.setBossDps(Math.trunc(parseInt(data["bossdamage"]) / frameTime))
+						data.detailDisplay.setCleave(Math.trunc(parseInt(data["cleavedamage"]) / frameTime))
 					} else {
-						data.bossdpsDisplay.setValue(0)
+						data.detailDisplay.setBossDps(0)
+						data.detailDisplay.setCleave(0);
 					}
-					
-				}
-				if (data.cleavedpsDisplay != null) {
-					if (frameTime > 0) {
-						data.cleavedpsDisplay.setValue(Math.trunc(parseInt(data["cleavedamage"]) / frameTime))
-					} else {
-						data.cleavedpsDisplay.setValue(0)
-					}
-					
 				}
 			})
 			
@@ -750,12 +766,12 @@ var Replay;
 		selectActor(actorId) {
 			let oldSelection = this.detailsLookup[this.selected];
 			if (oldSelection) {
-				oldSelection.removeClass('replay-selected');
+				oldSelection.element.removeClass('replay-selected');
 			}
 			this.selected = actorId;
 			let newSelection = this.detailsLookup[actorId]
 			if (newSelection) {
-				newSelection.addClass('replay-selected');
+				newSelection.element.addClass('replay-selected');
 			}
 			if (!this.playing) {
 				this.renderFrame()
@@ -772,34 +788,6 @@ var Replay;
 				}
 			})
 			return result;
-		}
-		
-		/**********************************************
-		 *
-		 * Display Bars
-		 *
-		 * These are the dps meter style bar controls
-		 *
-		 *********************************************/
-
-		createDisplayBar(maxValue) {
-			let barRoot = $(document.createElement('div'))
-			barRoot.addClass('replay-bar-background')
-			let barFill = $(document.createElement('div'))
-			barFill.addClass('replay-bar')
-			let barLabel = $(document.createElement('div'))
-			barLabel.addClass('replay-bar-label')
-			
-			barRoot.append(barFill)
-			barRoot.append(barLabel)
-			barRoot.setValue = function(value) {
-				barFill.value = value
-				barFill.text(value)
-				barFill.css('clip-path', "inset(0% " + (100 - 100 * value / maxValue) + '% 0% 0%)')
-				barLabel.text(value)
-			}
-			
-			return barRoot;
 		}
 		
 		/************************************************
@@ -840,6 +828,34 @@ var Replay;
 			}
 		}
 		
+	}
+	
+	/**********************************************
+	 *
+	 * Display Bars
+	 *
+	 * These are the dps meter style bar controls
+	 *
+	 *********************************************/
+
+	function createDisplayBar(maxValue) {
+		let barRoot = $(document.createElement('div'))
+		barRoot.addClass('replay-bar-background')
+		let barFill = $(document.createElement('div'))
+		barFill.addClass('replay-bar')
+		let barLabel = $(document.createElement('div'))
+		barLabel.addClass('replay-bar-label')
+		
+		barRoot.append(barFill)
+		barRoot.append(barLabel)
+		barRoot.setValue = function(value) {
+			barFill.value = value
+			barFill.text(value)
+			barFill.css('clip-path', "inset(0% " + (100 - 100 * value / maxValue) + '% 0% 0%)')
+			barLabel.text(value)
+		}
+		
+		return barRoot;
 	}
 	
 	function decodeUnicode(s) {
