@@ -171,22 +171,26 @@ var Replay;
 			this.element = $(document.createElement('div'))
 			this.element.addClass('replay-detail-row')
 			
+			let mainBar = $(document.createElement('div'))
+			mainBar.addClass('replay-detail-main')
+			this.element.append(mainBar);
+			
 			let classIcon = $(document.createElement('div'))
 			classIcon.addClass('replay-class-' + playerData["class"].toLowerCase())
-			this.element.append(classIcon)
+			mainBar.append(classIcon)
 			
 			let nameDisplay = $(document.createElement('div'))
 			nameDisplay.addClass('replay-detail-item')
 			nameDisplay.addClass('replay-detail-name')
 			nameDisplay.text(playerData["name"])		
-			this.element.append(nameDisplay)
+			mainBar.append(nameDisplay)
 			
 			let bossDpsBar = createDisplayBar(maxDps)
 			let dpsItem = $(document.createElement('div'))
 			dpsItem.addClass('replay-detail-item')
 			dpsItem.addClass('replay-detail-dps')
 			dpsItem.append(bossDpsBar)
-			this.element.append(dpsItem)
+			mainBar.append(dpsItem)
 			
 			this.setBossDps = function(amount) {
 				bossDpsBar.setValue(amount)
@@ -197,15 +201,46 @@ var Replay;
 			cleaveItem.addClass('replay-detail-item')
 			cleaveItem.addClass('replay-detail-cleave')
 			cleaveItem.append(cleaveDpsBar)
-			this.element.append(cleaveItem)
+			mainBar.append(cleaveItem)
 			
 			this.setCleave = function(amount) {
 				cleaveDpsBar.setValue(amount)
 			}
 			
-			/*let protectionBuff = $(document.createElement('div'))
-					protectionBuff.addClass('replay-buff-protection')
-					row.append(protectionBuff)*/
+			this.buffsBar = $(document.createElement('div'))
+			this.buffsBar.addClass('replay-buff-bar')
+			this.buffsBar.addClass('hidden')
+			this.element.append(this.buffsBar)
+			
+			this.buffs = {}
+			
+			this.setBuff = function(name, amount) {
+				if (!this.buffs[name]) {
+					let buff = $(document.createElement('div'))
+					buff.addClass('replay-buff')
+					buff.addClass('replay-buff-' + name)
+					let buffCount = $(document.createElement('div'))
+					buffCount.addClass('replay-buff-count');
+					buffCount.addClass('hidden')
+					buff.append(buffCount);
+					this.buffsBar.append(buff)
+					this.buffs[name] = buff
+				}
+				
+				let buff = this.buffs[name]
+				if (amount > 0) {
+					buff.toggleClass('hidden', false)
+					if (amount > 1) {
+						let buffCounter = $(buff.find('.replay-buff-count')[0])
+						buffCounter.toggleClass('hidden', false)
+						buffCounter.text(amount)
+					} else {
+						buff.find('.replay-buff-count').toggleClass('hidden', true)
+					}
+				} else {
+					buff.toggleClass('hidden', true)
+				}
+			}
 			
 			this.element.on("click", function () {
 				replay.selectActor(playerId);
@@ -393,12 +428,15 @@ var Replay;
 		}
 		
 		addPlayerDetailRows(actorData) {
+			let maxDps = this.calculateMaxDamage("cleavedamage")
+			console.log("MaxDps: " + maxDps);
+			
 			let replay = this;
 			this.playerDetails.html("")
 			replay.detailsLookup = {}
 			$.each(actorData, function(name, data) {
 				if (data["type"] == "Player") {
-					let playerDetail = new PlayerDetail(name, data, replay, 50000, 50000)
+					let playerDetail = new PlayerDetail(name, data, replay, maxDps, maxDps)
 					replay.playerDetails.append(playerDetail.element)
 					replay.detailsLookup[name] = playerDetail;
 				} else if (data["type"] == "Boss") {
@@ -410,6 +448,24 @@ var Replay;
 					}
 				}
 			})
+		}
+		
+		calculateMaxDamage(targetTrack) {
+			let replay = this;
+			let max = 0;
+			$.each(this.replayData.tracks, function(trackIndex, track) {
+				if (targetTrack == track.path[1]) {
+					$.each(track.data, function(index, dataPair) {
+						if (dataPair.time > 5) {
+							let value = dataPair.value / dataPair.time;
+							if (value > max) {
+								max = value;
+							}
+						}
+					})
+				}
+			});
+			return max;
 		}
 		
 
@@ -467,6 +523,8 @@ var Replay;
 				this.canvas.height = this.windowH
 				this.rootElement.css("width", this.windowW)
 				
+				$('.replay-buff-bar').toggleClass('hidden', true)
+				
 				$.each(this.maps, function(index, map) {
 					map.imageDst = replay.calcDstBox(map, index, replay.maps.length)
 				});
@@ -493,6 +551,8 @@ var Replay;
 				$.each(this.maps, function(index, map) {
 					map.imageDst = replay.calcDstBox(map, index, replay.maps.length)
 				});
+				
+				$('.replay-buff-bar').toggleClass('hidden', false)
 				
 				this.setFrame(this.frameTime)
 			}
@@ -652,11 +712,14 @@ var Replay;
 						data.detailDisplay.setBossDps(0)
 						data.detailDisplay.setCleave(0);
 					}
+					$.each(data.buff, function(name, value) {
+						data.detailDisplay.setBuff(name, value);
+					})
 				}
 			})
 			
 			let newSort = this.playerDetails.children().sort(function(a, b) {
-				return parseInt($($(b).children()[2]).text()) - parseInt($($(a).children()[2]).text());
+				return parseInt($(b).find('.replay-detail-dps').text()) - parseInt($(a).find('.replay-detail-dps').text());
 			});
 			
 			let matches = true;

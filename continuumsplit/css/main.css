@@ -130,6 +130,10 @@ textarea {
 	width: 175px;
 }
 
+.replay-detail-main {
+	display: flex;
+}
+
 .replay-detail-cleave-dps-column,
 .replay-detail-cleave {
 	width: 95px;
@@ -148,11 +152,6 @@ textarea {
 
 .replay-detail-header-row {
 	display: flex;
-}
-
-.replay-detail-row {
-	display: flex;
-	flex-wrap: wrap;
 }
 
 .replay-detail-player-column {
@@ -186,6 +185,19 @@ textarea {
 	line-height: 20px;
 	margin-left: 10px;
 }
+.replay-buff-bar {
+	display: flex;
+}
+
+.replay-buff-count {
+	font-size: 12px;
+	font-weight: bold;
+	color: black;
+	text-shadow: 1px 1px 2px white;
+	position: relative;
+	padding: 5px 3px 0px 0px;
+	text-align: right;
+}
 
 .replay-detail-bossinfo {
 	margin-bottom: 10px;
@@ -198,6 +210,11 @@ textarea {
 .replay-selected {
 	font-weight: bold;
 }
+
+/* ==========================================================================
+   GW2 classes
+   ========================================================================== */
+
 
 .replay-class-necromancer {
 	width: 20px;
@@ -388,6 +405,11 @@ textarea {
 	background-position: -160px -72px;
 }
 
+/* ==========================================================================
+   GW2 buffs
+   ========================================================================== */
+
+
 .replay-buff-fury {
 	width: 20px;
 	height: 20px;
@@ -422,6 +444,119 @@ textarea {
 	background-image: url('../img/icons.png');
 	background-position: -80px -92px;
 }
+
+.replay-buff-spirit_of_frost {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -92px;
+}
+
+.replay-buff-spotter {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -92px;
+}
+
+.replay-buff-stab {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -92px;
+}
+
+.replay-buff-stone_spirit {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -92px;
+}
+
+.replay-buff-storm_spirit {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -180px -92px;
+}
+
+.replay-buff-sun_spirit {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -200px -92px;
+}
+
+.replay-buff-swift {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -220px -92px;
+}
+
+.replay-buff-vigor {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -240px -92px;
+}
+
+.replay-buff-banner_defense {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -260px -92px;
+}
+
+.replay-buff-banner_discipline {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -280px -92px;
+}
+
+.replay-buff-banner_strength {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -300px -92px;
+}
+
+.replay-buff-banner_tactics {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -320px -92px;
+}
+
+.replay-buff-quickness {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -340px -92px;
+}
+
+.replay-buff-regen {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -360px -92px;
+}
+
+.replay-buff-resist {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -380px -92px;
+}
+
+.replay-buff-retaliation {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -400px -92px;
+}
+
 
 /* ==========================================================================
    Helper classes
