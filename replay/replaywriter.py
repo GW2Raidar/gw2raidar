@@ -116,9 +116,17 @@ class ReplayWriter:
                 track = {"path" : [str(agentId), "buff", buffType.code], "data-type" : "numeric", "update-type" : "delta", "interpolation" : "floor"}
                 track["data"] = []
                 dataOut["tracks"] += [track]
-                for event in buffData[['time', 'stacks']].itertuples():
-                    track["data"] += [{'time' : event[1], 'value' : int(event[2])}]
-        
+                
+                lastTotal = 0
+                srcStacks = {}
+                for event in buffData[['time', 'stacks', 'src_instid']].itertuples():
+                    srcStacks[event[3]] = int(event[2])
+                    
+                    total = sum(srcStacks.values())
+                    if total != lastTotal:
+                        lastTotal = total
+                        track["data"] += [{'time' : event[1], 'value' : total}]                    
+                        
     def writeHealthUpdates(self, agentId, dataOut):
         agent = self.agents.loc[agentId]
         
