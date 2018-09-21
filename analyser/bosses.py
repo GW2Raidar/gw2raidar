@@ -389,6 +389,9 @@ BOSS_ARRAY = [
         Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
         Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ]),
+    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0x9258, 0x279E]),
+    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261]),
+    Boss('Qadim', Kind.RAID, [0x51C6]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
@@ -495,6 +498,14 @@ BOSS_LOCATIONS = [
                 "bosses": [
                     IDS['Soulless Horror'],
                     IDS['Dhuum'],
+                ],
+            },
+            {
+                "name": "Mythwright Gambit",
+                "bosses": [
+                    IDS['Conjured Amalgamate'],
+                    IDS['Largos Twins'],
+                    IDS['Qadim'],
                 ],
             },
         ],
