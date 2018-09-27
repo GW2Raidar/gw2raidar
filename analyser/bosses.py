@@ -84,43 +84,45 @@ class Phase:
                  phase_end_damage_stop=None,
                  phase_end_damage_start=None,
                  phase_end_health=None,
-                 phase_skip_health=None):
+                 phase_skip_health=None,
+                 phase_end_boss_id=None):
         self.name = name
         self.important = important
         self.phase_end_damage_stop = phase_end_damage_stop
         self.phase_end_damage_start = phase_end_damage_start
         self.phase_end_health = phase_end_health
         self.phase_skip_health = phase_skip_health
+        self.phase_end_boss_id = phase_end_boss_id
 
     def find_end_time(self,
                       current_time,
-                      damage_gaps,
+                      to_boss_events,
                       health_updates,
-                      skill_activations):
+                      skill_activations,
+                      bosses):
         end_time = None
         relevant_health_updates = health_updates[(health_updates.time >= current_time)]
-                
+        damage_gaps = to_boss_events.copy()
+        
+        if self.phase_end_boss_id is not None:
+            bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values
+            relevant_health_updates = relevant_health_updates[relevant_health_updates.src_instid.isin(bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values)]
+            damage_gaps = damage_gaps[damage_gaps.dst_instid.isin(bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values)]
+            
+        damage_gaps = damage_gaps[(damage_gaps.type == 1) & (damage_gaps.value > 0)]
+        previous_gap_time = damage_gaps.time.shift(1)
+        gap_deltas = damage_gaps.time - previous_gap_time
+        damage_gaps = damage_gaps.assign(delta = gap_deltas, previous = previous_gap_time)    
+                        
         if self.phase_skip_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_skip_health * 100):
                 print("{0}: Detected skipped phase - past skip health threshold".format(self.name))
                 return current_time    
-            
-        if self.phase_end_health is not None:
-            if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
-                print("{0}: Detected skipped phase - past phase end health".format(self.name))
-                return current_time
-            
-            relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
-            if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
-                print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
-                return None
-            end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
-            print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
-            
+                
         if self.phase_end_damage_stop is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
                                         (damage_gaps.delta > self.phase_end_damage_stop)]
-                
+                            
             gap_time = None
             if relevant_gaps.empty and (len(damage_gaps.time) > 0 and int(damage_gaps.time.iloc[-1]) >= current_time):
                 gap_time = int(damage_gaps.time.iloc[-1])   
@@ -146,7 +148,26 @@ class Phase:
             if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
                 print("Damage passed skip point, skipping")
                 return current_time
-            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, end_time))
+            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, end_time))        
+                
+        if self.phase_end_health is not None:
+            if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
+                print("{0}: Detected skipped phase - past phase end health".format(self.name))
+                return current_time
+            
+            #Find health updates below threshold first
+            below_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent < self.phase_end_health * 100)]
+            if not below_health_updates.empty:
+                end_time = current_time = int(below_health_updates['time'].iloc[0])
+            else:
+                relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
+                if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
+                    print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
+                    return None
+                end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
+            print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
+            
+        
         return end_time
 
 BOSS_ARRAY = [
@@ -389,7 +410,15 @@ BOSS_ARRAY = [
         Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
         Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ]),
-    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0x9258, 0x279E]),
+    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], phases = [
+        # Needs more robust sub-phase mechanisms
+        Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
+        Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
+        Phase("Second Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
+        Phase("Orbs Sweep Burn 2", True, phase_end_damage_stop = 5000, phase_end_health = 25, phase_end_boss_id = [0xFFFFABC6]),
+        Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
+        Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
+    ]),
     Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261]),
     Boss('Qadim', Kind.RAID, [0x51C6]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),

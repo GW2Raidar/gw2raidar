@@ -188,6 +188,7 @@ class Analyser:
                         (self.boss_info.has_structure_boss
                          & (agents.prof < 0)
                          & (agents.hit_count >= 100))]
+       
         final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
         
         #set up important preprocessed data
@@ -196,12 +197,11 @@ class Analyser:
         self.player_instids = players.index.values
         self.boss_instids = bosses.index.values
 
-        print(self.boss_instids)
         self.final_boss_instids = final_bosses.index.values
         collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
         return agents, players, bosses, final_bosses
 
-    def preprocess_events(self, events):
+    def preprocess_events(self, events, bosses):
         #prevent log start event shenanigans
         events.loc[events.state_change == 9, 'ult_src_instid'] = -1
         events.loc[events.state_change == 9, 'src_instid'] = -1
@@ -218,12 +218,6 @@ class Analyser:
         to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
         from_final_boss_events = from_boss_events[from_boss_events.src_instid.isin(self.final_boss_instids)]
 
-        #construct frame of all power damage to boss, including deltas since last hit.
-        boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
-        previous = boss_power_events.time.shift(1)
-        deltas = boss_power_events.time - previous
-        boss_power_events = boss_power_events.assign(delta = deltas, previous = previous)
-        #print_frame(boss_power_events[boss_power_events.delta >= 1000][['time','previous','delta']])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
         & (from_boss_events.dst_agent > 0)]
@@ -245,9 +239,10 @@ class Analyser:
             phase_names.append(phase.name)
             phase_starts.append(current_time)
             phase_end = phase.find_end_time(current_time,
-                                            boss_power_events,
+                                            to_boss_events,
                                             health_updates,
-                                            boss_skill_activations)
+                                            boss_skill_activations,
+                                            bosses)
             if phase_end is None:
                 break
             phase_ends.append(phase_end)
@@ -320,7 +315,7 @@ class Analyser:
 
         self.preprocess_skills(skills, collector)
         self.players = players
-        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events)
+        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
 
         #time constraints
