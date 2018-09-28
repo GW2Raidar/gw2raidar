@@ -37,6 +37,9 @@ def deimos_cm_detector(events, boss_instids):
 def dhuum_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 40000000) & (events.src_instid.isin(boss_instids))]) > 0
 
+def ca_cm_detector(events, boss_instids):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 52290000) & (events.src_instid.isin(boss_instids))]) > 0
+
 def skorvald_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
@@ -410,7 +413,16 @@ BOSS_ARRAY = [
         Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
         Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ]),
-    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], phases = [
+    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], cm_detector = ca_cm_detector, phases = [
+        # Needs more robust sub-phase mechanisms
+        Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
+        Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
+        Phase("Second Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
+        Phase("Orbs Sweep Burn 2", True, phase_end_damage_stop = 5000, phase_end_health = 25, phase_end_boss_id = [0xFFFFABC6]),
+        Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
+        Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
+    ]),
+    Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], cm_detector = ca_cm_detector, phases = [
         # Needs more robust sub-phase mechanisms
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
