@@ -224,17 +224,20 @@ class Analyser:
         #print_frame(health_updates[['time','dst_agent']])
 
         #construct frame of all boss skill activations
-        boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
         def process_end_condition(end_condition, phase_end):
             pass
+        
+        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates, to_boss_events
 
+    def calc_phases(self, events, bosses, from_boss_events, to_boss_events, health_updates, encounter_end):
         #Determine phases...
         self.start_time = events.time.min()
-        self.end_time = events.time.max()
+        self.end_time = encounter_end
         current_time = self.start_time
         phase_starts = []
         phase_ends = []
         phase_names = []
+        boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
         for phase in self.boss_info.phases:
             phase_names.append(phase.name)
             phase_starts.append(current_time)
@@ -265,7 +268,7 @@ class Analyser:
         if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
             raise EvtcAnalysisException("Initial phase missing or skipped")
 
-        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
+        
 
     def preprocess_skills(self, skills, collector):
         collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
@@ -314,9 +317,14 @@ class Analyser:
         agents, players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
 
         self.preprocess_skills(skills, collector)
+        
         self.players = players
-        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events, bosses)
+        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates, to_boss_events = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
+        
+        success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        
+        self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, encounter_end)
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
@@ -345,6 +353,9 @@ class Analyser:
         encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
+        encounter_collector.add_data('end_tick', encounter_end, int)
+        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
+        encounter_collector.add_data('success', success, bool)
         is_cm = self.boss_info.cm_detector(events, self.boss_instids)
         encounter_collector.add_data('cm', is_cm)
                 
@@ -357,12 +368,7 @@ class Analyser:
             phase_collector.add_data('start_tick', phase[1], int)
             phase_collector.add_data('end_tick', phase[2], int)
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
-
-        success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
-        encounter_collector.add_data('end_tick', encounter_end, int)
-        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('success', success, bool)
-
+            
         # saved as a JSON dump
         self.data = collector.all_data
 

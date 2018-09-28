@@ -40,6 +40,9 @@ def dhuum_cm_detector(events, boss_instids):
 def ca_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 52290000) & (events.src_instid.isin(boss_instids))]) > 0
 
+def largos_cm_detector(events, boss_instids):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 19219604) & (events.src_instid.isin(boss_instids))]) > 0
+
 def skorvald_cm_detector(events, boss_instids):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
@@ -168,7 +171,7 @@ class Phase:
                     print("No relevant events above {0} and above {1} health".format(current_time, self.phase_end_health * 100))
                     return None
                 end_time = current_time = int(relevant_health_updates['time'].iloc[-1])
-            print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].min()))
+            print("{0}: Detected health below {1} at time {2} - prior health: {3}".format(self.name, self.phase_end_health, current_time, relevant_health_updates['dst_agent'].max()))
             
         
         return end_time
@@ -423,7 +426,6 @@ BOSS_ARRAY = [
         Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
     ]),
     Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], cm_detector = ca_cm_detector, phases = [
-        # Needs more robust sub-phase mechanisms
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
         Phase("Second Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
@@ -431,7 +433,16 @@ BOSS_ARRAY = [
         Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
         Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
     ]),
-    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261]),
+    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261], cm_detector = largos_cm_detector, phases = [
+        Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
+        Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
+        Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
+        Phase("Forth Platforms", True)]),
+    Boss('Largos Twins', Kind.RAID, [0xFF5271, 0xFF5261], cm_detector = largos_cm_detector, phases = [
+        Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
+        Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
+        Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
+        Phase("Forth Platforms", True)]),
     Boss('Qadim', Kind.RAID, [0x51C6]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
