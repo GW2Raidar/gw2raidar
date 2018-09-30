@@ -1,5 +1,6 @@
 from enum import IntEnum
 from .bossmetrics import *
+from evtcparser.parser import StateChange
 
 class DesiredValue(IntEnum):
     LOW = -1
@@ -91,7 +92,8 @@ class Phase:
                  phase_end_damage_start=None,
                  phase_end_health=None,
                  phase_skip_health=None,
-                 phase_end_boss_id=None):
+                 phase_end_boss_id=None,
+                 end_on_death=False):
         self.name = name
         self.important = important
         self.phase_end_damage_stop = phase_end_damage_stop
@@ -99,9 +101,11 @@ class Phase:
         self.phase_end_health = phase_end_health
         self.phase_skip_health = phase_skip_health
         self.phase_end_boss_id = phase_end_boss_id
+        self.end_on_death = end_on_death
 
     def find_end_time(self,
                       current_time,
+                      from_boss_events,
                       to_boss_events,
                       health_updates,
                       skill_activations,
@@ -111,9 +115,11 @@ class Phase:
         damage_gaps = to_boss_events.copy()
         
         if self.phase_end_boss_id is not None:
-            bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values
-            relevant_health_updates = relevant_health_updates[relevant_health_updates.src_instid.isin(bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values)]
-            damage_gaps = damage_gaps[damage_gaps.dst_instid.isin(bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values)]
+            bosses_ids = bosses[bosses.prof.isin(self.phase_end_boss_id)].index.values
+            relevant_health_updates = relevant_health_updates[relevant_health_updates.src_instid.isin(bosses_ids)]
+            damage_gaps = damage_gaps[damage_gaps.dst_instid.isin(bosses_ids)]
+            from_boss_events = from_boss_events[from_boss_events.src_instid.isin(bosses_ids)]
+            to_boss_events = to_boss_events[to_boss_events.dst_instid.isin(bosses_ids)]
             
         damage_gaps = damage_gaps[(damage_gaps.type == 1) & (damage_gaps.value > 0)]
         previous_gap_time = damage_gaps.time.shift(1)
@@ -124,6 +130,12 @@ class Phase:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_skip_health * 100):
                 print("{0}: Detected skipped phase - past skip health threshold".format(self.name))
                 return current_time    
+            
+        if self.end_on_death and self.phase_end_boss_id is not None:
+            death_events = from_boss_events[(from_boss_events.state_change == StateChange.CHANGE_DEAD)]
+            if len(death_events) == len(self.phase_end_boss_id):
+                print("{0}: Detected all current boss death".format(self.name))
+                return int(death_events['time'].iloc[-1])
                 
         if self.phase_end_damage_stop is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time - damage_gaps.delta >= current_time - 100) &
@@ -138,7 +150,7 @@ class Phase:
             if gap_time is not None:
                 relevant_health_updates = relevant_health_updates[relevant_health_updates.time < gap_time]
                 if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
-                    print("Detected skipped next phase")
+                    print("{0}: Detected skipped next phase".format(self.name))
                 else:
                     end_time = gap_time
                     print("{0}: Detected gap of at least {1} at time {2}".format(self.name, self.phase_end_damage_stop, gap_time))
@@ -146,15 +158,13 @@ class Phase:
         elif self.phase_end_damage_start is not None:
             relevant_gaps = damage_gaps[(damage_gaps.time >= current_time) &
                                         (damage_gaps.delta > self.phase_end_damage_start)]
-            if relevant_gaps.empty:
-                return end_time
-                        
-            end_time = int(relevant_gaps['time'].iloc[0])
-            relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
-            if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
-                print("Damage passed skip point, skipping")
-                return current_time
-            print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, end_time))        
+            if not relevant_gaps.empty:
+                end_time = int(relevant_gaps['time'].iloc[0])
+                relevant_health_updates = relevant_health_updates[relevant_health_updates.time < end_time]
+                if (self.phase_skip_health is not None) and (relevant_health_updates['dst_agent'].min() < (self.phase_skip_health + 2) * 100):
+                    print("{0}: Damage passed skip point, skipping".format(self.name))
+                    return current_time
+                print("{0}: Detected gap of at least {1} ending at time {2}".format(self.name, self.phase_end_damage_start, end_time))        
                 
         if self.phase_end_health is not None:
             if (not relevant_health_updates.empty) and (relevant_health_updates['dst_agent'].max() < self.phase_end_health * 100):
@@ -165,6 +175,7 @@ class Phase:
             below_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent < self.phase_end_health * 100)]
             if not below_health_updates.empty:
                 end_time = current_time = int(below_health_updates['time'].iloc[0])
+                print("{0}: Detected health threshold reached at {1}".format(self.name, current_time))
             else:
                 relevant_health_updates = relevant_health_updates[(relevant_health_updates.dst_agent >= self.phase_end_health * 100)]
                 if relevant_health_updates.empty or health_updates['dst_agent'].min() > (self.phase_end_health + 2) * 100:
@@ -443,7 +454,15 @@ BOSS_ARRAY = [
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
         Phase("Forth Platforms", True)]),
-    Boss('Qadim', Kind.RAID, [0x51C6]),
+    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], phases = [
+        Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
+        Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
+        Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
+        Phase("Burn 2", True, phase_end_health = 33, phase_end_boss_id = [0x51C6]),
+        Phase("Wyverns", True, phase_end_boss_id = [0x52BF,0x5205], end_on_death=True),
+        Phase("Jumping", False, phase_end_damage_start = 5000, phase_end_boss_id = [0x51C6]),
+        Phase("Final Burn", True, phase_end_boss_id = [0x51C6]),
+    ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),

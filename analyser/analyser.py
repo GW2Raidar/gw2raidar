@@ -241,7 +241,10 @@ class Analyser:
         for phase in self.boss_info.phases:
             phase_names.append(phase.name)
             phase_starts.append(current_time)
+            self.from_boss_events = from_boss_events
+            self.to_boss_events = to_boss_events
             phase_end = phase.find_end_time(current_time,
+                                            from_boss_events,
                                             to_boss_events,
                                             health_updates,
                                             boss_skill_activations,
@@ -645,7 +648,7 @@ class Analyser:
             success = True
             success_time = final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].iloc[-1]['time']
 
-        print("Death detected: {0}".format(success))
+        print("Death detected: {0} at {1}".format(success, success_time))
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
@@ -678,11 +681,11 @@ class Analyser:
             if (not events[(events.state_change == parser.StateChange.REWARD)
                              & events.value.isin(success_types)].empty):
                 success = True
-                succsss_time = events[(events.state_change == parser.StateChange.REWARD)
+                success_time = events[(events.state_change == parser.StateChange.REWARD)
                              & events.value.isin(success_types)].iloc[-1]['time']
             else:
                 success = False
             
-            print("Success overridden by reward chest logging: {0}".format(success))
+            print("Success overridden by reward chest logging: {0} at time {1}".format(success, success_time))
 
         return success, success_time
