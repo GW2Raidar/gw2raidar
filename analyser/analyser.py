@@ -359,7 +359,7 @@ class Analyser:
         encounter_collector.add_data('end_tick', encounter_end, int)
         encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
         encounter_collector.add_data('success', success, bool)
-        is_cm = self.boss_info.cm_detector(events, self.boss_instids)
+        is_cm = self.boss_info.cm_detector(events, self.boss_instids, agents)
         encounter_collector.add_data('cm', is_cm)
                 
         if not is_cm and not self.boss_info.non_cm_allowed:

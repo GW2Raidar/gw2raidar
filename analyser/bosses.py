@@ -17,37 +17,37 @@ class Kind(IntEnum):
     DUMMY = 3
     FRACTAL = 4
 
-def no_cm(events, boss_instids):
+def no_cm(events, boss_instids, agents = None):
     return False
 
-def yes_cm(events, boss_instids):
+def yes_cm(events, boss_instids, agents = None):
     return True
 
-def cairn_cm_detector(events, boss_instids):
+def cairn_cm_detector(events, boss_instids, agents = None):
     return len(events[events.skillid == 38098]) > 0
 
-def samarog_cm_detector(events, boss_instids):
+def samarog_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.skillid == 37966)&(events.time - events.time.min() < 10000)]) > 0
 
-def mo_cm_detector(events, boss_instids):
+def mo_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 30000000) & (events.src_instid.isin(boss_instids))]) > 0
 
-def deimos_cm_detector(events, boss_instids):
+def deimos_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 42000000) & (events.src_instid.isin(boss_instids))]) > 0
 
-def dhuum_cm_detector(events, boss_instids):
+def dhuum_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 40000000) & (events.src_instid.isin(boss_instids))]) > 0
 
-def ca_cm_detector(events, boss_instids):
-    return len(events[(events.state_change == 12) & (events.dst_agent == 52290000) & (events.src_instid.isin(boss_instids))]) > 0
+def ca_cm_detector(events, boss_instids, agents = None):
+    return len(agents[agents.prof.isin([0xFFFF2A66,0xFFFF827D,0xFFFF8C89,0xFFFF64A5])]) > 0
 
-def largos_cm_detector(events, boss_instids):
+def largos_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 19219604) & (events.src_instid.isin(boss_instids))]) > 0
 
-def skorvald_cm_detector(events, boss_instids):
+def skorvald_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
-def soulless_cm_detector(events, boss_instids):
+def soulless_cm_detector(events, boss_instids, agents = None):
     necrosis_events = events[(events.skillid == 47414)&(events.time - events.time.min() < 16000)&(events.is_buffremove == 0)].copy()
     deltas = abs(necrosis_events.time - necrosis_events.time.shift(1))
     deltas.fillna(10000000, inplace=True)
