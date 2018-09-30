@@ -449,7 +449,7 @@ BOSS_ARRAY = [
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
         Phase("Forth Platforms", True)]),
-    Boss('Largos Twins', Kind.RAID, [0xFF5271, 0xFF5261], cm_detector = largos_cm_detector, phases = [
+    Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], cm_detector = largos_cm_detector, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
