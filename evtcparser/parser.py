@@ -124,8 +124,8 @@ SKILL_DTYPE = np.dtype([
 
 EVENT_LEGACY_DTYPE = np.dtype([
         ('time', np.uint64),
-        ('src_agent', np.uint64),
-        ('dst_agent', np.uint64),
+        ('src_agent', np.int64),
+        ('dst_agent', np.int64),
         ('value', np.int32),
         ('buff_dmg', np.int32),
         ('overstack_value', np.uint16),
@@ -159,8 +159,8 @@ EVENT_LEGACY_DTYPE = np.dtype([
 
 EVENT_DTYPE = np.dtype([
         ('time', np.uint64),
-        ('src_agent', np.uint64),
-        ('dst_agent', np.uint64),
+        ('src_agent', np.int64),
+        ('dst_agent', np.int64),
         ('value', np.int32),
         ('buff_dmg', np.int32),
         ('overstack_value', np.uint32),
