@@ -106,7 +106,7 @@ AGENT_LEGACY_DTYPE = np.dtype([
 
 AGENT_20180724_DTYPE = np.dtype([
     ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
-    ('prof', np.int32),
+    ('prof', np.uint32),
     ('elite', np.int32),
     ('toughness', np.int16),
     ('concentration',np.int16),
@@ -210,6 +210,8 @@ class Encounter:
         else:
             self.agents['account'] = None
             self.agents['party'] = 0
+            
+        self.agents[['prof']] = self.agents[['prof']].astype(np.uint32)
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
