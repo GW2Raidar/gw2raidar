@@ -325,9 +325,9 @@ class Analyser:
         player_src_events, player_dst_events, boss_events, final_boss_events, health_updates, to_boss_events = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
         
-        success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, events.time.max())
+        success, _ = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
         
-        self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, encounter_end)
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
