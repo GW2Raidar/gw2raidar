@@ -448,12 +448,12 @@ BOSS_ARRAY = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
-        Phase("Forth Platforms", True)]),
+        Phase("Fourth Platforms", True)]),
     Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], cm_detector = largos_cm_detector, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
-        Phase("Forth Platforms", True)]),
+        Phase("Fourth Platforms", True)]),
     Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
