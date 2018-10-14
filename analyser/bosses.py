@@ -39,7 +39,7 @@ def dhuum_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 40000000) & (events.src_instid.isin(boss_instids))]) > 0
 
 def ca_cm_detector(events, boss_instids, agents = None):
-    return len(agents[agents.prof.isin([0xFFFF2A66,0xFFFF827D,0xFFFF8C89,0xFFFF64A5])]) > 0
+    return len(events[events.skillid == 53075]) > 0
 
 def largos_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 19219604) & (events.src_instid.isin(boss_instids))]) > 0
