@@ -325,15 +325,16 @@ class Analyser:
         player_src_events, player_dst_events, boss_events, final_boss_events, health_updates, to_boss_events = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
         
-        self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, events.time.max())
-        success, _ = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
+        success, encounter_end = self.determine_success_reward(events, encounter)
+        self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, encounter_end)
+        if not success:
+            success, encounter_end = self.determine_success_longform(events, final_boss_events, player_src_events, encounter, health_updates)
         
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'].iloc[0]
         start_time = start_event['time'].iloc[0]
-        encounter_end = events.time.max()
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
@@ -640,8 +641,24 @@ class Analyser:
                 collector.add_data(None, mean, per_second_per_dst(float))
             else:
                 collector.add_data(None, mean, percentage_per_second_per_dst(float))
-                
-    def determine_success(self, events, final_boss_events, player_src_events, encounter, health_updates):
+
+    def determine_success_reward(self, events, encounter):
+        success_time = events.time.max()
+        success = False
+        if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
+            success_types = [55821, 60685]
+            if (not events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].empty):
+                success = True
+                success_time = events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].iloc[-1]['time']
+            else:
+                success = False
+            
+            print("Success overridden by reward chest logging: {0} at time {1}".format(success, success_time))
+        return success, success_time
+
+    def determine_success_longform(self, events, final_boss_events, player_src_events, encounter, health_updates):
         success_time = events.time.max()
         success = False
         if (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty):
@@ -675,17 +692,5 @@ class Analyser:
             print("Success changed due to health still being too high: {0}".format(success))
 
         print_frame(events[events.state_change == parser.StateChange.REWARD][['value', 'src_agent', 'dst_agent']])
-
-        if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
-            success_types = [55821, 60685]
-            if (not events[(events.state_change == parser.StateChange.REWARD)
-                             & events.value.isin(success_types)].empty):
-                success = True
-                success_time = events[(events.state_change == parser.StateChange.REWARD)
-                             & events.value.isin(success_types)].iloc[-1]['time']
-            else:
-                success = False
-            
-            print("Success overridden by reward chest logging: {0} at time {1}".format(success, success_time))
 
         return success, success_time
