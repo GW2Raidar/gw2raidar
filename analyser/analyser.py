@@ -322,14 +322,18 @@ class Analyser:
         self.preprocess_skills(skills, collector)
         
         self.players = players
+
+        success, encounter_end = self.determine_success_reward(events, encounter)
+        if success:
+            events = events[events['time']<encounter_end]
+
         player_src_events, player_dst_events, boss_events, final_boss_events, health_updates, to_boss_events = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
         
-        success, encounter_end = self.determine_success_reward(events, encounter)
+        
         self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, encounter_end)
         if not success:
             success, encounter_end = self.determine_success_longform(events, final_boss_events, player_src_events, encounter, health_updates)
-        
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
@@ -382,7 +386,8 @@ class Analyser:
                             |(events['state_change'] == parser.StateChange.CHANGE_DEAD)
                             |(events['state_change'] == parser.StateChange.CHANGE_UP)
                             |(events['state_change'] == parser.StateChange.DESPAWN)
-                            |(events['state_change'] == parser.StateChange.SPAWN)].sort_values(by='time')
+                            |(events['state_change'] == parser.StateChange.SPAWN)
+                            ].sort_values(by='time')
 
         # Produce down state
         raw_data = np.array([np.arange(0, dtype=int)] * 5, dtype=int).T
