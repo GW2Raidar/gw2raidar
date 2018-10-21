@@ -326,14 +326,15 @@ class Analyser:
         success, encounter_end = self.determine_success_reward(events, encounter)
         if success:
             events = events[events['time']<encounter_end]
-
         player_src_events, player_dst_events, boss_events, final_boss_events, health_updates, to_boss_events = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
         
         
         self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, encounter_end)
-        if not success:
-            success, encounter_end = self.determine_success_longform(events, final_boss_events, player_src_events, encounter, health_updates)
+        if self.boss_info.kind != Kind.RAID:
+            success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter_end)
+
+        success = success and self.validate_success(health_updates)
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
@@ -659,18 +660,26 @@ class Analyser:
                              & events.value.isin(success_types)].iloc[-1]['time']
             else:
                 success = False
-            
-            print("Success overridden by reward chest logging: {0} at time {1}".format(success, success_time))
+        print("Success overridden by reward chest logging: {0} at time {1}".format(success, success_time))
         return success, success_time
 
-    def determine_success_longform(self, events, final_boss_events, player_src_events, encounter, health_updates):
-        success_time = events.time.max()
+    def determine_success(self, events, final_boss_events, player_src_events, success_time):
+        if(self.boss_info.despawns_instead_of_dying):
+            success, success_time = self.determine_success_despawn(events, player_src_events, success_time)
+        else:
+            success, success_time = self.determine_success_death(final_boss_events, success_time)
+        return success, success_time
+
+    def determine_success_death(self, final_boss_events, success_time):
         success = False
         if (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty):
             success = True
             success_time = final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].iloc[-1]['time']
-
         print("Death detected: {0} at {1}".format(success, success_time))
+        return success, success_time
+
+    def determine_success_despawn(self, events, player_src_events, success_time):
+        success = False
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
@@ -689,13 +698,21 @@ class Analyser:
                 if surviving_players:
                     success = True
                     success_time = self.phases[-1][2]
-            print("Probable death of despawn-only boss detected: {0}".format(success))
+            print("Probable death of despawn-only boss detected: {0} at {1}".format(success, success_time))
+        return success, success_time
 
+    def validate_success(self, health_updates):
+        return self.validate_success_health(health_updates) # and self.validate_success_phases()
+
+    def validate_success_phases(self):
+        success = len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases)))
+        print("Success changed due to missing important phases: {0}".format(not success))
+        return success
+
+    def validate_success_health(self, health_updates):
+        success = True
         if (self.boss_info.success_health_limit is not None and
                 health_updates[health_updates.dst_agent <= (self.boss_info.success_health_limit * 100)].empty):
-            success = False
-            print("Success changed due to health still being too high: {0}".format(success))
-
-        print_frame(events[events.state_change == parser.StateChange.REWARD][['value', 'src_agent', 'dst_agent']])
-
-        return success, success_time
+                success = False
+        print("Success changed due to health still being too high: {0}".format(not success))
+        return success
