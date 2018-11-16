@@ -150,7 +150,11 @@ class Upload(ValueModel):
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='unprocessed_uploads')
 
     def __str__(self):
-        return '%s (%s)' % (self.filename, self.uploaded_by.username)
+        if self.uploaded_by:
+            uploader = self.uploaded_by.username
+        else:
+            uploader = 'Unknown'
+        return '%s (%s)' % (self.filename, uploader)
 
     def diskname(self):
         if hasattr(settings, 'UPLOAD_DIR'):
@@ -164,10 +168,12 @@ class Upload(ValueModel):
         unique_together = ('filename', 'uploaded_by')
 
 def _delete_upload_file(sender, instance, using, **kwargs):
-    try:
-        os.remove(instance.diskname())
-    except FileNotFoundError:
-        pass
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
 
 post_delete.connect(_delete_upload_file, sender=Upload)
 
@@ -224,13 +230,17 @@ class Encounter(ValueModel):
     objects = FuzzyCountManager()
 
     def __str__(self):
-        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, self.uploaded_by.username, self.id)
+        if self.uploaded_by:
+            uploader = self.uploaded_by.username
+        else:
+            uploader = 'Unknown'
+        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, uploader, self.id)
 
     # Returns timestamp of closest non-future raid reset (Monday 08:30 UTC)
     @staticmethod
     def week_for(started_at):
         encounter_dt = datetime.utcfromtimestamp(started_at).replace(tzinfo=pytz.UTC)
-        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=8, minute=30, second=0, microsecond=0)
+        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=7, minute=30, second=0, microsecond=0)
         if reset_dt > encounter_dt:
             reset_dt -= timedelta(weeks=1)
         return int(reset_dt.timestamp())
@@ -243,6 +253,8 @@ class Encounter(ValueModel):
         super(Encounter, self).save(*args, **kwargs)
 
     def diskname(self):
+        if not self.uploaded_by:
+            return None
         if hasattr(settings, 'UPLOAD_DIR'):
             upload_dir = settings.UPLOAD_DIR
         else:
@@ -286,10 +298,12 @@ def _delete_encounter_file(sender, instance, using, **kwargs):
     # if gdrive_service and instance.gdrive_id:
     #     gdrive_service.files().delete(
     #             fileId=instance.gdrive_id).execute()
-    try:
-        os.remove(instance.diskname())
-    except FileNotFoundError:
-        pass
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
 
 post_delete.connect(_delete_encounter_file, sender=Encounter)
 

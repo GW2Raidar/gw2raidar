@@ -188,6 +188,7 @@ class Analyser:
                         (self.boss_info.has_structure_boss
                          & (agents.prof < 0)
                          & (agents.hit_count >= 100))]
+       
         final_bosses = agents[agents.prof == self.boss_info.boss_ids[-1]]
         
         #set up important preprocessed data
@@ -196,12 +197,11 @@ class Analyser:
         self.player_instids = players.index.values
         self.boss_instids = bosses.index.values
 
-        print(self.boss_instids)
         self.final_boss_instids = final_bosses.index.values
         collector.set_context_value(ContextType.AGENT_NAME, create_mapping(agents, 'name'))
         return agents, players, bosses, final_bosses
 
-    def preprocess_events(self, events):
+    def preprocess_events(self, events, bosses):
         #prevent log start event shenanigans
         events.loc[events.state_change == 9, 'ult_src_instid'] = -1
         events.loc[events.state_change == 9, 'src_instid'] = -1
@@ -218,36 +218,37 @@ class Analyser:
         to_boss_events = events[events.dst_instid.isin(self.boss_instids)]
         from_final_boss_events = from_boss_events[from_boss_events.src_instid.isin(self.final_boss_instids)]
 
-        #construct frame of all power damage to boss, including deltas since last hit.
-        boss_power_events = to_boss_events[(to_boss_events.type == LogType.POWER) & (to_boss_events.value > 0)]
-        previous = boss_power_events.time.shift(1)
-        deltas = boss_power_events.time - previous
-        boss_power_events = boss_power_events.assign(delta = deltas, previous = previous)
-        #print_frame(boss_power_events[boss_power_events.delta >= 1000][['time','previous','delta']])
         #construct frame of all health updates from the boss
         health_updates = from_boss_events[(from_boss_events.state_change == parser.StateChange.HEALTH_UPDATE)
         & (from_boss_events.dst_agent > 0)]
         #print_frame(health_updates[['time','dst_agent']])
 
         #construct frame of all boss skill activations
-        boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
         def process_end_condition(end_condition, phase_end):
             pass
+        
+        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates, to_boss_events
 
+    def calc_phases(self, events, bosses, from_boss_events, to_boss_events, health_updates, encounter_end):
         #Determine phases...
         self.start_time = events.time.min()
-        self.end_time = events.time.max()
+        self.end_time = encounter_end
         current_time = self.start_time
         phase_starts = []
         phase_ends = []
         phase_names = []
+        boss_skill_activations = from_boss_events[from_boss_events.is_activation != parser.Activation.NONE]
         for phase in self.boss_info.phases:
             phase_names.append(phase.name)
             phase_starts.append(current_time)
+            self.from_boss_events = from_boss_events
+            self.to_boss_events = to_boss_events
             phase_end = phase.find_end_time(current_time,
-                                            boss_power_events,
+                                            from_boss_events,
+                                            to_boss_events,
                                             health_updates,
-                                            boss_skill_activations)
+                                            boss_skill_activations,
+                                            bosses)
             if phase_end is None:
                 break
             phase_ends.append(phase_end)
@@ -270,7 +271,7 @@ class Analyser:
         if len(all_phases) > 1 and all_phases[0][2] - all_phases[0][1] == 0:
             raise EvtcAnalysisException("Initial phase missing or skipped")
 
-        return player_src_events, player_dst_events, from_boss_events, from_final_boss_events, health_updates
+        
 
     def preprocess_skills(self, skills, collector):
         collector.set_context_value(ContextType.SKILL_NAME, create_mapping(skills, 'name'))
@@ -319,15 +320,26 @@ class Analyser:
         agents, players, bosses, final_bosses = self.preprocess_agents(agents, collector, events)
 
         self.preprocess_skills(skills, collector)
+        
         self.players = players
-        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates = self.preprocess_events(events)
+
+        success, encounter_end = self.determine_success_reward(events, encounter)
+        if success:
+            events = events[events['time']<encounter_end]
+        player_src_events, player_dst_events, boss_events, final_boss_events, health_updates, to_boss_events = self.preprocess_events(events, bosses)
         player_only_events = player_src_events[player_src_events.src_instid.isin(self.player_instids)]
+        
+        
+        self.calc_phases(events, bosses, boss_events, to_boss_events, health_updates, encounter_end)
+        if self.boss_info.kind != Kind.RAID:
+            success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter_end)
+
+        success = success and self.validate_success(health_updates)
 
         #time constraints
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'].iloc[0]
         start_time = start_event['time'].iloc[0]
-        encounter_end = events.time.max()
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 
@@ -350,7 +362,10 @@ class Analyser:
         encounter_collector.add_data('evtc_version', encounter.version)
         encounter_collector.add_data('start', start_timestamp, int)
         encounter_collector.add_data('start_tick', start_time, int)
-        is_cm = self.boss_info.cm_detector(events, self.boss_instids)
+        encounter_collector.add_data('end_tick', encounter_end, int)
+        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
+        encounter_collector.add_data('success', success, bool)
+        is_cm = self.boss_info.cm_detector(events, self.boss_instids, agents)
         encounter_collector.add_data('cm', is_cm)
                 
         if not is_cm and not self.boss_info.non_cm_allowed:
@@ -362,12 +377,7 @@ class Analyser:
             phase_collector.add_data('start_tick', phase[1], int)
             phase_collector.add_data('end_tick', phase[2], int)
             phase_collector.add_data('duration', (phase[2] - phase[1]) / 1000, float)
-
-        success, encounter_end = self.determine_success(events, final_boss_events, player_src_events, encounter, health_updates)
-        encounter_collector.add_data('end_tick', encounter_end, int)
-        encounter_collector.add_data('duration', (encounter_end - start_time) / 1000, float)
-        encounter_collector.add_data('success', success, bool)
-
+            
         # saved as a JSON dump
         self.data = collector.all_data
 
@@ -377,7 +387,8 @@ class Analyser:
                             |(events['state_change'] == parser.StateChange.CHANGE_DEAD)
                             |(events['state_change'] == parser.StateChange.CHANGE_UP)
                             |(events['state_change'] == parser.StateChange.DESPAWN)
-                            |(events['state_change'] == parser.StateChange.SPAWN)].sort_values(by='time')
+                            |(events['state_change'] == parser.StateChange.SPAWN)
+                            ].sort_values(by='time')
 
         # Produce down state
         raw_data = np.array([np.arange(0, dtype=int)] * 5, dtype=int).T
@@ -459,7 +470,7 @@ class Analyser:
         # player archetypes
         players = players.assign(archetype=Archetype.POWER)
         players.loc[players.condition >= 5, 'archetype'] = Archetype.CONDI
-        players.loc[(players.toughness >= 5) | (players.healing >= 5), 'archetype'] = Archetype.SUPPORT
+        players.loc[(players.toughness >= 5) | (players.healing >= 5) | (players.concentration >= 3), 'archetype'] = Archetype.SUPPORT
         collector.group(self.collect_individual_player_status, players, ('name', Group.PLAYER))
 
     def collect_individual_player_status(self, collector, player):
@@ -474,6 +485,7 @@ class Analyser:
         collector.add_data('toughness', only_entry['toughness'], int)
         collector.add_data('healing', only_entry['healing'], int)
         collector.add_data('condition', only_entry['condition'], int)
+        collector.add_data('concentration', only_entry['concentration'], int)
         collector.add_data('archetype', only_entry['archetype'], Archetype)
         collector.add_data('party', only_entry['party'], int)
         collector.add_data('account', only_entry['account'], str)
@@ -635,15 +647,39 @@ class Analyser:
                 collector.add_data(None, mean, per_second_per_dst(float))
             else:
                 collector.add_data(None, mean, percentage_per_second_per_dst(float))
-                
-    def determine_success(self, events, final_boss_events, player_src_events, encounter, health_updates):
+
+    def determine_success_reward(self, events, encounter):
         success_time = events.time.max()
+        success = False
+        if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
+            success_types = [55821, 60685]
+            if (not events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].empty):
+                success = True
+                success_time = events[(events.state_change == parser.StateChange.REWARD)
+                             & events.value.isin(success_types)].iloc[-1]['time']
+            else:
+                success = False
+        print("Success overridden by reward chest logging: {0} at time {1}".format(success, success_time))
+        return success, success_time
+
+    def determine_success(self, events, final_boss_events, player_src_events, success_time):
+        if(self.boss_info.despawns_instead_of_dying):
+            success, success_time = self.determine_success_despawn(events, player_src_events, success_time)
+        else:
+            success, success_time = self.determine_success_death(final_boss_events, success_time)
+        return success, success_time
+
+    def determine_success_death(self, final_boss_events, success_time):
         success = False
         if (not self.boss_info.despawns_instead_of_dying) and (not final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].empty):
             success = True
             success_time = final_boss_events[(final_boss_events.state_change == parser.StateChange.CHANGE_DEAD)].iloc[-1]['time']
+        print("Death detected: {0} at {1}".format(success, success_time))
+        return success, success_time
 
-        print("Death detected: {0}".format(success))
+    def determine_success_despawn(self, events, player_src_events, success_time):
+        success = False
         #If we completed all phases, and the key npcs survived, and at least one player survived... assume we succeeded
         if self.boss_info.despawns_instead_of_dying and len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases))):
             end_state_changes = [parser.StateChange.CHANGE_DEAD, parser.StateChange.DESPAWN]
@@ -662,25 +698,21 @@ class Analyser:
                 if surviving_players:
                     success = True
                     success_time = self.phases[-1][2]
-            print("Probable death of despawn-only boss detected: {0}".format(success))
+            print("Probable death of despawn-only boss detected: {0} at {1}".format(success, success_time))
+        return success, success_time
 
+    def validate_success(self, health_updates):
+        return self.validate_success_health(health_updates) # and self.validate_success_phases()
+
+    def validate_success_phases(self):
+        success = len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases)))
+        print("Success changed due to missing important phases: {0}".format(not success))
+        return success
+
+    def validate_success_health(self, health_updates):
+        success = True
         if (self.boss_info.success_health_limit is not None and
                 health_updates[health_updates.dst_agent <= (self.boss_info.success_health_limit * 100)].empty):
-            success = False
-            print("Success changed due to health still being too high: {0}".format(success))
-
-        print_frame(events[events.state_change == parser.StateChange.REWARD][['value', 'src_agent', 'dst_agent']])
-
-        if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
-            success_types = [55821, 60685]
-            if (not events[(events.state_change == parser.StateChange.REWARD)
-                             & events.value.isin(success_types)].empty):
-                success = True
-                succsss_time = events[(events.state_change == parser.StateChange.REWARD)
-                             & events.value.isin(success_types)].iloc[-1]['time']
-            else:
                 success = False
-            
-            print("Success overridden by reward chest logging: {0}".format(success))
-
-        return success, success_time
+        print("Success changed due to health still being too high: {0}".format(not success))
+        return success

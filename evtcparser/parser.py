@@ -94,7 +94,7 @@ class EvtcParseException(BaseException):
     pass
 
 
-AGENT_DTYPE = np.dtype([
+AGENT_LEGACY_DTYPE = np.dtype([
         ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
         ('prof', np.int32),
         ('elite', np.int32),
@@ -104,12 +104,25 @@ AGENT_DTYPE = np.dtype([
         ('name', '|S64'),
     ], True)
 
+AGENT_20180724_DTYPE = np.dtype([
+    ('addr', np.int64), # required: https://github.com/pandas-dev/pandas/issues/3506
+    ('prof', np.uint32),
+    ('elite', np.int32),
+    ('toughness', np.int16),
+    ('concentration',np.int16),
+    ('healing', np.int16),
+    ('pad1',np.int16),
+    ('condition', np.int16),
+    ('pad2',np.int16),
+    ('name', '|S64'),
+], True)
+
 SKILL_DTYPE = np.dtype([
         ('id', np.int32),
         ('name', 'S64'),
     ], True)
 
-EVENT_DTYPE = np.dtype([
+EVENT_LEGACY_DTYPE = np.dtype([
         ('time', np.uint64),
         ('src_agent', np.int64),
         ('dst_agent', np.int64),
@@ -144,19 +157,51 @@ EVENT_DTYPE = np.dtype([
         ('ident_local', np.uint8),
     ], True)
 
+EVENT_DTYPE = np.dtype([
+        ('time', np.uint64),
+        ('src_agent', np.int64),
+        ('dst_agent', np.int64),
+        ('value', np.int32),
+        ('buff_dmg', np.int32),
+        ('overstack_value', np.uint32),
+        ('skillid', np.uint32),
+        ('src_instid', np.uint16),
+        ('dst_instid', np.uint16),
+        ('src_master_instid', np.uint16),
+        ('dst_master_instid', np.uint16),
+        ('iff', np.uint8),
+        ('buff', np.uint8),
+        ('result', np.uint8),
+        ('is_activation', np.uint8),
+        ('is_buffremove', np.uint8),
+        ('is_ninety', np.uint8),
+        ('is_fifty', np.uint8),
+        ('is_moving', np.uint8),
+        ('state_change', np.uint8),
+        ('is_flanking', np.uint8),
+        ('is_shields', np.uint8),
+        ('is_offcycle', np.uint8),
+        ('pad61', np.uint8),
+        ('pad62', np.uint8),
+        ('pad63', np.uint8),
+        ('pad64', np.uint8),
+    ], True)
+
 class Encounter:
     def _read_header(self, file):
         if len(file.peek(16)) < 16:
             raise EvtcParseException("Not an EVTC file")
-        evtc, version, self.area_id = struct.unpack("<4s9sHx", file.read(16))
+        evtc, version, self.area_id, self.revision = struct.unpack("<4s9sHB", file.read(16))
         if evtc != b"EVTC":
             raise EvtcParseException("Not an EVTC file")
         self.version = version.decode(ENCODING).rstrip('\0')
 
     def _read_agents(self, file):
+        dtype = AGENT_20180724_DTYPE
         num_agents, = struct.unpack("<i", file.read(4))
-        agents_string = file.read(AGENT_DTYPE.itemsize * num_agents)
-        self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=AGENT_DTYPE, count=num_agents))
+        agents_string = file.read(dtype.itemsize * num_agents)
+        
+        self.agents = pd.DataFrame(np.fromstring(agents_string, dtype=dtype, count=num_agents))
         split = self.agents.name.str.split(b'\x00:?', expand=True)
         if len(split.columns) > 1:
             self.agents['name'] = split[0].str.decode(ENCODING)
@@ -165,20 +210,26 @@ class Encounter:
         else:
             self.agents['account'] = None
             self.agents['party'] = 0
+            
+        self.agents[['prof']] = self.agents[['prof']].astype(np.uint32)
 
     def _read_skills(self, file):
         num_skills, = struct.unpack("<i", file.read(4))
         skills_string = file.read(SKILL_DTYPE.itemsize * num_skills)
         self.skills = pd.DataFrame(np.fromstring(skills_string, dtype=SKILL_DTYPE, count=num_skills)).set_index('id')
         self.skills['name'] = self.skills['name'].str.decode(ENCODING)
-
+    
     def _read_events(self, file):
         events_string = file.read()
-        self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_DTYPE))
-        for name in ['iss_offset','iss_offset_target','iss_bd_offset',
+        if(self.version < "20181002" and self.revision == 0):
+            self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_LEGACY_DTYPE))
+            for name in ['iss_offset','iss_offset_target','iss_bd_offset',
                     'iss_bd_offset_target','iss_alt_offset','iss_alt_offset_target',
-                    'skar','skar_aly','skar_use_alt','result_local','ident_local']:
-            del self.events[name]
+                    'result_local','ident_local']:
+                del self.events[name]
+                self.events['dst_master_instid'] = 0
+        else:
+            self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_DTYPE))
 
         if len(self.events[self.events.state_change == StateChange.LOG_END]) == 0:
             raise EvtcParseException('EVTC missing end event')
