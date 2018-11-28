@@ -186,7 +186,7 @@ class Command(BaseCommand):
         file = None
 
         try:
-            if upload.filename.endswith('.evtc.zip') or upload.filename.endswith('.evtz'):
+            if upload.filename.endswith('.evtc.zip') or upload.filename.endswith('.zevtc'):
                 zipfile = ZipFile(diskname)
                 contents = zipfile.infolist()
                 if len(contents) == 1:
