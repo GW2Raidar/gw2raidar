@@ -1508,7 +1508,7 @@ ${body}
       let files = evt.originalEvent.dataTransfer.files;
       let jQuery_xhr_factory = $.ajaxSettings.xhr;
       Array.from(files).forEach(file => {
-        if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip')) return;
+        if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip') && !file.name.endsWith('.zevtc')) return;
         let entry = r.get('uploads').find(entry => entry.name == file.name);
         if (entry) {
           delete entry.success;
