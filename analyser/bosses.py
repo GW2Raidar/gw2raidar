@@ -614,6 +614,14 @@ BOSS_LOCATIONS = [
                     IDS['Dhuum (CM)'],
                 ],
             },
+            {
+                "name": "Mythwright Gambit",
+                "bosses": [
+                    IDS['Conjured Amalgamate (CM)'],
+                    IDS['Largos Twins (CM)'],
+                    IDS['Qadim (CM)'],
+                ],
+            },
         ],
     },
     {
@@ -639,34 +647,34 @@ BOSS_LOCATIONS = [
             },
         ],
     },
-    {
-        "name": "Golems",
-        "all": 'All golem bosses',
-        "columns": 4,
-        "wings": [
-            {
-                "name": "Massive",
-                "bosses": [
-                    IDS['Massive Standard Kitty Golem'],
-                    IDS['Massive Average Kitty Golem'],
-                    IDS['Massive Vital Kitty Golem'],
-                ],
-            },
-            {
-                "name": "Normal",
-                "bosses": [
-                    IDS['Standard Kitty Golem'],
-                    IDS['Average Kitty Golem'],
-                    IDS['Vital Kitty Golem'],
-                ],
-            },
-            {
-                "name": "Special",
-                "bosses": [
-                    IDS['Resistant Kitty Golem'],
-                    IDS['Tough Kitty Golem'],
-                ],
-            },
-        ],
-    },
+#     {
+#         "name": "Golems",
+#         "all": 'All golem bosses',
+#         "columns": 4,
+#         "wings": [
+#             {
+#                 "name": "Massive",
+#                 "bosses": [
+#                     IDS['Massive Standard Kitty Golem'],
+#                     IDS['Massive Average Kitty Golem'],
+#                     IDS['Massive Vital Kitty Golem'],
+#                 ],
+#             },
+#             {
+#                 "name": "Normal",
+#                 "bosses": [
+#                     IDS['Standard Kitty Golem'],
+#                     IDS['Average Kitty Golem'],
+#                     IDS['Vital Kitty Golem'],
+#                 ],
+#             },
+#             {
+#                 "name": "Special",
+#                 "bosses": [
+#                     IDS['Resistant Kitty Golem'],
+#                     IDS['Tough Kitty Golem'],
+#                 ],
+#             },
+#         ],
+#     },
 ]
