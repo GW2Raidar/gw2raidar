@@ -62,7 +62,10 @@ BUFF_TYPES = [
     
         # Thief
         BuffType('Lotus Training', 'lotus_training', [32200], StackType.DURATION, 1),
-        BuffType('Lead Attacks', 'lead_attacks', [34659], StackType.INTENSITY, 15)
+        BuffType('Lead Attacks', 'lead_attacks', [34659], StackType.INTENSITY, 15),
+    
+        # Guardian
+        BuffType('Strength in Numbers','strength_in_numbers','[],StackType.Duration,1,1,1)
     
     #Future boon ids
     #Aegis - 743
