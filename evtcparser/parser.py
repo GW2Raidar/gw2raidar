@@ -88,6 +88,7 @@ class Boon(IntEnum):
     BANNER_OF_STRENGTH = 12
     BANNER_OF_DISCIPLINE = 13
     SOOTHING_MIST = 14
+    STRENGTH_IN_NUMBERS=15
 
 
 class EvtcParseException(BaseException):

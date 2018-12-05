@@ -62,7 +62,10 @@ BUFF_TYPES = [
     
         # Thief
         BuffType('Lotus Training', 'lotus_training', [32200], StackType.DURATION, 1),
-        BuffType('Lead Attacks', 'lead_attacks', [34659], StackType.INTENSITY, 15)
+        BuffType('Lead Attacks', 'lead_attacks', [34659], StackType.INTENSITY, 15),
+    
+        # Guardian
+        BuffType('Strength in Numbers','strength_in_numbers',[13796],StackType.Duration,1,1,1)
     
     #Future boon ids
     #Aegis - 743
@@ -120,6 +123,7 @@ BUFF_TABS = [
             'naturalistic_resonance',
             'soothing_mist',
             'vampiric_presence',
+            'strength_in_numbers',
         ],
     },
     {
@@ -149,6 +153,7 @@ BUFF_TABS = [
             'pinpoint_distribution',
             'soothing_mist',
             'vampiric_presence',
+            'strength_in_numbers',
         ],
     },
 ]
