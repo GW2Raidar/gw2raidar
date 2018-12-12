@@ -235,7 +235,9 @@ class Encounter:
         if len(self.events[self.events.state_change == StateChange.LOG_END]) == 0:
             raise EvtcParseException('EVTC missing end event')
         log_start_events = self.events[self.events.state_change == StateChange.LOG_START]['value']
-        self.log_started_at = log_start_events.iloc[0] if len(log_start_events) else self.events.iloc[0]
+        if len(log_start_events) == 0:
+            raise EvtcParseException('EVTC missing start event')
+        self.log_started_at = log_start_events.iloc[0]
         self.log_ended_at = self.events[self.events.state_change == StateChange.LOG_END]['value'].iloc[-1]
 
     def _old_add_inst_id_to_agents(self):
