@@ -311,6 +311,7 @@ class Command(BaseCommand):
                             "dps": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"],
                             "buffs": _safe_get(lambda: val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["buffs"]["To"]["*All"]),
                             "comp": comp,
+                            "tags": encounter.tagstring,
                             }
                     add_leaderboard_stats(leaderboards_in_area['periods'], week, 'duration', item)
                     add_leaderboard_stats(leaderboards_in_area['periods'], 'Era', 'duration', item)
