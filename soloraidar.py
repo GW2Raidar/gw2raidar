@@ -66,7 +66,7 @@ def main():
         print("Loading {0}".format(filename))
         with open(filename, mode='rb') as file:
 
-            if filename.endswith('.evtc.zip'):
+            if filename.endswith('.evtc.zip') or filename.endswith('.zevtc'):
                 zipfile = ZipFile(file)
                 contents = zipfile.infolist()
                 if len(contents) == 1:
@@ -85,7 +85,7 @@ def main():
             print("Analyser took {0} seconds".format(time.clock() - start))
 
             start = time.clock()
-            with open('Output/'+os.path.basename(filename)+'.txt','w') as output_file:
+            with open('Output/'+os.path.basename(filename)+'.txt','w',encoding='utf-8') as output_file:
                 flattened = flatten(a.data)
                 for key in sorted(flattened.keys()):
                     if not args.silent:

@@ -4,7 +4,7 @@
   <head>
     <title>GW2 Raidar</title>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    {# <meta name="description" content="A Guild Wars 2 log parsing site to upload ArcDPS combat logs from high end PvE content such as Raids and Challenge Mote Fractals"> #}
+    <meta name="description" content="A Guild Wars 2 log parsing site to upload ArcDPS combat logs from high end PvE content such as Raids and Challenge Mote Fractals">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script
       src="https://code.jquery.com/jquery-3.1.1.min.js"
@@ -158,6 +158,7 @@
           <div class="uk-height-viewport uk-flex uk-flex-column">
               {# content #}
               <div class="uk-flex-1">
+
                 [[#if loading]]
 
                 <div class="r-loading-container">
@@ -218,6 +219,7 @@
                     <path id="eternity8_fill" d="M 57.4763 38.0958C 54.7393 34.0592 49.5142 36.0775 49.0166 38.3481C 39.5616 38.3481 40.8057 30.7794 39.064 28.2565C 37.3223 25.7336 36.327 24.9767 28.8626 19.9309C 22.891 15.8943 15.5924 6.30725 12.6896 2.01832C 13.4858 6.86229 16.0071 13.1191 17.1682 15.642L 15.4265 19.9309C 18.4123 21.3437 20.8175 24.0517 21.6469 25.229L 17.6659 22.7061L 12.9384 17.6603L 12.6896 19.4263L 17.1682 29.0134L 15.1777 33.5546L 21.3981 36.3298L 23.3886 39.6095C 14.6303 32.9491 4.14692 35.1524 0 37.0866C 2.98578 37.2885 6.38626 39.6936 7.71327 40.871C 7.11611 42.2838 7.1327 45.1599 7.21564 46.4214L 5.72275 51.2149C 8.79147 50.2057 16.0237 49.9534 20.4028 57.0176C 24.782 64.0817 29.6919 66.1841 31.5995 66.3523L 32.0972 61.3065L 35.5806 56.513L 40.5569 53.9901L 45.782 53.9901C 46.1801 54.7974 47.2749 55.3356 47.7725 55.5038C 50.9573 55.5038 52.9147 57.3539 53.4953 58.279C 54.4905 56.4625 56.3981 56.0084 57.2275 56.0084C 58.6209 55.4029 59.4668 53.906 59.7156 53.2332C 71.8578 52.4259 74.7275 60.8019 74.6445 65.0908C 79.8697 64.0817 84.0995 57.0176 86.8365 53.4855C 89.0261 50.6598 92.5592 49.2807 94.0521 48.9443L 99.7749 48.9443L 98.282 44.4031L 97.7844 38.8527C 101.168 36.2289 104.005 34.9001 105 34.5637C 93.455 31.3344 83.9336 36.7503 80.6161 39.8618L 83.8507 34.0592L 89.3246 31.284L 87.3341 26.4905L 91.0664 18.6695L 92.5592 17.6603L 90.5687 13.3714C 91.763 11.3531 93.8863 3.61616 94.7986 0C 92.41 7.06412 82.8554 15.2215 78.3768 18.4172C 75.0592 20.4355 68.3246 25.0776 67.9265 27.4996C 67.4289 30.5271 65.4384 34.0592 63.9455 36.0775C 62.7512 37.6921 58.9692 38.1799 57.4763 38.0958Z"/>
                     </defs>
                     </svg>
+                    <p class="uk-text-center uk-width-1-1">Want to help improve GW2 Raidar? Contribute to the <a target="_blank" href="https://github.com/GW2Raidar/gw2raidar">project on Github</a>.</p>
                 </div>
 
                 [[elseif page.name == "encounter"]]
@@ -367,6 +369,7 @@
                 <ul class="uk-nav">
                     <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
                     <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
+                    <li><a target="_blank" href="https://github.com/GW2Raidar/gw2raidar">Contribute</a></li>
                 </ul>
               </div>
 

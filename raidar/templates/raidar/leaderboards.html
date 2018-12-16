@@ -70,10 +70,10 @@
               </div>
               <div class="r-buffs">
                 [[#each ['might', 'fury', 'quickness', 'alacrity'] as buff]]
-                  [[#with data.buffs[buff].name as name, data.buffs[buff].stacks ? num : perc as format]]
+                  [[#with data.buffs[buff].name as name, data.buffs[buff].stacks ? num : perc as format, data.buffs[buff].icon as icon]]
                     <div class="r-buff">
                       <div class="r-buff-icon">
-                        <img src="{% static 'raidar/img/buff/' %}/[[name]].png" alt="[[name]]" width="20">
+                        <img src="[[icon]]" alt="[[name]]" width="20">
                       </div>
                       <div class="r-buff-number r-bg-101">[[format(line.buffs[buff], 2)]]</div>
                     </div>
