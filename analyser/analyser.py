@@ -340,6 +340,7 @@ class Analyser:
         start_event = events[events.state_change == parser.StateChange.LOG_START]
         start_timestamp = start_event['value'].iloc[0]
         start_time = start_event['time'].iloc[0]
+        
         state_events = self.assemble_state_data(player_only_events, players, encounter_end)
         self.state_events = state_events
 

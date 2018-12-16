@@ -66,7 +66,7 @@ def main():
         print("Loading {0}".format(filename))
         with open(filename, mode='rb') as file:
 
-            if filename.endswith('.evtc.zip'):
+            if filename.endswith('.evtc.zip') or filename.endswith('.zevtc'):
                 zipfile = ZipFile(file)
                 contents = zipfile.infolist()
                 if len(contents) == 1:

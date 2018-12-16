@@ -44,6 +44,9 @@ def ca_cm_detector(events, boss_instids, agents = None):
 def largos_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 19219604) & (events.src_instid.isin(boss_instids))]) > 0
 
+def qadim_cm_detector(events, boss_instids, agents = None):
+    return len(events[(events.state_change == 12) & (events.dst_agent == 21195636) & (events.src_instid.isin(boss_instids))]) > 0
+
 def skorvald_cm_detector(events, boss_instids, agents = None):
     return len(events[(events.state_change == 12) & (events.dst_agent == 5551340) & (events.src_instid.isin(boss_instids))]) > 0
 
@@ -454,7 +457,16 @@ BOSS_ARRAY = [
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
         Phase("Fourth Platforms", True)]),
-    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], phases = [
+    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], cm_detector=qadim_cm_detector, phases = [
+        Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
+        Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
+        Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
+        Phase("Burn 2", True, phase_end_health = 33, phase_end_boss_id = [0x51C6]),
+        Phase("Wyverns", True, phase_end_boss_id = [0x52BF,0x5205], end_on_death=True),
+        Phase("Jumping", False, phase_end_damage_start = 5000, phase_end_boss_id = [0x51C6]),
+        Phase("Final Burn", True, phase_end_boss_id = [0x51C6]),
+    ]),
+    Boss('Qadim (CM)', Kind.RAID, [0xFF51C6, 0x5325, 0x5251, 0x52BF,0x5205], phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
         Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
@@ -602,6 +614,14 @@ BOSS_LOCATIONS = [
                     IDS['Dhuum (CM)'],
                 ],
             },
+            {
+                "name": "Mythwright Gambit",
+                "bosses": [
+                    IDS['Conjured Amalgamate (CM)'],
+                    IDS['Largos Twins (CM)'],
+                    IDS['Qadim (CM)'],
+                ],
+            },
         ],
     },
     {
@@ -627,34 +647,34 @@ BOSS_LOCATIONS = [
             },
         ],
     },
-    {
-        "name": "Golems",
-        "all": 'All golem bosses',
-        "columns": 4,
-        "wings": [
-            {
-                "name": "Massive",
-                "bosses": [
-                    IDS['Massive Standard Kitty Golem'],
-                    IDS['Massive Average Kitty Golem'],
-                    IDS['Massive Vital Kitty Golem'],
-                ],
-            },
-            {
-                "name": "Normal",
-                "bosses": [
-                    IDS['Standard Kitty Golem'],
-                    IDS['Average Kitty Golem'],
-                    IDS['Vital Kitty Golem'],
-                ],
-            },
-            {
-                "name": "Special",
-                "bosses": [
-                    IDS['Resistant Kitty Golem'],
-                    IDS['Tough Kitty Golem'],
-                ],
-            },
-        ],
-    },
+#     {
+#         "name": "Golems",
+#         "all": 'All golem bosses',
+#         "columns": 4,
+#         "wings": [
+#             {
+#                 "name": "Massive",
+#                 "bosses": [
+#                     IDS['Massive Standard Kitty Golem'],
+#                     IDS['Massive Average Kitty Golem'],
+#                     IDS['Massive Vital Kitty Golem'],
+#                 ],
+#             },
+#             {
+#                 "name": "Normal",
+#                 "bosses": [
+#                     IDS['Standard Kitty Golem'],
+#                     IDS['Average Kitty Golem'],
+#                     IDS['Vital Kitty Golem'],
+#                 ],
+#             },
+#             {
+#                 "name": "Special",
+#                 "bosses": [
+#                     IDS['Resistant Kitty Golem'],
+#                     IDS['Tough Kitty Golem'],
+#                 ],
+#             },
+#         ],
+#     },
 ]
