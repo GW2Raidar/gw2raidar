@@ -22,7 +22,7 @@
            [[/each]]
          </select>
          <span>
-           <span class="era"></span> <i class="material-icons">keyboard_arrow_down</i>
+           <span class="uk-active era"></span> <i class="material-icons">keyboard_arrow_down</i>
          </span>
      </div>
      |
@@ -52,21 +52,30 @@
           <a class="uk-h3 uk-margin-remove" class-uk-invisible="boss != page.leaderboards.boss" on-click="@this.set('page.leaderboards.boss', null) && false"><i class="material-icons">close</i></a>
           [[#each leaderboard['duration'] as line]]
             <a class="r-leaderboard-row" href="[[baseURL]]/encounter/[[line.url_id]]" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: line.url_id })">
+              <div class="r-rank uk-text-center uk-text-middle uk-h2 uk-margin-remove-bottom">
+                [[@index + 1]]
+              </div>
+              <div class="r-time">
+                <h3 class="uk-margin-remove-bottom">[[formatTime(line.duration)]]</h3>
+                <div class="r-remaining uk-font-family-secondary uk-text-truncate">
+                  [[#with data.areas[boss].enrage as enrage]]
+                    [[formatTime(enrage - line.duration)]] remaining
+                    [[#if line.tags]]&middot;[[/if]]
+                  [[/with]]
+                  [[line.tags]]
+                </div>
+              </div>
+
               <div class="r-damage">
-                <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="100%" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
+                <svg class="chart" width="100%" xmlns='http://www.w3.org/2000/svg' height="29px" xml:space="preserve" preserveAspectRatio="xMinYMax meet">
                   <!-- Same as our other rect graphs -->
-                  <rect class="chart total r-bg-101"  x='0' y='18px' height='16px' width='[[100 * line.dps / max_max_dps]]%' opacity='0.3' />
-                  <rect class="chart boss r-bg-101" x='0' y='18px' height='16px' width='[[100 * line.dps_boss / max_max_dps]]%'/>
-
-                  <!-- Ranking -->
-                  <text class="rank" x="0" y="28px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" font-size="80">[[@index + 1]]</text>
-
-                  <!-- Encounter Duration -->
-                  <text class="duration" x="48px" y="8px" dominant-baseline="middle" text-anchor="begin" font-family="Source Sans Pro" font-weight="900" fill="rgba(255, 255, 255, 0.8)" font-size="20">[[formatTime(line.duration)]]</text>
+                  <rect class="chart total r-bg-101"  x='0' y='3px' height='24px' width='[[100 * line.dps / max_max_dps]]%' opacity='0.3' />
+                  <rect class="chart boss r-bg-101" x='0' y='3px' height='24px' width='[[100 * line.dps_boss / max_max_dps]]%'/>
 
                   <!-- Encounter DPS (Boss) Total like it is on Global Stats -->
-                  <text class="dps" x="48px" y="27px" dominant-baseline="middle" text-anchor="begin" font-family="Source Code Pro" fill="#15141e" font-weight="400" font-size="12">([[num(line.dps_boss, 0)]]) [[num(line.dps, 0)]] DPS</text>
+
                 </svg>
+                <span class="uk-font-family-secondary">([[num(line.dps_boss, 0)]]) [[num(line.dps, 0)]] DPS</span>
               </div>
               <div class="r-buffs">
                 [[#each ['might', 'fury', 'quickness', 'alacrity'] as buff]]
