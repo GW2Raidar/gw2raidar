@@ -433,7 +433,7 @@ BOSS_ARRAY = [
         Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
         Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ]),
-    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], cm_detector = ca_cm_detector, phases = [
+    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, phases = [
         # Needs more robust sub-phase mechanisms
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
@@ -442,7 +442,7 @@ BOSS_ARRAY = [
         Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
         Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
     ]),
-    Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], cm_detector = ca_cm_detector, phases = [
+    Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, phases = [
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
         Phase("Second Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
@@ -450,17 +450,17 @@ BOSS_ARRAY = [
         Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
         Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
     ]),
-    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261], cm_detector = largos_cm_detector, phases = [
+    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
         Phase("Fourth Platforms", True)]),
-    Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], cm_detector = largos_cm_detector, phases = [
+    Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
         Phase("Fourth Platforms", True)]),
-    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], cm_detector=qadim_cm_detector, phases = [
+    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, cm_detector=qadim_cm_detector, phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
         Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
@@ -469,7 +469,7 @@ BOSS_ARRAY = [
         Phase("Jumping", False, phase_end_damage_start = 5000, phase_end_boss_id = [0x51C6]),
         Phase("Final Burn", True, phase_end_boss_id = [0x51C6]),
     ]),
-    Boss('Qadim (CM)', Kind.RAID, [0xFF51C6, 0x5325, 0x5251, 0x52BF,0x5205], phases = [
+    Boss('Qadim (CM)', Kind.RAID, [0xFF51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
         Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
