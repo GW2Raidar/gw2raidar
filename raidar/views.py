@@ -102,6 +102,7 @@ def _html_response(request, page, data={}):
     response['areas'] = {id: {
             "name": boss.name,
             "kind": boss.kind,
+            "enrage": boss.enrage,
         } for id, boss in BOSSES.items()}
     response['boss_locations'] = BOSS_LOCATIONS
     response['specialisations'] = {p: {e: n for (pp, e), n in SPECIALISATIONS.items() if pp == p} for p in Profession}

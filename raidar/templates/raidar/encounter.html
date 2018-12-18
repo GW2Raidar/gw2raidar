@@ -25,10 +25,13 @@
           <span class="uk-badge uk-text-bold r-bg-0">
             [[formatDate(started_at)]]
           </span>
+
+          [[#if encounter.participated]]
           <a href="" class="uk-badge uk-text-bold uk-visible@m">[[encounter.tags ? 'Tags:' : 'Add Tags']] [[encounter.tags]] </a>
           <div uk-dropdown="mode: click">
             <form class="uk-margin-small uk-width-medium uk-form-stacked uk-text-left" on-submit="set_tags_cat">
               <fieldset class="uk-fieldset">
+
                 <label class="uk-form-label" for="add-category">Category</label>
                 <div class="uk-form-controls">
                   <select id="add-category" as-ukUpdate class="uk-select uk-margin-small uk-select" value="[[encounter.category]]" [[#if !encounter.participated]]readonly[[/if]]>
@@ -38,15 +41,17 @@
                     [[/each]]
                   </select>
                 </div>
-                [[#if encounter.participated]]
+
                   <input width="300px" class="uk-textarea uk-margin-small" placeholder="Tags" as-tagsInput="'encounter.tags'">
                   <button class="uk-margin-small uk-button uk-button-small uk-button-primary">Save</button>
-                [[else]]
-                  <input width="300px" class="uk-textarea uk-flex-auto uk-margin-small" as-tagsInput="'encounter.tags'" readonly>
-                [[/if]]
+
+
               </fieldset>
             </form>
           </div>
+          [[else]]
+          <span class="uk-badge uk-text-bold uk-visible@m">[[encounter.tags]] </span>
+          [[/if]]
         </div>
       </div>
     </div>
