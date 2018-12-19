@@ -612,7 +612,7 @@ ${body}
   ];
   delete window.raidar_data;
 
-  function URLForPage(page) {
+  function getPageURLFromObject(page) {
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
     if (page.era_id) url += '/' + page.era_id;
@@ -711,7 +711,7 @@ ${body}
         loading: true,
       });
       $.get({
-        url: URLForPage(page).substring(1) + '.json',
+        url: getPageURLFromObject(page).substring(1) + '.json',
       }).then(setData).then(() => {
         let eras = r.get('global_stats.eras');
         let eraOrder = Object.values(eras)
@@ -906,7 +906,7 @@ ${body}
         window.scrollTo(0, 0);
       });
     }
-    let url = URLForPage(page);
+    let url = getPageURLFromObject(page);
     history.pushState(page, null, url);
     if (pageInit[page.name]) {
       pageInit[page.name](page);
@@ -917,7 +917,7 @@ ${body}
     }
     return false;
   }
-  let url = URLForPage(initPage);
+  let url = getPageURLFromObject(initPage);
   history.replaceState(initPage, null, url);
   if (pageInit[initPage.name]) {
     pageInit[initPage.name](initPage);
