@@ -882,6 +882,7 @@ ${body}
     },
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
+    getPageURL: getPageURL,
     page: setPage,
   });
 
@@ -893,12 +894,22 @@ ${body}
     localStorage.setItem('settings', JSON.stringify(newValue));
   });
 
+  // takes a page string and converts it into a page object
+  // or else passes the value through
+  // (so this can be used for getPageURLFromObject)
+  function pageObjectFrom(page) {
+    if (typeof page === "string") page = { name: page };
+    return page;
+  }
+  // used in templates to provide accurate hrefs alongside the ractive onclick handlers
+  function getPageURL(page) {
+    return getPageURLFromObject(pageObjectFrom(page));
+  }
+
   // history, pushState
   function setPage(page) {
-    if (typeof page == "string") {
-      page = { name: page };
-    }
-    if (typeof page == "undefined") {
+    page = pageObjectFrom(page);
+    if (typeof page === "undefined") {
       page = r.get('page');
     } else {
       r.set('page', page).then(() => {
