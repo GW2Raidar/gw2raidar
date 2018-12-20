@@ -103,11 +103,11 @@
                                     </dl>
                                     </div>
                                   </li>-->
-                                  <li class="[[page.name=='account' ? 'uk-active' : '']] no-hover"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" uk-tooltip="title: Account: [[username]]"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+                                  <li class="[[page.name=='account' ? 'uk-active' : '']] no-hover"><a class=" uk-text-small uk-text-white" href="[[@this.getPageURL('account')]]" on-click="@this.page('account')" uk-tooltip="title: Account: [[username]]"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
                                   <li><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" uk-tooltip="title: Logout"><i class="material-icons uk-margin-small-right">exit_to_app</i></a></li>
                                 [[else]]
-                                  <li class="[[page.name=='login' ? 'uk-active' : '']] no-hover"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')" uk-tooltip="title: Login"><i class="material-icons uk-margin-small-right">input</i></a></li>
-                                  <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
+                                  <li class="[[page.name=='login' ? 'uk-active' : '']] no-hover"><a class=" uk-text-small uk-text-white" href="[[@this.getPageURL('login')]]" on-click="@this.page('login')" uk-tooltip="title: Login"><i class="material-icons uk-margin-small-right">input</i></a></li>
+                                  <li class="[[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="[[@this.getPageURL('register')]]" on-click="@this.page('register')">Register</a></li>
                                 [[/if]]
                               </ul>
                             </div>
@@ -126,28 +126,28 @@
                                   <img width="40" height="40" class="uk-hidden@m  uk-margin-small-top uk-margin-small-right uk-margin-small-bottom" src="{% static 'raidar/img/logo/mark-logo.svg' %}" alt="GW2 Raidar Logo" uk-svg>
                                 </span>
                                 <ul class="uk-navbar-nav r-navbar-hover">
-                                  <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('global_stats')">Global Stats</a></li>
-                                  <li class="[[page.name=='leaderboards' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'leaderboards'})">Leaderboards</a></li>
+                                  <li class="[[page.name=='global_stats' ? 'uk-active' : '']]"><a href="[[@this.getPageURL('global_stats')]]" on-click="@this.page('global_stats')">Global Stats</a></li>
+                                  <li class="[[page.name=='leaderboards' ? 'uk-active' : '']]"><a href="[[@this.getPageURL('leaderboards')]]" on-click="@this.page({name: 'leaderboards'})">Leaderboards</a></li>
                                   [[#if username]]
-                                    <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('profile')">Personal Stats</a></li>
-                                    <li class="[[page.name=='encounters' || page.name=='encounter' ? 'uk-active' : '']]"><a href="#" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
+                                    <li class="[[page.name=='profile' ? 'uk-active' : '']]"><a href="[[@this.getPageURL('profile')]]" on-click="@this.page('profile')">Personal Stats</a></li>
+                                    <li class="[[page.name=='encounters' || page.name=='encounter' ? 'uk-active' : '']]"><a href="[[@this.getPageURL({name: 'encounters', no: 1})]]" on-click="@this.page({name: 'encounters', no: 1})">Encounters</a></li>
                                   [[#if is_staff]]
                                     <li class="uk-hidden@m "><a href="{% url 'admin:index' %}[[#if page.name=='encounter']]raidar/encounter/[[encounter.id]]/change/[[/if]]">Admin</a>
                                   [[/if]]
-                                    <li class="uk-hidden@m [[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
+                                    <li class="uk-hidden@m [[page.name=='account' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="[[@this.getPageURL('account')]]" on-click="@this.page('account')" title="Account: [[username]]" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">perm_identity</i></a></li>
                                     <li class="uk-hidden@m"><a class=" uk-text-small uk-text-white" href="#" on-click="auth_logout" title="Logout" uk-tooltip="offset: -15"><i class="material-icons uk-margin-small-right">exit_to_app</i> </a></li>
                                   [[else]]
-                                    <li class="uk-hidden@m [[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">input</i> Login</a></li>
-                                    <li class="uk-hidden@m [[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="#" on-click="@this.page('register')">Register</a></li>
+                                    <li class="uk-hidden@m [[page.name=='login' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="[[@this.getPageURL('login')]]" on-click="@this.page('login')"><i class="material-icons uk-margin-small-right">input</i> Login</a></li>
+                                    <li class="uk-hidden@m [[page.name=='register' ? 'uk-active' : '']]"><a class=" uk-text-small uk-text-white" href="[[@this.getPageURL('register')]]" on-click="@this.page('register')">Register</a></li>
                                   [[/if]]
                                 </ul>
                               </div>
                               <div class="uk-navbar-right uk-visible@m">
                                  <ul class="uk-navbar-nav r-navbar-hover">
                                    [[#if username]]
-                                     <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('uploads')"><i class="material-icons uk-margin-small-right">file_upload</i>Upload</a></li>
+                                     <li class="[[page.name=='uploads' ? 'uk-active' : '']]"><a href="[[@this.getPageURL('uploads')]]" on-click="@this.page('uploads')"><i class="material-icons uk-margin-small-right">file_upload</i>Upload</a></li>
                                    [[/if]]
-                                   <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="#" on-click="@this.page('info-help')"><i class="material-icons uk-margin-small-right">help_outline</i>Help</a></li>
+                                   <li class="[[page.name=='info-help' ? 'uk-active' : '']]"><a href="[[@this.getPageURL('info-help')]]" on-click="@this.page('info-help')"><i class="material-icons uk-margin-small-right">help_outline</i>Help</a></li>
                                  </ul>
                                </div>
                             </nav>
@@ -301,7 +301,7 @@
                       </div>
                       <div class="uk-margin">
                         <input id="login_password" class="uk-input uk-form-width-medium" value="[[auth.input.password]]" placeholder="Password" type="password" required>
-                        <p class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a class="uk-text-small" href="#" on-click="@this.page('reset_pw')">Forgot Password?</a></p>
+                        <p class="[[page.name=='reset_pw' ? 'uk-active' : '']]"><a class="uk-text-small" href="[[@this.getPageURL('reset_pw')]]" on-click="@this.page('reset_pw')">Forgot Password?</a></p>
                       </div>
                       <div class="uk-margin">
                         <button id="login_submit" class="uk-button uk-button-default" on-click="auth_login">Login</button><br>
@@ -367,16 +367,16 @@
           <div class="uk-grid ">
               <div class="uk-width-1-2 uk-width-1-6@m">
                 <ul class="uk-nav">
-                    <li><a href="#" on-click="@this.page({name: 'info-help'})">Help</a></li>
-                    <li><a href="#" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
+                    <li><a href="[[@this.getPageURL({name: 'info-help'})]]" on-click="@this.page({name: 'info-help'})">Help</a></li>
+                    <li><a href="[[@this.getPageURL({name: 'info-releasenotes'})]]" on-click="@this.page({name: 'info-releasenotes'})">Release Notes</a></li>
                     <li><a target="_blank" href="https://github.com/GW2Raidar/gw2raidar">Contribute</a></li>
                 </ul>
               </div>
 
               <div class="uk-width-1-2 uk-width-1-6@m">
                 <ul class="uk-nav">
-                    <li><a href="#" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
-                    <li><a href="#" on-click="@this.page({name: 'info-about'})">About Us</a></li>
+                    <li><a href="[[@this.getPageURL({name: 'info-contact'})]]" on-click="@this.page({name: 'info-contact'})">Contact Us</a></li>
+                    <li><a href="[[@this.getPageURL({name: 'info-about'})]]" on-click="@this.page({name: 'info-about'})">About Us</a></li>
                 </ul>
               </div>
 
