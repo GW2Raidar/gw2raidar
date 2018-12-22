@@ -186,6 +186,9 @@ class BuffTrackIntensity:
 
         if event.is_buffremove:
             self.clear(event.time)
+        elif event.is_offcycle:
+            for x in self.stack_durations:
+                x[0] += event.value                
         elif len(self.stack_durations) < self.buff_type.capacity:
             end_time = event.time + event.value;
             self.stack_durations.append([end_time, event.ult_src_instid])
@@ -241,6 +244,14 @@ class BuffTrackDuration:
                 self.stack_durations = []
                 self.apply_change(event.time)
                 self.current_src = -1
+        elif event.is_offcycle:
+            if len(self.stack_durations) > 0:
+                self.stack_durations[0][0] += event.value
+                self.stack_durations.sort()
+                if self.stack_durations[0][1] != self.current_src:
+                    self.apply_change(event.time)
+                    self.current_src = self.stack_durations[0][1]
+                    self.stack_start = event.time         
         elif len(self.stack_durations) < self.buff_type.capacity:
             self.stack_durations.append([event.value, event.ult_src_instid])
             if len(self.stack_durations) == 1:
@@ -326,7 +337,7 @@ class BuffPreprocessor:
         #not_statusremove_events = not_cancel_events[not_cancel_events.is_buffremove == 0]
         apply_events = not_statusremove_events[(not_statusremove_events.buff != 0)
                                              & (not_statusremove_events.value != 0)]
-        buff_events = apply_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid', 'ult_src_instid']]
+        buff_events = apply_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid', 'ult_src_instid', 'is_offcycle']]
 
         # Extract out buff removal events
         if 1 in status_remove_groups.indices:
