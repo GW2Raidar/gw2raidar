@@ -27,7 +27,7 @@ To start, head on over to the [Wiki](https://github.com/merforga/gw2raidar/wiki)
 
 License
 ----------
-See the [License](https://github.com/merforga/gw2raidar/blob/master/LICENSE.md) file
+See the [License](https://github.com/merforga/gw2raidar/blob/master/LICENSE) file
 
 UI Guidelines
 ----------

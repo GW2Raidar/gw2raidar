@@ -346,7 +346,7 @@ class Analyser:
 
         if self.boss_info.gather_boss_specific_stats:
             self.boss_info.gather_boss_specific_stats(events, collector.with_key(Group.CATEGORY, "combat").with_key(Group.METRICS, "mechanics"), agents, self.subgroups, self.players, bosses, self.phases, encounter_end)
-        buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_src_events)
+        buff_data = BuffPreprocessor().process_events(start_time, encounter_end, skills, players, player_dst_events)
 
         collector.with_key(Group.CATEGORY, "boss").run(self.collect_boss_key_events, events)
         collector.with_key(Group.CATEGORY, "status").run(self.collect_player_status, players)
