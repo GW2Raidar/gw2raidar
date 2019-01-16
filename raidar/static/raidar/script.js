@@ -612,7 +612,7 @@ ${body}
   ];
   delete window.raidar_data;
 
-  function URLForPage(page) {
+  function getPageURLFromObject(page) {
     let url = baseURL + page.name;
     if (page.no) url += '/' + page.no;
     if (page.era_id) url += '/' + page.era_id;
@@ -711,7 +711,7 @@ ${body}
         loading: true,
       });
       $.get({
-        url: URLForPage(page).substring(1) + '.json',
+        url: getPageURLFromObject(page).substring(1) + '.json',
       }).then(setData).then(() => {
         let eras = r.get('global_stats.eras');
         let eraOrder = Object.values(eras)
@@ -882,6 +882,7 @@ ${body}
     },
     delimiters: ['[[', ']]'],
     tripleDelimiters: ['[[[', ']]]'],
+    getPageURL: getPageURL,
     page: setPage,
   });
 
@@ -893,12 +894,22 @@ ${body}
     localStorage.setItem('settings', JSON.stringify(newValue));
   });
 
+  // takes a page string and converts it into a page object
+  // or else passes the value through
+  // (so this can be used for getPageURLFromObject)
+  function pageObjectFrom(page) {
+    if (typeof page === "string") page = { name: page };
+    return page;
+  }
+  // used in templates to provide accurate hrefs alongside the ractive onclick handlers
+  function getPageURL(page) {
+    return getPageURLFromObject(pageObjectFrom(page));
+  }
+
   // history, pushState
   function setPage(page) {
-    if (typeof page == "string") {
-      page = { name: page };
-    }
-    if (typeof page == "undefined") {
+    page = pageObjectFrom(page);
+    if (typeof page === "undefined") {
       page = r.get('page');
     } else {
       r.set('page', page).then(() => {
@@ -906,7 +917,7 @@ ${body}
         window.scrollTo(0, 0);
       });
     }
-    let url = URLForPage(page);
+    let url = getPageURLFromObject(page);
     history.pushState(page, null, url);
     if (pageInit[page.name]) {
       pageInit[page.name](page);
@@ -917,7 +928,7 @@ ${body}
     }
     return false;
   }
-  let url = URLForPage(initPage);
+  let url = getPageURLFromObject(initPage);
   history.replaceState(initPage, null, url);
   if (pageInit[initPage.name]) {
     pageInit[initPage.name](initPage);
