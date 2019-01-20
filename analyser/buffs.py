@@ -164,10 +164,12 @@ class BuffTrackIntensity:
         self.dst_instid = dst_instid
         self.stack_durations = []
         self.current_time = encounter_start
+        self.last_extend_time = 0
         
         self.src_trackers = {}
         for src in src_instids:
             self.src_trackers[src] = [src, 0, encounter_start]
+        self.src_trackers[0] = [0, 0, encounter_start]
         
         self.data = []
                 
@@ -186,11 +188,15 @@ class BuffTrackIntensity:
         if event.is_buffremove:
             self.clear(event.time)
         elif event.is_offcycle:
-            for x in self.stack_durations:
-                x[0] += event.value                
+            if self.last_extend_time != event.time:
+                for stack in self.stack_durations:
+                    stack[0] += event.value
+                    if stack[1] == 0:
+                        stack[2] += event.value;
+                self.last_extend_time = event.time;
         elif len(self.stack_durations) < self.buff_type.capacity:
             end_time = event.time + event.value;
-            self.stack_durations.append([end_time, event.ult_src_instid])
+            self.stack_durations.append([end_time, event.ult_src_instid, end_time])
             self.stack_durations.sort()
             self.apply_change(event.time, self.src_trackers[event.ult_src_instid][1] + 1, event.ult_src_instid)
         elif self.stack_durations[0][0] < event.time + event.value:
@@ -199,7 +205,7 @@ class BuffTrackIntensity:
                 self.apply_change(event.time, self.src_trackers[old_src][1] - 1, old_src)
                 self.apply_change(event.time, self.src_trackers[event.ult_src_instid][1] + 1, event.ult_src_instid)
             end_time = event.time + event.value;
-            self.stack_durations[0] = [end_time, event.ult_src_instid]
+            self.stack_durations[0] = [end_time, event.ult_src_instid, end_time]
             self.stack_durations.sort()            
 
     def clear(self, time):
@@ -209,9 +215,21 @@ class BuffTrackIntensity:
                 self.apply_change(time, 0, x)
                                   
     def simulate_to_time(self, new_time):
-        while (len(self.stack_durations) > 0) and (self.stack_durations[0][0] <= new_time):
-            self.apply_change(self.stack_durations[0][0], self.src_trackers[self.stack_durations[0][1]][1] - 1, self.stack_durations[0][1])
-            del self.stack_durations[0]
+        self.stack_durations.sort(key=lambda x: x[2])
+        while (len(self.stack_durations) > 0) and (self.stack_durations[0][2] <= new_time):
+            if self.stack_durations[0][1] != 0:
+                self.apply_change(self.stack_durations[0][2], self.src_trackers[self.stack_durations[0][1]][1] - 1, self.stack_durations[0][1])
+                self.apply_change(self.stack_durations[0][2], self.src_trackers[0][1] + 1, 0)
+                self.stack_durations[0][1] = 0
+                self.stack_durations[0][2] = self.stack_durations[0][0]
+                self.stack_durations.sort(key=lambda x: x[2])
+            else:
+                self.apply_change(self.stack_durations[0][0], self.src_trackers[0][1] - 1, 0)
+                del self.stack_durations[0]                       
+        self.stack_durations.sort()
+#         while (len(self.stack_durations) > 0) and (self.stack_durations[0][0] <= new_time):
+#             self.apply_change(self.stack_durations[0][0], self.src_trackers[self.stack_durations[0][1]][1] - 1, self.stack_durations[0][1])
+#             del self.stack_durations[0]   
         self.current_time = new_time
                 
     def end_track(self, time):
@@ -230,16 +248,16 @@ class BuffTrackDuration:
         self.src_trackers = {}
         for src in src_instids:
             self.src_trackers[src] = [src, encounter_start, 0]
+        self.src_trackers[0] = [0, encounter_start, 0]
         
-
     def apply_change(self, time, src_instid):
         tracker = self.src_trackers[src_instid]
         duration = time - tracker[1]
-        
+
         count = 0
         if len(self.stack_durations) > 0 and self.stack_durations[0][1] == src_instid:
             count = 1
-        
+
         if duration > 0:
             self.data.append([tracker[1], duration, self.buff_type.code, src_instid, self.dst_instid, tracker[2]])
         tracker[1] = time
@@ -254,13 +272,15 @@ class BuffTrackDuration:
         elif event.is_offcycle:
             if len(self.stack_durations) > 0:
                 self.stack_durations[0][0] += event.value
+                if self.stack_durations[0][1] != 0:
+                    self.stack_durations[0][2] += event.value
                 self.stack_durations.sort()
                 if self.stack_durations[0][1] != self.current_src:
                     self.apply_change(event.time, self.current_src)
                     self.apply_change(event.time, self.stack_durations[0][1])
                     self.current_src = self.stack_durations[0][1]
         elif len(self.stack_durations) < self.buff_type.capacity:
-            self.stack_durations.append([event.value, event.ult_src_instid])
+            self.stack_durations.append([event.value, event.ult_src_instid, 0])
             if len(self.stack_durations) == 1:
                 self.apply_change(event.time, self.stack_durations[0][1])
                 self.current_src = self.stack_durations[0][1]
@@ -272,16 +292,25 @@ class BuffTrackDuration:
                     self.current_src = self.stack_durations[0][1]
                     
         elif self.stack_durations[0][0] < event.value:
-            self.stack_durations[0] = [event.value, event.ult_src_instid]
+            self.stack_durations[0] = [event.value, event.ult_src_instid, 0]
             self.stack_durations.sort()
             if self.stack_durations[0][1] != self.current_src:
                 self.apply_change(event.time, self.current_src)
                 self.apply_change(event.time, self.stack_durations[0][1])           
                 self.current_src = self.stack_durations[0][1]
-
+                
     def simulate(self, delta_time):
         remaining_delta = delta_time
         while len(self.stack_durations) > 0 and self.stack_durations[0][0] <= remaining_delta:
+            if self.stack_durations[0][1] != 0 and self.stack_durations[0][2] > 0:
+                self.current_time += self.stack_durations[0][0] - self.stack_durations[0][2]
+                remaining_delta -= self.stack_durations[0][0] - self.stack_durations[0][2]
+                self.stack_durations[0][0] = self.stack_durations[0][2]
+                self.stack_durations[0][1] = 0
+                self.apply_change(self.current_time, self.current_src)
+                self.apply_change(self.current_time, 0)
+                self.current_src = 0;
+                
             self.current_time += self.stack_durations[0][0]
             remaining_delta -= self.stack_durations[0][0]
             del self.stack_durations[0]
@@ -295,6 +324,12 @@ class BuffTrackDuration:
 
         self.current_time += remaining_delta
         if len(self.stack_durations) > 0:
+            if self.stack_durations[0][1] != 0 and self.stack_durations[0][0] - self.stack_durations[0][2] < remaining_delta:
+                self.stack_durations[0][1] = 0
+                self.apply_change(self.current_time, self.current_src)
+                self.apply_change(self.current_time, 0)
+                self.current_src = 0;
+                
             self.stack_durations[0][0] -= remaining_delta
 
     def clear(self, time):
