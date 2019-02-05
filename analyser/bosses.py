@@ -441,7 +441,11 @@ BOSS_ARRAY = [
         Phase("Orbs Sweep Burn 2", True, phase_end_damage_stop = 5000, phase_end_health = 25, phase_end_boss_id = [0xFFFFABC6]),
         Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
         Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
-    ]),
+    ], metrics = [
+        Metric('Pulverize', 'Slammed', MetricType.COUNT, True, False),
+        Metric('Junk Fall', 'Falling Junk', MetricType.COUNT, True, False),
+        Metric('Junk Absorption', 'Purple Orbs', MetricType.COUNT, True, False),
+    ], gather_stats=gather_ca_stats),
     Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, phases = [
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
@@ -449,17 +453,45 @@ BOSS_ARRAY = [
         Phase("Orbs Sweep Burn 2", True, phase_end_damage_stop = 5000, phase_end_health = 25, phase_end_boss_id = [0xFFFFABC6]),
         Phase("Double Arms", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF9258, 0xFFFF279E]),
         Phase("Final Burn", True, phase_end_boss_id = [0xFFFFABC6]),
+    ], metrics = [
+        Metric('Pulverize', 'Slammed', MetricType.COUNT, True, False),
+        Metric('Junk Fall', 'Falling Junk', MetricType.COUNT, True, False),
+        Metric('Junk Absorption', 'Purple Orbs', MetricType.COUNT, True, False),
     ]),
     Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
-        Phase("Fourth Platforms", True)]),
+        Phase("Fourth Platforms", True)
+    ], metrics = [
+        Metric('Waterlogged', 'Waterlogged', MetricType.COUNT, True, False),
+        Metric('Vapor Rush', 'Charged', MetricType.COUNT, True, False),
+        Metric('Geyser', 'Launched (Nikare)', MetricType.COUNT, True, False),
+        Metric('Water Bomb', 'Bombed', MetricType.COUNT, True, False),
+        Metric('Aquatic Detainment', 'Bubbled', MetricType.COUNT, True, False),
+        Metric('Aquatic Aura (Nikare)', 'Aquatic Aura (Nikare)', MetricType.COUNT, True, False),
+        Metric('Aquatic Vortex', 'Tornado', MetricType.COUNT, True, False),
+        Metric('Sea Swell', 'Launched (Kenut)', MetricType.COUNT, True, False),
+        Metric('Vapor Jet', 'Boon Steal', MetricType.COUNT, True, False),
+        Metric('Aquatic Aura (Kenut)', 'Aquatic Aura (Kenut)', MetricType.COUNT, True, False),
+    ], gather_stats=gather_largos_stats),
     Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
-        Phase("Fourth Platforms", True)]),
+        Phase("Fourth Platforms", True)
+    ], metrics = [
+        Metric('Waterlogged', 'Waterlogged', MetricType.COUNT, True, False),
+        Metric('Vapor Rush', 'Charged', MetricType.COUNT, True, False),
+        Metric('Geyser', 'Launched (Nikare)', MetricType.COUNT, True, False),
+        Metric('Water Bomb', 'Bombed', MetricType.COUNT, True, False),
+        Metric('Aquatic Detainment', 'Bubbled', MetricType.COUNT, True, False),
+        Metric('Aquatic Aura (Nikare)', 'Aquatic Aura (Nikare)', MetricType.COUNT, True, False),
+        Metric('Aquatic Vortex', 'Tornado', MetricType.COUNT, True, False),
+        Metric('Sea Swell', 'Launched (Kenut)', MetricType.COUNT, True, False),
+        Metric('Vapor Jet', 'Boon Steal', MetricType.COUNT, True, False),
+        Metric('Aquatic Aura (Kenut)', 'Aquatic Aura (Kenut)', MetricType.COUNT, True, False),
+    ]),
     Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, cm_detector=qadim_cm_detector, phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
@@ -468,7 +500,13 @@ BOSS_ARRAY = [
         Phase("Wyverns", True, phase_end_boss_id = [0x52BF,0x5205], end_on_death=True),
         Phase("Jumping", False, phase_end_damage_start = 5000, phase_end_boss_id = [0x51C6]),
         Phase("Final Burn", True, phase_end_boss_id = [0x51C6]),
-    ]),
+    ], metrics = [
+        Metric('Power of the Lamp', 'Lamp', MetricType.COUNT, True, False),
+        Metric('Sea of Flame', 'Qadim Hitbox', MetricType.COUNT, True, False),
+        Metric('Flame Wave', 'Knockback', MetricType.COUNT, True, False),
+        Metric('Fire Wave', 'Shockwave', MetricType.COUNT, True, False),
+        Metric('Fiery Dance', 'Fiery Platform Edges', MetricType.COUNT, True, False),
+    ], gather_stats=gather_qadim_stats),
     Boss('Qadim (CM)', Kind.RAID, [0xFF51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
@@ -477,6 +515,12 @@ BOSS_ARRAY = [
         Phase("Wyverns", True, phase_end_boss_id = [0x52BF,0x5205], end_on_death=True),
         Phase("Jumping", False, phase_end_damage_start = 5000, phase_end_boss_id = [0x51C6]),
         Phase("Final Burn", True, phase_end_boss_id = [0x51C6]),
+    ], metrics = [
+        Metric('Power of the Lamp', 'Lamp', MetricType.COUNT, True, False),
+        Metric('Sea of Flame', 'Qadim Hitbox', MetricType.COUNT, True, False),
+        Metric('Flame Wave', 'Knockback', MetricType.COUNT, True, False),
+        Metric('Fire Wave', 'Shockwave', MetricType.COUNT, True, False),
+        Metric('Fiery Dance', 'Fiery Platform Edges', MetricType.COUNT, True, False),
     ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
