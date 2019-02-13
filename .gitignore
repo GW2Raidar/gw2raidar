@@ -9,6 +9,7 @@
 
 # soloraidar output
 /Output
+/uploads
 
 # IntelliJ IDEA
 .idea

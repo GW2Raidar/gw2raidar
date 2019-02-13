@@ -1,0 +1,246 @@
+{
+	"Vale Guardian" : [
+		{
+			"image" : "img/vg_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -6414.84,
+				"right" : -3084.84,
+				"top" : -18941,
+				"bottom" : -22271
+			}
+		}
+	],
+	"Gorseval" : [
+		{
+			"image" : "img/gorse_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -1396.5,
+				"right" : 4607.165,
+				"top" : -1483.975,
+				"bottom" : -7487.665				
+			}
+		}
+	],
+	"Sabetha" : [
+		{
+			"image" : "img/sab_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -8478.425,
+				"right" : -1677.995,
+				"top" : 6757.185,
+				"bottom" : -43.245
+			}
+		}
+	],
+	"Slothasor" : [
+		{
+			"image" : "img/sloth_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 6113.85,
+				"right" : 9806.5,
+				"top" : 1457.9,
+				"bottom" : -2247.1
+			}
+		}
+	],
+	"Matthias" : [
+		{
+			"image" : "img/matt_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -7667.88,
+				"right" : -4088.4,
+				"top" : 7675.79,
+				"bottom" : 4096.31
+			}
+		}
+	],
+	"Keep Construct" : [
+		{
+			"image" : "img/kc_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -5851.43,
+				"right" : -1900.43,
+				"top" : 11250.79,
+				"bottom" : 7299.79
+			}
+		}
+	],
+	"Xera" : [
+		{
+			"image" : "img/xera_arena.jpg",
+			"imageCoords" : {
+				"left" : 0,
+				"top" : 0,
+				"right" : 600,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -6522.73,
+				"right" : 713.27,
+				"top" : 856.59,
+				"bottom" : -6379.41
+			}
+		}
+	],
+	"Cairn" : [
+		{
+			"image" : "img/cairn_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 13016.77,
+				"right" : 15698.77,
+				"top" : 3323.93,
+				"bottom" : 641.93
+			}
+		}
+	],
+	"Mursaat Overseer" : [
+		{
+			"image" : "img/mo_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 1264.02,
+				"right" : 3862.02,
+				"top" : 5286.61,
+				"bottom" : 2688.61 
+			}
+		}
+	],
+	"Samarog" : [
+		{
+			"image" : "img/sam_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -6636.22,
+				"right" : -2196.22,
+				"top" : 5772.29,
+				"bottom" : 1332.29
+			}
+		}
+	],
+	"Deimos" : [
+		{
+			"image" : "img/deimos_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -9672.93,
+				"right" : -7272.93,
+				"top" : 4178.56,
+				"bottom" : 1778.56
+			},
+			"heightRange" : {
+				"min" : -5000,
+				"max" : 3500
+			}
+		},
+		{
+			"image" : "img/deimos_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 600,
+				"bottom" : 1200
+			},
+			"worldCoords" : {
+				"left" : -9312.93,
+				"right" : -6912.93,
+				"top" : 5360.56,
+				"bottom" : 2960.56
+			},
+			"heightRange" : {
+				"min" : -50000,
+				"max" : -5000
+			}
+		}
+	],
+	"Soulless Horror" : [
+		{
+			"image" : "img/sh_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : -12263.97,
+				"right" : -8963.97,
+				"top" : 2478.34,
+				"bottom" : -821.66
+			}
+		}
+	],
+	"Dhuum" : [
+		{
+			"image" : "img/dhuum_arena.jpg",
+			"imageCoords" : {
+			    "left" : 0,
+				"right" : 600,
+				"top" : 0,
+				"bottom" : 600
+			},
+			"worldCoords" : {
+				"left" : 13826.9,
+				"right" : 18386.9,
+				"top" : 3052.4,
+				"bottom" : -1507.6
+			}
+		}
+	]
+}

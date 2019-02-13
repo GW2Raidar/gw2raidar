@@ -84,6 +84,39 @@ class Skills:
     SNATCH = 47076
     GAZE = 46950
 
+    #Conjured Amalgamate
+    PULVERIZE = 52173 #SLAM
+    JUNK_ABSORPTION = 52086 #PURPLE ORB
+    JUNK_FALL_1 = 52878
+    JUNK_FALL_2 = 52120
+
+    #Largos Twins
+    WATERLOGGED = 51935
+    VAPOR_RUSH = 52876 #CHARGE
+    TIDAL_POOL = 52812 #STOOD IN POOL
+    SEA_SWELL = 53018 #KENUT KB
+    GEYSER = 53130 #NIKARE KB
+    WATER_BOMB = 53097 #POOL BOMB
+    AQUATIC_DETAINMENT = 52931 #BUBBLE
+    AQUATIC_VORTEX = 52130 #TORNADO
+    VAPOR_JET = 51965 #BOON STEAL
+    AQUATIC_AURA_KENUT = 52211
+    AQUATIC_AURA_NIKARE = 52929
+    CYCLONE_BURST = 51999 #KENUT TRIANGLE AOE
+
+    #Qadim
+    POWER_OF_THE_LAMP = 52035 #LAMP RETURN TP
+    SEA_OF_FLAME = 52461 # QADIM HITBOX
+    FIERY_DANCE_1 = 52614 #FIRE LINES
+    FIERY_DANCE_2 = 52864
+    FIERY_DANCE_3 = 53153
+    FIERY_DANCE_4 = 52383
+    RIPOSTE = 52265 #FAIL CC
+    FLAME_WAVE = 52814 #KB
+    FIRE_WAVE_QADIM = 52820 #SHOCKWWAVE
+    
+
+
 def standard_count(events):
     return len(events);
     
@@ -402,3 +435,58 @@ def gather_deimos_stats(events, collector, agents, subgroups, players, bosses, p
     gather_count_stat('Teleports', collector, True, False, phases, subgroups, players, teleport_events)
     gather_count_stat('Tear Consumed', collector, True, False, phases, subgroups, players, tear_consumed_events)
 
+def gather_ca_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
+    pulverize_events = events[(events.skillid == Skills.PULVERIZE) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    falling_junk_events_1 = events[(events.skillid == Skills.JUNK_FALL_1) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    falling_junk_events_2 = events[(events.skillid == Skills.JUNK_FALL_2) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    junk_absorb_events = events[(events.skillid == Skills.JUNK_ABSORPTION) & events.dst_instid.isin(players.index) & (events.value > 0) ]
+
+    gather_count_stat('Pulverize', collector, True, False, phases, subgroups, players, pulverize_events)
+    gather_count_stat('Junk Fall', collector, True, False, phases, subgroups, players, falling_junk_events_1 + falling_junk_events_2)
+    gather_count_stat('Junk Absorption', collector, True, False, phases, subgroups, players, junk_absorb_events)
+
+def gather_largos_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
+    waterlogged_events = events[(events.skillid == Skills.WATERLOGGED) & events.dst_instid.isin(players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+    
+    #kenut
+    tornado_events = events[(events.skillid == Skills.AQUATIC_VORTEX) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    wave_events = events[(events.skillid == Skills.SEA_SWELL) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    steal_events = events[(events.skillid == Skills.VAPOR_JET) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    kenut_aura_events = events[(events.skillid == Skills.AQUATIC_AURA_KENUT) & events.dst_instid.isin(players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+
+    #nikare
+    charge_events = events[(events.skillid == Skills.VAPOR_RUSH) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    #pool_events = events[(events.skillid == Skills.TIDAL_POOL) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    kb_events = events[(events.skillid == Skills.GEYSER) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    bomb_events = events[(events.skillid == Skills.WATER_BOMB) & events.dst_instid.isin(players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+    float_events = events[(events.skillid == Skills.AQUATIC_DETAINMENT) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    nikare_aura_events = events[(events.skillid == Skills.AQUATIC_AURA_NIKARE) & events.dst_instid.isin(players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+
+    gather_count_stat('Waterlogged', collector, True, False, phases, subgroups, players, waterlogged_events)
+    gather_count_stat('Vapor Rush', collector, True, False, phases, subgroups, players, charge_events)
+    gather_count_stat('Geyser', collector, True, False, phases, subgroups, players, kb_events)
+    gather_count_stat('Water Bomb', collector, True, False, phases, subgroups, players, bomb_events)
+    gather_count_stat('Aquatic Detainment', collector, True, False, phases, subgroups, players, float_events)
+    gather_count_stat('Aquatic Aura (Nikare)', collector, True, False, phases, subgroups, players, nikare_aura_events)
+    gather_count_stat('Aquatic Vortex', collector, True, False, phases, subgroups, players, tornado_events)
+    gather_count_stat('Sea Swell', collector, True, False, phases, subgroups, players, wave_events)
+    gather_count_stat('Vapor Jet', collector, True, False, phases, subgroups, players, steal_events)
+    gather_count_stat('Aquatic Aura (Kenut)', collector, True, False, phases, subgroups, players, kenut_aura_events)
+
+def gather_qadim_stats(events, collector, agents, subgroups, players, bosses, phases, encounter_end):
+    lamp_events = events[(events.skillid == Skills.POWER_OF_THE_LAMP) & events.dst_instid.isin(players.index) & (events.buff == 1) & (events.is_buffremove == 0)]
+    hitbox_events = events[(events.skillid == Skills.SEA_OF_FLAME) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    kb_events = events[(events.skillid == Skills.FLAME_WAVE) & events.dst_instid.isin(players.index) & (events.value > 0)]
+    shockwave_qadim_events = events[(events.skillid == Skills.FIRE_WAVE_QADIM) & events.dst_instid.isin(players.index) & (events.value > 0)]
+
+    dance_events_1 = events[(events.skillid == Skills.FIERY_DANCE_1) & events.dst_instid.isin(players.index) & (events.value >0 )]
+    dance_events_2 = events[(events.skillid == Skills.FIERY_DANCE_2) & events.dst_instid.isin(players.index) & (events.value >0 )]
+    dance_events_3 = events[(events.skillid == Skills.FIERY_DANCE_3) & events.dst_instid.isin(players.index) & (events.value >0 )]
+    dance_events_4 = events[(events.skillid == Skills.FIERY_DANCE_4) & events.dst_instid.isin(players.index) & (events.value >0 )]
+    dance_events = dance_events_1 + dance_events_2 + dance_events_3 + dance_events_4
+
+    gather_count_stat('Power of the Lamp', collector, True, False, phases, subgroups, players, lamp_events)
+    gather_count_stat('Sea of Flame', collector, True, False, phases, subgroups, players, hitbox_events)
+    gather_count_stat('Flame Wave', collector, True, False, phases, subgroups, players, kb_events)
+    gather_count_stat('Fire Wave', collector, True, False, phases, subgroups, players, shockwave_qadim_events)
+    gather_count_stat('Fiery Dance', collector, True, False, phases, subgroups, players, dance_events)

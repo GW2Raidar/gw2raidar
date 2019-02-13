@@ -69,7 +69,7 @@ def _userprops(request):
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag').iterator()
+    participations = Participation.objects.filter(account__user=request.user).defer('encounter__value').select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):

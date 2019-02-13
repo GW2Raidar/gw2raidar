@@ -1,0 +1,732 @@
+/*! HTML5 Boilerplate v6.1.0 | MIT License | https://html5boilerplate.com/ */
+
+/*
+ * What follows is the result of much research on cross-browser styling.
+ * Credit left inline and big thanks to Nicolas Gallagher, Jonathan Neal,
+ * Kroc Camen, and the H5BP dev community and team.
+ */
+
+/* ==========================================================================
+   Base styles: opinionated defaults
+   ========================================================================== */
+
+html {
+    color: #222;
+    font-size: 1em;
+    line-height: 1.4;
+}
+
+/*
+ * Remove text-shadow in selection highlight:
+ * https://twitter.com/miketaylr/status/12228805301
+ *
+ * Vendor-prefixed and regular ::selection selectors cannot be combined:
+ * https://stackoverflow.com/a/16982510/7133471
+ *
+ * Customize the background color to match your design.
+ */
+
+::-moz-selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+::selection {
+    background: #b3d4fc;
+    text-shadow: none;
+}
+
+/*
+ * A better looking default horizontal rule
+ */
+
+hr {
+    display: block;
+    height: 1px;
+    border: 0;
+    border-top: 1px solid #ccc;
+    margin: 1em 0;
+    padding: 0;
+}
+
+/*
+ * Remove the gap between audio, canvas, iframes,
+ * images, videos and the bottom of their containers:
+ * https://github.com/h5bp/html5-boilerplate/issues/440
+ */
+
+audio,
+canvas,
+iframe,
+img,
+svg,
+video {
+    vertical-align: middle;
+}
+
+/*
+ * Remove default fieldset styles.
+ */
+
+fieldset {
+    border: 0;
+    margin: 0;
+    padding: 0;
+}
+
+/*
+ * Allow only vertical resizing of textareas.
+ */
+
+textarea {
+    resize: vertical;
+}
+
+/* ==========================================================================
+   Browser Upgrade Prompt
+   ========================================================================== */
+
+.browserupgrade {
+    margin: 0.2em 0;
+    background: #ccc;
+    color: #000;
+    padding: 0.2em 0;
+}
+
+/* ==========================================================================
+   Author's custom styles
+   ========================================================================== */
+
+.replay-controls {
+	display: flex;
+	flex-wrap: nowrap;
+	justify-content: space-between;
+}
+
+.replay-seekbar {
+	flex-grow: 1;
+}
+
+.replay-times {
+	flex-basis: 100px;
+    display: flex;
+    justify-content: space-around;
+}
+
+.replay-main {
+	display: flex;
+}
+
+.replay-details {
+	width: 100%;
+	margin-left: 4px;
+}
+
+.replay-detail-table {
+	width: 100%;
+}
+
+.replay-detail-name {
+	width: 175px;
+}
+
+.replay-detail-main {
+	display: flex;
+}
+
+.replay-detail-cleave-dps-column,
+.replay-detail-cleave {
+	width: 95px;
+	text-align: left;
+}
+
+.replay-detail-boss-dps-column ,
+.replay-detail-dps {
+	width: 95px;
+	text-align: left;
+}
+
+.replay-detail-player-rows {
+	height: 20px;
+}
+
+.replay-detail-header-row {
+	display: flex;
+}
+
+.replay-detail-player-column {
+	width: 195px;
+}
+
+.replay-detail-item {
+	vertical-align: middle;
+	padding-right: 5px;
+}
+
+.replay-bar-background {
+	background-color: #DDDDDD;
+	border-radius: 10px;
+	border: solid black 1px;
+	line-height: 20px;
+}
+
+.replay-bar {
+	background-color: #caffcc;
+	text-align: left; 
+    color: #00000000;
+	border-radius: 10px;
+	clip-path: inset(0% 0% 0% 0%);
+	line-height: 18px;
+}
+
+.replay-bar-label {
+    position: absolute;
+	margin-top: -19px;
+	line-height: 20px;
+	margin-left: 10px;
+}
+.replay-buff-bar {
+	display: flex;
+}
+
+.replay-buff-count {
+	font-size: 12px;
+	font-weight: bold;
+	color: black;
+	text-shadow: 1px 1px 2px white;
+	position: relative;
+	padding: 5px 3px 0px 0px;
+	text-align: right;
+}
+
+.replay-detail-bossinfo {
+	margin-bottom: 10px;
+}
+
+.replay-boss-name {
+	font-size: 22px;
+}
+
+.replay-selected {
+	font-weight: bold;
+}
+
+/* ==========================================================================
+   GW2 classes
+   ========================================================================== */
+
+
+.replay-class-necromancer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -32px;
+}
+
+.replay-class-reaper {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -52px;
+}
+
+.replay-class-scourge {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -72px;
+}
+
+.replay-class-ranger {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -32px;
+}
+
+.replay-class-druid {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -52px;
+}
+
+.replay-class-soulbeast {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -72px;
+}
+
+.replay-class-engineer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -32px;
+}
+
+.replay-class-scrapper {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -52px;
+}
+
+.replay-class-holosmith {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -72px;
+}
+
+.replay-class-thief {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -32px;
+}
+
+.replay-class-daredevil {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -52px;
+}
+
+.replay-class-deadeye {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -72px;
+}
+
+.replay-class-mesmer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -32px;
+}
+
+.replay-class-chronomancer {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -52px;
+}
+
+.replay-class-mirage {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -72px;
+}
+
+.replay-class-elementalist {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -32px;
+}
+
+.replay-class-tempest {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -52px;
+}
+
+.replay-class-weaver {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -72px;
+}
+
+.replay-class-revenant {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -32px;
+}
+
+.replay-class-herald {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -52px;
+}
+
+.replay-class-renegade {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -72px;
+}
+
+.replay-class-warrior {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -32px;
+}
+
+.replay-class-berserker {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -52px;
+}
+
+.replay-class-spellbreaker {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -72px;
+}
+
+.replay-class-guardian {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -32px;
+}
+
+.replay-class-dragonhunter {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -52px;
+}
+
+.replay-class-firebrand {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -72px;
+}
+
+/* ==========================================================================
+   GW2 buffs
+   ========================================================================== */
+
+
+.replay-buff-fury {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: 0px -92px;
+}
+
+.replay-buff-aegis {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -20px -92px;
+}
+
+.replay-buff-alacrity {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -40px -92px;
+}
+
+.replay-buff-might {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -60px -92px;
+}
+
+.replay-buff-protection {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -80px -92px;
+}
+
+.replay-buff-spirit_of_frost {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -100px -92px;
+}
+
+.replay-buff-spotter {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -120px -92px;
+}
+
+.replay-buff-stab {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -140px -92px;
+}
+
+.replay-buff-stone_spirit {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -160px -92px;
+}
+
+.replay-buff-storm_spirit {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -180px -92px;
+}
+
+.replay-buff-sun_spirit {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -200px -92px;
+}
+
+.replay-buff-swift {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -220px -92px;
+}
+
+.replay-buff-vigor {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -240px -92px;
+}
+
+.replay-buff-banner_defense {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -260px -92px;
+}
+
+.replay-buff-banner_discipline {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -280px -92px;
+}
+
+.replay-buff-banner_strength {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -300px -92px;
+}
+
+.replay-buff-banner_tactics {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -320px -92px;
+}
+
+.replay-buff-quickness {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -340px -92px;
+}
+
+.replay-buff-regen {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -360px -92px;
+}
+
+.replay-buff-resist {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -380px -92px;
+}
+
+.replay-buff-retaliation {
+	width: 20px;
+	height: 20px;
+	background-image: url('../img/icons.png');
+	background-position: -400px -92px;
+}
+
+
+/* ==========================================================================
+   Helper classes
+   ========================================================================== */
+
+/*
+ * Hide visually and from screen readers
+ */
+
+.hidden {
+    display: none !important;
+}
+
+/*
+ * Hide only visually, but have it available for screen readers:
+ * https://snook.ca/archives/html_and_css/hiding-content-for-accessibility
+ *
+ * 1. For long content, line feeds are not interpreted as spaces and small width
+ *    causes content to wrap 1 word per line:
+ *    https://medium.com/@jessebeach/beware-smushed-off-screen-accessible-text-5952a4c2cbfe
+ */
+
+.visuallyhidden {
+    border: 0;
+    clip: rect(0 0 0 0);
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    padding: 0;
+    position: absolute;
+    width: 1px;
+    white-space: nowrap; /* 1 */
+}
+
+/*
+ * Extends the .visuallyhidden class to allow the element
+ * to be focusable when navigated to via the keyboard:
+ * https://www.drupal.org/node/897638
+ */
+
+.visuallyhidden.focusable:active,
+.visuallyhidden.focusable:focus {
+    clip: auto;
+    height: auto;
+    margin: 0;
+    overflow: visible;
+    position: static;
+    width: auto;
+    white-space: inherit;
+}
+
+/*
+ * Hide visually and from screen readers, but maintain layout
+ */
+
+.invisible {
+    visibility: hidden;
+}
+
+/*
+ * Clearfix: contain floats
+ *
+ * For modern browsers
+ * 1. The space content is one way to avoid an Opera bug when the
+ *    `contenteditable` attribute is included anywhere else in the document.
+ *    Otherwise it causes space to appear at the top and bottom of elements
+ *    that receive the `clearfix` class.
+ * 2. The use of `table` rather than `block` is only necessary if using
+ *    `:before` to contain the top-margins of child elements.
+ */
+
+.clearfix:before,
+.clearfix:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.clearfix:after {
+    clear: both;
+}
+
+/* ==========================================================================
+   EXAMPLE Media Queries for Responsive Design.
+   These examples override the primary ('mobile first') styles.
+   Modify as content requires.
+   ========================================================================== */
+
+@media only screen and (min-width: 35em) {
+    /* Style adjustments for viewports that meet the condition */
+}
+
+@media print,
+       (-webkit-min-device-pixel-ratio: 1.25),
+       (min-resolution: 1.25dppx),
+       (min-resolution: 120dpi) {
+    /* Style adjustments for high resolution devices */
+}
+
+/* ==========================================================================
+   Print styles.
+   Inlined to avoid the additional HTTP request:
+   https://www.phpied.com/delay-loading-your-print-css/
+   ========================================================================== */
+
+@media print {
+    *,
+    *:before,
+    *:after {
+        background: transparent !important;
+        color: #000 !important; /* Black prints faster */
+        -webkit-box-shadow: none !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    abbr[title]:after {
+        content: " (" attr(title) ")";
+    }
+
+    /*
+     * Don't show links that are fragment identifiers,
+     * or use the `javascript:` pseudo protocol
+     */
+
+    a[href^="#"]:after,
+    a[href^="javascript:"]:after {
+        content: "";
+    }
+
+    pre {
+        white-space: pre-wrap !important;
+    }
+    pre,
+    blockquote {
+        border: 1px solid #999;
+        page-break-inside: avoid;
+    }
+
+    /*
+     * Printing Tables:
+     * http://css-discuss.incutio.com/wiki/Printing_Tables
+     */
+
+    thead {
+        display: table-header-group;
+    }
+
+    tr,
+    img {
+        page-break-inside: avoid;
+    }
+
+    p,
+    h2,
+    h3 {
+        orphans: 3;
+        widows: 3;
+    }
+
+    h2,
+    h3 {
+        page-break-after: avoid;
+    }
+}
