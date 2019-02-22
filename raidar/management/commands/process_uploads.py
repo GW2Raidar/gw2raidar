@@ -250,6 +250,13 @@ class Command(BaseCommand):
                         Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
                         area=area, account_hash=account_hash
                     )
+                    if encounter.has_evtc:
+                        old_filename = instance.diskname()
+                        if old_filename:
+                            try:
+                                os.remove(old_filename)
+                            except FileNotFoundError:
+                                pass
                     encounter.era = era
                     encounter.filename = filename
                     encounter.uploaded_at = upload.uploaded_at
