@@ -248,11 +248,11 @@ BOSS_ARRAY = [
     ], gather_stats = gather_sloth_stats),
     Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
-        #Phase("Clear 1", False, phase_end_health = 99),
+        Phase("Clear 1", True, phase_end_damage_start= 10000),
         Phase("Berg", True, phase_end_damage_stop = 10000),
-        Phase("Clear 2", False, phase_end_damage_start= 10000),
+        Phase("Clear 2", True, phase_end_damage_start= 10000),
         Phase("Zane", True, phase_end_damage_stop = 10000),
-        Phase("Clear 3", False, phase_end_damage_start = 10000),
+        Phase("Clear 3", True, phase_end_damage_start = 10000),
         Phase("Narella", True, phase_end_damage_stop = 10000)
     ], gather_stats = gather_trio_stats),
     Boss('Matthias', Kind.RAID, [0x3EF3], enrage = 10 * MINUTES, phases = [
@@ -603,7 +603,7 @@ BOSS_LOCATIONS = [
                 "name": "Salvation Pass",
                 "bosses": [
                     IDS['Slothasor'],
-                    # IDS['Bandit Trio'],
+                    IDS['Bandit Trio'],
                     IDS['Matthias'],
                 ],
             },
