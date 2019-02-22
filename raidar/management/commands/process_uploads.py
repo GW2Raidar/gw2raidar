@@ -251,7 +251,7 @@ class Command(BaseCommand):
                         area=area, account_hash=account_hash
                     )
                     if encounter.has_evtc:
-                        old_filename = instance.diskname()
+                        old_filename = encounter.diskname()
                         if old_filename:
                             try:
                                 os.remove(old_filename)
