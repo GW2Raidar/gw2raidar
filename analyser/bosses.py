@@ -304,7 +304,7 @@ BOSS_ARRAY = [
         Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
         Metric('Shared Agony', 'Agony', MetricType.COUNT)
     ], cm_detector = cairn_cm_detector, gather_stats = gather_cairn_stats),
-    Boss('Mursaat Overseer', Kind.RAID, [0x4314], enrage = 6 * MINUTES, metrics = [
+    Boss('Mursaat Overseer', Kind.RAID, [0x4314], enrage = 6 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Protect', 'Protector', MetricType.COUNT),
         Metric('Claim', 'Claimer', MetricType.COUNT),
         Metric('Dispel', 'Dispeller', MetricType.COUNT),
