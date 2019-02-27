@@ -75,7 +75,7 @@ class Metric:
         return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
-    def __init__(self, name, kind, boss_ids, metrics=None, gather_stats=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True, enrage = None):
+    def __init__(self, name, kind, boss_ids, metrics=None, gather_stats=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, success_min_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True, enrage = None):
         self.name = name
         self.kind = kind
         self.boss_ids = boss_ids
@@ -86,6 +86,7 @@ class Boss:
         self.despawns_instead_of_dying = despawns_instead_of_dying
         self.has_structure_boss = has_structure_boss
         self.success_health_limit = success_health_limit
+        self.success_min_health_limit = success_min_health_limit
         self.cm_detector = cm_detector
         self.force_single_party = force_single_party
         self.non_cm_allowed = non_cm_allowed
