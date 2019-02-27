@@ -247,7 +247,7 @@ BOSS_ARRAY = [
         Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
     ], gather_stats = gather_sloth_stats),
-    Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], phases = [
+    Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], enrage = 9 * MINUTES, phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
         Phase("Clear 1", True, phase_end_damage_start= 10000),
         Phase("Berg", True, phase_end_damage_stop = 10000),
