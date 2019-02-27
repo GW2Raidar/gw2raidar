@@ -704,7 +704,7 @@ class Analyser:
         return success, success_time
 
     def validate_success(self, health_updates):
-        return self.validate_success_health(health_updates) # and self.validate_success_phases()
+        return self.validate_success_health(health_updates) and self.validate_minimum_health(health_updates) # and self.validate_success_phases()
 
     def validate_success_phases(self):
         success = len(self.phases) == len(list(filter(lambda a: a.important, self.boss_info.phases)))
@@ -714,7 +714,15 @@ class Analyser:
     def validate_success_health(self, health_updates):
         success = True
         if (self.boss_info.success_health_limit is not None and
-                health_updates[health_updates.dst_agent <= (self.boss_info.success_health_limit * 100)].empty):
+                health_updates[(health_updates.dst_agent <= self.boss_info.success_health_limit * 100)].empty):
                 success = False
         print("Success changed due to health still being too high: {0}".format(not success))
+        return success
+    
+    def validate_minimum_health(self, health_updates):
+        success = True
+        if (self.boss_info.success_min_health_limit is not None and
+                (health_updates[health_updates.dst_agent >= (self.boss_info.success_min_health_limit * 100)].empty)):
+                success = False
+        print("Success changed due to boss starting with less than minimum health: {0}".format(not success))
         return success

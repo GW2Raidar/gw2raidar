@@ -75,7 +75,7 @@ class Metric:
         return "%s (%s, %s)" % (self.name, self.data_type, self.desired)
 
 class Boss:
-    def __init__(self, name, kind, boss_ids, metrics=None, gather_stats=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True, enrage = None):
+    def __init__(self, name, kind, boss_ids, metrics=None, gather_stats=None, sub_boss_ids=None, key_npc_ids = None, phases=None, despawns_instead_of_dying = False, has_structure_boss = False, success_health_limit = None, success_min_health_limit = None, cm_detector = no_cm, force_single_party = False, non_cm_allowed = True, enrage = None):
         self.name = name
         self.kind = kind
         self.boss_ids = boss_ids
@@ -86,6 +86,7 @@ class Boss:
         self.despawns_instead_of_dying = despawns_instead_of_dying
         self.has_structure_boss = has_structure_boss
         self.success_health_limit = success_health_limit
+        self.success_min_health_limit = success_min_health_limit
         self.cm_detector = cm_detector
         self.force_single_party = force_single_party
         self.non_cm_allowed = non_cm_allowed
@@ -246,7 +247,7 @@ BOSS_ARRAY = [
         Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
     ], gather_stats = gather_sloth_stats),
-    Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], phases = [
+    Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], enrage = 9 * MINUTES, phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
         Phase("Clear 1", True, phase_end_damage_start= 10000),
         Phase("Berg", True, phase_end_damage_stop = 10000),
@@ -304,7 +305,7 @@ BOSS_ARRAY = [
         Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
         Metric('Shared Agony', 'Agony', MetricType.COUNT)
     ], cm_detector = cairn_cm_detector, gather_stats = gather_cairn_stats),
-    Boss('Mursaat Overseer', Kind.RAID, [0x4314], enrage = 6 * MINUTES, metrics = [
+    Boss('Mursaat Overseer', Kind.RAID, [0x4314], enrage = 6 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Protect', 'Protector', MetricType.COUNT),
         Metric('Claim', 'Claimer', MetricType.COUNT),
         Metric('Dispel', 'Dispeller', MetricType.COUNT),
