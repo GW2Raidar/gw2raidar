@@ -195,7 +195,7 @@ class Phase:
         return end_time
 
 BOSS_ARRAY = [
-    Boss('Vale Guardian', Kind.RAID, [0x3C4E], enrage = 8 * MINUTES, phases = [
+    Boss('Vale Guardian', Kind.RAID, [0x3C4E], enrage = 8 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
@@ -206,7 +206,7 @@ BOSS_ARRAY = [
         Metric('Bullets Eaten', 'Bulleted', MetricType.COUNT),
         Metric('Teleports', 'Teleported', MetricType.COUNT)
     ], gather_stats = gather_vg_stats),
-    Boss('Gorseval', Kind.RAID, [0x3C45], enrage = 7 * MINUTES, phases = [
+    Boss('Gorseval', Kind.RAID, [0x3C45], enrage = 7 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First souls", False, phase_end_damage_start = 10000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
@@ -217,7 +217,7 @@ BOSS_ARRAY = [
         Metric('Ghastly Imprisonments', 'Imprisoned', MetricType.COUNT),
         Metric('Spectral Darkness', 'Tainted', MetricType.TIME)
     ], gather_stats = gather_gorse_stats),
-    Boss('Sabetha', Kind.RAID, [0x3C0F], enrage = 9 * MINUTES, phases = [
+    Boss('Sabetha', Kind.RAID, [0x3C0F], enrage = 9 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000, phase_skip_health = 50),
         Phase("Kernan", False, phase_end_damage_start = 10000, phase_skip_health = 50),
         Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000, phase_skip_health = 25),
@@ -228,7 +228,7 @@ BOSS_ARRAY = [
     ], metrics = [
         Metric('Heavy Bombs Undefused', 'Heavy Bombs', MetricType.COUNT, False)
     ], gather_stats = gather_sab_stats),
-    Boss('Slothasor', Kind.RAID, [0x3EFB], enrage = 7 * MINUTES, phases = [
+    Boss('Slothasor', Kind.RAID, [0x3EFB], enrage = 7 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000, phase_skip_health = 60),
         Phase("Break 1", False, phase_end_damage_start = 1000, phase_skip_health = 60),
         Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000, phase_skip_health = 40),
@@ -247,7 +247,7 @@ BOSS_ARRAY = [
         Metric('Volatile Poison Carrier', 'Poisoned', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Toxic Cloud Breathed', 'Green Goo', MetricType.COUNT, True, False)
     ], gather_stats = gather_sloth_stats),
-    Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], enrage = 9 * MINUTES, phases = [
+    Boss('Bandit Trio', Kind.EASY, [0x3ED8, 0x3F09, 0x3EFD], enrage = 9 * MINUTES, success_min_health_limit = 95, phases = [
         #Needs to be a little bit more robust, but it's trio - not the most important fight.
         Phase("Clear 1", True, phase_end_damage_start= 10000),
         Phase("Berg", True, phase_end_damage_stop = 10000),
@@ -256,7 +256,7 @@ BOSS_ARRAY = [
         Phase("Clear 3", True, phase_end_damage_start = 10000),
         Phase("Narella", True, phase_end_damage_stop = 10000)
     ], gather_stats = gather_trio_stats),
-    Boss('Matthias', Kind.RAID, [0x3EF3], enrage = 10 * MINUTES, phases = [
+    Boss('Matthias', Kind.RAID, [0x3EF3], enrage = 10 * MINUTES, success_min_health_limit = 95, phases = [
         #Will currently detect phases slightly early - but probably not a big deal?
         Phase("Ice", True, phase_end_health = 80),
         Phase("Fire", True, phase_end_health = 60),
@@ -272,7 +272,7 @@ BOSS_ARRAY = [
         Metric('Sacrificed', 'Sacrificed', MetricType.COUNT, True, False, DesiredValue.NONE),
         Metric('Well of the Profane Carrier', 'Welled', MetricType.COUNT, True, False, DesiredValue.NONE)
     ], gather_stats = gather_matt_stats),
-    Boss('Keep Construct', Kind.RAID, [0x3F6B], enrage = 10 * MINUTES, phases = [
+    Boss('Keep Construct', Kind.RAID, [0x3F6B], enrage = 10 * MINUTES, success_min_health_limit = 95, phases = [
         # Needs more robust sub-phase mechanisms, but this should be on par with raid-heroes.
         Phase("Pre-burn 1", True, phase_end_damage_stop = 15000),
         Phase("Split 1", False, phase_end_damage_start = 15000),
@@ -292,14 +292,14 @@ BOSS_ARRAY = [
         Metric('Gaining Power', 'Power Gained', MetricType.COUNT, False, False),
         Metric('Magic Blast Intensity', 'Orbs Missed', MetricType.COUNT, False, False)
     ], gather_stats = gather_kc_stats),
-    Boss('Xera', Kind.RAID, [0x3F76, 0x3F9E], enrage = 11 * MINUTES, despawns_instead_of_dying = True, success_health_limit = 3, phases = [
+    Boss('Xera', Kind.RAID, [0x3F76, 0x3F9E], enrage = 11 * MINUTES, despawns_instead_of_dying = True, success_health_limit = 3, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 51, phase_end_damage_stop = 30000),
         Phase("Leyline", False, phase_end_damage_start = 30000),
         Phase("Phase 2", True),
     ], metrics = [
         Metric('Derangement', 'Deranged', MetricType.COUNT)
     ], gather_stats = gather_xera_stats),
-    Boss('Cairn', Kind.RAID, [0x432A], enrage = 8 * MINUTES, metrics = [
+    Boss('Cairn', Kind.RAID, [0x432A], enrage = 8 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Displacement', 'Teleported', MetricType.COUNT),
         Metric('Meteor Swarm', 'Shard Hits', MetricType.COUNT),
         Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
@@ -313,7 +313,7 @@ BOSS_ARRAY = [
         Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
     ], cm_detector = mo_cm_detector, gather_stats = gather_mursaat_overseer_stats),
-    Boss('Samarog', Kind.RAID, [0x4324], enrage = 11 * MINUTES, phases = [
+    Boss('Samarog', Kind.RAID, [0x4324], enrage = 11 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
@@ -332,7 +332,7 @@ BOSS_ARRAY = [
         Metric('Big Friend', 'Big Friend', MetricType.COUNT, True, True),
         Metric('Spear Impact', 'Spear Impacts', MetricType.COUNT, True, True)
     ], cm_detector = samarog_cm_detector, gather_stats = gather_samarog_stats),
-    Boss('Deimos', Kind.RAID, [0x4302], enrage = 12 * MINUTES, key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
+    Boss('Deimos', Kind.RAID, [0x4302], enrage = 12 * MINUTES, key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
     ], metrics = [
@@ -344,13 +344,13 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector, gather_stats = gather_deimos_stats),
-    Boss('Cairn (CM)', Kind.RAID, [0xFF432A], enrage = 8 * MINUTES, metrics = [
+    Boss('Cairn (CM)', Kind.RAID, [0xFF432A], enrage = 8 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Displacement', 'Teleported', MetricType.COUNT),
         Metric('Meteor Swarm', 'Shard Hits', MetricType.COUNT),
         Metric('Spatial Manipulation', 'Circles', MetricType.COUNT),
         Metric('Shared Agony', 'Agony', MetricType.COUNT)
     ], cm_detector = cairn_cm_detector),
-    Boss('Mursaat Overseer (CM)', Kind.RAID, [0xFF4314], enrage = 6 * MINUTES, metrics = [
+    Boss('Mursaat Overseer (CM)', Kind.RAID, [0xFF4314], enrage = 6 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Protect', 'Protector', MetricType.COUNT),
         Metric('Claim', 'Claimer', MetricType.COUNT),
         Metric('Dispel', 'Dispeller', MetricType.COUNT),
@@ -358,7 +358,7 @@ BOSS_ARRAY = [
         Metric('Soldier\'s Aura', 'Soldier AOE', MetricType.COUNT),
         Metric('Enemy Tile', 'Enemy Tile', MetricType.COUNT)
     ], cm_detector = mo_cm_detector),
-    Boss('Samarog (CM)', Kind.RAID, [0xFF4324], enrage = 11 * MINUTES, phases = [
+    Boss('Samarog (CM)', Kind.RAID, [0xFF4324], enrage = 11 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 10000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 10000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 10000, phase_skip_health = 1),
@@ -377,7 +377,7 @@ BOSS_ARRAY = [
         Metric('Big Friend', 'Big Friend', MetricType.COUNT, True, True),
         Metric('Spear Impact', 'Spear Impacts', MetricType.COUNT, True, True)
     ], cm_detector = samarog_cm_detector),
-    Boss('Deimos (CM)', Kind.RAID, [0xFF4302], enrage = 12 * MINUTES, key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, phases = [
+    Boss('Deimos (CM)', Kind.RAID, [0xFF4302], enrage = 12 * MINUTES, key_npc_ids=[17126], despawns_instead_of_dying = True, has_structure_boss = True, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 10, phase_end_damage_stop = 20000),
         Phase("Phase 2", True)
     ], metrics = [
@@ -389,7 +389,7 @@ BOSS_ARRAY = [
         Metric('Teleports', 'Teleports', MetricType.COUNT, True, False),
         Metric('Tear Consumed', 'Tears Consumed', MetricType.COUNT, True, False)
     ], cm_detector = deimos_cm_detector),
-    Boss('Soulless Horror', Kind.RAID, [19767], enrage = 8 * MINUTES, metrics = [
+    Boss('Soulless Horror', Kind.RAID, [19767], enrage = 8 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Inner Vortex', 'Inner Vortex', MetricType.COUNT, True, False),
         Metric('Outer Vortex', 'Outer Vortex', MetricType.COUNT, True, False),
         Metric('Soul Rift', 'Soul Rift', MetricType.COUNT, True, False),
@@ -397,7 +397,7 @@ BOSS_ARRAY = [
         Metric('Scythe Hits', 'Scythe Hits', MetricType.COUNT, True, False),
         Metric('Necrosis Received', 'Necrosis', MetricType.COUNT, True, False)
     ], cm_detector = soulless_cm_detector, gather_stats = gather_sh_stats),
-    Boss('Dhuum', Kind.RAID, [19450], enrage = 10 * MINUTES, cm_detector = dhuum_cm_detector, phases = [
+    Boss('Dhuum', Kind.RAID, [19450], enrage = 10 * MINUTES, cm_detector = dhuum_cm_detector, success_min_health_limit = 95, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
         Phase("Main", True, phase_end_health = 10, phase_end_damage_stop = 10000),
         Phase("???", False, phase_end_damage_start = 10000),
@@ -411,7 +411,7 @@ BOSS_ARRAY = [
         Metric('Death Marked', 'Death Marked', MetricType.COUNT, True, False),
         Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ], gather_stats = gather_dhuum_stats),
-    Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], enrage = 8 * MINUTES, metrics = [
+    Boss('Soulless Horror (CM)', Kind.RAID, [0xFF4D37], enrage = 8 * MINUTES, success_min_health_limit = 95, metrics = [
         Metric('Inner Vortex', 'Inner Vortex', MetricType.COUNT, True, False),
         Metric('Outer Vortex', 'Outer Vortex', MetricType.COUNT, True, False),
         Metric('Soul Rift', 'Soul Rift', MetricType.COUNT, True, False),
@@ -419,7 +419,7 @@ BOSS_ARRAY = [
         Metric('Scythe Hits', 'Scythe Hits', MetricType.COUNT, True, False),
         Metric('Necrosis Received', 'Necrosis Received', MetricType.COUNT, True, False)
     ], cm_detector = soulless_cm_detector),
-    Boss('Dhuum (CM)', Kind.RAID, [0xFF4BFA], enrage = 10 * MINUTES, cm_detector = dhuum_cm_detector, phases = [
+    Boss('Dhuum (CM)', Kind.RAID, [0xFF4BFA], enrage = 10 * MINUTES, cm_detector = dhuum_cm_detector, success_min_health_limit = 95, phases = [
         Phase("Pre-event", True, phase_end_damage_start = 1),
         Phase("Main", True, phase_end_health = 10, phase_end_damage_stop = 10000),
         Phase("???", False, phase_end_damage_start = 10000),
@@ -434,7 +434,7 @@ BOSS_ARRAY = [
         Metric('Snatched', 'Snatched', MetricType.COUNT, True, False),
         Metric('Dhuum Gaze', 'Dhuum Gaze', MetricType.COUNT, True, False)
     ]),
-    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, phases = [
+    Boss('Conjured Amalgamate', Kind.RAID, [0xABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, success_min_health_limit = 95, phases = [
         # Needs more robust sub-phase mechanisms
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
@@ -447,7 +447,7 @@ BOSS_ARRAY = [
         Metric('Junk Fall', 'Falling Junk', MetricType.COUNT, True, False),
         Metric('Junk Absorption', 'Purple Orbs', MetricType.COUNT, True, False),
     ], gather_stats=gather_ca_stats),
-    Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, phases = [
+    Boss('Conjured Amalgamate (CM)', Kind.RAID, [0xFFABC6, 0xFFFFABC6, 0xFFFF9258, 0xFFFF279E], enrage = 8 * MINUTES, cm_detector = ca_cm_detector, success_min_health_limit = 95, phases = [
         Phase("First Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
         Phase("Orb Sweep Burn 1", True, phase_end_damage_stop = 5000, phase_end_health = 50, phase_end_boss_id = [0xFFFFABC6]),
         Phase("Second Arm", True, phase_end_health = 1.01, phase_end_boss_id = [0xFFFF279E, 0xFFFF9258]),
@@ -459,7 +459,7 @@ BOSS_ARRAY = [
         Metric('Junk Fall', 'Falling Junk', MetricType.COUNT, True, False),
         Metric('Junk Absorption', 'Purple Orbs', MetricType.COUNT, True, False),
     ]),
-    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, phases = [
+    Boss('Largos Twins', Kind.RAID, [0x5271, 0x5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, success_min_health_limit = 95, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
@@ -476,7 +476,7 @@ BOSS_ARRAY = [
         Metric('Vapor Jet', 'Boon Steal', MetricType.COUNT, True, False),
         Metric('Aquatic Aura (Kenut)', 'Aquatic Aura (Kenut)', MetricType.COUNT, True, False),
     ], gather_stats=gather_largos_stats),
-    Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, phases = [
+    Boss('Largos Twins (CM)', Kind.RAID, [0xFF5271, 0xFF5261], enrage = 8 * MINUTES, cm_detector = largos_cm_detector, success_min_health_limit = 95, phases = [
         Phase("First Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5271]),
         Phase("Second Platform", True, phase_end_health = 50, phase_end_boss_id = [0x5261]),
         Phase("Third Platforms", True, phase_end_health = 25, phase_end_boss_id = [0x5271, 0x5261]),
@@ -493,7 +493,7 @@ BOSS_ARRAY = [
         Metric('Vapor Jet', 'Boon Steal', MetricType.COUNT, True, False),
         Metric('Aquatic Aura (Kenut)', 'Aquatic Aura (Kenut)', MetricType.COUNT, True, False),
     ]),
-    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, cm_detector=qadim_cm_detector, phases = [
+    Boss('Qadim', Kind.RAID, [0x51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, cm_detector=qadim_cm_detector, success_min_health_limit = 95, phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
         Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
@@ -508,7 +508,7 @@ BOSS_ARRAY = [
         Metric('Fire Wave', 'Shockwave', MetricType.COUNT, True, False),
         Metric('Fiery Dance', 'Fiery Platform Edges', MetricType.COUNT, True, False),
     ], gather_stats=gather_qadim_stats),
-    Boss('Qadim (CM)', Kind.RAID, [0xFF51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, phases = [
+    Boss('Qadim (CM)', Kind.RAID, [0xFF51C6, 0x5325, 0x5251, 0x52BF,0x5205], enrage = 13 * MINUTES, success_min_health_limit = 95, phases = [
         Phase("Hydra", True, phase_end_boss_id = [0x5325], end_on_death=True),
         Phase("Burn", True, phase_end_health = 66, phase_end_boss_id = [0x51C6]),
         Phase("Destroyer", True, phase_end_boss_id = [0x5251], end_on_death=True),
@@ -531,21 +531,21 @@ BOSS_ARRAY = [
     Boss('Massive Vital Kitty Golem', Kind.DUMMY, [16169]),
     Boss('Resistant Kitty Golem', Kind.DUMMY, [16176]),
     Boss('Tough Kitty Golem', Kind.DUMMY, [16174]),
-    Boss('Skorvald the Shattered', Kind.FRACTAL,[0x44E0], phases = [
+    Boss('Skorvald the Shattered', Kind.FRACTAL,[0x44E0], success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 15000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = skorvald_cm_detector, force_single_party = True, non_cm_allowed = False),
-    Boss('Artsariiv', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 1, phases = [
+    Boss('Artsariiv', Kind.FRACTAL, [0x461d], despawns_instead_of_dying = True, success_health_limit = 1, success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 4000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 4000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 4000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 4000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
-    Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 1, phases =[
+    Boss('Arkk', Kind.FRACTAL,[0x455f], despawns_instead_of_dying = True, success_health_limit = 1, success_min_health_limit = 95, phases =[
         Phase("100-80", True, phase_end_health = 80, phase_end_damage_stop = 6000, phase_skip_health = 70),
         Phase("First orb", False, phase_end_damage_start = 6000, phase_skip_health = 70),
         Phase("80-70", True, phase_end_health = 70, phase_end_damage_stop = 6000, phase_skip_health = 50),
@@ -558,7 +558,7 @@ BOSS_ARRAY = [
         Phase("Third orb", False, phase_end_damage_start = 6000, phase_skip_health = 1),
         Phase("30-0", True, phase_end_health = 1, phase_end_damage_stop = 6000)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
-    Boss('MAMA', Kind.FRACTAL, [0x427d], phases = [
+    Boss('MAMA', Kind.FRACTAL, [0x427d], success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 3000, phase_skip_health = 50),
         Phase("First split", False, phase_end_damage_start = 3000, phase_skip_health = 50),
         Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 3000, phase_skip_health = 25),
@@ -567,14 +567,14 @@ BOSS_ARRAY = [
         Phase("Second split", False, phase_end_damage_start = 3000, phase_skip_health = 1),
         Phase("Phase 4", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
-    Boss('Siax', Kind.FRACTAL,[0x4284], phases = [
+    Boss('Siax', Kind.FRACTAL,[0x4284], success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 5000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 5000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 5000, phase_skip_health = 1),
         Phase("Second split", False, phase_end_damage_start = 5000, phase_skip_health = 1),
         Phase("Phase 3", True, phase_end_health=1)
     ], cm_detector = yes_cm, force_single_party = True, non_cm_allowed = False),
-    Boss('Ensolyss', Kind.FRACTAL,[0x4234], phases = [
+    Boss('Ensolyss', Kind.FRACTAL,[0x4234], success_min_health_limit = 95, phases = [
         Phase("Phase 1", True, phase_end_health = 66, phase_end_damage_stop = 15000, phase_skip_health = 33),
         Phase("First split", False, phase_end_damage_start = 15000, phase_skip_health = 33),
         Phase("Phase 2", True, phase_end_health = 33, phase_end_damage_stop = 15000, phase_skip_health = 15),
