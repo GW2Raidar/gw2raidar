@@ -654,7 +654,7 @@ class Analyser:
         success_time = events.time.max()
         success = False
         if self.boss_info.kind == Kind.RAID and encounter.version >= '20170905':
-            success_types = [55821, 60685]
+            success_types = [55821, 60685, 914, 22797]
             if (not events[(events.state_change == parser.StateChange.REWARD)
                              & events.value.isin(success_types)].empty):
                 success = True
