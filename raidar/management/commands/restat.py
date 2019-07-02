@@ -278,13 +278,13 @@ class Command(BaseCommand):
             leaderboards[stat].append(item)
             leaderboards[stat] = sorted(leaderboards[stat], key=lambda x: x[stat])[:10]
 
-        def initialise_era_area_stats(count):
+        def initialise_era_area_stats():
             leaderboards = {
                     'periods': {},
                 }
             return {}, leaderboards
 
-        def initialise_era_user_stats(count):
+        def initialise_era_user_stats():
             return {}
 
         def initialise_era_stats(count):
@@ -450,8 +450,8 @@ class Command(BaseCommand):
 
             area_queryset = Area.objects.all()
             for area in area_queryset.iterator():
-                encounter_queryset = era.encounters.prefetch_related('participations__account').filter(area=area).order_by('?')
-                totals_in_area, leaderboards_in_area = initialise_era_area_stats(encounter_queryset.count())
+                encounter_queryset = era.encounters.filter(area=area).order_by('?')
+                totals_in_area, leaderboards_in_area = initialise_era_area_stats()
 
                 if area.id in BOSSES:
                     kind = BOSSES[area.id].kind.name.lower()
@@ -470,8 +470,8 @@ class Command(BaseCommand):
         def calculate_user_stats(era):
             user_queryset = User.objects.all()
             for user in user_queryset.iterator():
-                participation_queryset = Participation.objects.prefetch_related('encounter', 'account').filter(account__user=user, encounter__era=era).order_by('?')
-                totals_for_player = initialise_era_user_stats(participation_queryset.count())
+                participation_queryset = Participation.objects.filter(account__user=user, encounter__era=era).order_by('?')
+                totals_for_player = initialise_era_user_stats()
                 for participation in participation_queryset.iterator():
                     add_participation_to_era_user_stats(participation, totals_for_player)
                 finalise_era_user_stats(era, user, totals_for_player)
