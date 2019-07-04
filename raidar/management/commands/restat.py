@@ -467,22 +467,31 @@ class Command(BaseCommand):
             verbose("Totals for era %s" % era, totals_in_era)
 
 
-        def calculate_user_stats(era):
-            user_queryset = User.objects.all()
-            for user in user_queryset.iterator():
-                participation_queryset = Participation.objects.filter(account__user=user, encounter__era=era).order_by('?')
-                totals_for_player = initialise_era_user_stats()
-                for participation in participation_queryset.iterator():
-                    add_participation_to_era_user_stats(participation, totals_for_player)
-                finalise_era_user_stats(era, user, totals_for_player)
-                verbose("Totals for era %s, user %s" % (era, user), totals_for_player)
+        def calculate_user_stats(era, new_encounters, forceRecalulation):
+            participations_queryset = Participation.objects.filter(encounter__in=new_encounters)
+            unique_user_queryset = participations_queryset.order_by('account__user').distinct('account__user').values('account__user')
+            for user in unique_user_queryset:
+                user_id = user['account__user']
+                if user_id:
+                    participation_queryset = participations_queryset.filter(account__user=user['account__user'], encounter__era=era).order_by('?')
+                    totals_for_player = {}
+                    if not forceRecalulation:
+                        try:
+                            totals_for_player = EraUserStore.objects.get(era=era, user=user['account__user']).val
+                        except EraUserStore.DoesNotExist:
+                            pass
+                    for participation in participation_queryset.iterator():
+                        add_participation_to_era_user_stats(participation, totals_for_player)
+                    finalise_era_user_stats(era, user['account__user'], totals_for_player)
+                    verbose("Totals for era %s, user %s" % (era, user['account__user']), totals_for_player)
 
 
         for era in Era.objects.all():
-            new_encounters = Encounter.objects.filter(era=era, uploaded_at__gte=last_run).count()
-            if new_encounters or options['force']:
+            new_encounters = Encounter.objects.filter(era=era, uploaded_at__gte=last_run)
+            forceRecalulation = options['force'];
+            if new_encounters or forceRecalulation:
                 calculate_area_stats(era)
-                calculate_user_stats(era)
+                calculate_user_stats(era, new_encounters, forceRecalulation)
             elif options['verbosity'] >= 2:
                 print('Skipped era %s' % era)
 
