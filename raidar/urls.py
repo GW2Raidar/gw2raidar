@@ -30,7 +30,7 @@ urlpatterns = [
     url(r'^change_password.json$', views.change_password, name = "change_password"),
     url(r'^add_api_key.json$', views.add_api_key, name = "add_api_key"),
     url(r'^encounter/(?P<url_id>\w+)(?P<json>\.json)?$', views.encounter, name = "encounter"),
-    url(r'^profile.json$', views.profile, name = "profile"),
+    url(r'^profile(?:/(?P<era_id>[0-9]+))?\.json$', views.profile, name = "profile"),
     url(r'^reset/(?P<uidb64>[0-9A-Za-z_\-]+)/(?P<token>[0-9A-Za-z]{1,13}-[0-9A-Za-z]{1,20})/$',
         auth_views.password_reset_confirm, name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.password_reset_complete, name='password_reset_complete'),
