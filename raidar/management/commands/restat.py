@@ -287,7 +287,7 @@ class Command(BaseCommand):
         def initialise_era_user_stats():
             return {}
 
-        def initialise_era_stats(count):
+        def initialise_era_stats():
             return {}
 
 
@@ -445,44 +445,58 @@ class Command(BaseCommand):
                 for key in sorted(flattened.keys()):
                     print_node(key, flattened[key])
 
-        def calculate_area_stats(era):
-            totals_in_era = initialise_era_stats(era.encounters.count())
+        def calculate_area_stats(era, new_encounters, forceRecalulation):
+            totals_in_era = initialise_era_stats()
 
-            area_queryset = Area.objects.all()
-            for area in area_queryset.iterator():
-                encounter_queryset = era.encounters.filter(area=area).order_by('?')
-                totals_in_area, leaderboards_in_area = initialise_era_area_stats()
+            area_queryset = new_encounters.order_by('area_id').distinct('area').values('area')
+            for area in area_queryset:
+                area_id = area['area']
+                if area_id:
+                    encounter_queryset = Encounter.objects.filter(area=area_id, era=era).order_by('?')
+                    totals_in_area, leaderboards_in_area = initialise_era_area_stats()
 
-                if area.id in BOSSES:
-                    kind = BOSSES[area.id].kind.name.lower()
-                else:
-                    kind = "unknown"
-                totals_for_kind = navigate(totals_in_era, 'kind', 'All %s bosses' % kind)
-                for encounter in encounter_queryset.iterator():
-                    add_encounter_to_era_area_stats(encounter, totals_in_area, totals_for_kind, leaderboards_in_area)
-                finalise_era_area_stats(era, area, totals_in_area, leaderboards_in_area)
-                verbose("Totals for era %s, area %s" % (era, area), totals_in_area)
+                    if area_id in BOSSES:
+                        kind = BOSSES[area_id].kind.name.lower()
+                    else:
+                        kind = "unknown"
+                    totals_for_kind = navigate(totals_in_era, 'kind', 'All %s bosses' % kind)
+                    for encounter in encounter_queryset.iterator():
+                        add_encounter_to_era_area_stats(encounter, totals_in_area, totals_for_kind, leaderboards_in_area)
+                    finalise_era_area_stats(era, area_id, totals_in_area, leaderboards_in_area)
+                    verbose("Totals for era %s, area %s" % (era, area_id), totals_in_area)
 
             finalise_era_stats(era, totals_in_era)
             verbose("Totals for era %s" % era, totals_in_era)
 
 
-        def calculate_user_stats(era):
-            user_queryset = User.objects.all()
-            for user in user_queryset.iterator():
-                participation_queryset = Participation.objects.filter(account__user=user, encounter__era=era).order_by('?')
-                totals_for_player = initialise_era_user_stats()
-                for participation in participation_queryset.iterator():
-                    add_participation_to_era_user_stats(participation, totals_for_player)
-                finalise_era_user_stats(era, user, totals_for_player)
-                verbose("Totals for era %s, user %s" % (era, user), totals_for_player)
+        def calculate_user_stats(era, new_encounters, forceRecalulation):
+            participations_queryset = Participation.objects.filter(encounter__in=new_encounters)
+            unique_user_queryset = participations_queryset.order_by('account__user').distinct('account__user').values('account__user')
+            for user in unique_user_queryset:
+                user_id = user['account__user']
+                if user_id:
+                    participation_queryset = participations_queryset.filter(account__user=user['account__user'], encounter__era=era).order_by('?')
+                    totals_for_player = {}
+                    if not forceRecalulation:
+                        try:
+                            totals_for_player = EraUserStore.objects.get(era=era, user=user['account__user']).val
+                        except EraUserStore.DoesNotExist:
+                            pass
+                    for participation in participation_queryset.iterator():
+                        add_participation_to_era_user_stats(participation, totals_for_player)
+                    finalise_era_user_stats(era, user['account__user'], totals_for_player)
+                    verbose("Totals for era %s, user %s" % (era, user['account__user']), totals_for_player)
 
 
         for era in Era.objects.all():
-            new_encounters = Encounter.objects.filter(era=era, uploaded_at__gte=last_run).count()
-            if new_encounters or options['force']:
-                calculate_area_stats(era)
-                calculate_user_stats(era)
+            forceRecalulation = options['force']
+            last_run_timestamp = last_run
+            if forceRecalulation:
+                last_run_timestamp = 0
+            new_encounters = Encounter.objects.filter(era=era, uploaded_at__gte=last_run_timestamp)
+            if new_encounters:
+                calculate_area_stats(era, new_encounters, forceRecalulation)
+                calculate_user_stats(era, new_encounters, forceRecalulation)
             elif options['verbosity'] >= 2:
                 print('Skipped era %s' % era)
 
