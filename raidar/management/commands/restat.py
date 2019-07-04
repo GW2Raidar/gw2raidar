@@ -441,9 +441,9 @@ class Command(BaseCommand):
             if options['verbosity'] >= 3:
                 print()
                 print(title)
-                # flattened = flatten(content)
-                # for key in sorted(flattened.keys()):
-                #     print_node(key, flattened[key])
+                flattened = flatten(content)
+                for key in sorted(flattened.keys()):
+                    print_node(key, flattened[key])
 
         def calculate_area_stats(era, new_encounters, forceRecalulation):
             totals_in_era = initialise_era_stats()
