@@ -928,15 +928,6 @@ ${body}
     }
     return false;
   }
-  let url = getPageURLFromObject(initPage);
-  history.replaceState(initPage, null, url);
-  if (pageInit[initPage.name]) {
-    pageInit[initPage.name](initPage);
-  }
-  if (window.ga) {
-    window.ga('set', 'page', url);
-    window.ga('send', 'pageview');
-  }
 
   function notification(str, style) {
     UIkit.notification(str, style);
