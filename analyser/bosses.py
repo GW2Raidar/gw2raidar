@@ -525,11 +525,11 @@ BOSS_ARRAY = [
     ]),
     # W7 Bosses
     Boss('Cardinal Adina', Kind.RAID, [22006], enrage = 8 * MINUTES, success_min_health_limit = 95, phases = [
-        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 1000),
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),
         Phase("Hands 1", False, phase_end_damage_start = 1000),
-        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 1000),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000),
         Phase("Hands 2", False, phase_end_damage_start = 1000),
-        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 1000),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000),
         Phase("Hands 3", False, phase_end_damage_start = 1000),
         Phase("Phase 4", True)
     ]),
