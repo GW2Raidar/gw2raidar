@@ -1,6 +1,6 @@
 {% load staticfiles %}
 [[#with profile]]
-  [[#with profile.eras[page.era]]]
+  [[#with profile.era[page.era]]]
     [[#with profile]]
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
         [[#each data.boss_locations]]
@@ -83,11 +83,11 @@
 
       <div>
         <h6 class="uk-font-family-secondary uk-text-uppercase">Time Frame</h6>
-        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">[[eras[page.era].name]] <i class="material-icons">expand_more</i></button>
+        <button class="uk-button uk-width-auto@l uk-width-1-1 uk-margin-right@l" type="button">[[name]] <i class="material-icons">expand_more</i></button>
         <div uk-dropdown="mode: click">
           <ul class="uk-nav uk-dropdown-nav">
             [[#each era_order]]
-              <li><a href="#" on-click="@this.set({'page.era': id})">[[name]]</a></li>
+              <li><a on-click="@this.fire('global_stats_nav', 'page.no', id)">[[name]]</a></li>
             [[/each]]
           </ul>
         </div>

@@ -178,15 +178,21 @@ def _add_build_data_to_profile(kind, data, profile):
                     elitedata['everyone'] = builddata
     profile['encounter'][kind]['individual'] = data['individual']
 
-def _profile_data_for_era(era_user_store):
+def _profile_data_for_era(user, era_user_store):
     era = era_user_store.era
     era_val = era.val
     profile = era_user_store.val
 
-    for era_area_store in EraAreaStore.objects.filter(era=era):
-        _add_build_data_to_profile(str(era_area_store.area_id), era_area_store.val, profile)
-    for kind, kind_data in era_val['kind'].items():
-        _add_build_data_to_profile(kind, kind_data, profile)
+    unique_areas_for_era = Encounter.objects.filter(accounts__user=user, era=era).order_by('area_id').distinct('area').values('area')
+
+    for area in unique_areas_for_era: 
+        area_id = area['area']
+        if area_id:
+            era_area_store = EraAreaStore.objects.filter(era=era, area=area_id).first()
+            if era_area_store:
+                _add_build_data_to_profile(str(era_area_store.area_id), era_area_store.val, profile)
+                for kind, kind_data in era_val['kind'].items():
+                    _add_build_data_to_profile(kind, kind_data, profile)
 
     return {
         'id': era_user_store.era_id,
@@ -197,21 +203,37 @@ def _profile_data_for_era(era_user_store):
     }
 
 @require_GET
-def profile(request):
+def profile(request, era_id=None):
     if not request.user.is_authenticated:
         return _error("Not authenticated")
 
     user = request.user
-    queryset = EraUserStore.objects.filter(user=user).select_related('era')
-    try:
-        eras = { era_user_store.era.id: _profile_data_for_era(era_user_store) for era_user_store in queryset}
-    except EraUserStore.DoesNotExist:
-        eras = {}
+    queryset = EraUserStore.objects.filter(user=user).exclude(value='{}').select_related('era').order_by('-era__started_at')
+    era_user_store = None
+    if era_id:
+        era_user_store = queryset.filter(era=era_id).first()
+    else:
+        era_user_store = queryset.first()
+    if era_user_store:
+        try:
+            eradata = { era_user_store.era.id: _profile_data_for_era(user, era_user_store)}
+        except EraUserStore.DoesNotExist:
+            eradata = {}
+    else:
+        eradata = {}
+
+    era_names = {era_user.era.id: {
+            'name': era_user.era.name,
+            'id': era_user.era.id,
+            'started_at': era_user.era.started_at,
+            'description': era_user.era.description
+        } for era_user in queryset}
 
     profile = {
         'username': user.username,
         'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
-        'eras': eras,
+        'era': eradata,
+        'eras_for_dropdown': era_names,
     }
 
     result = {
