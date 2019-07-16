@@ -32,3 +32,5 @@
 config.codekit3
 *.map
 .DS_Store
+pyraidar
+*.iml
