@@ -386,3 +386,12 @@ class EraAreaStore(ValueModel):
 class EraUserStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
+
+class RestatPerfStats(models.Model):
+    started_on = models.DateTimeField()
+    ended_on = models.DateTimeField()
+    number_users = models.IntegerField()
+    number_eras = models.IntegerField()
+    number_areas = models.IntegerField()
+    number_new_encounters = models.IntegerField()
+    was_force = models.BooleanField()

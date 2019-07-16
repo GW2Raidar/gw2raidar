@@ -523,6 +523,36 @@ BOSS_ARRAY = [
         Metric('Fire Wave', 'Shockwave', MetricType.COUNT, True, False),
         Metric('Fiery Dance', 'Fiery Platform Edges', MetricType.COUNT, True, False),
     ]),
+    # W7 Bosses
+    Boss('Cardinal Adina', Kind.RAID, [22006], enrage = 8 * MINUTES, success_min_health_limit = 95, phases = [
+        Phase("Phase 1", True, phase_end_health = 75, phase_end_damage_stop = 10000),
+        Phase("Hands 1", False, phase_end_damage_start = 1000),
+        Phase("Phase 2", True, phase_end_health = 50, phase_end_damage_stop = 10000),
+        Phase("Hands 2", False, phase_end_damage_start = 1000),
+        Phase("Phase 3", True, phase_end_health = 25, phase_end_damage_stop = 10000),
+        Phase("Hands 3", False, phase_end_damage_start = 1000),
+        Phase("Phase 4", True)
+    ]),
+    Boss('Cardinal Sabir', Kind.RAID, [21964], enrage = 9 * MINUTES, success_min_health_limit = 95, phases = [
+        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
+        Phase("Jump Puzzle 1", False, phase_end_damage_start = 1000),
+        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000),
+        Phase("Jump Puzzle 2", False, phase_end_damage_start = 1000),
+        Phase("Phase 3", True)
+    ]),
+        Boss('Qadim the Peerless', Kind.RAID, [22000], enrage = 12 * MINUTES, success_min_health_limit = 95, phases = [
+        Phase("Phase 1", True, phase_end_health = 80, phase_end_damage_stop = 1000),
+        Phase("Fire Phase 1", False, phase_end_damage_start = 1000),
+        Phase("Phase 2", True, phase_end_health = 60, phase_end_damage_stop = 1000),
+        Phase("Fire Phase 2", False, phase_end_damage_start = 1000),
+        Phase("Phase 3", True, phase_end_health = 40, phase_end_damage_stop = 1000),
+        Phase("Pylon Break 1", False, phase_end_damage_start = 1000),
+        Phase("Phase 4", True, phase_end_health = 30, phase_end_damage_stop = 1000),
+        Phase("Pylon Break 2", False, phase_end_damage_start = 1000),
+        Phase("Phase 5", True, phase_end_health = 20, phase_end_damage_stop = 1000),
+        Phase("Pylon Break 3", False, phase_end_damage_start = 1000),
+        Phase("Phase 6", True)
+    ]),
     Boss('Standard Kitty Golem', Kind.DUMMY, [16199]),
     Boss('Average Kitty Golem', Kind.DUMMY, [16177]),
     Boss('Vital Kitty Golem', Kind.DUMMY, [16198]),
@@ -639,6 +669,14 @@ BOSS_LOCATIONS = [
                     IDS['Qadim'],
                 ],
             },
+            {
+                "name": "The Key of Ahdashim",
+                "bosses": [
+                    IDS['Cardinal Adina'],
+                    IDS['Cardinal Sabir'],
+                    IDS['Qadim the Peerless'],
+                ],
+            },            
         ],
     },
     {

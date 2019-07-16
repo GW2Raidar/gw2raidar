@@ -694,14 +694,13 @@ ${body}
         'page.area': 'All raid bosses',
       });
       $.get({
-        url: 'profile.json',
+        url: getPageURLFromObject(page).substring(1) + '.json',
       }).then(setData).then(() => {
-        let eras = r.get('profile.eras');
-        let eraOrder = Object.values(eras)
-          .filter(era => 'encounter' in era.profile)
+        let era = r.get('profile.era');
+        let eraOrder =  Object.values(r.get('profile.eras_for_dropdown'))
           .sort((e1, e2) => e2.started_at - e1.started_at);
         r.set({
-          'page.era': eraOrder[0].id,
+          'page.era': Object.keys(era)[0],
           'profile.era_order': eraOrder,
         });
       });
@@ -927,15 +926,6 @@ ${body}
       window.ga('send', 'pageview');
     }
     return false;
-  }
-  let url = getPageURLFromObject(initPage);
-  history.replaceState(initPage, null, url);
-  if (pageInit[initPage.name]) {
-    pageInit[initPage.name](initPage);
-  }
-  if (window.ga) {
-    window.ga('set', 'page', url);
-    window.ga('send', 'pageview');
   }
 
   function notification(str, style) {
