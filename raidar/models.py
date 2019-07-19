@@ -1,6 +1,6 @@
 from django.db import models
 from django.db.models.signals import post_save, post_delete
-from django.db.models import Q
+from django.db.models import UniqueConstraint
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from datetime import datetime, timedelta
@@ -205,7 +205,27 @@ def _dictionary():
 def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
+
+class EncounterData(models.Model):
+    class Meta:
+        db_table = "raidar_encounter_data"
+    boss = models.TextField()
+    cm = models.BooleanField()
+    start_timestamp = models.DateTimeField()
+    start_tick = models.PositiveIntegerField()
+    end_tick = models.PositiveIntegerField()
+    success = models.BooleanField()
+    evtc_version = models.TextField()
+
+    def duration_ticks(self):
+        return self.end_tick - self.start_tick
+
+    def duration(self):
+        return self.duration_ticks() / 100
+
+
 class Encounter(ValueModel):
+    # encounter_data = models.ForeignKey(EncounterData, db_column="encounter_id", on_delete=models.CASCADE)
     url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
@@ -395,3 +415,90 @@ class RestatPerfStats(models.Model):
     number_areas = models.IntegerField()
     number_new_encounters = models.IntegerField()
     was_force = models.BooleanField()
+
+
+class EncounterAttribute(models.Model):
+    class Meta:
+        abstract = True
+    encounter = models.ForeignKey(EncounterData, db_column="encounter_id", on_delete=models.CASCADE)
+
+
+class SourcedEncounterAttribute(EncounterAttribute):
+    class Meta:
+        abstract = True
+        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source"], name="enc_attr_unique")
+    phase = models.TextField()
+    source = models.TextField()
+
+
+class TargetedEncounterAttribute(SourcedEncounterAttribute):
+    class Meta:
+        abstract = True
+        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "target"], name="enc_target_attr_unique")
+    target = models.TextField()
+
+
+class EncounterEvent(SourcedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_event"
+        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source"], name="enc_evt_unique")
+    disconnect_count = models.PositiveIntegerField()
+    disconnect_time = models.PositiveIntegerField()
+    down_count = models.PositiveIntegerField()
+    down_time = models.PositiveIntegerField()
+
+    def get_inactive_time(self):
+        return self.disconnect_time + self.down_time
+
+
+class EncounterMechanic(SourcedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_mechanic"
+        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "mechanic"], name="enc_mech_unique")
+    mechanic = models.TextField()
+    count = models.PositiveIntegerField()
+
+
+class EncounterBuff(TargetedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_buff"
+        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "target", "buff"], name="enc_buff_unique")
+    buff = models.TextField()
+    uptime = models.FloatField()
+
+
+class EncounterDamage(TargetedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_damage"
+        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "target", "skill"], name="enc_dmg_unique")
+    skill = models.TextField()
+    damage = models.IntegerField()
+    crit = models.FloatField()
+    fifty = models.FloatField()
+    flanking = models.FloatField()
+    scholar = models.FloatField()
+    seaweed = models.FloatField()
+
+
+class EncounterPlayer(EncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_player"
+        constraints = UniqueConstraint(fields=["encounter_id", "account_id"], name="enc_player_unique")
+    account_id = models.TextField()
+    character = models.TextField()
+    party = models.PositiveIntegerField()
+    profession = models.PositiveIntegerField()
+    elite = models.PositiveIntegerField()
+    archetype = models.PositiveIntegerField()
+    conc = models.PositiveIntegerField()
+    condi = models.PositiveIntegerField()
+    heal = models.PositiveIntegerField()
+    tough = models.PositiveIntegerField()
+
+
+class EncounterPhase(EncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_phase"
+        constraints = UniqueConstraint(fields=["encounter_id", "phase"], name="enc_phase_unique")
+    phase = models.TextField()
+    start_tick = models.PositiveIntegerField()
