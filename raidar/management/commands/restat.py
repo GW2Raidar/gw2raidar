@@ -237,15 +237,16 @@ class Command(BaseCommand):
                 print()
                 print("Completed in %ss" % (end - start))
             
-            RestatPerfStats.objects.create(
-                started_on=start_date,
-                ended_on=end_date,
-                number_users=usersCount,
-                number_eras=eraCount,
-                number_areas=areasCount,
-                number_new_encounters=newEncountersCount,
-                number_pruned_evtcs=pruned_count,
-                was_force=options['force'])
+            if (newEncountersCount + pruned_count) > 0:
+                RestatPerfStats.objects.create(
+                    started_on=start_date,
+                    ended_on=end_date,
+                    number_users=usersCount,
+                    number_eras=eraCount,
+                    number_areas=areasCount,
+                    number_new_encounters=newEncountersCount,
+                    number_pruned_evtcs=pruned_count,
+                    was_force=options['force'])
 
     def delete_old_files(self, *args, **options):
         GB = 1024 * 1024 * 1024
