@@ -228,7 +228,7 @@ class Command(BaseCommand):
         with single_process('restat'), necessary() as last_run:
             start = time()
             start_date = datetime.now()
-            self.delete_old_files(*args, **options)
+            pruned_count = self.delete_old_files(*args, **options)
             eraCount, areasCount, usersCount, newEncountersCount = self.calculate_stats(last_run, *args, **options)
             end = time()
             end_date = datetime.now()
@@ -244,11 +244,13 @@ class Command(BaseCommand):
                 number_eras=eraCount,
                 number_areas=areasCount,
                 number_new_encounters=newEncountersCount,
+                number_pruned_evtcs=pruned_count,
                 was_force=options['force'])
 
     def delete_old_files(self, *args, **options):
         GB = 1024 * 1024 * 1024
         MIN_DISK_AVAIL = 10 * GB
+        num_pruned = 0
 
         if hasattr(os, 'statvfs'):
             def is_there_space_now():
@@ -261,7 +263,7 @@ class Command(BaseCommand):
                 return True
 
         if is_there_space_now():
-            return
+            return num_pruned
 
         encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
         for encounter in encounter_queryset.iterator():
@@ -269,12 +271,14 @@ class Command(BaseCommand):
             if filename:
                 try:
                     os.unlink(filename)
+                    num_pruned += 1
                 except FileNotFoundError:
                     pass
             encounter.has_evtc = False
             encounter.save()
             if is_there_space_now():
-                return
+                return num_pruned
+        return num_pruned
 
 
     def calculate_stats(self, last_run, *args, **options):

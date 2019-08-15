@@ -394,4 +394,5 @@ class RestatPerfStats(models.Model):
     number_eras = models.IntegerField()
     number_areas = models.IntegerField()
     number_new_encounters = models.IntegerField()
+    number_pruned_evtcs = models.IntegerField()
     was_force = models.BooleanField()
