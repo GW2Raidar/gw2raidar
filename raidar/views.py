@@ -1,5 +1,6 @@
+from django.db.models import Sum, Max
 from .models import *
-from analyser.analyser import Analyser, Group, Profession, SPECIALISATIONS, Archetype, EvtcAnalysisException
+from analyser.analyser import Profession, SPECIALISATIONS
 from analyser.bosses import BOSSES, BOSS_LOCATIONS
 from analyser.buffs import BUFF_TYPES, BUFF_TABS, StackType
 from django.conf import settings
@@ -7,9 +8,7 @@ from django.contrib.auth import authenticate, login as auth_login, logout as aut
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.forms import PasswordChangeForm, PasswordResetForm
 from django.contrib.auth.models import User
-from django.contrib.auth.tokens import default_token_generator
 from django.contrib.staticfiles.templatetags.staticfiles import static
-from django.core import serializers
 from django.core.mail import EmailMessage
 from django.views.decorators.csrf import csrf_exempt
 from smtplib import SMTPException
@@ -17,24 +16,20 @@ from django.db.utils import IntegrityError
 from django.http import JsonResponse, HttpResponse, Http404, UnreadablePostError
 from django.middleware.csrf import get_token
 from django.shortcuts import render
-from django.utils import timezone
-from django.utils.http import urlsafe_base64_decode
 from django.views.decorators.cache import never_cache
 from django.views.decorators.debug import sensitive_post_parameters, sensitive_variables
 from django.views.decorators.http import require_GET, require_POST
 from gw2api.gw2api import GW2API, GW2APIException
-from itertools import groupby
 from json import dumps as json_dumps
-from os import makedirs, sep as dirsep
-from os.path import join as path_join, isfile, dirname
+from os import makedirs
+from os.path import isfile, dirname
 import pytz
 from datetime import datetime
-from re import match, sub
+from re import sub
 from time import time
 import logging
 import numpy as np
 import base64
-
 
 
 logger = logging.getLogger(__name__)
@@ -69,7 +64,7 @@ def _userprops(request):
 
 
 def _encounter_data(request):
-    participations = Participation.objects.filter(account__user=request.user).defer('encounter__value').select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
+    participations = Participation.objects.filter(account__user=request.user).select_related('encounter', 'account', 'encounter__area').prefetch_related('encounter__tagged_items__tag')
     return [participation.data() for participation in participations]
 
 def _login_successful(request, user):
@@ -82,15 +77,17 @@ def _login_successful(request, user):
     return JsonResponse(userprops)
 
 
-
 def _buff_data(buff):
-    data = { "name": buff.name }
+    data = {"name": buff.name}
     if buff.stacking == StackType.INTENSITY:
         data["stacks"] = buff.capacity
     data["icon"] = static("raidar/img/buff/%s.png" % buff.code)
     return data
 
-def _html_response(request, page, data={}):
+
+def _html_response(request, page, data=None):
+    if data is None:
+        data = {}
     response = _userprops(request)
     response.update(data)
     try:
@@ -136,14 +133,13 @@ def download(request, url_id=None):
             user=request.user)]
     else:
         own_account_names = []
-    dump = encounter.val
-    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
+    members = encounter.encounter_data.encounterplayer_set.filter(account__isnull=False)
 
     encounter_showable = True
     for member in members:
-        is_self = member['account'] in own_account_names
+        is_self = member.account_id in own_account_names
 
-        user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
+        user_profile = UserProfile.objects.filter(user__accounts__name=member.account_id)
         if user_profile:
             privacy = user_profile[0].privacy
         else:
@@ -161,7 +157,7 @@ def download(request, url_id=None):
 
 
 @require_GET
-def index(request, page={ 'name': '' }):
+def index(request, page=None):
     return _html_response(request, page)
 
 
@@ -202,6 +198,74 @@ def _profile_data_for_era(user, era_user_store):
         'profile': profile,
     }
 
+
+def _phase_breakdown_for_subgroup(encounter_data, subgroup, phase_name):
+    buffs = encounter_data.encounterbuff_set
+    events = encounter_data.encounterevent_set
+    damage = encounter_data.encounterdamage_set
+    mechanics = encounter_data.encountermechanic_set
+
+    if phase_name != "All":
+        buffs = buffs.filter(phase=phase_name)
+        events = events.filter(phase=phase_name)
+        damage = damage.filter(phase=phase_name)
+        mechanics = mechanics.filter(phase=phase_name)
+
+    return {
+        "actual": {cleave["skill"]: cleave["damage__sum"] for cleave in damage.filter(source__in=subgroup.values("character"), target="*All", skill__in=["condi", "power"], damage__gt=0).values("skill").annotate(Sum("damage"))},
+        "actual_boss": {targeted["skill"]: targeted["damage__sum"] for targeted in damage.filter(source__in=subgroup.values("character"), target="*Boss", skill__in=["condi", "power"], damage__gt=0).values("skill").annotate(Sum("damage"))},
+        "received": damage.filter(target__in=subgroup.values("character")).aggregate(Sum("damage"))["damage__sum"],
+        "shielded": damage.filter(source__in=subgroup.values("character"), skill="shielded").aggregate(Sum("damage"))["damage__sum"],
+        "buffs": {buff_in.name: buff_in.uptime for buff_in in buffs.filter(target__in=subgroup.values("character"))},
+        "buffs_out": {buff_out.name: buff_out.uptime for buff_out in buffs.filter(source__in=subgroup.values("character"))},
+        "events": {
+            "disconnect_count": events.filter(source__in=subgroup.values("character")).aggregate(Sum("disconnect_count"))["disconnect_count__sum"],
+            "disconnect_time": events.filter(source__in=subgroup.values("character")).aggregate(Sum("disconnect_time"))["disconnect_time__sum"],
+            "down_count": events.filter(source__in=subgroup.values("character")).aggregate(Sum("down_count"))["down_count__sum"],
+            "down_time": events.filter(source__in=subgroup.values("character")).aggregate(Sum("down_time"))["down_time__sum"],
+        },
+        "mechanics": {mechanic["name"]: mechanic["count__sum"] for mechanic in mechanics.filter(source__in=subgroup.values("character")).annotate(Sum("count"))},
+    }
+
+
+def _phase_breakdown_for_player(encounter_data, player, phase_name):
+    buffs = encounter_data.encounterbuff_set
+    events = encounter_data.encounterevent_set
+    damage = encounter_data.encounterdamage_set
+    mechanics = encounter_data.encountermechanic_set
+
+    if phase_name != "All":
+        buffs = buffs.filter(phase=phase_name)
+        events = events.filter(phase=phase_name)
+        damage = damage.filter(phase=phase_name)
+        mechanics = mechanics.filter(phase=phase_name)
+
+    return {
+        "actual": {cleave.skill: cleave.data() for cleave in damage.filter(source=player.character, target="*All", damage__gt=0)},
+        "actual_boss": {targeted.skill: targeted.data() for targeted in damage.filter(source=player.character, target="*Boss", damage__gt=0)},
+        "received": {incoming.skill: incoming.data() for incoming in damage.filter(target=player.character)},
+        "shielded": {cleave.skill: cleave.data() for cleave in damage.filter(source=player.character, skill="shielded")},
+        "buffs": {buff_in.name: buff_in.uptime for buff_in in buffs.filter(target=player.character)},
+        "buffs_out": {buff_out.name: buff_out.uptime for buff_out in buffs.filter(source=player.character)},
+        "events": {
+            "disconnect_count": events.filter(source=player.character).aggregate(Sum("disconnect_count"))["disconnect_count__sum"],
+            "disconnect_time": events.filter(source=player.character).aggregate(Sum("disconnect_time"))["disconnect_time__sum"],
+            "down_count": events.filter(source=player.character).aggregate(Sum("down_count"))["down_count__sum"],
+            "down_time": events.filter(source=player.character).aggregate(Sum("down_time"))["down_time__sum"],
+        },
+        "mechanics": {mechanic["name"]: mechanic["count"] for mechanic in mechanics.filter(source=player.character).annotate(Sum("count"))},
+    }
+
+
+def _calc_phase_duration(phase_name, encounter):
+    if phase_name == "All":
+        return encounter.duration
+    start_tick = encounter.encounter_data.encounterphase_set.get(name=phase_name).start_tick
+    next_phase = encounter.encounter_data.encounterphase_set.filter(start_tick__gt=start_tick).order_by("start_tick").first()
+    end_tick = encounter.encounter_data.end_tick if next_phase is None else next_phase.start_tick
+    return end_tick - start_tick
+
+
 @require_GET
 def profile(request, era_id=None):
     if not request.user.is_authenticated:
@@ -209,7 +273,6 @@ def profile(request, era_id=None):
 
     user = request.user
     queryset = EraUserStore.objects.filter(user=user).exclude(value='{}').select_related('era').order_by('-era__started_at')
-    era_user_store = None
     if era_id:
         era_user_store = queryset.filter(era=era_id).first()
     else:
@@ -358,69 +421,49 @@ def encounter(request, url_id=None, json=None):
         participations__encounter_id=encounter.id,
         user=request.user)] if request.user.is_authenticated else []
 
-    dump = encounter.val
-    members = [{ "name": name, **value } for name, value in dump['Category']['status']['Player'].items() if 'account' in value]
+    data = encounter.encounter_data
+    players = data.encounterplayer_set.filter(account_id__isnull=False)
+    groups = {"All": players}
+    for player in players:
+        if player.party not in groups:
+            groups[player.party] = players.filter(party=player.party)
+    phases = [phase.name for phase in data.encounterphase_set.all()]
+    phases.append("All")
 
     try:
         area_stats = EraAreaStore.objects.get(era=encounter.era, area=encounter.area).val
     except EraAreaStore.DoesNotExist:
         area_stats = None
-    phases = _safe_get(lambda: dump['Category']['encounter']['phase_order'] + ['All'], list(dump['Category']['combat']['Phase'].keys()))
-    partyfunc = lambda member: member['party']
-    namefunc = lambda member: member['name']
-    parties = { party: {
-                    "members": sorted(members, key=namefunc),
-                    "phases": {
-                        phase: {
-                            "actual": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*All']),
-                            "actual_boss": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['To']['*Boss']),
-                            "received": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['damage']['From']['*All']),
-                            "shielded": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['shielded']['From']['*All']),
-                            "buffs": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['From']['*All']),
-                            "buffs_out": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['buffs']['To']['*All']),
-                            "events": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['events']),
-                            "mechanics": _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup'][str(party)]['Metrics']['mechanics']),
-                        } for phase in phases
-                    }
-                } for party, members in groupby(sorted(members, key=partyfunc), partyfunc) }
-    private = False
+    parties = {
+        party: {
+            "members": {member.character: member.data() for member in members},
+            "phases": {phase: _phase_breakdown_for_subgroup(data, members, phase) for phase in phases},
+        } for party, members in groups.items()
+    }
 
     encounter_showable = True
-    for party_no, party in parties.items():
-        for member in party['members']:
-            if member['account'] in own_account_names:
-                member['self'] = True
-            member['phases'] = {
-                phase: {
-                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['To']['*Boss']),
-                    'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['damage']['From']['*All']),
-                    'shielded': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['shielded']['From']['*All']),
-                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['From']['*All']),
-                    'buffs_out': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['buffs']['To']['*All']),
-                    'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['events']),
-                    'mechanics': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Player'][member['name']]['Metrics']['mechanics']),
-                    'archetype': _safe_get(lambda: area_stats[phase]['build'][str(member['profession'])][str(member['elite'])][str(member['archetype'])]),
-                } for phase in phases
-            }
+    for party_name, party in parties.items():
+        for member_name, member in party["members"].items():
+            if member["account"] in own_account_names:
+                member["self"] = True
+            member["phases"] = {phase: _phase_breakdown_for_player(data, players.get(character=member_name), phase) for phase in phases}
 
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
             if user_profile:
                 privacy = user_profile[0].privacy
             else:
                 privacy = UserProfile.SQUAD
-            if 'self' not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
-                member['name'] = ''
-                member['account'] = ''
-                private = True
+            if "self" not in member and (privacy == UserProfile.PRIVATE or (privacy == UserProfile.SQUAD and not own_account_names)):
+                member["name"] = ""
+                member["account"] = ""
                 encounter_showable = False
 
-    max_player_dps = max(_safe_get(lambda: data['Metrics']['damage']['To']['*All']['dps']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
-    max_player_recv = max(_safe_get(lambda: data['Metrics']['damage']['From']['*All']['total']) for phasename, phase in dump['Category']['combat']['Phase'].items() for player, data in phase['Player'].items())
+    max_player_dps = data.encounterdamage_set.filter(target="*All", skill__in=["condi", "power"], damage__gt=0).values("source").annotate(Sum("damage")).aggregate(Max("damage__sum"))["damage__sum__max"]
+    max_player_recv = data.encounterdamage_set.filter(target__in=players.values("character")).values("target").annotate(Sum("damage")).aggregate(Max("damage__sum"))["damage__sum__max"]
 
     data = {
         "encounter": {
-            "evtc_version": _safe_get(lambda: dump['Category']['encounter']['evtc_version']),
+            "evtc_version": data.evtc_version,
             "id": encounter.id,
             "url_id": encounter.url_id,
             "name": encounter.area.name,
@@ -432,24 +475,16 @@ def encounter(request, url_id=None, json=None):
             "success": encounter.success,
             "tags": encounter.tagstring,
             "category": encounter.category_id,
-            "phase_order": phases,
+            "phase_order": [phase.name for phase in data.encounterphase_set.order_by("start_tick")],
             "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
             "max_player_dps": max_player_dps,
             "max_player_recv": max_player_recv,
             "phases": {
                 phase: {
-                    'duration': encounter.duration if phase == "All" else _safe_get(lambda: dump['Category']['encounter']['Phase'][phase]['duration']),
-                    'group': _safe_get(lambda: area_stats[phase]['group']),
-                    'individual': _safe_get(lambda: area_stats[phase]['individual']),
-                    'actual': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*All']),
-                    'actual_boss': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['To']['*Boss']),
-                    'received': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['damage']['From']['*All']),
-                    'shielded': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['shielded']['From']['*All']),
-                    'buffs': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['From']['*All']),
-                    'buffs_out': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['buffs']['To']['*All']),
-                    'events': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['events']),
-                    'mechanics': _safe_get(lambda: dump['Category']['combat']['Phase'][phase]['Subgroup']['*All']['Metrics']['mechanics']),
+                    "duration": _calc_phase_duration(phase, encounter),
+                    "group": _safe_get(lambda: area_stats[phase]["group"]),
+                    "individual": _safe_get(lambda: area_stats[phase]["individual"]),
                 } for phase in phases
             },
             "parties": parties,
@@ -458,17 +493,17 @@ def encounter(request, url_id=None, json=None):
 
     if encounter_showable or request.user.is_staff:
         if encounter.gdrive_url:
-            data['encounter']['evtc_url'] = encounter.gdrive_url;
+            data["encounter"]["evtc_url"] = encounter.gdrive_url
         # XXX relic TODO remove once we fully cross to GDrive?
-        if hasattr(settings, 'UPLOAD_DIR'):
+        if hasattr(settings, "UPLOAD_DIR"):
             path = encounter.diskname()
             if isfile(path):
-                data['encounter']['downloadable'] = True
+                data["encounter"]["downloadable"] = True
 
     if json:
         return JsonResponse(data)
     else:
-        return _html_response(request, { "name": "encounter", "no": encounter.url_id }, data)
+        return _html_response(request, {"name": "encounter", "no": encounter.url_id}, data)
 
 
 @require_GET
@@ -507,7 +542,6 @@ def login(request):
 @require_POST
 @never_cache
 def reset_pw(request):
-    email = request.POST.get('email')
     form = PasswordResetForm(request.POST)
     if form.is_valid():
         opts = {
@@ -517,7 +551,7 @@ def reset_pw(request):
             'request': request,
         }
         form.save(**opts)
-        return JsonResponse({});
+        return JsonResponse({})
 
 
 @sensitive_post_parameters('password')
@@ -547,7 +581,7 @@ def register(request):
         # Registered to another account
         old_gw2api = GW2API(account.api_key)
         try:
-            gw2_account = old_gw2api.query("/account")
+            old_gw2api.query("/account")
             # Old key is still valid, ask user to invalidate it
             try:
                 old_api_key_info = old_gw2api.query("/tokeninfo")
@@ -580,18 +614,18 @@ def register(request):
 @require_POST
 def logout(request):
     auth_logout(request)
-    csrftoken = get_token(request)
+    get_token(request)
     return JsonResponse({})
 
 
 def _perform_upload(request):
-    if (len(request.FILES) != 1):
-        return ("Only single file uploads are allowed", None)
+    if len(request.FILES) != 1:
+        return "Only single file uploads are allowed", None
 
     if 'file' in request.FILES:
         file = request.FILES['file']
     else:
-        return ("Missing file attachment named `file`", None)
+        return "Missing file attachment named `file`", None
     filename = file.name
 
     val = {}
@@ -599,8 +633,6 @@ def _perform_upload(request):
         val['category_id'] = request.POST['category']
     if 'tags' in request.POST:
         val['tagstring'] = request.POST['tags']
-
-    uploaded_at = time()
 
     upload, _ = Upload.objects.update_or_create(
             filename=filename, uploaded_by=request.user,
@@ -617,7 +649,7 @@ def _perform_upload(request):
             if len(buf) == 0:
                 break
             diskfile.write(buf)
-    return (filename, upload)
+    return filename, upload
 
 
 @login_required
@@ -628,6 +660,7 @@ def upload(request):
         return _error(filename)
 
     return JsonResponse({"filename": filename, "upload_id": upload.id})
+
 
 @csrf_exempt
 @require_POST
@@ -647,11 +680,13 @@ def api_upload(request):
     except UnreadablePostError as e:
         return _error(e)
 
+
 @csrf_exempt
 def api_categories(request):
     categories = Category.objects.all()
-    result = { category.id: category.name for category in categories }
+    result = {category.id: category.name for category in categories}
     return JsonResponse(result)
+
 
 @login_required
 @require_POST
@@ -689,8 +724,8 @@ def profile_graph(request):
             }
     except KeyError:
         requested = None # XXX fill out in restat
-    MAX_GRAPH_ENCOUNTERS = 50 # XXX move to top or to settings
-    db_data = participations.order_by('-encounter__started_at')[:MAX_GRAPH_ENCOUNTERS].values_list('character', 'encounter__started_at', 'encounter__value')
+    max_graph_encounters = 50 # XXX move to top or to settings
+    db_data = participations.order_by('-encounter__started_at')[:max_graph_encounters].values_list('character', 'encounter__started_at', 'encounter__value')
     data = []
     times = []
 
@@ -717,6 +752,7 @@ def profile_graph(request):
 def named(request, name, no):
     return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
 
+
 @login_required
 @require_POST
 def poll(request):
@@ -733,6 +769,7 @@ def poll(request):
         result['last_id'] = notifications.last().id
     return JsonResponse(result)
 
+
 @login_required
 @require_POST
 def privacy(request):
@@ -740,6 +777,7 @@ def privacy(request):
     profile.privacy = int(request.POST.get('privacy'))
     profile.save()
     return JsonResponse({})
+
 
 @login_required
 @require_POST
@@ -753,12 +791,14 @@ def set_tags_cat(request):
     encounter.save()
     return JsonResponse({})
 
+
 @login_required
 @require_POST
 def change_email(request):
     request.user.email = request.POST.get('email')
     request.user.save()
     return JsonResponse({})
+
 
 @login_required
 @sensitive_post_parameters()
@@ -773,6 +813,7 @@ def change_password(request):
     else:
         return _error(' '.join(' '.join(v) for k, v in form.errors.items()))
 
+
 @require_POST
 def contact(request):
     subject = request.POST.get('subject')
@@ -785,7 +826,6 @@ def contact(request):
         email = request.POST.get('email')
 
     try:
-        headers = {'Reply-To': "%s <%s>" % (name, email)}
         msg = EmailMessage(
                 settings.EMAIL_SUBJECT_PREFIX + '[contact] ' + subject,
                 body,
@@ -820,7 +860,7 @@ def add_api_key(request):
         # Registered to another account
         old_gw2api = GW2API(account.api_key)
         try:
-            gw2_account = old_gw2api.query("/account")
+            old_gw2api.query("/account")
             # Old key is still valid, ask user to invalidate it
             try:
                 old_api_key_info = old_gw2api.query("/tokeninfo")

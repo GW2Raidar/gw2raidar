@@ -224,8 +224,8 @@ class EncounterData(models.Model):
         return self.duration_ticks() / 100
 
 
-class Encounter(ValueModel):
-    # encounter_data = models.ForeignKey(EncounterData, db_column="encounter_id", on_delete=models.CASCADE)
+class Encounter(models.Model):
+    encounter_data = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
     url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
@@ -420,13 +420,13 @@ class RestatPerfStats(models.Model):
 class EncounterAttribute(models.Model):
     class Meta:
         abstract = True
-    encounter = models.ForeignKey(EncounterData, db_column="encounter_id", on_delete=models.CASCADE)
+    encounter = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
 
 
 class SourcedEncounterAttribute(EncounterAttribute):
     class Meta:
         abstract = True
-        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source"], name="enc_attr_unique")
+        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source"], name="enc_attr_unique")
     phase = models.TextField()
     source = models.TextField()
 
@@ -434,14 +434,21 @@ class SourcedEncounterAttribute(EncounterAttribute):
 class TargetedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "target"], name="enc_target_attr_unique")
+        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "target"], name="enc_target_attr_unique")
     target = models.TextField()
+
+
+class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
+    class Meta:
+        abstract = True
+        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "name"], name="enc_name_attr_unique")
+    name = models.TextField()
 
 
 class EncounterEvent(SourcedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_event"
-        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source"], name="enc_evt_unique")
+        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source"], name="enc_evt_unique")
     disconnect_count = models.PositiveIntegerField()
     disconnect_time = models.PositiveIntegerField()
     down_count = models.PositiveIntegerField()
@@ -451,26 +458,24 @@ class EncounterEvent(SourcedEncounterAttribute):
         return self.disconnect_time + self.down_time
 
 
-class EncounterMechanic(SourcedEncounterAttribute):
+class EncounterMechanic(NamedSourcedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_mechanic"
-        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "mechanic"], name="enc_mech_unique")
-    mechanic = models.TextField()
     count = models.PositiveIntegerField()
 
 
 class EncounterBuff(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_buff"
-        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "target", "buff"], name="enc_buff_unique")
-    buff = models.TextField()
+        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "target", "name"], name="enc_buff_unique")
+    name = models.TextField()
     uptime = models.FloatField()
 
 
 class EncounterDamage(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_damage"
-        constraints = UniqueConstraint(fields=["encounter_id", "phase", "source", "target", "skill"], name="enc_dmg_unique")
+        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "target", "skill"], name="enc_dmg_unique")
     skill = models.TextField()
     damage = models.IntegerField()
     crit = models.FloatField()
@@ -479,11 +484,22 @@ class EncounterDamage(TargetedEncounterAttribute):
     scholar = models.FloatField()
     seaweed = models.FloatField()
 
+    def data(self):
+        return {
+            "skill": self.skill,
+            "damage": self.damage,
+            "crit": self.crit,
+            "fifty": self.fifty,
+            "flanking": self.flanking,
+            "scholar": self.scholar,
+            "seaweed": self.scholar,
+        }
+
 
 class EncounterPlayer(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_player"
-        constraints = UniqueConstraint(fields=["encounter_id", "account_id"], name="enc_player_unique")
+        constraints = UniqueConstraint(fields=["encounter_data_id", "account_id"], name="enc_player_unique")
     account_id = models.TextField()
     character = models.TextField()
     party = models.PositiveIntegerField()
@@ -494,11 +510,25 @@ class EncounterPlayer(EncounterAttribute):
     condi = models.PositiveIntegerField()
     heal = models.PositiveIntegerField()
     tough = models.PositiveIntegerField()
+    death_tick = models.PositiveIntegerField()
+
+    def data(self):
+        return {
+            "account": self.account_id,
+            "profession": self.profession,
+            "elite": self.elite,
+            "archetype": self.archetype,
+            "concentration": self.conc,
+            "condition": self.condi,
+            "healing": self.heal,
+            "toughness": self.tough,
+            "death_tick": self.death_tick,
+        }
 
 
 class EncounterPhase(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_phase"
-        constraints = UniqueConstraint(fields=["encounter_id", "phase"], name="enc_phase_unique")
-    phase = models.TextField()
+        constraints = UniqueConstraint(fields=["encounter_data_id", "name"], name="enc_phase_unique")
+    name = models.TextField()
     start_tick = models.PositiveIntegerField()
