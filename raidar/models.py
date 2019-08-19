@@ -426,7 +426,7 @@ class EncounterAttribute(models.Model):
 class SourcedEncounterAttribute(EncounterAttribute):
     class Meta:
         abstract = True
-        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source"], name="enc_attr_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_attr_unique")]
     phase = models.TextField()
     source = models.TextField()
 
@@ -434,21 +434,21 @@ class SourcedEncounterAttribute(EncounterAttribute):
 class TargetedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "target"], name="enc_target_attr_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target"], name="enc_target_attr_unique")]
     target = models.TextField()
 
 
 class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "name"], name="enc_name_attr_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "name"], name="enc_name_attr_unique")]
     name = models.TextField()
 
 
 class EncounterEvent(SourcedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_event"
-        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source"], name="enc_evt_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_evt_unique")]
     disconnect_count = models.PositiveIntegerField()
     disconnect_time = models.PositiveIntegerField()
     down_count = models.PositiveIntegerField()
@@ -467,7 +467,7 @@ class EncounterMechanic(NamedSourcedEncounterAttribute):
 class EncounterBuff(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_buff"
-        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "target", "name"], name="enc_buff_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "name"], name="enc_buff_unique")]
     name = models.TextField()
     uptime = models.FloatField()
 
@@ -475,7 +475,7 @@ class EncounterBuff(TargetedEncounterAttribute):
 class EncounterDamage(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_damage"
-        constraints = UniqueConstraint(fields=["encounter_data_id", "phase", "source", "target", "skill"], name="enc_dmg_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "skill"], name="enc_dmg_unique")]
     skill = models.TextField()
     damage = models.IntegerField()
     crit = models.FloatField()
@@ -499,7 +499,7 @@ class EncounterDamage(TargetedEncounterAttribute):
 class EncounterPlayer(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_player"
-        constraints = UniqueConstraint(fields=["encounter_data_id", "account_id"], name="enc_player_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "account_id"], name="enc_player_unique")]
     account_id = models.TextField()
     character = models.TextField()
     party = models.PositiveIntegerField()
@@ -529,6 +529,6 @@ class EncounterPlayer(EncounterAttribute):
 class EncounterPhase(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_phase"
-        constraints = UniqueConstraint(fields=["encounter_data_id", "name"], name="enc_phase_unique")
+        constraints = [UniqueConstraint(fields=["encounter", "name"], name="enc_phase_unique")]
     name = models.TextField()
     start_tick = models.PositiveIntegerField()
