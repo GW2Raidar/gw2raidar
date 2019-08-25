@@ -1,3 +1,5 @@
+from django.db.models import Q
+
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
 from analyser.bosses import *
 from multiprocessing import Queue, Process, log_to_stderr
@@ -243,6 +245,7 @@ class Command(BaseCommand):
                 account_hash = Encounter.calculate_account_hash(account_names)
                 filename = upload.filename
                 orig_filename = filename
+                encounter_data = EncounterData.from_dump(dump)
                 if not zipfile:
                     filename += ".zip"
                 try:
@@ -263,7 +266,7 @@ class Command(BaseCommand):
                     encounter.uploaded_by = upload.uploaded_by
                     encounter.duration = duration
                     encounter.success = success
-                    encounter.val = dump
+                    encounter.encounter_data = encounter_data
                     encounter.started_at = started_at
                     encounter.started_at_full = started_at_full
                     encounter.started_at_half = started_at_half
@@ -272,7 +275,7 @@ class Command(BaseCommand):
                     encounter = Encounter.objects.create(
                         filename=filename,
                         uploaded_at=upload.uploaded_at, uploaded_by=upload.uploaded_by,
-                        duration=duration, success=success, val=dump,
+                        duration=duration, success=success, encounter_data=encounter_data,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
                         has_evtc=True, account_hash=account_hash

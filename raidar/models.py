@@ -206,6 +206,10 @@ def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
 
+def _safe_get_percent(key, data, fallback=0):
+    return data[key] / 100.0 if key in data else fallback
+
+
 class EncounterData(models.Model):
     class Meta:
         db_table = "raidar_encounter_data"
@@ -222,6 +226,175 @@ class EncounterData(models.Model):
 
     def duration(self):
         return self.duration_ticks() / 100
+
+    @staticmethod
+    def from_dump(dump):
+        boss = "".join([boss_name for boss_name in dump["Category"]["boss"]["Boss"]])
+        data = EncounterData(boss=boss,
+                             cm=dump["Category"]["encounter"]["cm"],
+                             start_timestamp=datetime.fromtimestamp(dump["Category"]["encounter"]["start"]),
+                             start_tick=dump["Category"]["encounter"]["start_tick"],
+                             end_tick=dump["Category"]["encounter"]["end_tick"],
+                             success=dump["Category"]["encounter"]["success"],
+                             evtc_version=dump["Category"]["encounter"]["evtc_version"])
+        data.save()
+
+        # Phases
+        for phase_name, phase_data in dump["Category"]["encounter"]["Phase"].items():
+            phase = EncounterPhase(encounter=data,
+                                   name=phase_name,
+                                   start_tick=phase_data["start_tick"])
+            phase.save()
+
+        # Players
+        for player_name, player_data in dump["Category"]["status"]["Player"].items():
+            player = EncounterPlayer(encounter=data,
+                                     account_id=player_data["account"],
+                                     character=player_name,
+                                     party=player_data["party"],
+                                     profession=player_data["profession"],
+                                     elite=player_data["elite"],
+                                     archetype=player_data["archetype"],
+                                     conc=player_data["concentration"],
+                                     condi=player_data["condition"],
+                                     heal=player_data["healing"],
+                                     tough=player_data["toughness"])
+            player.save()
+
+        for phase_name, phase_data in dump["Category"]["combat"]["Phase"].items():
+            if phase_name == "All":
+                continue
+            for player_name, player_data in phase_data["Player"].items():
+                player_data = player_data["Metrics"]
+
+                # Buffs
+                # Incoming
+                for buff_source in player_data["buffs"]["From"]:
+                    buff_target = player_name
+                    for buff_name, buff_data in player_data["buffs"]["From"][buff_source].items():
+                        if buff_data > 0:
+                            buff = EncounterBuff(encounter=data,
+                                                 phase=phase_name,
+                                                 source=buff_source,
+                                                 target=buff_target,
+                                                 name=buff_name,
+                                                 uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
+                            buff.save()
+                # Outgoing
+                for buff_target in player_data["buffs"]["To"]:
+                    buff_source = player_name
+                    for buff_name, buff_data in player_data["buffs"]["To"][buff_target].items():
+                        if buff_data > 0:
+                            buff = EncounterBuff(encounter=data,
+                                                 phase=phase_name,
+                                                 source=buff_source,
+                                                 target=buff_target,
+                                                 name=buff_name,
+                                                 uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
+                            buff.save()
+
+                # Damage
+                # Incoming
+                for skill_source in player_data["damage"]["From"]:
+                    skill_target = player_name
+                    for skill_name, skill_data in player_data["damage"]["From"][skill_source]["Skill"].items():
+                        skill = EncounterDamage(encounter=data,
+                                                phase=phase_name,
+                                                source=skill_source,
+                                                target=skill_target,
+                                                skill=skill_name,
+                                                damage=skill_data["total"],
+                                                crit=_safe_get_percent("crit", skill_data),
+                                                fifty=_safe_get_percent("fifty", skill_data),
+                                                flanking=_safe_get_percent("flanking", skill_data),
+                                                scholar=_safe_get_percent("scholar", skill_data),
+                                                seaweed=_safe_get_percent("seaweed", skill_data))
+                        skill.save()
+                # Outgoing
+                for skill_target, skill_target_data in player_data["damage"]["To"].items():
+                    skill_source = player_name
+                    # Skill breakdown
+                    if skill_target == "*All" and "Skill" in skill_target_data:
+                        for skill_name, skill_data in skill_target_data["Skill"].items():
+                            skill = EncounterDamage(encounter=data,
+                                                    phase=phase_name,
+                                                    source=skill_source,
+                                                    target=skill_target,
+                                                    skill=skill_name,
+                                                    damage=skill_data["total"],
+                                                    crit=_safe_get_percent("crit", skill_data),
+                                                    fifty=_safe_get_percent("fifty", skill_data),
+                                                    flanking=_safe_get_percent("flanking", skill_data),
+                                                    scholar=_safe_get_percent("scholar", skill_data),
+                                                    seaweed=_safe_get_percent("seaweed", skill_data))
+                            skill.save()
+                    # Summary
+                    else:
+                        # Condi
+                        if skill_target_data["condi"] > 0:
+                            condi = EncounterDamage(encounter=data,
+                                                    phase=phase_name,
+                                                    source=skill_source,
+                                                    target=skill_target,
+                                                    skill="condi",
+                                                    damage=skill_target_data["condi"],
+                                                    crit=_safe_get_percent("crit", skill_target_data),
+                                                    fifty=_safe_get_percent("fifty", skill_target_data),
+                                                    flanking=_safe_get_percent("flanking", skill_target_data),
+                                                    scholar=_safe_get_percent("scholar", skill_target_data),
+                                                    seaweed=_safe_get_percent("seaweed", skill_target_data))
+                            condi.save()
+                        # Power
+                        if skill_target_data["power"] > 0:
+                            power = EncounterDamage(encounter=data,
+                                                    phase=phase_name,
+                                                    source=skill_source,
+                                                    target=skill_target,
+                                                    skill="power",
+                                                    damage=skill_target_data["power"],
+                                                    crit=_safe_get_percent("crit", skill_target_data),
+                                                    fifty=_safe_get_percent("fifty", skill_target_data),
+                                                    flanking=_safe_get_percent("flanking", skill_target_data),
+                                                    scholar=_safe_get_percent("scholar", skill_target_data),
+                                                    seaweed=_safe_get_percent("seaweed", skill_target_data))
+                            power.save()
+
+                # Events
+                event_data = player_data["events"]
+                event = EncounterEvent(encounter=data,
+                                       phase=phase_name,
+                                       source=player_name,
+                                       disconnect_count=event_data["disconnects"],
+                                       disconnect_time=int(event_data["disconnect_time"]),
+                                       down_count=event_data["downs"],
+                                       down_time=int(event_data["down_time"]))
+                event.save()
+
+                # Shielded
+                shield_data = player_data["shielded"]["From"]["*All"]
+                shield = EncounterDamage(encounter=data,
+                                         phase=phase_name,
+                                         source="*All",
+                                         target=player_name,
+                                         skill="shielded",
+                                         damage=-shield_data["total"],
+                                         crit=_safe_get_percent("crit", shield_data),
+                                         fifty=_safe_get_percent("fifty", shield_data),
+                                         flanking=_safe_get_percent("flanking", shield_data),
+                                         scholar=_safe_get_percent("scholar", shield_data),
+                                         seaweed=_safe_get_percent("seaweed", shield_data))
+                shield.save()
+
+                # Mechanics
+                if "mechanics" in player_data:
+                    for mechanic_name, mechanic_data in player_data["mechanics"].items():
+                        mechanic = EncounterMechanic(encounter=data,
+                                                     phase=phase_name,
+                                                     source=player_name,
+                                                     name=mechanic_name,
+                                                     count=mechanic_data)
+                        mechanic.save()
+        return data
 
 
 class Encounter(models.Model):
