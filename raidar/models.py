@@ -297,19 +297,20 @@ class EncounterData(models.Model):
                 # Incoming
                 for skill_source in player_data["damage"]["From"]:
                     skill_target = player_name
-                    for skill_name, skill_data in player_data["damage"]["From"][skill_source]["Skill"].items():
-                        skill = EncounterDamage(encounter=data,
-                                                phase=phase_name,
-                                                source=skill_source,
-                                                target=skill_target,
-                                                skill=skill_name,
-                                                damage=skill_data["total"],
-                                                crit=_safe_get_percent("crit", skill_data),
-                                                fifty=_safe_get_percent("fifty", skill_data),
-                                                flanking=_safe_get_percent("flanking", skill_data),
-                                                scholar=_safe_get_percent("scholar", skill_data),
-                                                seaweed=_safe_get_percent("seaweed", skill_data))
-                        skill.save()
+                    if "Skill" in player_data["damage"]["From"][skill_source]:
+                        for skill_name, skill_data in player_data["damage"]["From"][skill_source]["Skill"].items():
+                            skill = EncounterDamage(encounter=data,
+                                                    phase=phase_name,
+                                                    source=skill_source,
+                                                    target=skill_target,
+                                                    skill=skill_name,
+                                                    damage=skill_data["total"],
+                                                    crit=_safe_get_percent("crit", skill_data),
+                                                    fifty=_safe_get_percent("fifty", skill_data),
+                                                    flanking=_safe_get_percent("flanking", skill_data),
+                                                    scholar=_safe_get_percent("scholar", skill_data),
+                                                    seaweed=_safe_get_percent("seaweed", skill_data))
+                            skill.save()
                 # Outgoing
                 for skill_target, skill_target_data in player_data["damage"]["To"].items():
                     skill_source = player_name
