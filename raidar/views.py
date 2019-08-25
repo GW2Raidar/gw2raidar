@@ -423,11 +423,10 @@ def encounter(request, url_id=None, json=None):
 
     data = encounter.encounter_data
     players = data.encounterplayer_set.filter(account_id__isnull=False)
-    groups = {"All": players}
-    for player in players:
-        if player.party not in groups:
-            groups[player.party] = players.filter(party=player.party)
-    phases = [phase.name for phase in data.encounterphase_set.all()]
+    groups = {}
+    for party in players.values_list("party", flat=True).distinct():
+        groups[party] = players.filter(party=party)
+    phases = list(data.encounterphase_set.order_by("start_tick").values_list("name", flat=True))
     phases.append("All")
 
     try:
@@ -475,7 +474,7 @@ def encounter(request, url_id=None, json=None):
             "success": encounter.success,
             "tags": encounter.tagstring,
             "category": encounter.category_id,
-            "phase_order": [phase.name for phase in data.encounterphase_set.order_by("start_tick")],
+            "phase_order": phases,
             "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
             "max_player_dps": max_player_dps,
