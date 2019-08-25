@@ -45,7 +45,7 @@ class Migration(migrations.Migration):
                 ('condi', models.PositiveIntegerField()),
                 ('heal', models.PositiveIntegerField()),
                 ('tough', models.PositiveIntegerField()),
-                ('death_tick', models.PositiveIntegerField()),
+                ('death_tick', models.PositiveIntegerField(null=True)),
                 ('encounter', models.ForeignKey(db_column='encounter_data_id', on_delete=django.db.models.deletion.CASCADE, to='raidar.EncounterData')),
             ],
             options={

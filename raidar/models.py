@@ -510,7 +510,7 @@ class EncounterPlayer(EncounterAttribute):
     condi = models.PositiveIntegerField()
     heal = models.PositiveIntegerField()
     tough = models.PositiveIntegerField()
-    death_tick = models.PositiveIntegerField()
+    death_tick = models.PositiveIntegerField(null=True)
 
     def data(self):
         return {
