@@ -23,7 +23,7 @@
   {# SQUAD #}
   [[#with encounter.phases[page.phase] as squad]]
     [[#with
-      Math.max(player.group.max_dps || encounter.phases.All.actual.dps, encounter.phases.All.actual.dps) as max_max_dps,
+      Math.max(player.group.max_dps || squad.actual.dps, squad.actual.dps) as max_max_dps,
       Math.max(squad.group.max_total_received || encounter.phases.All.received.total, encounter.phases.All.received.total) as max_max_recv,
       Math.max(squad.individual.max_dps || encounter.max_player_dps, encounter.max_player_dps) as max_player_dps,
       Math.max(squad.individual.max_total_received || encounter.max_player_recv, encounter.max_player_recv) as max_player_recv

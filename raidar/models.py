@@ -1,6 +1,7 @@
 from django.db import models
+from django.db.models.functions import Coalesce
 from django.db.models.signals import post_save, post_delete
-from django.db.models import UniqueConstraint
+from django.db.models import UniqueConstraint, Sum, Avg
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from datetime import datetime, timedelta
@@ -88,6 +89,13 @@ def _create_user_profile(sender, instance, created, **kwargs):
         UserProfile.objects.create(user=instance)
 
 post_save.connect(_create_user_profile, sender=User)
+
+
+def _safe_abs(value):
+    try:
+        return abs(value)
+    except TypeError:
+        return value
 
 
 class Area(models.Model):
@@ -210,6 +218,22 @@ def _safe_get_percent(key, data, fallback=0):
     return data[key] / 100.0 if key in data else fallback
 
 
+def _generate_skill_data(encounter_data, phase_name, damage_source, damage_target, damage_data):
+    for skill_name, skill_data in damage_data["Skill"].items():
+        skill = EncounterDamage(encounter=encounter_data,
+                                phase=phase_name,
+                                source=damage_source,
+                                target=damage_target,
+                                skill=skill_name,
+                                damage=skill_data["total"],
+                                crit=_safe_get_percent("crit", skill_data),
+                                fifty=_safe_get_percent("fifty", skill_data),
+                                flanking=_safe_get_percent("flanking", skill_data),
+                                scholar=_safe_get_percent("scholar", skill_data),
+                                seaweed=_safe_get_percent("seaweed", skill_data))
+        skill.save()
+
+
 class EncounterData(models.Model):
     class Meta:
         db_table = "raidar_encounter_data"
@@ -264,6 +288,7 @@ class EncounterData(models.Model):
         for phase_name, phase_data in dump["Category"]["combat"]["Phase"].items():
             if phase_name == "All":
                 continue
+
             for player_name, player_data in phase_data["Player"].items():
                 player_data = player_data["Metrics"]
 
@@ -295,69 +320,44 @@ class EncounterData(models.Model):
 
                 # Damage
                 # Incoming
-                for skill_source in player_data["damage"]["From"]:
-                    skill_target = player_name
-                    if "Skill" in player_data["damage"]["From"][skill_source]:
-                        for skill_name, skill_data in player_data["damage"]["From"][skill_source]["Skill"].items():
-                            skill = EncounterDamage(encounter=data,
-                                                    phase=phase_name,
-                                                    source=skill_source,
-                                                    target=skill_target,
-                                                    skill=skill_name,
-                                                    damage=skill_data["total"],
-                                                    crit=_safe_get_percent("crit", skill_data),
-                                                    fifty=_safe_get_percent("fifty", skill_data),
-                                                    flanking=_safe_get_percent("flanking", skill_data),
-                                                    scholar=_safe_get_percent("scholar", skill_data),
-                                                    seaweed=_safe_get_percent("seaweed", skill_data))
-                            skill.save()
-                # Outgoing
-                for skill_target, skill_target_data in player_data["damage"]["To"].items():
-                    skill_source = player_name
+                for damage_source, damage_data in player_data["damage"]["From"].items():
                     # Skill breakdown
-                    if skill_target == "*All" and "Skill" in skill_target_data:
-                        for skill_name, skill_data in skill_target_data["Skill"].items():
-                            skill = EncounterDamage(encounter=data,
-                                                    phase=phase_name,
-                                                    source=skill_source,
-                                                    target=skill_target,
-                                                    skill=skill_name,
-                                                    damage=skill_data["total"],
-                                                    crit=_safe_get_percent("crit", skill_data),
-                                                    fifty=_safe_get_percent("fifty", skill_data),
-                                                    flanking=_safe_get_percent("flanking", skill_data),
-                                                    scholar=_safe_get_percent("scholar", skill_data),
-                                                    seaweed=_safe_get_percent("seaweed", skill_data))
-                            skill.save()
+                    if "Skill" in damage_data:
+                        _generate_skill_data(data, phase_name, damage_source, player_name, damage_data)
+                # Outgoing
+                for damage_target, damage_data in player_data["damage"]["To"].items():
+                    # Skill breakdown
+                    if damage_target == "*All" and "Skill" in damage_data:
+                        _generate_skill_data(data, phase_name, player_name, damage_target, damage_data)
                     # Summary
                     else:
                         # Condi
-                        if skill_target_data["condi"] > 0:
+                        if damage_data["condi"] > 0:
                             condi = EncounterDamage(encounter=data,
                                                     phase=phase_name,
-                                                    source=skill_source,
-                                                    target=skill_target,
+                                                    source=player_name,
+                                                    target=damage_target,
                                                     skill="condi",
-                                                    damage=skill_target_data["condi"],
-                                                    crit=_safe_get_percent("crit", skill_target_data),
-                                                    fifty=_safe_get_percent("fifty", skill_target_data),
-                                                    flanking=_safe_get_percent("flanking", skill_target_data),
-                                                    scholar=_safe_get_percent("scholar", skill_target_data),
-                                                    seaweed=_safe_get_percent("seaweed", skill_target_data))
+                                                    damage=damage_data["condi"],
+                                                    crit=_safe_get_percent("crit", damage_data),
+                                                    fifty=_safe_get_percent("fifty", damage_data),
+                                                    flanking=_safe_get_percent("flanking", damage_data),
+                                                    scholar=_safe_get_percent("scholar", damage_data),
+                                                    seaweed=_safe_get_percent("seaweed", damage_data))
                             condi.save()
                         # Power
-                        if skill_target_data["power"] > 0:
+                        if damage_data["power"] > 0:
                             power = EncounterDamage(encounter=data,
                                                     phase=phase_name,
-                                                    source=skill_source,
-                                                    target=skill_target,
+                                                    source=player_name,
+                                                    target=damage_target,
                                                     skill="power",
-                                                    damage=skill_target_data["power"],
-                                                    crit=_safe_get_percent("crit", skill_target_data),
-                                                    fifty=_safe_get_percent("fifty", skill_target_data),
-                                                    flanking=_safe_get_percent("flanking", skill_target_data),
-                                                    scholar=_safe_get_percent("scholar", skill_target_data),
-                                                    seaweed=_safe_get_percent("seaweed", skill_target_data))
+                                                    damage=damage_data["power"],
+                                                    crit=_safe_get_percent("crit", damage_data),
+                                                    fifty=_safe_get_percent("fifty", damage_data),
+                                                    flanking=_safe_get_percent("flanking", damage_data),
+                                                    scholar=_safe_get_percent("scholar", damage_data),
+                                                    seaweed=_safe_get_percent("seaweed", damage_data))
                             power.save()
 
                 # Events
@@ -395,6 +395,17 @@ class EncounterData(models.Model):
                                                      name=mechanic_name,
                                                      count=mechanic_data)
                         mechanic.save()
+
+        # If no mechanics were found within phases, they're probably only annotated in the "All" phase
+        if not data.encountermechanic_set:
+            for player_name, player_data in dump["Category"]["combat"]["Phase"]["All"]["Player"].items():
+                if "mechanics" in player_data:
+                    for mechanic_name, mechanic_data in player_data["mechanics"].items():
+                        mechanic = EncounterMechanic(encounter=data,
+                                                     phase="All",
+                                                     source=player_name,
+                                                     name=mechanic_name,
+                                                     count=mechanic_data)
         return data
 
 
@@ -631,6 +642,13 @@ class EncounterEvent(SourcedEncounterAttribute):
     def get_inactive_time(self):
         return self.disconnect_time + self.down_time
 
+    @staticmethod
+    def summarize(query):
+        return query.aggregate(disconnect_count=Sum("disconnect_count"),
+                               disconnect_time=Sum("disconnect_time"),
+                               down_count=Sum("down_count"),
+                               down_time=Sum("down_time"))
+
 
 class EncounterMechanic(NamedSourcedEncounterAttribute):
     class Meta:
@@ -661,13 +679,33 @@ class EncounterDamage(TargetedEncounterAttribute):
     def data(self):
         return {
             "skill": self.skill,
-            "damage": self.damage,
-            "crit": self.crit,
-            "fifty": self.fifty,
-            "flanking": self.flanking,
-            "scholar": self.scholar,
-            "seaweed": self.scholar,
+            "total": self.damage,
+            "crit": self.crit * 100.0,
+            "fifty": self.fifty * 100.0,
+            "flanking": self.flanking * 100.0,
+            "scholar": self.scholar * 100.0,
+            "seaweed": self.seaweed * 100.0,
         }
+
+    @staticmethod
+    def summarize(query, target, absolute=False):
+        prv_sum = query.filter(skill=target)
+        prv_query = prv_sum if prv_sum.count() > 0 else\
+            query.filter(skill__in=EncounterDamage.conditions()) if target == "condi" else\
+            query.exclude(skill__in=EncounterDamage.conditions())
+        data = prv_query.aggregate(total=Coalesce(Sum("damage"), 0),  # TODO: This solution for calculating average stats is imprecise!
+                                   crit=Coalesce(Avg("crit") * 100.0, 0),
+                                   fifty=Coalesce(Avg("fifty") * 100.0, 0),
+                                   flanking=Coalesce(Avg("flanking") * 100.0, 0),
+                                   scholar=Coalesce(Avg("scholar") * 100.0, 0),
+                                   seaweed=Coalesce(Avg("seaweed") * 100.0, 0))
+        if absolute:
+            data = {key: _safe_abs(val) for key, val in data.items()}
+        return data
+
+    @staticmethod
+    def conditions():
+        return ["Bleeding", "Burning", "Confusion", "Poisoned", "Torment"]
 
 
 class EncounterPlayer(EncounterAttribute):
@@ -688,6 +726,7 @@ class EncounterPlayer(EncounterAttribute):
 
     def data(self):
         return {
+            "name": self.character,
             "account": self.account_id,
             "profession": self.profession,
             "elite": self.elite,
@@ -696,7 +735,7 @@ class EncounterPlayer(EncounterAttribute):
             "condition": self.condi,
             "healing": self.heal,
             "toughness": self.tough,
-            "death_tick": self.death_tick,
+            "Death": self.death_tick,
         }
 
 
