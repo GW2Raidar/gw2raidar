@@ -88,6 +88,8 @@ class Migration(migrations.Migration):
                 ('disconnect_time', models.PositiveIntegerField()),
                 ('down_count', models.PositiveIntegerField()),
                 ('down_time', models.PositiveIntegerField()),
+                ('dead_count', models.PositiveIntegerField()),
+                ('dead_time', models.PositiveIntegerField()),
                 ('encounter', models.ForeignKey(db_column='encounter_data_id', on_delete=django.db.models.deletion.CASCADE, to='raidar.EncounterData')),
             ],
             options={

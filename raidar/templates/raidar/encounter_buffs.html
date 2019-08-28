@@ -56,16 +56,15 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
       </div>
       [[/with]]
 
-      [[#each encounter.parties:partyNo]]
+      [[#each encounter.phases[page.phase].parties:partyNo]]
       <div class="r-encounter-stats-container">
-        [[#with phases[page.phase]]]
 
           <!-- <h5 class="uk-heading-line"><span>Party [[partyNo]]</span></h5> -->
           <div class="r-stats-row r-stats-buffs r-party">
             <div class="r-encounter-player uk-text-right@m" uk-tooltip="pos: bottom-left; delay: 350" title="[[#with events]]
-                  Deaths: [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
-                  Downs: [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
-                  Disconnects: [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
+                  Deaths: [[dead_count]][[#if dead_count]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
+                  Downs: [[down_count]][[#if down_count]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
+                  Disconnects: [[disconnect_count]][[#if disconnect_count]] ([[formatTime(disconnect_time / 1000)]])[[/if]]<br>
                 [[/with]]">
               <div>
 
@@ -94,18 +93,16 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               [[/each]]
             </div>
           </div>
-        [[/with]]
 
         [[#each members]]
-          [[#with phases[page.phase]]]
-            <div class="r-stats-row r-stats-buffs r-member activity-[[#with phases[page.phase].events]][[#with encounter]][[num(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]]">
-              <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if account]][[name]]</br><strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with phases[page.phase].events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with phases[page.phase].events]]<br>
-                <strong>Deaths:</strong> [[deaths]][[#if deaths]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
-                <strong>Downed:</strong> [[downs]][[#if downs]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
-                <strong>Disconnects:</strong> [[disconnects]][[#if disconnects]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
+            <div class="r-stats-row r-stats-buffs r-member activity-[[#with events]][[#with encounter]][[num(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]]">
+              <div class="r-encounter-player uk-text-right@m [[self && 'compare-show']]" uk-tooltip="pos: bottom-left; delay: 350" title="[[#if account]][[name]]</br><strong>Account:</strong> [[account]][[else]]ACCOUNT PRIVATE[[/if]]<br><strong>Activity:</strong> [[#with events]][[#with encounter]][[perc(((duration - ((down_time / 1000) + (dead_time / 1000) + (disconnect_time / 1000)))/duration)*100, 0)]][[/with]][[/with]][[#with events]]<br>
+                <strong>Deaths:</strong> [[dead_count]][[#if dead_count]] ([[formatTime(dead_time / 1000)]])[[/if]]<br>
+                <strong>Downed:</strong> [[down_count]][[#if down_count]] ([[formatTime(down_time / 1000)]])[[/if]]<br>
+                <strong>Disconnects:</strong> [[disconnect_count]][[#if disconnect_count]] ([[formatTime(disconnect_time / 1000)]])[[/if]]
               [[/with]]">
                 <div class="uk-text-truncate">
-                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[../../archetype]]]</h6>
+                  <h6 class="uk-font-family-secondary uk-text-muted uk-margin-remove uk-text-uppercase">[[data.archetypes[archetype]]]</h6>
                   [[#if name]]
                     <h5 class="uk-margin-remove uk-text-truncate">[[name]]</h5>
                   [[else]]
@@ -114,7 +111,7 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 </div>
                 <div class="r-encounter-player-image">
                   <img alt="[[data.specialisations[profession][elite]]]" src="{% static 'raidar/img/48px/' %}/[[data.specialisations[profession][elite]]]_tango_icon_48px.png"/>
-                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[../../archetype]]]" src="{% static 'raidar/img/arch/' %}[[data.archetypes[../../archetype]]].png"/>
+                  <img class="r-encounter-player-archetype" alt="[[data.archetypes[../../archetype]]]" src="{% static 'raidar/img/arch/' %}[[data.archetypes[archetype]]].png"/>
                 </div>
               </div>
 
@@ -144,7 +141,6 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                 [[/each]]
               </div>
             </div>
-          [[/with]]
         [[/each]]
         </div>
       [[/each]]

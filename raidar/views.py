@@ -1,5 +1,4 @@
-from django.db.models.functions import Abs
-
+import copy
 from .models import *
 from analyser.analyser import Profession, SPECIALISATIONS
 from analyser.bosses import BOSSES, BOSS_LOCATIONS
@@ -224,27 +223,30 @@ def _buff_breakdown(buff_data, use_sum=False):
 
 # TODO: Fix numbers
 def _phase_breakdown(prv_encounter, players, phase, group=False):
-    players = [player.character for player in players] if group else [players.character]
+    prv_players = [player["name"] for player in players] if group else [players["name"]]
     phase_duration = _calc_phase_duration(phase, prv_encounter)
     buffs = prv_encounter.encounter_data.encounterbuff_set.filter(phase=phase.name)
     events = prv_encounter.encounter_data.encounterevent_set.filter(phase=phase.name)
     damage = prv_encounter.encounter_data.encounterdamage_set.filter(phase=phase.name)
     mechanics = prv_encounter.encounter_data.encountermechanic_set.filter(phase=phase.name)
 
-    return {
-        "actual": _damage_breakdown(damage.filter(source__in=players, target="*All", damage__gt=0), phase_duration, group=group),
-        "actual_boss": _damage_breakdown(damage.filter(source__in=players, target="*Boss", damage__gt=0), phase_duration, group=group),
-        "received": _damage_breakdown(damage.filter(target__in=players, damage__gt=0), phase_duration, group=group),
-        "shielded": _damage_breakdown(damage.filter(target__in=players, damage__lt=0), phase_duration, group=group, absolute=True),
-        "buffs": _buff_breakdown(buffs.filter(target__in=players)),
-        "buffs_out": _buff_breakdown(buffs.filter(source__in=players), use_sum=True),
-        "events": EncounterEvent.summarize(events.filter(source__in=players)),
-        "mechanics": {mechanic["name"]: mechanic["count__sum"] for mechanic in mechanics.filter(source__in=players).values("name").annotate(Sum("count"))},
+    prv_phase_data = {
+        "actual": _damage_breakdown(damage.filter(source__in=prv_players, target="*All", damage__gt=0), phase_duration, group=group),
+        "actual_boss": _damage_breakdown(damage.filter(source__in=prv_players, target="*Boss", damage__gt=0), phase_duration, group=group),
+        "received": _damage_breakdown(damage.filter(target__in=prv_players, damage__gt=0), phase_duration, group=group),
+        "shielded": _damage_breakdown(damage.filter(target__in=prv_players, damage__lt=0), phase_duration, group=group, absolute=True),
+        "buffs": _buff_breakdown(buffs.filter(target__in=prv_players)),
+        "buffs_out": _buff_breakdown(buffs.filter(source__in=prv_players), use_sum=True),
+        "events": EncounterEvent.summarize(events.filter(source__in=prv_players)),
+        "mechanics": {mechanic["name"]: mechanic["count__sum"] for mechanic in mechanics.filter(source__in=prv_players).values("name").annotate(Sum("count"))},
     }
+    if group:
+        prv_phase_data["members"] = copy.deepcopy(players)
 
+    return prv_phase_data
 
-def _all_phase_breakdown(phase_dump, phase_info, prv_encounter, players, group=False):
-    players = [player["name"] for player in players] if group else [players]
+# TODO: Rebuild for phase->group layout
+def _all_phase_breakdown(phase_dump, prv_encounter, party_name, player_data):
     all_duration = 0
     all_phase = {
         "actual": {},
@@ -255,14 +257,16 @@ def _all_phase_breakdown(phase_dump, phase_info, prv_encounter, players, group=F
         "buffs_out": {},
         "events": {},
         "mechanics": {},
+        "members": copy.deepcopy(player_data),
     }
 
     for phase_name, phase in phase_dump.items():
-        phase_duration = phase_info[phase_name]["duration"]
+        phase_duration = phase["duration"]
 
         # Damage-like stats
         for target in ["actual", "actual_boss", "received", "shielded"]:
-            for key, val in phase[target].items():
+            # Subgroup
+            for key, val in phase["parties"][party_name][target].items():
                 if key != "Skill":
                     if key not in all_phase[target]:
                         all_phase[target][key] = 0
@@ -270,37 +274,68 @@ def _all_phase_breakdown(phase_dump, phase_info, prv_encounter, players, group=F
                         all_phase[target][key] += val
                     else:
                         all_phase[target][key] = all_phase[target][key] * all_duration / (all_duration + phase_duration) \
-                                               + phase[target][key] * phase_duration / (all_duration + phase_duration)
-                elif not group:  # Skill summaries
-                    if "Skill" not in all_phase[target]:
-                        all_phase[target]["Skill"] = {}
-                    for skill_name, skill_data in val.items():
-                        if skill_name not in all_phase[target]["Skill"]:
-                            all_phase[target]["Skill"][skill_name] = {"skill": skill_name}
-                        for skill_key, skill_val in skill_data.items():
-                            if skill_key != "skill":
-                                if skill_key not in all_phase[target]["Skill"][skill_name]:
-                                    all_phase[target]["Skill"][skill_name][skill_key] = 0
-                                if skill_key in ["total", "dps"]:
-                                    all_phase[target]["Skill"][skill_name][skill_key] += skill_val
-                                else:  # TODO: This solution for calculating average stats is imprecise!
-                                    all_phase[target]["Skill"][skill_name][skill_key] = all_phase[target]["Skill"][skill_name][skill_key] * all_duration / (all_duration + phase_duration) \
-                                                                                      + phase[target]["Skill"][skill_name][skill_key] * phase_duration / (all_duration + phase_duration)
+                                               + val * phase_duration / (all_duration + phase_duration)
+            # Players
+            for member_id, member in enumerate(all_phase["members"]):
+                if target not in member:
+                    member[target] = {}
+                for key, val in phase["parties"][party_name]["members"][member_id][target].items():
+                    if key != "Skill":
+                        if key not in member[target]:
+                            member[target][key] = 0
+                        if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
+                            member[target][key] += val
+                        else:
+                            member[target][key] = member[target][key] * all_duration / (all_duration + phase_duration) \
+                                                  + val * phase_duration / (all_duration + phase_duration)
+                    else:  # Skill summaries
+                        if "Skill" not in member[target]:
+                            member[target]["Skill"] = {}
+                        for skill_name, skill_data in val.items():
+                            if skill_name not in member[target]["Skill"]:
+                                member[target]["Skill"][skill_name] = {"skill": skill_name}
+                            for skill_key, skill_val in skill_data.items():
+                                if skill_key != "skill":
+                                    if skill_key not in member[target]["Skill"][skill_name]:
+                                        member[target]["Skill"][skill_name][skill_key] = 0
+                                    if skill_key in ["total", "dps"]:
+                                        member[target]["Skill"][skill_name][skill_key] += skill_val
+                                    else:  # TODO: This solution for calculating average stats is imprecise!
+                                        member[target]["Skill"][skill_name][skill_key] = member[target]["Skill"][skill_name][skill_key] * all_duration / (all_duration + phase_duration) \
+                                                                                          + skill_val * phase_duration / (all_duration + phase_duration)
 
         # Buffs
         for target in ["buffs", "buffs_out"]:
-            for buff, uptime in phase[target].items():
+            # Subgroup
+            for buff, uptime in phase["parties"][party_name][target].items():
                 if buff not in all_phase[target]:
                     all_phase[target][buff] = 0
                 all_phase[target][buff] = all_phase[target][buff] * all_duration / (all_duration + phase_duration) \
-                                        + phase[target][buff] * phase_duration / (all_duration + phase_duration)
+                                        + uptime * phase_duration / (all_duration + phase_duration)
+            # Players
+            for member_id, member in enumerate(all_phase["members"]):
+                if target not in all_phase["members"][member_id]:
+                    member[target] = {}
+                for buff, uptime in phase["parties"][party_name]["members"][member_id][target].items():
+                    if buff not in member[target]:
+                        member[target][buff] = 0
+                    member[target][buff] = member[target][buff] * all_duration / (all_duration + phase_duration) \
+                                         + uptime * phase_duration / (all_duration + phase_duration)
 
         # Additive stats
         for target in ["events", "mechanics"]:
-            for key, val in phase[target].items():
+            for key, val in phase["parties"][party_name][target].items():
                 if key not in all_phase[target]:
                     all_phase[target][key] = 0
                 all_phase[target][key] += val
+            # Players
+            for member_id, member in enumerate(all_phase["members"]):
+                if target not in all_phase["members"][member_id]:
+                    member[target] = {}
+                for key, val in phase["parties"][party_name]["members"][member_id][target].items():
+                    if key not in member[target]:
+                        member[target][key] = 0
+                    member[target][key] += val
 
         # Update duration
         all_duration += phase_duration
@@ -311,9 +346,15 @@ def _all_phase_breakdown(phase_dump, phase_info, prv_encounter, players, group=F
         all_phase[target]["power_dps"] = all_phase[target]["power"] / all_duration
         all_phase[target]["condi_dps"] = all_phase[target]["condi"] / all_duration
 
+        for member in all_phase["members"]:
+            member[target]["dps"] = member[target]["total"] / all_duration
+            member[target]["power_dps"] = member[target]["power"] / all_duration
+            member[target]["condi_dps"] = member[target]["condi"] / all_duration
+
+    # TODO: Remove when fixed
     # If no mechanics were found within phases, they're probably only annotated in the "All" phase
     if not all_phase["mechanics"]:
-        all_phase["mechanics"] = {mechanic["name"]: mechanic["count__sum"] for mechanic in prv_encounter.encounter_data.encountermechanic_set.filter(source__in=players).values("name").annotate(Sum("count"))}
+        all_phase["mechanics"] = {mechanic["name"]: mechanic["count__sum"] for mechanic in prv_encounter.encounter_data.encountermechanic_set.filter(source__in=[player["name"] for player in player_data]).values("name").annotate(Sum("count"))}
 
     return all_phase
 
@@ -483,29 +524,20 @@ def encounter(request, url_id=None, json=None):
         user=request.user)] if request.user.is_authenticated else []
 
     data = encounter.encounter_data
-    players = data.encounterplayer_set.filter(account_id__isnull=False)
-    parties = {}
-    for party_name in players.values_list("party", flat=True).distinct():
-        parties[party_name] = players.filter(party=party_name)
     phases = data.encounterphase_set.order_by("start_tick")
+    players = data.encounterplayer_set.filter(account_id__isnull=False)
+    parties = {party_name: [player.data() for player in players.filter(party=party_name)] for party_name in players.values_list("party", flat=True).distinct()}
 
     try:
         area_stats = EraAreaStore.objects.get(era=encounter.era, area=encounter.area).val
     except EraAreaStore.DoesNotExist:
         area_stats = None
-    parties = {
-        party: {
-            "members": [member.data() for member in members],
-            "phases": {phase.name: _phase_breakdown(encounter, members, phase, group=True) for phase in phases},
-        } for party, members in parties.items()
-    }
 
     encounter_showable = True
     for party_name, party in parties.items():
-        for member in party["members"]:
+        for member in party:
             if member["account"] in own_account_names:
                 member["self"] = True
-            member["phases"] = {phase.name: _phase_breakdown(encounter, players.get(character=member["name"]), phase) for phase in phases}
 
             user_profile = UserProfile.objects.filter(user__accounts__name=member['account'])
             if user_profile:
@@ -517,7 +549,74 @@ def encounter(request, url_id=None, json=None):
                 member["account"] = ""
                 encounter_showable = False
 
-    max_player_dps = max([phase["actual"]["dps"] for party in parties.values() for member in party["members"] for phase in member["phases"].values()])
+    phase_data = {
+        phase.name: {"parties": {party_name: _phase_breakdown(encounter, party_data, phase, group=True) for party_name, party_data in parties.items()}} for phase in phases
+    }
+
+    for phase in phases:
+        phase_data[phase.name]["duration"] = _calc_phase_duration(phase, encounter)
+        phase_data[phase.name]["group"] = _safe_get(lambda: area_stats[phase.name]["group"])
+        phase_data[phase.name]["individual"] = _safe_get(lambda: area_stats[phase.name]["individual"])
+        for party_name, party in phase_data[phase.name]["parties"].items():
+            for member in party["members"]:
+                member.update(_phase_breakdown(encounter, member, phase))
+
+    # Generate "All" phase from existing data
+    phase_data["All"] = {
+        "duration": _calc_phase_duration("All", encounter),
+        "group": _safe_get(lambda: area_stats["All"]["group"]),
+        "individual": _safe_get(lambda: area_stats["All"]["individual"]),
+        "parties": {party_name: _all_phase_breakdown(phase_data, encounter, party_name, party_data) for party_name, party_data in parties.items()},
+    }
+
+    # Generate total squad stats from existing data
+    for phase_name, squad_phase in phase_data.items():
+        squad_phase.update({
+            "actual": {"dps": 0},
+            "actual_boss": {"dps": 0},
+            "received": {"total": 0},
+            "shielded": {"total": 0},
+            "buffs": {},
+            "buffs_out": {},
+            "mechanics": {},
+            "events": {},
+        })
+        squad_size = 0
+
+        for party_name, party_data in parties.items():
+            party_phase = squad_phase["parties"][party_name]
+            party_size = len(party_data)
+
+            # Damage-like stats
+            for target in ["actual", "actual_boss", "received", "shielded"]:
+                for key, val in party_phase[target].items():
+                    if key != "Skill":
+                        if key not in squad_phase[target]:
+                            squad_phase[target][key] = 0
+                        if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
+                            squad_phase[target][key] += val
+                        else:
+                            squad_phase[target][key] = squad_phase[target][key] * squad_size / (squad_size + party_size) \
+                                                     + val * party_size / (squad_size + party_size)
+
+            # Buffs
+            for buff, uptime in party_phase["buffs"].items():
+                if buff not in squad_phase["buffs"]:
+                    squad_phase["buffs"][buff] = 0
+                squad_phase["buffs"][buff] = squad_phase["buffs"][buff] * squad_size / (squad_size + party_size) \
+                                           + uptime * party_size / (squad_size + party_size)
+
+            # Additive stats
+            for target in ["buffs_out", "events", "mechanics"]:
+                for key, val in party_phase[target].items():
+                    if key not in squad_phase[target]:
+                        squad_phase[target][key] = 0
+                    squad_phase[target][key] += val
+
+            squad_size += party_size
+
+    max_player_dps = max([member["actual"]["dps"] for phase in phase_data.values() for party in phase["parties"].values() for member in party["members"]])
+    max_player_recv = max([member["received"]["total"] for phase in phase_data.values() for party in phase["parties"].values() for member in party["members"]])
 
     data = {
         "encounter": {
@@ -537,67 +636,12 @@ def encounter(request, url_id=None, json=None):
             "participated": own_account_names != [],
             "boss_metrics": [metric.__dict__ for metric in BOSSES[encounter.area_id].metrics],
             "max_player_dps": max_player_dps,
-            "max_player_recv": 0,
-            "phases": {
-                phase.name: {
-                    "duration": _calc_phase_duration(phase, encounter),
-                    "group": _safe_get(lambda: area_stats[phase.name]["group"]),
-                    "individual": _safe_get(lambda: area_stats[phase.name]["individual"]),
-                } for phase in phases
-            },
-            "parties": parties,
+            "max_player_recv": max_player_recv,
+            "phases": phase_data,
         }
     }
 
-    # Append "All" phase to data
     data["encounter"]["phase_order"].append("All")
-    data["encounter"]["phases"]["All"] = {
-        "duration": _calc_phase_duration("All", encounter),
-        "group": _safe_get(lambda: area_stats["All"]["group"]),
-        "individual": _safe_get(lambda: area_stats["All"]["individual"]),
-    }
-
-    for party_name, party in data["encounter"]["parties"].items():
-        party["phases"]["All"] = _all_phase_breakdown(party["phases"], data["encounter"]["phases"], encounter, party["members"], group=True)
-        for member in party["members"]:
-            member["phases"]["All"] = _all_phase_breakdown(member["phases"], data["encounter"]["phases"], encounter, member["name"])
-
-    data["encounter"]["max_player_recv"] = max([member["phases"]["All"]["received"]["total"] for party in parties.values() for member in party["members"]])
-
-    # Append total squad stats in "phases"
-    for phase_name, squad_phase in data["encounter"]["phases"].items():
-        squad_phase.update({
-            "actual": {"dps": 0},
-            "actual_boss": {"dps": 0},
-            "received": {"total": 0},
-            "shielded": {"total": 0},
-            "buffs": {},
-            "buffs_out": {},
-            "mechanics": {},
-            "events": {},
-        })
-        squad_size = 0
-        for party_name, party_data in parties.items():
-            party_phase = party_data["phases"][phase_name]
-            party_size = len(party_data["members"])
-            squad_phase["actual"]["dps"] += party_phase["actual"]["dps"]
-            squad_phase["actual_boss"]["dps"] += party_phase["actual_boss"]["dps"]
-            squad_phase["received"]["total"] += party_phase["received"]["total"]
-            squad_phase["shielded"]["total"] += party_phase["shielded"]["total"]
-
-            for buff_name, buff_count in party_phase["buffs"].items():
-                if buff_name not in squad_phase["buffs"]:
-                    squad_phase["buffs"][buff_name] = 0
-                squad_phase["buffs"][buff_name] = squad_phase["buffs"][buff_name] * squad_size / (squad_size + party_size) + buff_count * party_size / (squad_size + party_size)
-
-            # Additive stats
-            for target in ["buffs_out", "mechanics", "events"]:
-                for key, val in party_phase[target].items():
-                    if key not in squad_phase[target]:
-                        squad_phase[target][key] = 0
-                    squad_phase[target][key] += val
-
-            squad_size += party_size
 
     if encounter_showable or request.user.is_staff:
         if encounter.gdrive_url:

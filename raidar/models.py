@@ -396,6 +396,7 @@ class EncounterData(models.Model):
                                                      count=mechanic_data)
                         mechanic.save()
 
+        # TODO: Remove when fixed
         # If no mechanics were found within phases, they're probably only annotated in the "All" phase
         if not data.encountermechanic_set:
             for player_name, player_data in dump["Category"]["combat"]["Phase"]["All"]["Player"].items():
@@ -638,16 +639,20 @@ class EncounterEvent(SourcedEncounterAttribute):
     disconnect_time = models.PositiveIntegerField()
     down_count = models.PositiveIntegerField()
     down_time = models.PositiveIntegerField()
+    dead_count = models.PositiveIntegerField()
+    dead_time = models.PositiveIntegerField()
 
     def get_inactive_time(self):
-        return self.disconnect_time + self.down_time
+        return self.disconnect_time + self.down_time + self.dead_time
 
     @staticmethod
     def summarize(query):
         return query.aggregate(disconnect_count=Sum("disconnect_count"),
                                disconnect_time=Sum("disconnect_time"),
                                down_count=Sum("down_count"),
-                               down_time=Sum("down_time"))
+                               down_time=Sum("down_time"),
+                               dead_count=Sum("dead_time"),
+                               dead_time=Sum("dead_count"))
 
 
 class EncounterMechanic(NamedSourcedEncounterAttribute):
