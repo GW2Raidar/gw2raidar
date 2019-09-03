@@ -245,7 +245,7 @@ def _phase_breakdown(prv_encounter, players, phase, group=False):
 
     return prv_phase_data
 
-# TODO: Rebuild for phase->group layout
+
 def _all_phase_breakdown(phase_dump, prv_encounter, party_name, player_data):
     all_duration = 0
     all_phase = {

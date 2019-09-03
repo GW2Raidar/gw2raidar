@@ -207,6 +207,9 @@ def navigate_to_profile_outputs(totals_for_player, participation, boss):
                        player_all]
     return ProfileOutputs(breakdown, all, encounter_stats)
 
+# TODO: Complete overhaul for new model (Temporary, to test whether restat can be removed)
+# TODO: Create db models for restat results (If necessary)
+# TODO: Rebuild restat for new db layout (If necessary)
 class Command(BaseCommand):
     help = 'Recalculates the stats'
 
