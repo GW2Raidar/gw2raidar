@@ -1,4 +1,4 @@
-from models import *
+from .models import *
 from analyser.analyser import Profession, SPECIALISATIONS
 from analyser.bosses import BOSSES, BOSS_LOCATIONS
 from analyser.buffs import BUFF_TYPES, BUFF_TABS, StackType
