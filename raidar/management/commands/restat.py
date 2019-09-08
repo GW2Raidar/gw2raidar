@@ -1,20 +1,12 @@
-from collections import defaultdict
 from functools import partial
 from contextlib import contextmanager
-from django.core.management.base import BaseCommand, CommandError
-from django.db import transaction
+from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from gw2raidar import settings
-from analyser.bosses import BOSSES, Kind
-from os.path import join as path_join
 from raidar.models import *
 from sys import exit
 from time import time
 import os
-import csv
 from evtcparser.parser import AgentType
-from analyser.postprocessor import something
-import pandas as pd
 import numpy as np
 import base64
 
@@ -25,22 +17,21 @@ import base64
 # l.addHandler(logging.StreamHandler())
 
 
-
 @contextmanager
 def single_process(name):
     try:
         pid = os.getpid()
-        #Uncomment to remove pid in case of having cancelled restat with Ctrl+C...
-        #Variable.objects.get(key='%s_pid' % name).delete()
+        # Uncomment to remove pid in case of having cancelled restat with Ctrl+C...
+        # Variable.objects.get(key='%s_pid' % name).delete()
         pid_var = Variable.objects.create(key='%s_pid' % name, val=os.getpid())
+        try:
+            yield pid
+        finally:
+            pid_var.delete()
     except IntegrityError:
         # already running
         exit()
 
-    try:
-        yield pid
-    finally:
-        pid_var.delete()
 
 @contextmanager
 def necessary():
@@ -60,6 +51,7 @@ def necessary():
 class RestatException(Exception):
     pass
 
+
 def name_for(id):
     if id in BOSSES:
         return BOSSES[id].name
@@ -74,10 +66,12 @@ def navigate(node, *names):
         new_node = new_node[name]
     return new_node
 
-#Automated statistics style:
+
+# Automated statistics style:
 def count(output):
     current = output.get('count', 0)
     output['count'] = current+ 1
+
 
 def bound_stats(output, name, value):
     maxprop = 'max_' + name
@@ -88,6 +82,7 @@ def bound_stats(output, name, value):
     if minprop not in output or value < output[minprop]:
         output[minprop] = value
 
+
 def advanced_stats(maximum_percentile_samples, output, name, value):
     bound_stats(output, name, value)
     average_stats(output, name, value)
@@ -96,13 +91,16 @@ def advanced_stats(maximum_percentile_samples, output, name, value):
         l.append(value)
         output['values|' + name] = l
 
+
 def all_stats(output, name, value):
     bound_stats(output, name, value)
     average_stats(output, name, value)
 
+
 def average_stats(output, name, value):
     output['avgsum|' + name] = output.get('avgsum|' + name, 0) + value
     output['avgnum|' + name] = output.get('avgnum|' + name, 0) + 1
+
 
 def finalise_stats(node):
     try:
@@ -130,16 +128,19 @@ def finalise_stats(node):
     except TypeError:
         pass
 
-def _safe_get(func, default=0):
+
+def _safe_get(func, default=None):
     try:
         return func()
     except (KeyError, TypeError):
         return default
 
-#subprocesses
+
+# sub processes
 def calculate(l, f, *args):
     for t in l:
         f(t, *args)
+
 
 def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets, outgoing_buff_targets):
     stats_in_phase_to_all = _safe_get(lambda: stats['Metrics']['damage']['To']['*All'], {})
@@ -161,6 +162,7 @@ def calculate_standard_stats(f, stats, main_stat_targets, incoming_buff_targets,
 
     for buff, value in outgoing_buff_stats.items():
         calculate(outgoing_buff_targets, f, buff, value)
+
 
 def navigate_to_profile_outputs(totals_for_player, participation, boss):
     class ProfileOutputs:
@@ -207,6 +209,41 @@ def navigate_to_profile_outputs(totals_for_player, participation, boss):
                        player_all]
     return ProfileOutputs(breakdown, all, encounter_stats)
 
+
+def delete_old_files():
+    gb = 1024 * 1024 * 1024
+    min_disk_avail = 10 * gb
+    num_pruned = 0
+
+    if hasattr(os, 'statvfs'):
+        def is_there_space_now():
+            fs_data = os.statvfs(settings.UPLOAD_DIR)
+            disk_avail = fs_data.f_frsize * fs_data.f_bavail
+            return disk_avail > min_disk_avail
+    else:
+        def is_there_space_now():
+            # No protection from full disk on Windows
+            return True
+
+    if is_there_space_now():
+        return num_pruned
+
+    encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
+    for encounter in encounter_queryset.iterator():
+        filename = encounter.diskname()
+        if filename:
+            try:
+                os.unlink(filename)
+                num_pruned += 1
+            except FileNotFoundError:
+                pass
+        encounter.has_evtc = False
+        encounter.save()
+        if is_there_space_now():
+            return num_pruned
+    return num_pruned
+
+
 # TODO: Complete overhaul for new model (Temporary, to test whether restat can be removed)
 # TODO: Create db models for restat results (If necessary)
 # TODO: Rebuild restat for new db layout (If necessary)
@@ -231,8 +268,8 @@ class Command(BaseCommand):
         with single_process('restat'), necessary() as last_run:
             start = time()
             start_date = datetime.now()
-            pruned_count = self.delete_old_files(*args, **options)
-            eraCount, areasCount, usersCount, newEncountersCount = self.calculate_stats(last_run, *args, **options)
+            pruned_count = delete_old_files()
+            era_count, area_count, user_count, new_encounter_count = self.calculate_stats(last_run, *args, **options)
             end = time()
             end_date = datetime.now()
 
@@ -240,52 +277,19 @@ class Command(BaseCommand):
                 print()
                 print("Completed in %ss" % (end - start))
             
-            if (newEncountersCount + pruned_count) > 0:
+            if (new_encounter_count + pruned_count) > 0:
                 RestatPerfStats.objects.create(
                     started_on=start_date,
                     ended_on=end_date,
-                    number_users=usersCount,
-                    number_eras=eraCount,
-                    number_areas=areasCount,
-                    number_new_encounters=newEncountersCount,
+                    number_users=user_count,
+                    number_eras=era_count,
+                    number_areas=area_count,
+                    number_new_encounters=new_encounter_count,
                     number_pruned_evtcs=pruned_count,
                     was_force=options['force'])
 
-    def delete_old_files(self, *args, **options):
-        GB = 1024 * 1024 * 1024
-        MIN_DISK_AVAIL = 10 * GB
-        num_pruned = 0
-
-        if hasattr(os, 'statvfs'):
-            def is_there_space_now():
-                fsdata = os.statvfs(settings.UPLOAD_DIR)
-                diskavail = fsdata.f_frsize * fsdata.f_bavail
-                return diskavail > MIN_DISK_AVAIL
-        else:
-            def is_there_space_now():
-                # No protection from full disk on Windows
-                return True
-
-        if is_there_space_now():
-            return num_pruned
-
-        encounter_queryset = Encounter.objects.filter(has_evtc=True).order_by('started_at')
-        for encounter in encounter_queryset.iterator():
-            filename = encounter.diskname()
-            if filename:
-                try:
-                    os.unlink(filename)
-                    num_pruned += 1
-                except FileNotFoundError:
-                    pass
-            encounter.has_evtc = False
-            encounter.save()
-            if is_there_space_now():
-                return num_pruned
-        return num_pruned
-
-
-    def calculate_stats(self, last_run, *args, **options):
+    @staticmethod
+    def calculate_stats(last_run, *args, **options):
 
         def add_leaderboard_stats(container, period, stat, item):
             if period not in container:
@@ -296,38 +300,20 @@ class Command(BaseCommand):
             leaderboards[stat].append(item)
             leaderboards[stat] = sorted(leaderboards[stat], key=lambda x: x[stat])[:10]
 
-        def initialise_era_area_stats():
-            leaderboards = {
-                    'periods': {},
-                }
-            return {}, leaderboards
-
-        def initialise_era_user_stats():
-            return {}
-
-        def initialise_era_stats():
-            return {}
-
-
         def add_encounter_to_era_area_stats(encounter, totals_in_area, totals_in_era, leaderboards_in_area):
             try:
-                boss = BOSSES[encounter.area_id]
-                data = encounter.val
-                phases = data['Category']['combat']['Phase']
-
-
+                dump = encounter.json_dump()
 
                 if encounter.success:
                     week = encounter.week()
-                    val = encounter.val
                     comp = [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()]
                     item = {
                             "id": encounter.id,
                             "url_id": encounter.url_id,
                             "duration": encounter.duration,
-                            "dps_boss": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*Boss"]["dps"],
-                            "dps": val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"],
-                            "buffs": _safe_get(lambda: val["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["buffs"]["To"]["*All"]),
+                            "dps_boss": dump["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*Boss"]["dps"],
+                            "dps": dump["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["damage"]["To"]["*All"]["dps"],
+                            "buffs": _safe_get(lambda: dump["Category"]["combat"]["Phase"]["All"]["Subgroup"]["*All"]["Metrics"]["buffs"]["To"]["*All"]),
                             "comp": comp,
                             "tags": encounter.tagstring,
                             }
@@ -336,12 +322,11 @@ class Command(BaseCommand):
                     if 'max_max_dps' not in leaderboards_in_area or item['dps'] > leaderboards_in_area['max_max_dps']:
                         leaderboards_in_area['max_max_dps'] = item['dps']
 
-
                 participations = encounter.participations.all()
 
-                for phase, stats_in_phase in phases.items():
+                for phase, stats_in_phase in dump["Category"]["combat"]["Phase"].items():
                     squad_stats = stats_in_phase['Subgroup']['*All']
-                    phase_duration = data['Category']['encounter']['duration'] if phase == 'All' else _safe_get(lambda: data['Category']['encounter']['Phase'][phase]['duration'])
+                    phase_duration = dump['Category']['encounter']['duration'] if phase == 'All' else _safe_get(lambda: dump['Category']['encounter']['Phase'][phase]['duration'])
                     group_totals = navigate(totals_in_area, phase, 'group')
                     buffs_by_party = navigate(group_totals, 'buffs')
                     buffs_out_by_party = navigate(group_totals, 'buffs_out')
@@ -350,11 +335,11 @@ class Command(BaseCommand):
                     buffs_by_party_era = navigate(group_totals_era, 'buffs')
                     buffs_out_by_party_era = navigate(group_totals_era, 'buffs_out')
 
-                    if(encounter.success):
+                    if encounter.success:
                         calculate([group_totals, group_totals_era],
-                                    partial(advanced_stats, options['percentile_samples']),
-                                    'duration',
-                                    phase_duration)
+                                  partial(advanced_stats, options['percentile_samples']),
+                                  'duration',
+                                  phase_duration)
                         calculate([group_totals, group_totals_era], count)
                         calculate_standard_stats(
                             partial(advanced_stats, options['percentile_samples']),
@@ -367,7 +352,7 @@ class Command(BaseCommand):
                     individual_totals_era = navigate(totals_in_era, phase, 'individual')
                     for participation in participations:
                         # XXX in case player did not actually participate (hopefully fix in analyser)
-                        if (participation.character not in stats_in_phase['Player']):
+                        if participation.character not in stats_in_phase['Player']:
                             continue
                         player_stats = stats_in_phase['Player'][participation.character]
 
@@ -387,8 +372,7 @@ class Command(BaseCommand):
                         buffs_by_build_era = navigate(totals_by_build_era, 'buffs')
                         buffs_out_by_build_era = navigate(totals_by_build_era, 'buffs_out')
 
-                        if(encounter.success):
-
+                        if encounter.success:
                             calculate([totals_by_build, totals_by_archetype, totals_by_spec, individual_totals,
                                     totals_by_build_era, totals_by_archetype_era, totals_by_spec_era, individual_totals_era], count)
                             calculate_standard_stats(
@@ -401,14 +385,13 @@ class Command(BaseCommand):
             except:
                 raise RestatException("Error in %s" % encounter)
 
-
         def add_participation_to_era_user_stats(participation, totals_for_player):
             try:
                 encounter = participation.encounter
                 boss = BOSSES[encounter.area_id]
-                data = encounter.val
-                duration = data['Category']['encounter']['duration'] * 1000
-                stats_in_phase = data['Category']['combat']['Phase']['All']
+                dump = encounter.json_dump()
+                duration = dump['Category']['encounter']['duration'] * 1000
+                stats_in_phase = dump['Category']['combat']['Phase']['All']
                 player_stats = stats_in_phase['Player'][participation.character]
 
                 profile_output = navigate_to_profile_outputs(totals_for_player, participation, boss)
@@ -417,7 +400,7 @@ class Command(BaseCommand):
                     calculate(profile_output.all, count)
                     calculate(profile_output.encounter_stats, average_stats, 'success_percentage', 100 if encounter.success else 0)
 
-                    if(encounter.success):
+                    if encounter.success:
                         calculate_standard_stats(
                             all_stats,
                             player_stats,
@@ -435,25 +418,23 @@ class Command(BaseCommand):
             except:
                 raise RestatException("Error in %s" % participation)
 
-
-        def finalise_era_area_stats(era, area_id, totals_in_area, leaderboards_in_area):
+        def finalise_era_area_stats(prv_era, area_id, totals_in_area, leaderboards_in_area):
             finalise_stats(totals_in_area)
             EraAreaStore.objects.update_or_create(
-                    era=era, area_id=area_id, defaults={
+                    era=prv_era, area_id=area_id, defaults={
                         "val": totals_in_area,
                         "leaderboards": leaderboards_in_area,
                     })
 
-        def finalise_era_user_stats(era, user_id, totals_for_player):
+        def finalise_era_user_stats(prv_era, user_id, totals_for_player):
             finalise_stats(totals_for_player)
             EraUserStore.objects.update_or_create(
-                    era=era, user_id=user_id, defaults={ "val": totals_for_player })
+                    era=prv_era, user_id=user_id, defaults={"val": totals_for_player})
 
-        def finalise_era_stats(era, totals_in_era):
+        def finalise_era_stats(prv_era, totals_in_era):
             finalise_stats(totals_in_era)
-            era.val = totals_in_era
-            era.save()
-
+            prv_era.val = totals_in_era
+            prv_era.save()
 
         def verbose(title, content):
             if options['verbosity'] >= 3:
@@ -463,16 +444,19 @@ class Command(BaseCommand):
                 for key in sorted(flattened.keys()):
                     print_node(key, flattened[key])
 
-        def calculate_area_stats(era, new_encounters, forceRecalulation):
-            totals_in_era = initialise_era_stats()
-            areasCount = 0
-            area_queryset = new_encounters.order_by('area_id').distinct('area').values('area')
+        def calculate_area_stats(prv_era, prv_new_encounters, prv_force_recalulation):
+            totals_in_era = {}
+            prv_area_count = 0
+            area_queryset = prv_new_encounters.order_by('area_id').distinct('area').values('area')
             for area in area_queryset:
                 area_id = area['area']
                 if area_id:
-                    areasCount = areasCount + 1
-                    encounter_queryset = Encounter.objects.filter(area=area_id, era=era).order_by('?')
-                    totals_in_area, leaderboards_in_area = initialise_era_area_stats()
+                    prv_area_count += 1
+                    encounter_queryset = Encounter.objects.filter(area=area_id, era=prv_era).order_by('?')
+                    totals_in_area = {}
+                    leaderboards_in_area = {
+                        "periods": {},
+                    }
 
                     if area_id in BOSSES:
                         kind = BOSSES[area_id].kind.name.lower()
@@ -481,25 +465,24 @@ class Command(BaseCommand):
                     totals_for_kind = navigate(totals_in_era, 'kind', 'All %s bosses' % kind)
                     for encounter in encounter_queryset.iterator():
                         add_encounter_to_era_area_stats(encounter, totals_in_area, totals_for_kind, leaderboards_in_area)
-                    finalise_era_area_stats(era, area_id, totals_in_area, leaderboards_in_area)
-                    verbose("Totals for era %s, area %s" % (era, area_id), totals_in_area)
+                    finalise_era_area_stats(prv_era, area_id, totals_in_area, leaderboards_in_area)
+                    verbose("Totals for era %s, area %s" % (prv_era, area_id), totals_in_area)
 
-            finalise_era_stats(era, totals_in_era)
-            verbose("Totals for era %s" % era, totals_in_era)
-            return areasCount
+            finalise_era_stats(prv_era, totals_in_era)
+            verbose("Totals for era %s" % prv_era, totals_in_era)
+            return prv_area_count
 
-
-        def calculate_user_stats(era, new_encounters, forceRecalulation):
+        def calculate_user_stats(prv_era, prv_new_encounters, prv_force_recalulation):
             participations_queryset = Participation.objects.filter(encounter__in=new_encounters)
-            usersCount = 0
+            prv_user_count = 0
             unique_user_queryset = participations_queryset.order_by('account__user').distinct('account__user').values('account__user')
             for user in unique_user_queryset:
                 user_id = user['account__user']
                 if user_id:
-                    usersCount = usersCount + 1
+                    prv_user_count += 1
                     participation_queryset = participations_queryset.filter(account__user=user['account__user'], encounter__era=era).order_by('?')
                     totals_for_player = {}
-                    if not forceRecalulation:
+                    if not prv_force_recalulation:
                         try:
                             totals_for_player = EraUserStore.objects.get(era=era, user=user['account__user']).val
                         except EraUserStore.DoesNotExist:
@@ -508,27 +491,26 @@ class Command(BaseCommand):
                         add_participation_to_era_user_stats(participation, totals_for_player)
                     finalise_era_user_stats(era, user['account__user'], totals_for_player)
                     verbose("Totals for era %s, user %s" % (era, user['account__user']), totals_for_player)
-            return usersCount
+            return prv_user_count
 
-        eraCount = 0
-        newEncountersCount = 0
-        areasCount = 0
-        usersCount = 0
+        era_count = 0
+        new_encounter_count = 0
+        area_count = 0
+        user_count = 0
         for era in Era.objects.all():
-            eraCount = eraCount + 1
-            forceRecalulation = options['force']
+            era_count += 1
+            force_recalulation = options['force']
             last_run_timestamp = last_run
-            if forceRecalulation:
+            if force_recalulation:
                 last_run_timestamp = 0
             new_encounters = Encounter.objects.filter(era=era, uploaded_at__gte=last_run_timestamp)
             if new_encounters:
-                newEncountersCount = newEncountersCount + len(new_encounters) # fine because we're iterating over all of them anyway
-                areasCount = areasCount + calculate_area_stats(era, new_encounters, forceRecalulation)
-                usersCount = usersCount + calculate_user_stats(era, new_encounters, forceRecalulation)
+                new_encounter_count += len(new_encounters)  # fine because we're iterating over all of them anyway
+                area_count += calculate_area_stats(era, new_encounters, force_recalulation)
+                user_count += calculate_user_stats(era, new_encounters, force_recalulation)
             elif options['verbosity'] >= 2:
                 print('Skipped era %s' % era)
-        return eraCount, areasCount, usersCount, newEncountersCount
-
+        return era_count, area_count, user_count, new_encounter_count
 
 
 def is_basic_value(node):
@@ -537,6 +519,7 @@ def is_basic_value(node):
         return False
     except:
         return True
+
 
 def flatten(root):
     nodes = dict((str(key), node) for key,node in root.items())
@@ -557,15 +540,17 @@ def flatten(root):
             pass
     return nodes
 
+
 def format_value(value):
     return value
 
+
 def print_node(key, node, f=None):
     try:
-        basic_values = list(filter(lambda key:is_basic_value(key[1]), node.items()))
+        basic_values = list(filter(lambda k: is_basic_value(k[1]), node.items()))
         if basic_values:
             output_string = "{0}: {1}".format(key, ", ".join(
-                ["{0}:{1}".format(name, format_value(value)) for name,value in basic_values]))
+                ["{0}:{1}".format(name, format_value(value)) for name, value in basic_values]))
             print(output_string, file=f)
     except AttributeError:
         pass
