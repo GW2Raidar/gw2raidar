@@ -202,9 +202,11 @@ class Variable(ValueModel):
     def __str__(self):
         return '%s=%s' % (self.key, self.val)
 
+    @staticmethod
     def get(name):
         return Variable.objects.get(key=name).val
 
+    @staticmethod
     def set(name, value):
         Variable.objects.update_or_create(key=name, defaults={'val': value})
 
