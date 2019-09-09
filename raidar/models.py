@@ -373,7 +373,9 @@ class EncounterData(models.Model):
                                        disconnect_count=event_data["disconnects"],
                                        disconnect_time=int(event_data["disconnect_time"]),
                                        down_count=event_data["downs"],
-                                       down_time=int(event_data["down_time"]))
+                                       down_time=int(event_data["down_time"]),
+                                       dead_count=event_data["deaths"],
+                                       dead_time=int(event_data["dead_time"]))
                 event.save()
 
                 # Shielded
@@ -465,7 +467,7 @@ class Encounter(models.Model):
         end_tick = self.encounter_data.end_tick if next_phase is None else next_phase.start_tick
         return (end_tick - start_tick) / 1000.0
 
-    def json_dump(self, privacy_parties=None, participated=True):
+    def json_dump(self, privacy_parties=None, participated=False):
         data = self.encounter_data
         phases = data.encounterphase_set.order_by("start_tick")
         players = data.encounterplayer_set.filter(account_id__isnull=False)
@@ -579,6 +581,7 @@ class Encounter(models.Model):
             }
         }
         data["encounter"]["phase_order"].append("All")
+        return data
 
     def week(self):
         return Encounter.week_for(self.started_at)
@@ -696,7 +699,7 @@ class Participation(models.Model):
                 'uploaded_at': self.encounter.uploaded_at,
                 'success': self.encounter.success,
                 'category': self.encounter.category_id,
-                #'tags': list(self.encounter.tags.names()),
+                # 'tags': list(self.encounter.tags.names()),
                 'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
             }
 
@@ -777,12 +780,12 @@ class EncounterEvent(SourcedEncounterAttribute):
 
     @staticmethod
     def summarize(query):
-        return query.aggregate(disconnect_count=Sum("disconnect_count"),
-                               disconnect_time=Sum("disconnect_time"),
-                               down_count=Sum("down_count"),
-                               down_time=Sum("down_time"),
-                               dead_count=Sum("dead_time"),
-                               dead_time=Sum("dead_count"))
+        return query.aggregate(disconnect_count=Coalesce(Sum("disconnect_count"), 0),
+                               disconnect_time=Coalesce(Sum("disconnect_time"), 0),
+                               down_count=Coalesce(Sum("down_count"), 0),
+                               down_time=Coalesce(Sum("down_time"), 0),
+                               dead_count=Coalesce(Sum("dead_time"), 0),
+                               dead_time=Coalesce(Sum("dead_count"), 0))
 
 
 class EncounterMechanic(NamedSourcedEncounterAttribute):
