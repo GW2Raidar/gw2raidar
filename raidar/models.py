@@ -553,12 +553,14 @@ class Encounter(models.Model):
 
                 squad_size += party_size
 
-        max_player_dps = max(
-            [member["actual"]["dps"] for phase in phase_data.values() for party in phase["parties"].values() for member
-             in party["members"]])
-        max_player_recv = max(
-            [member["received"]["total"] for phase in phase_data.values() for party in phase["parties"].values() for
-             member in party["members"]])
+        # Add performance data to members
+        for phase_name, prv_phase_data in phase_data.items():
+            for party_data in prv_phase_data["parties"].values():
+                for member in party_data["members"]:
+                    member["performance"] = _safe_get(lambda: area_stats[phase_name]["build"][str(member["profession"])][str(member["elite"])][str(member["archetype"])])
+
+        max_player_dps = max([member["actual"]["dps"] for phase in phase_data.values() for party in phase["parties"].values() for member in party["members"]])
+        max_player_recv = max([member["received"]["total"] for phase in phase_data.values() for party in phase["parties"].values() for member in party["members"]])
 
         data = {
             "encounter": {

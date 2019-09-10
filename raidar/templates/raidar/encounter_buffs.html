@@ -123,11 +123,11 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
                     section: page.boon_output ? {
                         name: 'Output',
                         value: buffs_out ? buffs_out[code] : 0,
-                        percentiles: pctl(@context.get(`archetype.buffs_out.per_${code}`))
+                        percentiles: pctl(@context.get(`performance.buffs_out.per_${code}`))
                       } : {
                         name: 'Uptime',
                         value: buffs ? buffs[code] : 0,
-                        percentiles: pctl(@context.get(`archetype.buffs.per_${code}`))
+                        percentiles: pctl(@context.get(`performance.buffs.per_${code}`))
                       }
                   }]]
                     [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
