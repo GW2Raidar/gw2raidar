@@ -165,9 +165,11 @@ def _add_build_data_to_profile(kind, data, profile):
         return
     data = data['All']
 
-    for archetype, archdata in profile['encounter'][kind]['archetype'].items():
-        for profession, profdata in archdata['profession'].items():
-            for elite, elitedata in profdata['elite'].items():
+    for archetype, archdata in profile['encounter'][kind].items():
+        if archetype == "count":
+            continue
+        for profession, profdata in archdata.items():
+            for elite, elitedata in profdata.items():
                 builddata = _safe_get(lambda: data['build'][profession][elite][archetype])
                 if builddata:
                     elitedata['everyone'] = builddata

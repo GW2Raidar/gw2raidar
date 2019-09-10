@@ -15,10 +15,10 @@ import numpy
 import psutil
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from django.db.models import F, Avg
+from django.db.models import F, Avg, FloatField, Sum
 from django.db.utils import IntegrityError
 from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime, \
-    Area, EncounterEvent
+    Area, EncounterEvent, EncounterPhase
 
 
 # DEBUG: uncomment to log SQL queries
@@ -293,47 +293,45 @@ def _recalculate_area(era, area):
 
 
 def _recalculate_users(era, user):
-    user_data = {"count": 0, "encounter": {}, "summary": {}}
+    user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}, "summary": {}}
     encounters = era.encounters.filter(participations__account__user=user)
     for encounter in encounters:
         player_data = _find_player_data([account.name for account in user.accounts.all()], encounter.json_dump())
         if player_data is not None:
-            archetype = player_data["archetype"]
+            arch = player_data["archetype"]
             prof = player_data["profession"]
             elite = player_data["elite"]
-            if encounter.area_id not in user_data["encounter"]:
-                user_data["encounter"][encounter.area_id] = {"count": 0}
-            if archetype not in user_data["encounter"][encounter.area_id]:
-                user_data["encounter"][encounter.area_id][archetype] = {}
-            if prof not in user_data["encounter"][encounter.area_id][archetype]:
-                user_data["encounter"][encounter.area_id][archetype][prof] = {}
-            if elite not in user_data["encounter"][encounter.area_id][archetype][prof]:
-                user_data["encounter"][encounter.area_id][archetype][prof][elite] = {"count": 0,
-                                                                                     "buffs": {},
-                                                                                     "buffs_out": {}}
-            area_build_data = user_data["encounter"][encounter.area_id][archetype][prof][elite]
 
-            # Buffs
-            _increment_buff_stats(player_data, area_build_data, ["buffs_out"])
-            # Other stats
-            _increment_user_general_stats(player_data, area_build_data, encounter.duration)
-            # Increase encounter count
-            user_data["count"] += 1
-            # TODO: Do we need archetype->"All"->"All"?
-            # TODO: Do we need archetype->prof->"All"?
-            # TODO: Do we need "All"->"All"->"All"?
-            # TODO: Do we need "All raid bosses"?
+            for target in ["All raid bosses", encounter.area_id]:
+                if target not in user_data["encounter"]:
+                    user_data["encounter"][target] = {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}
+                if arch not in user_data["encounter"][target]:
+                    user_data["encounter"][target][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
+                if prof not in user_data["encounter"][target][arch]:
+                    user_data["encounter"][target][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
+                if elite not in user_data["encounter"][target][arch][prof]:
+                    user_data["encounter"][target][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
+                user_area_data = user_data["encounter"][target]
+
+                # Buffs
+                _increment_buff_stats(player_data, user_area_data["All"]["All"]["All"], ["buffs_out"])
+                _increment_buff_stats(player_data, user_area_data[arch]["All"]["All"], ["buffs_out"])
+                _increment_buff_stats(player_data, user_area_data[arch][prof]["All"], ["buffs_out"])
+                _increment_buff_stats(player_data, user_area_data[arch][prof][elite], ["buffs_out"])
+                # Other stats
+                _increment_user_general_stats(player_data, user_area_data["All"]["All"]["All"], encounter.duration * 1000)
+                _increment_user_general_stats(player_data, user_area_data[arch]["All"]["All"], encounter.duration * 1000)
+                _increment_user_general_stats(player_data, user_area_data[arch][prof]["All"], encounter.duration * 1000)
+                _increment_user_general_stats(player_data, user_area_data[arch][prof][elite], encounter.duration * 1000)
+                # Increase encounter count
+                user_area_data["All"]["All"]["All"]["count"] += 1
+                user_area_data[arch]["All"]["All"]["count"] += 1
+                user_area_data[arch][prof]["All"]["count"] += 1
+                user_area_data[arch][prof][elite]["count"] += 1
 
     _foreach_value(user_data, _summarize_user)
-    event_data = EncounterEvent.objects.filter(encounter__encounter__in=encounters, phase_name="All")\
-        .annotate(duration="encounter__encounter__duration")\
-        .annotate(down_percentage=F("down_time") / F("duration"),
-                  dead_percentage=F("dead_time") / F("duration"),
-                  disconnect_percentage=F("disconnect_time") / F("duration"))\
-        .aggregate(avg_down_percentage=Avg("down_percentage"),
-                   avg_dead_percentage=Avg("dead_percentage"),
-                   avg_disconnect_percentage=Avg("disconnect_percentage")).values()
-    user_data["summary"] = {stat_name: stat_value for stat_name, stat_value in event_data.items()}
+    # TODO: Create summary
+    user_data["summary"] = {}
     EraUserStore.objects.update_or_create(era=era, user_id=user.id, defaults={"val": user_data})
 
 

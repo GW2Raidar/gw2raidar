@@ -225,10 +225,10 @@ def _safe_get_percent(key, data, fallback=0):
     return data[key] / 100.0 if key in data else fallback
 
 
-def _generate_skill_data(encounter_data, phase_name, damage_source, damage_target, damage_data):
+def _generate_skill_data(encounter_data, phase, damage_source, damage_target, damage_data):
     for skill_name, skill_data in damage_data["Skill"].items():
         skill = EncounterDamage(encounter=encounter_data,
-                                phase=phase_name,
+                                phase=phase,
                                 source=damage_source,
                                 target=damage_target,
                                 skill=skill_name,
@@ -272,10 +272,11 @@ class EncounterData(models.Model):
 
         # Phases
         for phase_name, phase_data in dump["Category"]["encounter"]["Phase"].items():
-            phase = EncounterPhase(encounter=data,
-                                   name=phase_name,
-                                   start_tick=phase_data["start_tick"])
-            phase.save()
+            if phase_name != "All":
+                phase = EncounterPhase(encounter=data,
+                                       name=phase_name,
+                                       start_tick=phase_data["start_tick"])
+                phase.save()
 
         # Players
         for player_name, player_data in dump["Category"]["status"]["Player"].items():
@@ -293,7 +294,8 @@ class EncounterData(models.Model):
             player.save()
 
         for phase_name, phase_data in dump["Category"]["combat"]["Phase"].items():
-            if phase_name == "All":
+            phase = data.encounterphase_set.filter(name=phase_name).first()
+            if phase is None:
                 continue
 
             for player_name, player_data in phase_data["Player"].items():
@@ -301,47 +303,49 @@ class EncounterData(models.Model):
 
                 # Buffs
                 # Incoming
-                for buff_source in player_data["buffs"]["From"]:
-                    buff_target = player_name
-                    for buff_name, buff_data in player_data["buffs"]["From"][buff_source].items():
-                        if buff_data > 0:
-                            buff = EncounterBuff(encounter=data,
-                                                 phase=phase_name,
-                                                 source=buff_source,
-                                                 target=buff_target,
-                                                 name=buff_name,
-                                                 uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
+                if "From" in player_data["buffs"]:
+                    for buff_source in player_data["buffs"]["From"]:
+                        buff_target = player_name
+                        for buff_name, buff_data in player_data["buffs"]["From"][buff_source].items():
+                            if buff_data > 0:
+                                buff = EncounterBuff(encounter=data,
+                                                     phase=phase,
+                                                     source=buff_source,
+                                                     target=buff_target,
+                                                     name=buff_name,
+                                                     uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
                             buff.save()
                 # Outgoing
-                for buff_target in player_data["buffs"]["To"]:
-                    buff_source = player_name
-                    for buff_name, buff_data in player_data["buffs"]["To"][buff_target].items():
-                        if buff_data > 0:
-                            buff = EncounterBuff(encounter=data,
-                                                 phase=phase_name,
-                                                 source=buff_source,
-                                                 target=buff_target,
-                                                 name=buff_name,
-                                                 uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
-                            buff.save()
+                if "To" in player_data["buffs"]:
+                    for buff_target in player_data["buffs"]["To"]:
+                        buff_source = player_name
+                        for buff_name, buff_data in player_data["buffs"]["To"][buff_target].items():
+                            if buff_data > 0:
+                                buff = EncounterBuff(encounter=data,
+                                                     phase=phase,
+                                                     source=buff_source,
+                                                     target=buff_target,
+                                                     name=buff_name,
+                                                     uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
+                                buff.save()
 
                 # Damage
                 # Incoming
                 for damage_source, damage_data in player_data["damage"]["From"].items():
                     # Skill breakdown
                     if "Skill" in damage_data:
-                        _generate_skill_data(data, phase_name, damage_source, player_name, damage_data)
+                        _generate_skill_data(data, phase, damage_source, player_name, damage_data)
                 # Outgoing
                 for damage_target, damage_data in player_data["damage"]["To"].items():
                     # Skill breakdown
                     if damage_target == "*All" and "Skill" in damage_data:
-                        _generate_skill_data(data, phase_name, player_name, damage_target, damage_data)
+                        _generate_skill_data(data, phase, player_name, damage_target, damage_data)
                     # Summary
                     else:
                         # Condi
                         if damage_data["condi"] > 0:
                             condi = EncounterDamage(encounter=data,
-                                                    phase=phase_name,
+                                                    phase=phase,
                                                     source=player_name,
                                                     target=damage_target,
                                                     skill="condi",
@@ -355,7 +359,7 @@ class EncounterData(models.Model):
                         # Power
                         if damage_data["power"] > 0:
                             power = EncounterDamage(encounter=data,
-                                                    phase=phase_name,
+                                                    phase=phase,
                                                     source=player_name,
                                                     target=damage_target,
                                                     skill="power",
@@ -370,7 +374,7 @@ class EncounterData(models.Model):
                 # Events
                 event_data = player_data["events"]
                 event = EncounterEvent(encounter=data,
-                                       phase=phase_name,
+                                       phase=phase,
                                        source=player_name,
                                        disconnect_count=event_data["disconnects"],
                                        disconnect_time=int(event_data["disconnect_time"]),
@@ -383,7 +387,7 @@ class EncounterData(models.Model):
                 # Shielded
                 shield_data = player_data["shielded"]["From"]["*All"]
                 shield = EncounterDamage(encounter=data,
-                                         phase=phase_name,
+                                         phase=phase,
                                          source="*All",
                                          target=player_name,
                                          skill="shielded",
@@ -399,7 +403,7 @@ class EncounterData(models.Model):
                 if "mechanics" in player_data:
                     for mechanic_name, mechanic_data in player_data["mechanics"].items():
                         mechanic = EncounterMechanic(encounter=data,
-                                                     phase=phase_name,
+                                                     phase=phase,
                                                      source=player_name,
                                                      name=mechanic_name,
                                                      count=mechanic_data)
@@ -746,169 +750,6 @@ class EncounterAttribute(models.Model):
     encounter = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
 
 
-class SourcedEncounterAttribute(EncounterAttribute):
-    class Meta:
-        abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_attr_unique")]
-    phase = models.TextField()
-    source = models.TextField()
-
-
-class TargetedEncounterAttribute(SourcedEncounterAttribute):
-    class Meta:
-        abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target"], name="enc_target_attr_unique")]
-    target = models.TextField()
-
-
-class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
-    class Meta:
-        abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "name"], name="enc_name_attr_unique")]
-    name = models.TextField()
-
-
-class EncounterEvent(SourcedEncounterAttribute):
-    class Meta:
-        db_table = "raidar_encounter_event"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_evt_unique")]
-    disconnect_count = models.PositiveIntegerField()
-    disconnect_time = models.PositiveIntegerField()
-    down_count = models.PositiveIntegerField()
-    down_time = models.PositiveIntegerField()
-    dead_count = models.PositiveIntegerField()
-    dead_time = models.PositiveIntegerField()
-
-    def get_inactive_time(self):
-        return self.disconnect_time + self.down_time + self.dead_time
-
-    @staticmethod
-    def summarize(query):
-        return query.aggregate(disconnect_count=Coalesce(Sum("disconnect_count"), 0),
-                               disconnect_time=Coalesce(Sum("disconnect_time"), 0),
-                               down_count=Coalesce(Sum("down_count"), 0),
-                               down_time=Coalesce(Sum("down_time"), 0),
-                               dead_count=Coalesce(Sum("dead_time"), 0),
-                               dead_time=Coalesce(Sum("dead_count"), 0))
-
-
-class EncounterMechanic(NamedSourcedEncounterAttribute):
-    class Meta:
-        db_table = "raidar_encounter_mechanic"
-    count = models.PositiveIntegerField()
-
-
-class EncounterBuff(TargetedEncounterAttribute):
-    class Meta:
-        db_table = "raidar_encounter_buff"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "name"], name="enc_buff_unique")]
-    name = models.TextField()
-    uptime = models.FloatField()
-
-    @staticmethod
-    def breakdown(buff_data, use_sum=False):
-        prv_buff_data = {buff["name"]: buff["sum"] if use_sum else buff["avg"] for buff in
-                         buff_data.values("name").annotate(avg=Avg("uptime"), sum=Sum("uptime"))}
-        for name, uptime in prv_buff_data.items():
-            if name not in ["might", "stability"]:
-                prv_buff_data[name] = prv_buff_data[name] * 100.0
-        return prv_buff_data
-
-
-class EncounterDamage(TargetedEncounterAttribute):
-    class Meta:
-        db_table = "raidar_encounter_damage"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "skill"], name="enc_dmg_unique")]
-    skill = models.TextField()
-    damage = models.IntegerField()
-    crit = models.FloatField()
-    fifty = models.FloatField()
-    flanking = models.FloatField()
-    scholar = models.FloatField()
-    seaweed = models.FloatField()
-
-    def data(self):
-        return {
-            "skill": self.skill,
-            "total": self.damage,
-            "crit": self.crit * 100.0,
-            "fifty": self.fifty * 100.0,
-            "flanking": self.flanking * 100.0,
-            "scholar": self.scholar * 100.0,
-            "seaweed": self.seaweed * 100.0,
-        }
-
-    # TODO: Fix numbers
-    @staticmethod
-    def breakdown(dmg_data, phase_duration, group=False, absolute=False):
-        prv_dmg_data = {} if group else {
-            "Skill": {damage.skill: damage.data() for damage in dmg_data.exclude(skill__in=["power, condi"])}}
-        power_data = EncounterDamage.summarize(dmg_data, "power", absolute=absolute)
-        for key, val in power_data.items():
-            prv_dmg_data["power" if key == "total" else key] = val
-        prv_dmg_data["condi"] = EncounterDamage.summarize(dmg_data, "condi", absolute=absolute)["total"]
-        prv_dmg_data["total"] = prv_dmg_data["power"] + prv_dmg_data["condi"]
-        prv_dmg_data["dps"] = prv_dmg_data["total"] / phase_duration
-        prv_dmg_data["condi_dps"] = prv_dmg_data["condi"] / phase_duration
-        prv_dmg_data["power_dps"] = prv_dmg_data["power"] / phase_duration
-        return prv_dmg_data
-
-    @staticmethod
-    def summarize(query, target="all", absolute=False):
-        if target == "all":
-            prv_query = query
-        else:
-            prv_query = query.filter(skill=target)
-            if prv_query.count() == 0:
-                prv_query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi" else\
-                            query.exclude(skill__in=EncounterDamage.conditions())
-        data = prv_query.aggregate(total=Coalesce(Sum("damage"), 0),  # TODO: This solution for calculating average stats is imprecise!
-                                   crit=Coalesce(Avg("crit") * 100.0, 0),
-                                   fifty=Coalesce(Avg("fifty") * 100.0, 0),
-                                   flanking=Coalesce(Avg("flanking") * 100.0, 0),
-                                   scholar=Coalesce(Avg("scholar") * 100.0, 0),
-                                   seaweed=Coalesce(Avg("seaweed") * 100.0, 0))
-        if absolute:
-            data = {key: _safe_abs(val) for key, val in data.items()}
-        return data
-
-    @staticmethod
-    def conditions():
-        return ["Bleeding", "Burning", "Confusion", "Poisoned", "Torment"]
-
-
-# TODO: Combine with Participation
-class EncounterPlayer(EncounterAttribute):
-    class Meta:
-        db_table = "raidar_encounter_player"
-        constraints = [UniqueConstraint(fields=["encounter", "account_id"], name="enc_player_unique")]
-    account_id = models.TextField()
-    character = models.TextField()
-    party = models.PositiveIntegerField()
-    profession = models.PositiveIntegerField()
-    elite = models.PositiveIntegerField()
-    archetype = models.PositiveIntegerField()
-    conc = models.PositiveIntegerField()
-    condi = models.PositiveIntegerField()
-    heal = models.PositiveIntegerField()
-    tough = models.PositiveIntegerField()
-    death_tick = models.PositiveIntegerField(null=True)
-
-    def data(self):
-        return {
-            "name": self.character,
-            "account": self.account_id,
-            "profession": self.profession,
-            "elite": self.elite,
-            "archetype": self.archetype,
-            "concentration": self.conc,
-            "condition": self.condi,
-            "healing": self.heal,
-            "toughness": self.tough,
-            "Death": self.death_tick,
-        }
-
-
 class EncounterPhase(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_phase"
@@ -921,10 +762,10 @@ class EncounterPhase(EncounterAttribute):
     def breakdown(prv_encounter, players, phase, group=False):
         prv_players = [player["name"] for player in players] if group else [players["name"]]
         phase_duration = prv_encounter.calc_phase_duration(phase)
-        buffs = prv_encounter.encounter_data.encounterbuff_set.filter(phase=phase.name)
-        events = prv_encounter.encounter_data.encounterevent_set.filter(phase=phase.name)
-        damage = prv_encounter.encounter_data.encounterdamage_set.filter(phase=phase.name)
-        mechanics = prv_encounter.encounter_data.encountermechanic_set.filter(phase=phase.name)
+        buffs = prv_encounter.encounter_data.encounterbuff_set.filter(phase=phase)
+        events = prv_encounter.encounter_data.encounterevent_set.filter(phase=phase)
+        damage = prv_encounter.encounter_data.encounterdamage_set.filter(phase=phase)
+        mechanics = prv_encounter.encounter_data.encountermechanic_set.filter(phase=phase)
 
         prv_phase_data = {
             "actual": EncounterDamage.breakdown(damage.filter(source__in=prv_players, target="*All", damage__gt=0), phase_duration, group=group),
@@ -1061,3 +902,164 @@ class EncounterPhase(EncounterAttribute):
                                           "name").annotate(Sum("count"))}
 
         return all_phase
+
+
+class SourcedEncounterAttribute(EncounterAttribute):
+    class Meta:
+        abstract = True
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_attr_unique")]
+    phase = models.ForeignKey(EncounterPhase, on_delete=models.CASCADE)
+    source = models.TextField()
+
+
+class TargetedEncounterAttribute(SourcedEncounterAttribute):
+    class Meta:
+        abstract = True
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target"], name="enc_target_attr_unique")]
+    target = models.TextField()
+
+
+class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
+    class Meta:
+        abstract = True
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "name"], name="enc_name_attr_unique")]
+    name = models.TextField()
+
+
+class EncounterEvent(SourcedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_event"
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_evt_unique")]
+    disconnect_count = models.PositiveIntegerField()
+    disconnect_time = models.PositiveIntegerField()
+    down_count = models.PositiveIntegerField()
+    down_time = models.PositiveIntegerField()
+    dead_count = models.PositiveIntegerField()
+    dead_time = models.PositiveIntegerField()
+
+    def get_inactive_time(self):
+        return self.disconnect_time + self.down_time + self.dead_time
+
+    @staticmethod
+    def summarize(query):
+        return query.aggregate(disconnect_count=Coalesce(Sum("disconnect_count"), 0),
+                               disconnect_time=Coalesce(Sum("disconnect_time"), 0),
+                               down_count=Coalesce(Sum("down_count"), 0),
+                               down_time=Coalesce(Sum("down_time"), 0),
+                               dead_count=Coalesce(Sum("dead_time"), 0),
+                               dead_time=Coalesce(Sum("dead_count"), 0))
+
+
+class EncounterMechanic(NamedSourcedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_mechanic"
+    count = models.PositiveIntegerField()
+
+
+class EncounterBuff(TargetedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_buff"
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "name"], name="enc_buff_unique")]
+    name = models.TextField()
+    uptime = models.FloatField()
+
+    @staticmethod
+    def breakdown(buff_data, use_sum=False):
+        prv_buff_data = {buff["name"]: buff["sum"] if use_sum else buff["avg"] for buff in
+                         buff_data.values("name").annotate(avg=Avg("uptime"), sum=Sum("uptime"))}
+        for name, uptime in prv_buff_data.items():
+            if name not in ["might", "stability"]:
+                prv_buff_data[name] = prv_buff_data[name] * 100.0
+        return prv_buff_data
+
+
+class EncounterDamage(TargetedEncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_damage"
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "skill"], name="enc_dmg_unique")]
+    skill = models.TextField()
+    damage = models.IntegerField()
+    crit = models.FloatField()
+    fifty = models.FloatField()
+    flanking = models.FloatField()
+    scholar = models.FloatField()
+    seaweed = models.FloatField()
+
+    def data(self):
+        return {
+            "skill": self.skill,
+            "total": self.damage,
+            "crit": self.crit * 100.0,
+            "fifty": self.fifty * 100.0,
+            "flanking": self.flanking * 100.0,
+            "scholar": self.scholar * 100.0,
+            "seaweed": self.seaweed * 100.0,
+        }
+
+    # TODO: Fix numbers
+    @staticmethod
+    def breakdown(dmg_data, phase_duration, group=False, absolute=False):
+        prv_dmg_data = {} if group else {
+            "Skill": {damage.skill: damage.data() for damage in dmg_data.exclude(skill__in=["power, condi"])}}
+        power_data = EncounterDamage.summarize(dmg_data, "power", absolute=absolute)
+        for key, val in power_data.items():
+            prv_dmg_data["power" if key == "total" else key] = val
+        prv_dmg_data["condi"] = EncounterDamage.summarize(dmg_data, "condi", absolute=absolute)["total"]
+        prv_dmg_data["total"] = prv_dmg_data["power"] + prv_dmg_data["condi"]
+        prv_dmg_data["dps"] = prv_dmg_data["total"] / phase_duration
+        prv_dmg_data["condi_dps"] = prv_dmg_data["condi"] / phase_duration
+        prv_dmg_data["power_dps"] = prv_dmg_data["power"] / phase_duration
+        return prv_dmg_data
+
+    @staticmethod
+    def summarize(query, target="all", absolute=False):
+        if target == "all":
+            prv_query = query
+        else:
+            prv_query = query.filter(skill=target)
+            if prv_query.count() == 0:
+                prv_query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi" else\
+                            query.exclude(skill__in=EncounterDamage.conditions())
+        data = prv_query.aggregate(total=Coalesce(Sum("damage"), 0),  # TODO: This solution for calculating average stats is imprecise!
+                                   crit=Coalesce(Avg("crit") * 100.0, 0),
+                                   fifty=Coalesce(Avg("fifty") * 100.0, 0),
+                                   flanking=Coalesce(Avg("flanking") * 100.0, 0),
+                                   scholar=Coalesce(Avg("scholar") * 100.0, 0),
+                                   seaweed=Coalesce(Avg("seaweed") * 100.0, 0))
+        if absolute:
+            data = {key: _safe_abs(val) for key, val in data.items()}
+        return data
+
+    @staticmethod
+    def conditions():
+        return ["Bleeding", "Burning", "Confusion", "Poisoned", "Torment"]
+
+
+# TODO: Combine with Participation
+class EncounterPlayer(EncounterAttribute):
+    class Meta:
+        db_table = "raidar_encounter_player"
+        constraints = [UniqueConstraint(fields=["encounter", "account"], name="enc_player_unique")]
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    character = models.TextField()
+    party = models.PositiveIntegerField()
+    profession = models.PositiveIntegerField()
+    elite = models.PositiveIntegerField()
+    archetype = models.PositiveIntegerField()
+    conc = models.PositiveIntegerField()
+    condi = models.PositiveIntegerField()
+    heal = models.PositiveIntegerField()
+    tough = models.PositiveIntegerField()
+
+    def data(self):
+        return {
+            "name": self.character,
+            "account": self.account_id,
+            "profession": self.profession,
+            "elite": self.elite,
+            "archetype": self.archetype,
+            "concentration": self.conc,
+            "condition": self.condi,
+            "healing": self.heal,
+            "toughness": self.tough,
+        }
