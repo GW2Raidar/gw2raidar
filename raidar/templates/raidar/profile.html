@@ -13,7 +13,7 @@
           		  <div class="uk-width-1">
           		    <ul class="uk-nav uk-dropdown-nav">
           		      <li on-click="@.set({'page.area': all})" class-uk-active="page.area === all">
-          			<a href="#">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</a>
+          			<a href="#">[[all]] ([[all in encounter ? encounter[all].All.All.All.count : 0]])</a>
           		      </li>
           		    </ul>
           		  </div>
@@ -25,7 +25,7 @@
                       <li class="uk-nav-header uk-margin-top">[[name]]</li>
                       [[#each bosses as boss_id]]
                         [[#if boss_id in encounter]]
-                          <li on-click="@.set({'page.area': boss_id})" class-uk-active="page.area == boss_id"><a href="#">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</a></li>
+                          <li on-click="@.set({'page.area': boss_id})" class-uk-active="page.area == boss_id"><a href="#">[[data.areas[boss_id].name]] ([[encounter[boss_id].All.All.All.count]])</a></li>
                         [[else]]
                           {# TODO make visually distinct the dead links #}
                           <li><a href="#" on-click="false">[[data.areas[boss_id].name]] (0)</a></li>
@@ -44,7 +44,7 @@
       <select class="uk-select uk-hidden@s uk-margin-bottom" name="encounter" value="[[page.area]]">
         [[#each data.boss_locations]]
 	  [[#if all && encounter[all]]]
-	    <option value="[[all]]">[[all]] ([[all in encounter ? encounter[all].archetype.All.profession.All.elite.All.count : 0]])</option>
+	    <option value="[[all]]">[[all]] ([[all in encounter ? encounter[all].All.All.All.count : 0]])</option>
 	  [[else]]
 	    <option disabled>[[all]] (0)</option>
 	  [[/if]]
@@ -52,7 +52,7 @@
             <optgroup label="[[name]]">
               [[#each bosses as boss_id]]
                 [[#if boss_id in encounter]]
-                  <option value="[[boss_id]]">[[data.areas[boss_id].name]] ([[encounter[boss_id].archetype.All.profession.All.elite.All.count]])</option>
+                  <option value="[[boss_id]]">[[data.areas[boss_id].name]] ([[encounter[boss_id].All.All.All.count]])</option>
                 [[else]]
                   {# TODO make visually distinct the dead links #}
                   <option disabled>[[data.areas[boss_id].name]] (0)</option>
@@ -68,7 +68,7 @@
         <div uk-grid class="uk-grid-small">
           [[#each keysWithAllLast(encounter, data.areas)]]
             [[#with {encounterId: .}]]
-              [[#with encounter[encounterId].archetype.All.profession.All.elite.All]]
+              [[#with encounter[encounterId].All.All.All]]
                 <div uk-tooltip class="uk-padding-small uk-margin-left uk-margin-remove-adjacent link" title="[[avg_success_percentage.toPrecision(3)]]%" style="[[barSurvivalPerc(0, 100 - avg_success_percentage, 0)]]; width: 230px;" on-click="@.set({ 'page.area': encounterId })" class-all="[[encounterId.match(/^All \w+ bosses$/)]]">
                   <input class="uk-radio" type="radio" name="[[page.area]]" value="[[encounterId]]"/>
                   [[encounterId.match(/^All \w+ bosses$/) ? encounterId : data.areas[encounterId]]]
@@ -94,7 +94,7 @@
       </div>
 
       [[#with encounter[page.area] as enc]]
-        [[#with @context.get("enc.archetype.All.profession.All.elite.All") || {} as allstat]]
+        [[#with @context.get("enc.All.All.All") || {} as allstat]]
           [[#if typeof page.area == "string"]]
             {# All ... bosses #}
             <h2>[[page.area]]</h2>
@@ -134,8 +134,8 @@
             </div>
           [[/if]]
 
-          [[#each keysWithAllLast(enc.archetype, {1: 2, 2: 3, 5: 1}) as archetypeId]]
-            [[#with enc.archetype[archetypeId] as archetype]]
+          [[#each keysWithAllLast(enc, {1: 2, 2: 3, 5: 1}) as archetypeId]]
+            [[#with enc[archetypeId] as archetype]]
               <h2 class="uk-heading-line">
                 <span>
                   [[#if archetypeId !== 'All']]
@@ -146,14 +146,14 @@
               </h2>
 
               <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-remove-top">
-                Archetype played [[perc(archetype ? 100 * archetype.profession.All.elite.All.count / allstat.count : 0)]] of encounters.
+                Archetype played [[perc(archetype ? 100 * archetype.All.All.count / allstat.count : 0)]] of encounters.
               </h6>
 
               <div class="uk-grid">
-                [[#each keysWithAllLast(archetype.profession) as professionId]]
-                  [[#with archetype.profession[professionId] as profession]]
-                    [[#each keysWithAllLast(profession.elite) as eliteId]]
-                      [[#with profession.elite[eliteId] as elite]]
+                [[#each keysWithAllLast(archetype) as professionId]]
+                  [[#with archetype[professionId] as profession]]
+                    [[#each keysWithAllLast(profession) as eliteId]]
+                      [[#with profession[eliteId] as elite]]
                         [[#with elite]]
                           [[#with everyone ? {
                             percentiles_dps: pctl(everyone.per_dps),
