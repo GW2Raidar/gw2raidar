@@ -877,6 +877,7 @@ class EncounterDamage(TargetedEncounterAttribute):
         return ["Bleeding", "Burning", "Confusion", "Poisoned", "Torment"]
 
 
+# TODO: Combine with Participation
 class EncounterPlayer(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_player"
