@@ -160,6 +160,15 @@ def index(request, page=None):
     return _html_response(request, page)
 
 
+def _add_area_data(user_data, era_id):
+    queryset = EraAreaStore.objects.filter(era=era_id, area_id__in=[user_data["encounter"]]).exclude(value="{}")
+    for era_area_store in queryset:
+        area_data = era_area_store.val["All"]["build"]
+        for arch, arch_data in user_data["encounter"][era_area_store.area.id].items():
+            for prof, prof_data in arch_data.items():
+                for elite, elite_data in prof.items():
+                    elite_data["performance"] = area_data[arch][prof][elite]
+
 @require_GET
 def profile(request, era_id=None):
     if not request.user.is_authenticated:
@@ -174,7 +183,7 @@ def profile(request, era_id=None):
         "profile": {
             "username": user.username,
             "joined_at": (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
-            "era_data": era_user_store.val if era_user_store else {},
+            "era_data": _add_area_data(era_user_store.val, era_id) if era_user_store else {},
             "eras_for_dropdown": {
                 era_user.era.id: {
                     "name": era_user.era.name,
