@@ -1240,7 +1240,7 @@ ${body}
       return false;
     },
     chart: function chart(evt, archetype, profession, elite, stat, statName) {
-      let eraId = r.get('page.era');
+      let eraId = r.get('profile.era.id');
       let eras = r.get('profile.eras');
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';

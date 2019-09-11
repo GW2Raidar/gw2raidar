@@ -160,41 +160,52 @@ def index(request, page=None):
     return _html_response(request, page)
 
 
-def _add_area_data(user_data, era_id):
-    area_ids = [area_id for area_id in user_data["encounter"] if type(area_id) == int]
-    queryset = EraAreaStore.objects.filter(era=era_id, area_id__in=area_ids).exclude(value="{}")
+def _with_area_data(user_data, era):
+    area_ids = [area_id for area_id in user_data["encounter"] if area_id.isnumeric()]
+    queryset = EraAreaStore.objects.filter(era=era, area_id__in=area_ids).exclude(value="{}")
     for era_area_store in queryset:
         area_data = era_area_store.val["All"]["build"]
-        for arch, arch_data in user_data["encounter"][era_area_store.area.id].items():
+        enc_data = user_data["encounter"][str(era_area_store.area.id)]
+        for arch, arch_data in enc_data.items():
             for prof, prof_data in arch_data.items():
-                for elite, elite_data in prof.items():
+                for elite, elite_data in prof_data.items():
+                    print(era_area_store.area_id, arch, prof, elite)
                     elite_data["performance"] = area_data[arch][prof][elite]
+        enc_data["individual"] = era_area_store.val["All"]["individual"]
+    return user_data
 
 @require_GET
 def profile(request, era_id=None):
     if not request.user.is_authenticated:
         return _error("Not authenticated")
 
-    user = request.user
-    queryset = EraUserStore.objects.filter(user=user).exclude(value="{}").order_by("-era__started_at")
-    era_user_store = queryset.filter(era=era_id).first() if era_id else queryset.first()
+    if not era_id:
+        era_id = Era.objects.all().order_by("-started_at").values_list("id", flat=True)[0]
+    era = Era.objects.get(id=era_id)
 
-    # TODO: Add percentile data
+    user = request.user
+    queryset = EraUserStore.objects.filter(user=user).exclude(value="{}")
+    era_user_store = queryset.filter(era=era).first()
+
     result = {
         "profile": {
             "username": user.username,
             "joined_at": (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
-            "era_data": _add_area_data(era_user_store.val, era_id) if era_user_store else {},
-            "eras_for_dropdown": {
-                era_user.era.id: {
+            "era": {
+                "id": era.id,
+                "name": era.name,
+                "stats": _with_area_data(era_user_store.val, era),
+            },
+            "eras_for_dropdown": [{
                     "name": era_user.era.name,
                     "id": era_user.era.id,
                     "started_at": era_user.era.started_at,
                     "description": era_user.era.description,
                 } for era_user in queryset
-            },
-        }
+            ],
+        },
     }
+
     return JsonResponse(result)
 
 @require_GET
@@ -536,8 +547,9 @@ def profile_graph(request):
     elite_id = request.POST['elite']
     stat = request.POST['stat']
 
-    participations = Participation.objects.select_related('encounter').filter(
-            encounter__era_id=era_id, account__user=request.user, encounter__success=True)
+    participations = Participation.objects.select_related('encounter').filter(encounter__era_id=era_id,
+                                                                              account__user=request.user,
+                                                                              encounter__success=True)
 
     try:
         if area_id.startswith('All'):
@@ -563,7 +575,7 @@ def profile_graph(request):
     except KeyError:
         requested = None # XXX fill out in restat
     max_graph_encounters = 50 # XXX move to top or to settings
-    db_data = participations.order_by('-encounter__started_at')[:max_graph_encounters].values_list('character', 'encounter__started_at', 'encounter__value')
+    db_data = participations.order_by('-encounter__started_at')[:max_graph_encounters].values_list('character', 'encounter__started_at', 'encounter')
     data = []
     times = []
 
@@ -572,10 +584,10 @@ def profile_graph(request):
         stat = 'dps'
     else:
         target = '*All'
-    for name, started_at, json in reversed(db_data):
-        dump = json_loads(json)
-        datum = _safe_get(lambda: dump['Category']['combat']['Phase']['All']['Player'][name]['Metrics']['damage']['To'][target][stat], 0)
-        data.append(datum)
+    for name, started_at, encounter_id in reversed(db_data):
+        enc = Encounter.objects.get(id=encounter_id)
+        data_point = enc.encounter_data.encounterdamage_set.filter(source=name, target=target).aggregate(Sum("damage"))["damage__sum"]
+        data.append(round(data_point / enc.duration))
         times.append(started_at)
 
     result = {

@@ -7,6 +7,7 @@ new encounter logs and generating or updating any related percentile blobs.
 """
 
 from contextlib import contextmanager
+from datetime import timezone
 from time import time
 import os
 import sys
@@ -35,7 +36,7 @@ def single_process(name):
         # TODO: This is very inconvenient!
         # Uncomment to remove pid in case of having cancelled restat with Ctrl+C...
         # Variable.objects.get(key="%s_pid" % name).delete()
-        pid_var = Variable.objects.create(key="%s_pid" % name, val=os.getpid())
+        pid_var = Variable.objects.create(key="%s_pid" % name, val=pid)
         try:
             yield pid
         finally:
@@ -45,21 +46,12 @@ def single_process(name):
         sys.exit()
 
 
-# TODO: Replace with RestatPerfStats check
-@contextmanager
-def necessary():
-    """Determines the timespan since the last restat run and updates the value after completion."""
-    try:
-        last_run = Variable.get("restat_last")
-    except Variable.DoesNotExist:
-        last_run = 0
-
-    start = time()
-
-    yield last_run
-
-    # Only if successful:
-    Variable.set("restat_last", start)
+def last_restat():
+    """Determines the timespan since the last restat run by using RestatPerfStats."""
+    last_run = RestatPerfStats.objects.order_by("-started_on").first()
+    if last_run:
+        return last_run.started_on
+    return datetime.fromtimestamp(0, timezone.utc)
 
 
 def delete_old_files():
@@ -87,8 +79,6 @@ def delete_old_files():
     return num_pruned
 
 
-# TODO: Create db models for restat results (If necessary)
-# TODO: Rebuild restat for new db layout
 class Command(BaseCommand):
     """The Django command class for the restat command."""
     help = "Recalculates the stats"
@@ -101,13 +91,15 @@ class Command(BaseCommand):
                             help="Force calculation even if no new Encounters")
 
     def handle(self, *args, **options):
-        with single_process("restat"), necessary() as last_run:
+        with single_process("restat"):
             start = time()
-            start_date = datetime.now()
+            start_date = datetime.now(timezone.utc)
             pruned_count = delete_old_files()
+            forced = "force" in options and options["force"]
+            last_run = datetime.fromtimestamp(0, timezone.utc) if forced else last_restat()
             era_count, area_count, user_count, new_encounter_count = calculate_stats(last_run, **options)
             end = time()
-            end_date = datetime.now()
+            end_date = datetime.now(timezone.utc)
 
             if options["verbosity"] >= 1:
                 print()
@@ -122,7 +114,7 @@ class Command(BaseCommand):
                     number_areas=area_count,
                     number_new_encounters=new_encounter_count,
                     number_pruned_evtcs=pruned_count,
-                    was_force=options["force"])
+                    was_force=forced)
 
 
 def _foreach_value(data, map_func):
@@ -227,6 +219,7 @@ def _update_area_leaderboards(area_leaderboards, encounter, dump):
         area_leaderboards["max_max_dps"] = max(area_leaderboards["max_max_dps"], leaderboard_item["dps"])
 
 
+# TODO: Rebuild with database ops
 def _recalculate_area(era, area, era_data):
     area_data = {}
     area_leaderboards = {"periods": {"Era": {"duration": []}}, "max_max_dps": 0}
@@ -275,10 +268,15 @@ def _recalculate_area(era, area, era_data):
                                                                                "buffs_out": {}}}
                         if elite not in target[phase_name]["build"][arch][prof]:
                             target[phase_name]["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
+                        if prof not in target[phase_name]["build"]["All"]:
+                            target[phase_name]["build"]["All"][prof] = {}
+                        if elite not in target[phase_name]["build"]["All"][prof]:
+                            target[phase_name]["build"]["All"][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
                         build_data = target[phase_name]["build"]
 
                         for prv_target in [build_data["All"]["All"]["All"],
                                            build_data[arch]["All"]["All"],
+                                           build_data["All"][prof][elite],
                                            build_data[arch][prof]["All"],
                                            build_data[arch][prof][elite]]:
                             # Buffs
@@ -295,6 +293,7 @@ def _recalculate_area(era, area, era_data):
                                                                               "leaderboards": area_leaderboards})
 
 
+# TODO: Rebuild with database ops
 def _recalculate_users(era, user):
     user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0,
                                                                            "buffs": {},
@@ -318,12 +317,18 @@ def _recalculate_users(era, user):
                     user_data["encounter"][target][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
                 if elite not in user_data["encounter"][target][arch][prof]:
                     user_data["encounter"][target][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
+                if prof not in user_data["encounter"][target]["All"]:
+                    user_data["encounter"][target]["All"][prof] = {}
+                if elite not in user_data["encounter"][target]["All"][prof]:
+                    user_data["encounter"][target]["All"][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
                 user_area_data = user_data["encounter"][target]
 
                 for prv_target in [user_area_data["All"]["All"]["All"],
                                    user_area_data[arch]["All"]["All"],
+                                   user_area_data["All"][prof][elite],
                                    user_area_data[arch][prof]["All"],
-                                   user_area_data[arch][prof][elite]]:
+                                   user_area_data[arch][prof][elite],
+                                   ]:
                     # Buffs
                     _increment_buff_stats(player_data, prv_target, ["buffs_out"])
                     # Other stats
@@ -360,9 +365,7 @@ def calculate_stats(last_run, **options):
     encounter_count = 0
     for era in Era.objects.all():
         era_count += 1
-        force_recalculation = "force" in options and options["force"]
-        last_run_timestamp = 0 if force_recalculation else last_run
-        encounters = Encounter.objects.filter(era=era, uploaded_at__gte=last_run_timestamp)
+        encounters = Encounter.objects.filter(era=era, uploaded_on__gte=last_run)
         if encounters:
             encounter_count = len(encounters)
             area_count, user_count = recalculate_era(era, encounters)
