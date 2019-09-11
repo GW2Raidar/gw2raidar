@@ -251,14 +251,6 @@ class EncounterData(models.Model):
                              evtc_version=dump["Category"]["encounter"]["evtc_version"])
         data.save()
 
-        # Phases
-        for phase_name, phase_data in dump["Category"]["encounter"]["Phase"].items():
-            if phase_name != "All":
-                phase = EncounterPhase(encounter_data=data,
-                                       name=phase_name,
-                                       start_tick=phase_data["start_tick"])
-                phase.save()
-
         # Players
         for player_name, player_data in dump["Category"]["status"]["Player"].items():
             account = Account.objects.get_or_create(name=player_data["account"])
@@ -274,6 +266,20 @@ class EncounterData(models.Model):
                                      heal=player_data["healing"],
                                      tough=player_data["toughness"])
             player.save()
+
+        # Phases
+        if "Phase" in dump["Category"]["encounter"]:
+            for phase_name, phase_data in dump["Category"]["encounter"]["Phase"].items():
+                if phase_name != "All":
+                    phase = EncounterPhase(encounter_data=data,
+                                           name=phase_name,
+                                           start_tick=phase_data["start_tick"])
+                    phase.save()
+        else:
+            phase = EncounterPhase(encounter_data=data,
+                                   name="All",
+                                   start_tick=dump["Category"]["encounter"]["start_tick"])
+            phase.save()
 
         for phase_name, phase_data in dump["Category"]["combat"]["Phase"].items():
             phase = data.encounterphase_set.filter(name=phase_name).first()
@@ -491,13 +497,14 @@ class Encounter(models.Model):
                     member.update(EncounterPhase.breakdown(self, member, phase))
 
         # Generate "All" phase from existing data
-        phase_data["All"] = {
-            "duration": self.calc_phase_duration("All"),
-            "group": _safe_get(lambda: area_stats["All"]["group"]),
-            "individual": _safe_get(lambda: area_stats["All"]["individual"]),
-            "parties": {party_name: EncounterPhase.all_breakdown(phase_data, self, party_name, party_data) for
-                        party_name, party_data in parties.items()},
-        }
+        if "All" not in phase_data:
+            phase_data["All"] = {
+                "duration": self.calc_phase_duration("All"),
+                "group": _safe_get(lambda: area_stats["All"]["group"]),
+                "individual": _safe_get(lambda: area_stats["All"]["individual"]),
+                "parties": {party_name: EncounterPhase.all_breakdown(phase_data, self, party_name, party_data) for
+                            party_name, party_data in parties.items()},
+            }
 
         # Generate total squad stats from existing data
         for phase_name, squad_phase in phase_data.items():
@@ -585,7 +592,8 @@ class Encounter(models.Model):
                 "phases": phase_data,
             }
         }
-        data["encounter"]["phase_order"].append("All")
+        if "All" not in data["encounter"]["phase_order"]:
+            data["encounter"]["phase_order"].append("All")
         return data
 
     def week(self):
