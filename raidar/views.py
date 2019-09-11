@@ -160,82 +160,31 @@ def index(request, page=None):
     return _html_response(request, page)
 
 
-def _add_build_data_to_profile(kind, data, profile):
-    if 'encounter' not in profile or kind not in profile['encounter'] or 'All' not in data:
-        return
-    data = data['All']
-
-    for archetype, archdata in profile['encounter'][kind].items():
-        if archetype == "count":
-            continue
-        for profession, profdata in archdata.items():
-            for elite, elitedata in profdata.items():
-                builddata = _safe_get(lambda: data['build'][profession][elite][archetype])
-                if builddata:
-                    elitedata['everyone'] = builddata
-    profile['encounter'][kind]['individual'] = data['individual']
-
-def _profile_data_for_era(user, era_user_store):
-    era = era_user_store.era
-    era_val = era.val
-    profile = era_user_store.val
-
-    unique_areas_for_era = Encounter.objects.filter(accounts__user=user, era=era).order_by('area_id').distinct('area').values('area')
-
-    for area in unique_areas_for_era: 
-        area_id = area['area']
-        if area_id:
-            era_area_store = EraAreaStore.objects.filter(era=era, area=area_id).first()
-            if era_area_store:
-                _add_build_data_to_profile(str(era_area_store.area_id), era_area_store.val, profile)
-                for kind, kind_data in era_val['kind'].items():
-                    _add_build_data_to_profile(kind, kind_data, profile)
-
-    return {
-        'id': era_user_store.era_id,
-        'name': era.name,
-        'started_at': era.started_at,
-        'description': era.description,
-        'profile': profile,
-    }
-
-
 @require_GET
 def profile(request, era_id=None):
     if not request.user.is_authenticated:
         return _error("Not authenticated")
 
     user = request.user
-    queryset = EraUserStore.objects.filter(user=user).exclude(value='{}').select_related('era').order_by('-era__started_at')
-    if era_id:
-        era_user_store = queryset.filter(era=era_id).first()
-    else:
-        era_user_store = queryset.first()
-    if era_user_store:
-        try:
-            eradata = { era_user_store.era.id: _profile_data_for_era(user, era_user_store)}
-        except EraUserStore.DoesNotExist:
-            eradata = {}
-    else:
-        eradata = {}
+    queryset = EraUserStore.objects.filter(user=user).exclude(value="{}").order_by("-era__started_at")
+    era_user_store = queryset.filter(era=era_id).first() if era_id else queryset.first()
 
-    era_names = {era_user.era.id: {
-            'name': era_user.era.name,
-            'id': era_user.era.id,
-            'started_at': era_user.era.started_at,
-            'description': era_user.era.description
-        } for era_user in queryset}
-
-    profile = {
-        'username': user.username,
-        'joined_at': (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
-        'era': eradata,
-        'eras_for_dropdown': era_names,
-    }
-
+    # TODO: Add percentile data
     result = {
-            "profile": profile
+        "profile": {
+            "username": user.username,
+            "joined_at": (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
+            "era_data": era_user_store.val if era_user_store else {},
+            "eras_for_dropdown": {
+                era_user.era.id: {
+                    "name": era_user.era.name,
+                    "id": era_user.era.id,
+                    "started_at": era_user.era.started_at,
+                    "description": era_user.era.description,
+                } for era_user in queryset
+            },
         }
+    }
     return JsonResponse(result)
 
 @require_GET

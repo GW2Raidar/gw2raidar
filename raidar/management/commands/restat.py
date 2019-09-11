@@ -293,7 +293,7 @@ def _recalculate_area(era, area):
 
 
 def _recalculate_users(era, user):
-    user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}, "summary": {}}
+    user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}}
     encounters = era.encounters.filter(participations__account__user=user)
     for encounter in encounters:
         player_data = _find_player_data([account.name for account in user.accounts.all()], encounter.json_dump())
@@ -330,8 +330,6 @@ def _recalculate_users(era, user):
                 user_area_data[arch][prof][elite]["count"] += 1
 
     _foreach_value(user_data, _summarize_user)
-    # TODO: Create summary
-    user_data["summary"] = {}
     EraUserStore.objects.update_or_create(era=era, user_id=user.id, defaults={"val": user_data})
 
 

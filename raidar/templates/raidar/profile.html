@@ -1,6 +1,6 @@
 {% load staticfiles %}
 [[#with profile]]
-  [[#with profile.era[page.era]]]
+  [[#with profile.era_data]]
     [[#with profile]]
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
         [[#each data.boss_locations]]
@@ -119,10 +119,7 @@
                 <h2 style="line-height:1;" class="uk-margin-small-bottom">[[data.areas[page.area].name]]</h2>
                 <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
                   Alive [[
-                    perc(100
-                    - allstat.avg_down_percentage
-                    - allstat.avg_dead_percentage
-                    )]]
+                    perc(100 - allstat.avg_down_percentage - allstat.avg_dead_percentage)]]
                 </span>
                 <span class="uk-badge uk-text-bold uk-label-warning uk-margin-small-right">
                   Downed [[perc(allstat.avg_down_percentage)]]
