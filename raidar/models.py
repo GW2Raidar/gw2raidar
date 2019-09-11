@@ -5,7 +5,7 @@ import random
 from time import time
 from hashlib import md5
 from functools import lru_cache
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from json import loads as json_loads, dumps as json_dumps
 import pytz
 from django.db import models
@@ -244,7 +244,8 @@ class EncounterData(models.Model):
         boss = "".join([boss_name for boss_name in dump["Category"]["boss"]["Boss"]])
         data = EncounterData(boss=boss,
                              cm=dump["Category"]["encounter"]["cm"],
-                             start_timestamp=datetime.fromtimestamp(dump["Category"]["encounter"]["start"]),
+                             start_timestamp=datetime.fromtimestamp(dump["Category"]["encounter"]["start"],
+                                                                    timezone.utc),
                              start_tick=dump["Category"]["encounter"]["start_tick"],
                              end_tick=dump["Category"]["encounter"]["end_tick"],
                              success=dump["Category"]["encounter"]["success"],
@@ -422,7 +423,7 @@ class Encounter(models.Model):
     duration = models.FloatField()
     success = models.BooleanField()
     filename = models.CharField(max_length=255)
-    uploaded_at = models.IntegerField(db_index=True)
+    uploaded_on = models.DateTimeField()
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
                                     related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
@@ -577,7 +578,7 @@ class Encounter(models.Model):
                 "url_id": self.url_id,
                 "name": self.area.name,
                 "filename": self.filename,
-                "uploaded_at": self.uploaded_at,
+                "uploaded_at": self.uploaded_on.timestamp(),
                 "uploaded_by": self.uploaded_by.username,
                 "started_at": self.started_at,
                 "duration": self.duration,
@@ -695,7 +696,7 @@ class Participation(models.Model):
             'profession': self.profession,
             'archetype': self.archetype,
             'elite': self.elite,
-            'uploaded_at': self.encounter.uploaded_at,
+            'uploaded_at': self.encounter.uploaded_on.timestamp(),
             'success': self.encounter.success,
             'category': self.encounter.category_id,
             'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
@@ -1061,7 +1062,7 @@ class EncounterPlayer(EncounterAttribute):
     def data(self):
         return {
             "name": self.character,
-            "account": self.account_id,
+            "account": self.account.name,
             "profession": self.profession,
             "elite": self.elite,
             "archetype": self.archetype,

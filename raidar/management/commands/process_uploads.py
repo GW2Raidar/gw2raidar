@@ -262,7 +262,7 @@ class Command(BaseCommand):
                                 pass
                     encounter.era = era
                     encounter.filename = filename
-                    encounter.uploaded_at = upload.uploaded_at
+                    encounter.uploaded_on = datetime.fromtimestamp(upload.uploaded_at, timezone.utc)
                     encounter.uploaded_by = upload.uploaded_by
                     encounter.duration = duration
                     encounter.success = success
@@ -274,7 +274,8 @@ class Command(BaseCommand):
                 except Encounter.DoesNotExist:
                     encounter = Encounter.objects.create(
                         filename=filename,
-                        uploaded_at=upload.uploaded_at, uploaded_by=upload.uploaded_by,
+                        uploaded_on=datetime.fromtimestamp(upload.uploaded_at, timezone.utc),
+                        uploaded_by=upload.uploaded_by,
                         duration=duration, success=success, encounter_data=encounter_data,
                         area=area, era=era, started_at=started_at,
                         started_at_full=started_at_full, started_at_half=started_at_half,
