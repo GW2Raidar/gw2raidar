@@ -212,8 +212,8 @@ class EncounterData(models.Model):
     boss = models.TextField()
     cm = models.BooleanField()
     start_timestamp = models.DateTimeField()
-    start_tick = models.PositiveIntegerField()
-    end_tick = models.PositiveIntegerField()
+    start_tick = models.BigIntegerField()
+    end_tick = models.BigIntegerField()
     success = models.BooleanField()
     evtc_version = models.TextField()
 
@@ -263,7 +263,7 @@ class EncounterData(models.Model):
         for player_name, player_data in dump["Category"]["status"]["Player"].items():
             account = Account.objects.get_or_create(name=player_data["account"])
             player = EncounterPlayer(encounter_data=data,
-                                     account=account,
+                                     account=account[0],
                                      character=player_name,
                                      party=player_data["party"],
                                      profession=player_data["profession"],
@@ -328,7 +328,7 @@ class EncounterData(models.Model):
                     else:
                         # Condi
                         if damage_data["condi"] > 0:
-                            condi = EncounterDamage(encounter=data,
+                            condi = EncounterDamage(encounter_data=data,
                                                     phase=phase,
                                                     source=player_name,
                                                     target=damage_target,
@@ -342,7 +342,7 @@ class EncounterData(models.Model):
                             condi.save()
                         # Power
                         if damage_data["power"] > 0:
-                            power = EncounterDamage(encounter=data,
+                            power = EncounterDamage(encounter_data=data,
                                                     phase=phase,
                                                     source=player_name,
                                                     target=damage_target,
@@ -357,7 +357,7 @@ class EncounterData(models.Model):
 
                 # Events
                 event_data = player_data["events"]
-                event = EncounterEvent(encounter=data,
+                event = EncounterEvent(encounter_data=data,
                                        phase=phase,
                                        source=player_name,
                                        disconnect_count=event_data["disconnects"],
@@ -370,7 +370,7 @@ class EncounterData(models.Model):
 
                 # Shielded
                 shield_data = player_data["shielded"]["From"]["*All"]
-                shield = EncounterDamage(encounter=data,
+                shield = EncounterDamage(encounter_data=data,
                                          phase=phase,
                                          source="*All",
                                          target=player_name,
@@ -386,7 +386,7 @@ class EncounterData(models.Model):
                 # Mechanics
                 if "mechanics" in player_data:
                     for mechanic_name, mechanic_data in player_data["mechanics"].items():
-                        mechanic = EncounterMechanic(encounter=data,
+                        mechanic = EncounterMechanic(encounter_data=data,
                                                      phase=phase,
                                                      source=player_name,
                                                      name=mechanic_name,
@@ -399,7 +399,7 @@ class EncounterData(models.Model):
             for player_name, player_data in dump["Category"]["combat"]["Phase"]["All"]["Player"].items():
                 if "mechanics" in player_data:
                     for mechanic_name, mechanic_data in player_data["mechanics"].items():
-                        mechanic = EncounterMechanic(encounter=data,
+                        mechanic = EncounterMechanic(encounter_data=data,
                                                      phase="All",
                                                      source=player_name,
                                                      name=mechanic_name,
@@ -738,7 +738,7 @@ class EncounterPhase(EncounterAttribute):
         db_table = "raidar_encounter_phase"
         constraints = [UniqueConstraint(fields=["encounter_data", "name"], name="enc_phase_unique")]
     name = models.TextField()
-    start_tick = models.PositiveIntegerField()
+    start_tick = models.BigIntegerField()
 
     # TODO: Fix numbers
     @staticmethod

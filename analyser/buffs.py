@@ -398,7 +398,7 @@ class BuffPreprocessor:
         buffremove_events = statusremove_events[['skillid', 'time', 'value', 'overstack_value', 'is_buffremove', 'dst_instid', 'ult_src_instid']]
 
         # Combine buff application and removal events
-        buff_update_events = pd.concat([buff_events, buffremove_events]).sort_values('time')
+        buff_update_events = pd.concat([buff_events, buffremove_events], sort=False).sort_values('time')
 
         # Add in skill ids for ease of processing
         buff_update_events[['time', 'value']] = buff_update_events[['time', 'value']].apply(pd.to_numeric)

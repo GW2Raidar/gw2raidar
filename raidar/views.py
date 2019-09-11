@@ -161,7 +161,8 @@ def index(request, page=None):
 
 
 def _add_area_data(user_data, era_id):
-    queryset = EraAreaStore.objects.filter(era=era_id, area_id__in=[user_data["encounter"]]).exclude(value="{}")
+    area_ids = [area_id for area_id in user_data["encounter"] if type(area_id) == int]
+    queryset = EraAreaStore.objects.filter(era=era_id, area_id__in=area_ids).exclude(value="{}")
     for era_area_store in queryset:
         area_data = era_area_store.val["All"]["build"]
         for arch, arch_data in user_data["encounter"][era_area_store.area.id].items():
