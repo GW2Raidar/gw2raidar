@@ -15,10 +15,9 @@ import numpy
 import psutil
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
-from django.db.models import F, Avg, FloatField, Sum
 from django.db.utils import IntegrityError
 from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime, \
-    Area, EncounterEvent, EncounterPhase
+    Area
 
 
 # DEBUG: uncomment to log SQL queries
@@ -228,62 +227,66 @@ def _update_area_leaderboards(area_leaderboards, encounter, dump):
         area_leaderboards["max_max_dps"] = max(area_leaderboards["max_max_dps"], leaderboard_item["dps"])
 
 
-def _recalculate_area(era, area):
+def _recalculate_area(era, area, era_data):
     area_data = {}
     area_leaderboards = {"periods": {"Era": {"duration": []}}, "max_max_dps": 0}
     for encounter in era.encounters.filter(area_id=area):
         dump = encounter.json_dump()
         for phase_name in dump["encounter"]["phases"]:
-            if phase_name not in area_data:
-                area_data[phase_name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
-                                         "individual": {"count": 0},
-                                         "build": {}}
-
-            # Party data
-            for party_data in dump["encounter"]["phases"][phase_name]["parties"].values():
-                area_group_data = area_data[phase_name]["group"]
-
-                # Buffs
-                _increment_buff_stats(party_data, area_group_data, ["buffs", "buffs_out"])
-                # Other stats
-                _increment_area_general_stats(party_data, area_group_data,
-                                              dump["encounter"]["phases"][phase_name]["duration"])
-                # Increase group count
-                area_group_data["count"] += 1
-
-                # Individual data
-                area_ind_data = area_data[phase_name]["individual"]
-                for member_data in party_data["members"]:
-
-                    # Other stats
-                    _increment_area_general_stats(member_data, area_ind_data,
-                                                  dump["encounter"]["phases"][phase_name]["duration"])
-                    # Increase member count
-                    area_ind_data["count"] += 1
-
-                    # Build data
-                    archetype = member_data["archetype"]
-                    prof = member_data["profession"]
-                    elite = member_data["elite"]
-                    if archetype not in area_data[phase_name]["build"]:
-                        area_data[phase_name]["build"][archetype] = {}
-                    if prof not in area_data[phase_name]["build"][archetype]:
-                        area_data[phase_name]["build"][archetype][prof] = {}
-                    if elite not in area_data[phase_name]["build"][archetype][prof]:
-                        area_data[phase_name]["build"][archetype][prof][elite] = {"count": 0,
-                                                                                  "buffs": {},
-                                                                                  "buffs_out": {}}
-                    area_build_data = area_data[phase_name]["build"][archetype][prof][elite]
+            phase_duration = dump["encounter"]["phases"][phase_name]["duration"]
+            for target in [area_data, era_data]:
+                if phase_name not in target:
+                    target[phase_name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
+                                          "individual": {"count": 0},
+                                          "build": {"All": {"All": {"All": {"count": 0,
+                                                                            "buffs": {},
+                                                                            "buffs_out": {}}}}}}
+                # Party data
+                for party_data in dump["encounter"]["phases"][phase_name]["parties"].values():
+                    group_data = target[phase_name]["group"]
 
                     # Buffs
-                    _increment_buff_stats(member_data, area_build_data, ["buffs", "buffs_out"])
+                    _increment_buff_stats(party_data, group_data, ["buffs", "buffs_out"])
                     # Other stats
-                    _increment_area_general_stats(member_data, area_build_data,
-                                                  dump["encounter"]["phases"][phase_name]["duration"])
-                    # Increase build count
-                    area_build_data["count"] += 1
-                    # TODO: Do we need class->elite->"All"?
-                    # TODO: Do we need "All"->"All"->archetype?
+                    _increment_area_general_stats(party_data, group_data, phase_duration)
+                    # Increase group count
+                    group_data["count"] += 1
+
+                    # Individual data
+                    ind_data = target[phase_name]["individual"]
+                    for member_data in party_data["members"]:
+
+                        # Other stats
+                        _increment_area_general_stats(member_data, ind_data, phase_duration)
+                        # Increase member count
+                        ind_data["count"] += 1
+
+                        # Build data
+                        arch = member_data["archetype"]
+                        prof = member_data["profession"]
+                        elite = member_data["elite"]
+                        if arch not in target[phase_name]["build"]:
+                            target[phase_name]["build"][arch] = {"All": {"All": {"count": 0,
+                                                                                 "buffs": {},
+                                                                                 "buffs_out": {}}}}
+                        if prof not in target[phase_name]["build"][arch]:
+                            target[phase_name]["build"][arch][prof] = {"All": {"count": 0,
+                                                                               "buffs": {},
+                                                                               "buffs_out": {}}}
+                        if elite not in target[phase_name]["build"][arch][prof]:
+                            target[phase_name]["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
+                        build_data = target[phase_name]["build"]
+
+                        for prv_target in [build_data["All"]["All"]["All"],
+                                           build_data[arch]["All"]["All"],
+                                           build_data[arch][prof]["All"],
+                                           build_data[arch][prof][elite]]:
+                            # Buffs
+                            _increment_buff_stats(member_data, prv_target, ["buffs", "buffs_out"])
+                            # Other stats
+                            _increment_area_general_stats(member_data, prv_target, phase_duration)
+                            # Increase build count
+                            prv_target["count"] += 1
 
         _update_area_leaderboards(area_leaderboards, encounter, dump)
 
@@ -293,7 +296,9 @@ def _recalculate_area(era, area):
 
 
 def _recalculate_users(era, user):
-    user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}}
+    user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0,
+                                                                           "buffs": {},
+                                                                           "buffs_out": {}}}}}}}
     encounters = era.encounters.filter(participations__account__user=user)
     for encounter in encounters:
         player_data = _find_player_data([account.name for account in user.accounts.all()], encounter.json_dump())
@@ -304,7 +309,9 @@ def _recalculate_users(era, user):
 
             for target in ["All raid bosses", encounter.area_id]:
                 if target not in user_data["encounter"]:
-                    user_data["encounter"][target] = {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}
+                    user_data["encounter"][target] = {"All": {"All": {"All": {"count": 0,
+                                                                              "buffs": {},
+                                                                              "buffs_out": {}}}}}
                 if arch not in user_data["encounter"][target]:
                     user_data["encounter"][target][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
                 if prof not in user_data["encounter"][target][arch]:
@@ -313,21 +320,16 @@ def _recalculate_users(era, user):
                     user_data["encounter"][target][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
                 user_area_data = user_data["encounter"][target]
 
-                # Buffs
-                _increment_buff_stats(player_data, user_area_data["All"]["All"]["All"], ["buffs_out"])
-                _increment_buff_stats(player_data, user_area_data[arch]["All"]["All"], ["buffs_out"])
-                _increment_buff_stats(player_data, user_area_data[arch][prof]["All"], ["buffs_out"])
-                _increment_buff_stats(player_data, user_area_data[arch][prof][elite], ["buffs_out"])
-                # Other stats
-                _increment_user_general_stats(player_data, user_area_data["All"]["All"]["All"], encounter.duration * 1000)
-                _increment_user_general_stats(player_data, user_area_data[arch]["All"]["All"], encounter.duration * 1000)
-                _increment_user_general_stats(player_data, user_area_data[arch][prof]["All"], encounter.duration * 1000)
-                _increment_user_general_stats(player_data, user_area_data[arch][prof][elite], encounter.duration * 1000)
-                # Increase encounter count
-                user_area_data["All"]["All"]["All"]["count"] += 1
-                user_area_data[arch]["All"]["All"]["count"] += 1
-                user_area_data[arch][prof]["All"]["count"] += 1
-                user_area_data[arch][prof][elite]["count"] += 1
+                for prv_target in [user_area_data["All"]["All"]["All"],
+                                   user_area_data[arch]["All"]["All"],
+                                   user_area_data[arch][prof]["All"],
+                                   user_area_data[arch][prof][elite]]:
+                    # Buffs
+                    _increment_buff_stats(player_data, prv_target, ["buffs_out"])
+                    # Other stats
+                    _increment_user_general_stats(player_data, prv_target, encounter.duration * 1000)
+                    # Increase build count
+                    prv_target["count"] += 1
 
     _foreach_value(user_data, _summarize_user)
     EraUserStore.objects.update_or_create(era=era, user_id=user.id, defaults={"val": user_data})
@@ -335,14 +337,17 @@ def _recalculate_users(era, user):
 
 def recalculate_era(era, encounters):
     """Extracts all modified Area and User models from the supplied Encounter group and initiates their recalculation"""
+    era_data = {}
     areas = Area.objects.filter(encounters__in=encounters)
     users = User.objects.filter(accounts__encounters__in=encounters)
 
     for area in areas:
-        _recalculate_area(era, area)
+        _recalculate_area(era, area, era_data)
     for user in users:
         _recalculate_users(era, user)
 
+    _foreach_value(era_data, _summarize_area)
+    era.val = era_data
     return len(areas), len(users)
 
 

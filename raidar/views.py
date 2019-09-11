@@ -207,44 +207,38 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
             "era_id": era_id,
             "stats_page": stats_page
         })
-    try:
-        era_query = Era.objects.all()
-        eras = {era.id: {
-                'name': era.name,
-                'id': era.id,
-                'started_at': era.started_at,
-                'description': era.description
-            } for era in era_query}
-    except Era.DoesNotExist:
-        eras = {}
 
-    try:
-        area_query = Area.objects.filter(era_area_stores__isnull = False).distinct()
-        areas = [{
-                'name': area.name,
-                'id': area.id,
-            } for area in area_query]
-    except Area.DoesNotExist:
-        areas = []
+    eras = {
+        era.id: {
+            "name": era.name,
+            "id": era.id,
+            "started_at": era.started_at,
+            "description": era.description
+        } for era in Era.objects.all()}
+
+    areas = [{
+            "name": area.name,
+            "id": area.id,
+        } for area in Area.objects.all()]
 
     try:
         if era_id is None:
-            era_id = max(eras.values(), key=lambda z: z['started_at'])['id']
+            era_id = max(eras.values(), key=lambda z: z["started_at"])["id"]
         era = Era.objects.get(id=era_id)
 
         try:
             area = Area.objects.get(id=int(stats_page))
             raw_data = EraAreaStore.objects.get(era=era, area=area).val
-        except:
+        except (ValueError, Area.DoesNotExist, EraAreaStore.DoesNotExist):
             raw_data = era.val["kind"].get(stats_page, {})
 
-        stats = raw_data['All']
+        stats = raw_data["All"]
 
-        #reduce size of json for global stats view
-        builds = [stats['build'][prof][elite][arch]
-                  for prof in stats['build']
-                  for elite in stats['build'][prof]
-                  for arch in stats['build'][prof][elite]]
+        # Reduce size of json for global stats view
+        builds = [stats["build"][prof][elite][arch]
+                  for prof in stats["build"]
+                  for elite in stats["build"][prof]
+                  for arch in stats["build"][prof][elite]]
 
         builds.append(stats['group'])
         builds.append(stats['individual'])
@@ -264,7 +258,7 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
                                         build['buffs_out'].keys())):
                             del(build['buffs_out'][key])
 
-    except (Era.DoesNotExist, Area.DoesNotExist, EraAreaStore.DoesNotExist, KeyError):
+    except (Era.DoesNotExist, KeyError):
         stats = {}
 
     result = {'global_stats': {
