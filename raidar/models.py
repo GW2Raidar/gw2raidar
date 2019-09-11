@@ -226,7 +226,7 @@ class EncounterData(models.Model):
     @staticmethod
     def _generate_skill_data(encounter_data, phase, damage_source, damage_target, damage_data):
         for skill_name, skill_data in damage_data["Skill"].items():
-            skill = EncounterDamage(encounter=encounter_data,
+            skill = EncounterDamage(encounter_data=encounter_data,
                                     phase=phase,
                                     source=damage_source,
                                     target=damage_target,
@@ -254,15 +254,16 @@ class EncounterData(models.Model):
         # Phases
         for phase_name, phase_data in dump["Category"]["encounter"]["Phase"].items():
             if phase_name != "All":
-                phase = EncounterPhase(encounter=data,
+                phase = EncounterPhase(encounter_data=data,
                                        name=phase_name,
                                        start_tick=phase_data["start_tick"])
                 phase.save()
 
         # Players
         for player_name, player_data in dump["Category"]["status"]["Player"].items():
-            player = EncounterPlayer(encounter=data,
-                                     account_id=player_data["account"],
+            account = Account.objects.get_or_create(name=player_data["account"])
+            player = EncounterPlayer(encounter_data=data,
+                                     account=account,
                                      character=player_name,
                                      party=player_data["party"],
                                      profession=player_data["profession"],
@@ -289,7 +290,7 @@ class EncounterData(models.Model):
                         buff_target = player_name
                         for buff_name, buff_data in player_data["buffs"]["From"][buff_source].items():
                             if buff_data > 0:
-                                buff = EncounterBuff(encounter=data,
+                                buff = EncounterBuff(encounter_data=data,
                                                      phase=phase,
                                                      source=buff_source,
                                                      target=buff_target,
@@ -303,7 +304,7 @@ class EncounterData(models.Model):
                         buff_source = player_name
                         for buff_name, buff_data in player_data["buffs"]["To"][buff_target].items():
                             if buff_data > 0:
-                                buff = EncounterBuff(encounter=data,
+                                buff = EncounterBuff(encounter_data=data,
                                                      phase=phase,
                                                      source=buff_source,
                                                      target=buff_target,
@@ -729,13 +730,13 @@ class RestatPerfStats(models.Model):
 class EncounterAttribute(models.Model):
     class Meta:
         abstract = True
-    encounter = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
+    encounter_data = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
 
 
 class EncounterPhase(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_phase"
-        constraints = [UniqueConstraint(fields=["encounter", "name"], name="enc_phase_unique")]
+        constraints = [UniqueConstraint(fields=["encounter_data", "name"], name="enc_phase_unique")]
     name = models.TextField()
     start_tick = models.PositiveIntegerField()
 
@@ -901,7 +902,7 @@ class EncounterPhase(EncounterAttribute):
 class SourcedEncounterAttribute(EncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_attr_unique")]
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source"], name="enc_attr_unique")]
     phase = models.ForeignKey(EncounterPhase, on_delete=models.CASCADE)
     source = models.TextField()
 
@@ -909,7 +910,7 @@ class SourcedEncounterAttribute(EncounterAttribute):
 class TargetedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target"],
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "target"],
                                         name="enc_target_attr_unique")]
     target = models.TextField()
 
@@ -917,14 +918,14 @@ class TargetedEncounterAttribute(SourcedEncounterAttribute):
 class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "name"], name="enc_name_attr_unique")]
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "name"], name="enc_name_attr_unique")]
     name = models.TextField()
 
 
 class EncounterEvent(SourcedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_event"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source"], name="enc_evt_unique")]
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source"], name="enc_evt_unique")]
     disconnect_count = models.PositiveIntegerField()
     disconnect_time = models.PositiveIntegerField()
     down_count = models.PositiveIntegerField()
@@ -954,7 +955,7 @@ class EncounterMechanic(NamedSourcedEncounterAttribute):
 class EncounterBuff(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_buff"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "name"],
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "target", "name"],
                                         name="enc_buff_unique")]
     name = models.TextField()
     uptime = models.FloatField()
@@ -972,7 +973,7 @@ class EncounterBuff(TargetedEncounterAttribute):
 class EncounterDamage(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_damage"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "skill"],
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "target", "skill"],
                                         name="enc_dmg_unique")]
     skill = models.TextField()
     damage = models.IntegerField()
@@ -1037,7 +1038,7 @@ class EncounterDamage(TargetedEncounterAttribute):
 class EncounterPlayer(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_player"
-        constraints = [UniqueConstraint(fields=["encounter", "account"], name="enc_player_unique")]
+        constraints = [UniqueConstraint(fields=["encounter_data", "account"], name="enc_player_unique")]
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     character = models.TextField()
     party = models.PositiveIntegerField()
