@@ -1,24 +1,23 @@
-import copy
-from django.db import models
-from django.db.models.functions import Coalesce
-from django.db.models.signals import post_save, post_delete
-from django.db.models import UniqueConstraint, Sum, Avg
-from django.contrib.auth.models import User
-from django.core.validators import RegexValidator
-from datetime import datetime, timedelta
-import pytz
-from fuzzycount import FuzzyCountManager
-from hashlib import md5
-from analyser.analyser import Profession, Archetype, Elite, BOSSES
-from json import loads as json_loads, dumps as json_dumps
-from gw2raidar import settings
-from os.path import join as path_join
-from functools import lru_cache
-from time import time
-from taggit.managers import TaggableManager
-import random
 import os
 import re
+import copy
+import random
+from time import time
+from hashlib import md5
+from functools import lru_cache
+from datetime import datetime, timedelta
+from json import loads as json_loads, dumps as json_dumps
+import pytz
+from django.db import models
+from django.contrib.auth.models import User
+from django.db.models.functions import Coalesce
+from django.core.validators import RegexValidator
+from django.db.models import UniqueConstraint, Sum, Avg
+from django.db.models.signals import post_save, post_delete
+from fuzzycount import FuzzyCountManager
+from taggit.managers import TaggableManager
+from gw2raidar import settings
+from analyser.analyser import Profession, Archetype, Elite, BOSSES
 
 # unique to 30-60s precision
 START_RESOLUTION = 60
@@ -30,7 +29,30 @@ def _safe_get(func, default=None):
     except (KeyError, TypeError):
         return default
 
-# XXX TODO Move to a separate module, does not really belong here
+
+def _safe_abs(value):
+    try:
+        return abs(value)
+    except TypeError:
+        return value
+
+
+def _safe_get_percent(key, data, fallback=0):
+    return data[key] / 100.0 if key in data else fallback
+
+
+@lru_cache(maxsize=1)
+def _dictionary():
+    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
+    with open(os.path.join(location, "words.txt")) as file:
+        return [line.strip() for line in file.readlines()]
+
+
+def _generate_url_id(size=5):
+    return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
+
+
+# TODO: Move to a separate module, does not really belong here
 # gdrive_service = None
 # if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 #     try:
@@ -38,7 +60,7 @@ def _safe_get(func, default=None):
 #         from httplib2 import Http
 #         from apiclient import discovery
 #         from googleapiclient.http import MediaFileUpload
-
+#
 #         scopes = ['https://www.googleapis.com/auth/drive.file']
 #         credentials = ServiceAccountCredentials.from_json_keyfile_name(
 #                 settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
@@ -47,11 +69,6 @@ def _safe_get(func, default=None):
 #     except ImportError:
 #         # No Google Drive support
 #         pass
-
-
-
-User._meta.get_field('email')._unique = True
-
 
 
 class ValueModel(models.Model):
@@ -69,38 +86,24 @@ class ValueModel(models.Model):
         abstract = True
 
 
-
-
 class UserProfile(models.Model):
     PRIVATE = 1
     SQUAD = 2
     PUBLIC = 3
 
     PRIVACY_CHOICES = (
-            (PRIVATE, 'Private'),
-            (SQUAD, 'Squad'),
-            (PUBLIC, 'Public')
-        )
-    portrait_url = models.URLField(null=True, blank=True) # XXX not using... delete?
+        (PRIVATE, 'Private'),
+        (SQUAD, 'Squad'),
+        (PUBLIC, 'Public')
+    )
+    # TODO: Not using... delete?
+    portrait_url = models.URLField(null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
     privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=SQUAD)
 
     def __str__(self):
         return self.user.username
-
-def _create_user_profile(sender, instance, created, **kwargs):
-    if created:
-        UserProfile.objects.create(user=instance)
-
-post_save.connect(_create_user_profile, sender=User)
-
-
-def _safe_abs(value):
-    try:
-        return abs(value)
-    except TypeError:
-        return value
 
 
 class Area(models.Model):
@@ -115,10 +118,11 @@ class Area(models.Model):
 
 
 class Account(models.Model):
-    ACCOUNT_NAME_RE = re.compile(r'\S+\.\d{4}') # TODO make more restrictive?
+    # TODO: Make more restrictive?
+    ACCOUNT_NAME_RE = re.compile(r'\S+\.\d{4}')
     API_KEY_RE = re.compile(
-            r'-'.join(r'[0-9A-F]{%d}' % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r'$',
-            re.IGNORECASE)
+        r'-'.join(r'[0-9A-F]{%d}' % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r'$',
+        re.IGNORECASE)
 
     user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='accounts')
     name = models.CharField(max_length=64, unique=True, validators=[RegexValidator(ACCOUNT_NAME_RE)])
@@ -160,7 +164,8 @@ class Category(models.Model):
 class Upload(ValueModel):
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='unprocessed_uploads')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='unprocessed_uploads')
 
     def __str__(self):
         if self.uploaded_by:
@@ -175,20 +180,10 @@ class Upload(ValueModel):
         else:
             upload_dir = 'uploads'
         ext = '.' + '.'.join(self.filename.split('.')[1:])
-        return path_join(upload_dir, str(self.id) + ext)
+        return path.join(upload_dir, str(self.id) + ext)
 
     class Meta:
         unique_together = ('filename', 'uploaded_by')
-
-def _delete_upload_file(sender, instance, using, **kwargs):
-    filename = instance.diskname()
-    if filename:
-        try:
-            os.remove(filename)
-        except FileNotFoundError:
-            pass
-
-post_delete.connect(_delete_upload_file, sender=Upload)
 
 
 class Notification(ValueModel):
@@ -211,36 +206,6 @@ class Variable(ValueModel):
         Variable.objects.update_or_create(key=name, defaults={'val': value})
 
 
-@lru_cache(maxsize=1)
-def _dictionary():
-    location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-    with open(os.path.join(location, "words.txt")) as f:
-        return [l.strip() for l in f.readlines()]
-
-def _generate_url_id(size=5):
-    return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
-
-
-def _safe_get_percent(key, data, fallback=0):
-    return data[key] / 100.0 if key in data else fallback
-
-
-def _generate_skill_data(encounter_data, phase, damage_source, damage_target, damage_data):
-    for skill_name, skill_data in damage_data["Skill"].items():
-        skill = EncounterDamage(encounter=encounter_data,
-                                phase=phase,
-                                source=damage_source,
-                                target=damage_target,
-                                skill=skill_name,
-                                damage=skill_data["total"],
-                                crit=_safe_get_percent("crit", skill_data),
-                                fifty=_safe_get_percent("fifty", skill_data),
-                                flanking=_safe_get_percent("flanking", skill_data),
-                                scholar=_safe_get_percent("scholar", skill_data),
-                                seaweed=_safe_get_percent("seaweed", skill_data))
-        skill.save()
-
-
 class EncounterData(models.Model):
     class Meta:
         db_table = "raidar_encounter_data"
@@ -257,6 +222,22 @@ class EncounterData(models.Model):
 
     def duration(self):
         return self.duration_ticks() / 100
+
+    @staticmethod
+    def _generate_skill_data(encounter_data, phase, damage_source, damage_target, damage_data):
+        for skill_name, skill_data in damage_data["Skill"].items():
+            skill = EncounterDamage(encounter=encounter_data,
+                                    phase=phase,
+                                    source=damage_source,
+                                    target=damage_target,
+                                    skill=skill_name,
+                                    damage=skill_data["total"],
+                                    crit=_safe_get_percent("crit", skill_data),
+                                    fifty=_safe_get_percent("fifty", skill_data),
+                                    flanking=_safe_get_percent("flanking", skill_data),
+                                    scholar=_safe_get_percent("scholar", skill_data),
+                                    seaweed=_safe_get_percent("seaweed", skill_data))
+            skill.save()
 
     @staticmethod
     def from_dump(dump):
@@ -313,8 +294,9 @@ class EncounterData(models.Model):
                                                      source=buff_source,
                                                      target=buff_target,
                                                      name=buff_name,
-                                                     uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
-                            buff.save()
+                                                     uptime=buff_data if buff_name in ["might", "stability"]
+                                                     else buff_data / 100.0)
+                                buff.save()
                 # Outgoing
                 if "To" in player_data["buffs"]:
                     for buff_target in player_data["buffs"]["To"]:
@@ -326,7 +308,8 @@ class EncounterData(models.Model):
                                                      source=buff_source,
                                                      target=buff_target,
                                                      name=buff_name,
-                                                     uptime=buff_data if buff_name in ["might", "stability"] else buff_data / 100.0)
+                                                     uptime=buff_data if buff_name in ["might", "stability"]
+                                                     else buff_data / 100.0)
                                 buff.save()
 
                 # Damage
@@ -334,12 +317,12 @@ class EncounterData(models.Model):
                 for damage_source, damage_data in player_data["damage"]["From"].items():
                     # Skill breakdown
                     if "Skill" in damage_data:
-                        _generate_skill_data(data, phase, damage_source, player_name, damage_data)
+                        EncounterData._generate_skill_data(data, phase, damage_source, player_name, damage_data)
                 # Outgoing
                 for damage_target, damage_data in player_data["damage"]["To"].items():
                     # Skill breakdown
                     if damage_target == "*All" and "Skill" in damage_data:
-                        _generate_skill_data(data, phase, player_name, damage_target, damage_data)
+                        EncounterData._generate_skill_data(data, phase, player_name, damage_target, damage_data)
                     # Summary
                     else:
                         # Condi
@@ -420,23 +403,26 @@ class EncounterData(models.Model):
                                                      source=player_name,
                                                      name=mechanic_name,
                                                      count=mechanic_data)
+                        mechanic.save()
         return data
 
 
 class Encounter(models.Model):
     encounter_data = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
-    url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id, verbose_name="URL ID")
+    url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id,
+                              verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
     duration = models.FloatField()
     success = models.BooleanField()
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
-    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='uploaded_encounters')
+    uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
+                                    related_name='uploaded_encounters')
     area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
     era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)
     accounts = models.ManyToManyField(Account, through='Participation', related_name='encounters')
-    # hack to try to ensure uniqueness
+    # Hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
     started_at_half = models.IntegerField(editable=False)
@@ -455,11 +441,12 @@ class Encounter(models.Model):
             uploader = 'Unknown'
         return '%s (%s, %s, #%s)' % (self.area.name, self.filename, uploader, self.id)
 
-    # Returns timestamp of closest non-future raid reset (Monday 08:30 UTC)
     @staticmethod
     def week_for(started_at):
+        """Returns timestamp of closest non-future raid reset (Monday 08:30 UTC)"""
         encounter_dt = datetime.utcfromtimestamp(started_at).replace(tzinfo=pytz.UTC)
-        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=7, minute=30, second=0, microsecond=0)
+        reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=7, minute=30, second=0,
+                                                                                   microsecond=0)
         if reset_dt > encounter_dt:
             reset_dt -= timedelta(weeks=1)
         return int(reset_dt.timestamp())
@@ -478,7 +465,8 @@ class Encounter(models.Model):
         phases = data.encounterphase_set.order_by("start_tick")
         players = data.encounterplayer_set.filter(account_id__isnull=False)
         parties = privacy_parties if privacy_parties else\
-            {party_name: [player.data() for player in players.filter(party=party_name)] for party_name in players.values_list("party", flat=True).distinct()}
+            {party_name: [player.data() for player in players.filter(party=party_name)]
+             for party_name in players.values_list("party", flat=True).distinct()}
 
         try:
             area_stats = EraAreaStore.objects.get(era=self.era, area=self.area).val
@@ -493,8 +481,8 @@ class Encounter(models.Model):
         # Add phase meta data
         for phase in phases:
             phase_data[phase.name]["duration"] = self.calc_phase_duration(phase)
-            phase_data[phase.name]["group"] = _safe_get(lambda: area_stats[phase.name]["group"])
-            phase_data[phase.name]["individual"] = _safe_get(lambda: area_stats[phase.name]["individual"])
+            phase_data[phase.name]["group"] = area_stats[phase.name]["group"] if area_stats else {}
+            phase_data[phase.name]["individual"] = area_stats[phase.name]["individual"] if area_stats else {}
 
             # Add player data
             for party_name, party in phase_data[phase.name]["parties"].items():
@@ -537,16 +525,16 @@ class Encounter(models.Model):
                             if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
                                 squad_phase[target][key] += val
                             else:
-                                squad_phase[target][key] = squad_phase[target][key] * squad_size / (
-                                            squad_size + party_size) \
-                                                           + val * party_size / (squad_size + party_size)
+                                squad_phase[target][key] =\
+                                    squad_phase[target][key] * squad_size / (squad_size + party_size)\
+                                    + val * party_size / (squad_size + party_size)
 
                 # Buffs
                 for buff, uptime in party_phase["buffs"].items():
                     if buff not in squad_phase["buffs"]:
                         squad_phase["buffs"][buff] = 0
-                    squad_phase["buffs"][buff] = squad_phase["buffs"][buff] * squad_size / (squad_size + party_size) \
-                                                 + uptime * party_size / (squad_size + party_size)
+                    squad_phase["buffs"][buff] = squad_phase["buffs"][buff] * squad_size / (squad_size + party_size)\
+                        + uptime * party_size / (squad_size + party_size)
 
                 # Additive stats
                 for target in ["buffs_out", "events", "mechanics"]:
@@ -561,10 +549,18 @@ class Encounter(models.Model):
         for phase_name, prv_phase_data in phase_data.items():
             for party_data in prv_phase_data["parties"].values():
                 for member in party_data["members"]:
-                    member["performance"] = _safe_get(lambda: area_stats[phase_name]["build"][str(member["archetype"])][str(member["profession"])][str(member["elite"])])
+                    arch = str(member["archetype"])
+                    prof = str(member["profession"])
+                    elite = str(member["elite"])
+                    member["performance"] = _safe_get(lambda a=arch, p=prof, e=elite:
+                                                      area_stats[phase_name]["build"][a][p][e])
 
-        max_player_dps = max([member["actual"]["dps"] for phase in phase_data.values() for party in phase["parties"].values() for member in party["members"]])
-        max_player_recv = max([member["received"]["total"] for phase in phase_data.values() for party in phase["parties"].values() for member in party["members"]])
+        max_player_dps = max([member["actual"]["dps"] for phase in phase_data.values()
+                              for party in phase["parties"].values()
+                              for member in party["members"]])
+        max_player_recv = max([member["received"]["total"] for phase in phase_data.values()
+                               for party in phase["parties"].values()
+                               for member in party["members"]])
 
         data = {
             "encounter": {
@@ -594,9 +590,9 @@ class Encounter(models.Model):
     def week(self):
         return Encounter.week_for(self.started_at)
 
-    def save(self, *args, **kwargs):
+    def save(self, force_insert=False, force_update=False, using=None, update_fields=None):
         self.started_at_full, self.started_at_half = Encounter.calculate_start_guards(self.started_at)
-        super(Encounter, self).save(*args, **kwargs)
+        super(Encounter, self).save(force_insert, force_update, using, update_fields)
 
     def diskname(self):
         if not self.uploaded_by:
@@ -629,8 +625,7 @@ class Encounter(models.Model):
     def calculate_start_guards(started_at):
         started_at_full = round(started_at / START_RESOLUTION) * START_RESOLUTION
         started_at_half = round((started_at + START_RESOLUTION / 2) / START_RESOLUTION) * START_RESOLUTION
-        return (started_at_full, started_at_half)
-
+        return started_at_full, started_at_half
 
     class Meta:
         index_together = ('area', 'started_at')
@@ -640,46 +635,33 @@ class Encounter(models.Model):
             ('area', 'account_hash', 'started_at_half'),
         )
 
-def _delete_encounter_file(sender, instance, using, **kwargs):
-    # if gdrive_service and instance.gdrive_id:
-    #     gdrive_service.files().delete(
-    #             fileId=instance.gdrive_id).execute()
-    filename = instance.diskname()
-    if filename:
-        try:
-            os.remove(filename)
-        except FileNotFoundError:
-            pass
-
-post_delete.connect(_delete_encounter_file, sender=Encounter)
-
 
 class Participation(models.Model):
     PROFESSION_CHOICES = (
-            (int(Profession.GUARDIAN), 'Guardian'),
-            (int(Profession.WARRIOR), 'Warrior'),
-            (int(Profession.ENGINEER), 'Engineer'),
-            (int(Profession.RANGER), 'Ranger'),
-            (int(Profession.THIEF), 'Thief'),
-            (int(Profession.ELEMENTALIST), 'Elementalist'),
-            (int(Profession.MESMER), 'Mesmer'),
-            (int(Profession.NECROMANCER), 'Necromancer'),
-            (int(Profession.REVENANT), 'Revenant'),
-        )
+        (int(Profession.GUARDIAN), 'Guardian'),
+        (int(Profession.WARRIOR), 'Warrior'),
+        (int(Profession.ENGINEER), 'Engineer'),
+        (int(Profession.RANGER), 'Ranger'),
+        (int(Profession.THIEF), 'Thief'),
+        (int(Profession.ELEMENTALIST), 'Elementalist'),
+        (int(Profession.MESMER), 'Mesmer'),
+        (int(Profession.NECROMANCER), 'Necromancer'),
+        (int(Profession.REVENANT), 'Revenant'),
+    )
 
     ARCHETYPE_CHOICES = (
-            (int(Archetype.POWER), "Power"),
-            (int(Archetype.CONDI), "Condi"),
-            (int(Archetype.TANK), "Tank"),
-            (int(Archetype.HEAL), "Heal"),
-            (int(Archetype.SUPPORT), "Support"),
-        )
+        (int(Archetype.POWER), "Power"),
+        (int(Archetype.CONDI), "Condi"),
+        (int(Archetype.TANK), "Tank"),
+        (int(Archetype.HEAL), "Heal"),
+        (int(Archetype.SUPPORT), "Support"),
+    )
 
     ELITE_CHOICES = (
-            (int(Elite.CORE), "Core"),
-            (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
-            (int(Elite.PATH_OF_FIRE), "Path of Fire"),
-        )
+        (int(Elite.CORE), "Core"),
+        (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
+        (int(Elite.PATH_OF_FIRE), "Path of Fire"),
+    )
 
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
     character = models.CharField(max_length=64, db_index=True)
@@ -694,22 +676,21 @@ class Participation(models.Model):
 
     def data(self):
         return {
-                'id': self.encounter.id,
-                'url_id': self.encounter.url_id,
-                'area': self.encounter.area.name,
-                'started_at': self.encounter.started_at,
-                'duration': self.encounter.duration,
-                'character': self.character,
-                'account': self.account.name,
-                'profession': self.profession,
-                'archetype': self.archetype,
-                'elite': self.elite,
-                'uploaded_at': self.encounter.uploaded_at,
-                'success': self.encounter.success,
-                'category': self.encounter.category_id,
-                # 'tags': list(self.encounter.tags.names()),
-                'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
-            }
+            'id': self.encounter.id,
+            'url_id': self.encounter.url_id,
+            'area': self.encounter.area.name,
+            'started_at': self.encounter.started_at,
+            'duration': self.encounter.duration,
+            'character': self.character,
+            'account': self.account.name,
+            'profession': self.profession,
+            'archetype': self.archetype,
+            'elite': self.elite,
+            'uploaded_at': self.encounter.uploaded_at,
+            'success': self.encounter.success,
+            'category': self.encounter.category_id,
+            'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
+        }
 
     class Meta:
         unique_together = ('encounter', 'account')
@@ -732,6 +713,7 @@ class EraAreaStore(ValueModel):
 class EraUserStore(ValueModel):
     era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
+
 
 class RestatPerfStats(models.Model):
     started_on = models.DateTimeField()
@@ -768,10 +750,20 @@ class EncounterPhase(EncounterAttribute):
         mechanics = prv_encounter.encounter_data.encountermechanic_set.filter(phase=phase)
 
         prv_phase_data = {
-            "actual": EncounterDamage.breakdown(damage.filter(source__in=prv_players, target="*All", damage__gt=0), phase_duration, group=group),
-            "actual_boss": EncounterDamage.breakdown(damage.filter(source__in=prv_players, target="*Boss", damage__gt=0), phase_duration, group=group),
-            "received": EncounterDamage.breakdown(damage.filter(target__in=prv_players, damage__gt=0), phase_duration, group=group),
-            "shielded": EncounterDamage.breakdown(damage.filter(target__in=prv_players, damage__lt=0), phase_duration, group=group, absolute=True),
+            "actual": EncounterDamage.breakdown(damage.filter(source__in=prv_players,
+                                                              target="*All",
+                                                              damage__gt=0),
+                                                phase_duration, group=group),
+            "actual_boss": EncounterDamage.breakdown(damage.filter(source__in=prv_players,
+                                                                   target="*Boss",
+                                                                   damage__gt=0),
+                                                     phase_duration, group=group),
+            "received": EncounterDamage.breakdown(damage.filter(target__in=prv_players,
+                                                                damage__gt=0),
+                                                  phase_duration, group=group),
+            "shielded": EncounterDamage.breakdown(damage.filter(target__in=prv_players,
+                                                                damage__lt=0),
+                                                  phase_duration, group=group, absolute=True),
             "buffs": EncounterBuff.breakdown(buffs.filter(target__in=prv_players)),
             "buffs_out": EncounterBuff.breakdown(buffs.filter(source__in=prv_players), use_sum=True),
             "events": EncounterEvent.summarize(events.filter(source__in=prv_players)),
@@ -798,35 +790,35 @@ class EncounterPhase(EncounterAttribute):
             "members": copy.deepcopy(player_data),
         }
 
-        for phase_name, phase in phase_dump.items():
-            phase_duration = phase["duration"]
+        for phase_data in phase_dump.values():
+            phase_duration = phase_data["duration"]
 
             # Damage-like stats
             for target in ["actual", "actual_boss", "received", "shielded"]:
                 # Subgroup
-                for key, val in phase["parties"][party_name][target].items():
+                for key, val in phase_data["parties"][party_name][target].items():
                     if key != "Skill":
                         if key not in all_phase[target]:
                             all_phase[target][key] = 0
                         if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
                             all_phase[target][key] += val
                         else:
-                            all_phase[target][key] = all_phase[target][key] * all_duration / (
-                                        all_duration + phase_duration) \
+                            all_phase[target][key] = all_phase[target][key] * all_duration\
+                                                     / (all_duration + phase_duration)\
                                                      + val * phase_duration / (all_duration + phase_duration)
                 # Players
                 for member_id, member in enumerate(all_phase["members"]):
                     if target not in member:
                         member[target] = {}
-                    for key, val in phase["parties"][party_name]["members"][member_id][target].items():
+                    for key, val in phase_data["parties"][party_name]["members"][member_id][target].items():
                         if key != "Skill":
                             if key not in member[target]:
                                 member[target][key] = 0
                             if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
                                 member[target][key] += val
                             else:
-                                member[target][key] = member[target][key] * all_duration / (
-                                            all_duration + phase_duration) \
+                                member[target][key] = member[target][key] * all_duration\
+                                                      / (all_duration + phase_duration)\
                                                       + val * phase_duration / (all_duration + phase_duration)
                         else:  # Skill summaries
                             if "Skill" not in member[target]:
@@ -840,33 +832,34 @@ class EncounterPhase(EncounterAttribute):
                                             member[target]["Skill"][skill_name][skill_key] = 0
                                         if skill_key in ["total", "dps"]:
                                             member[target]["Skill"][skill_name][skill_key] += skill_val
-                                        else:  # TODO: This solution for calculating average stats is imprecise!
-                                            member[target]["Skill"][skill_name][skill_key] = \
-                                            member[target]["Skill"][skill_name][skill_key] * all_duration / (
-                                                        all_duration + phase_duration) \
-                                            + skill_val * phase_duration / (all_duration + phase_duration)
+                                        else:
+                                            # TODO: This solution for calculating average stats is imprecise!
+                                            member[target]["Skill"][skill_name][skill_key] =\
+                                                member[target]["Skill"][skill_name][skill_key] * all_duration\
+                                                / (all_duration + phase_duration)\
+                                                + skill_val * phase_duration / (all_duration + phase_duration)
 
             # Buffs
             for target in ["buffs", "buffs_out"]:
                 # Subgroup
-                for buff, uptime in phase["parties"][party_name][target].items():
+                for buff, uptime in phase_data["parties"][party_name][target].items():
                     if buff not in all_phase[target]:
                         all_phase[target][buff] = 0
-                    all_phase[target][buff] = all_phase[target][buff] * all_duration / (all_duration + phase_duration) \
-                                              + uptime * phase_duration / (all_duration + phase_duration)
+                    all_phase[target][buff] = all_phase[target][buff] * all_duration / (all_duration + phase_duration)\
+                        + uptime * phase_duration / (all_duration + phase_duration)
                 # Players
                 for member_id, member in enumerate(all_phase["members"]):
                     if target not in all_phase["members"][member_id]:
                         member[target] = {}
-                    for buff, uptime in phase["parties"][party_name]["members"][member_id][target].items():
+                    for buff, uptime in phase_data["parties"][party_name]["members"][member_id][target].items():
                         if buff not in member[target]:
                             member[target][buff] = 0
-                        member[target][buff] = member[target][buff] * all_duration / (all_duration + phase_duration) \
-                                               + uptime * phase_duration / (all_duration + phase_duration)
+                        member[target][buff] = member[target][buff] * all_duration / (all_duration + phase_duration)\
+                            + uptime * phase_duration / (all_duration + phase_duration)
 
             # Additive stats
             for target in ["events", "mechanics"]:
-                for key, val in phase["parties"][party_name][target].items():
+                for key, val in phase_data["parties"][party_name][target].items():
                     if key not in all_phase[target]:
                         all_phase[target][key] = 0
                     all_phase[target][key] += val
@@ -874,7 +867,7 @@ class EncounterPhase(EncounterAttribute):
                 for member_id, member in enumerate(all_phase["members"]):
                     if target not in all_phase["members"][member_id]:
                         member[target] = {}
-                    for key, val in phase["parties"][party_name]["members"][member_id][target].items():
+                    for key, val in phase_data["parties"][party_name]["members"][member_id][target].items():
                         if key not in member[target]:
                             member[target][key] = 0
                         member[target][key] += val
@@ -896,10 +889,11 @@ class EncounterPhase(EncounterAttribute):
         # TODO: Remove when fixed
         # If no mechanics were found within phases, they're probably only annotated in the "All" phase
         if not all_phase["mechanics"]:
-            all_phase["mechanics"] = {mechanic["name"]: mechanic["count__sum"] for mechanic in
-                                      prv_encounter.encounter_data.encountermechanic_set.filter(
-                                          source__in=[player["name"] for player in player_data]).values(
-                                          "name").annotate(Sum("count"))}
+            all_phase["mechanics"] = {
+                mechanic["name"]: mechanic["count__sum"] for mechanic in
+                prv_encounter.encounter_data.encountermechanic_set
+                .filter(source__in=[player["name"] for player in player_data]).values("name").annotate(Sum("count"))
+            }
 
         return all_phase
 
@@ -915,7 +909,8 @@ class SourcedEncounterAttribute(EncounterAttribute):
 class TargetedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target"], name="enc_target_attr_unique")]
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target"],
+                                        name="enc_target_attr_unique")]
     target = models.TextField()
 
 
@@ -959,7 +954,8 @@ class EncounterMechanic(NamedSourcedEncounterAttribute):
 class EncounterBuff(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_buff"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "name"], name="enc_buff_unique")]
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "name"],
+                                        name="enc_buff_unique")]
     name = models.TextField()
     uptime = models.FloatField()
 
@@ -969,14 +965,15 @@ class EncounterBuff(TargetedEncounterAttribute):
                          buff_data.values("name").annotate(avg=Avg("uptime"), sum=Sum("uptime"))}
         for name, uptime in prv_buff_data.items():
             if name not in ["might", "stability"]:
-                prv_buff_data[name] = prv_buff_data[name] * 100.0
+                prv_buff_data[name] = uptime * 100.0
         return prv_buff_data
 
 
 class EncounterDamage(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_damage"
-        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "skill"], name="enc_dmg_unique")]
+        constraints = [UniqueConstraint(fields=["encounter", "phase", "source", "target", "skill"],
+                                        name="enc_dmg_unique")]
     skill = models.TextField()
     damage = models.IntegerField()
     crit = models.FloatField()
@@ -1018,9 +1015,10 @@ class EncounterDamage(TargetedEncounterAttribute):
         else:
             prv_query = query.filter(skill=target)
             if prv_query.count() == 0:
-                prv_query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi" else\
-                            query.exclude(skill__in=EncounterDamage.conditions())
-        data = prv_query.aggregate(total=Coalesce(Sum("damage"), 0),  # TODO: This solution for calculating average stats is imprecise!
+                prv_query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi"\
+                    else query.exclude(skill__in=EncounterDamage.conditions())
+        # TODO: This solution for calculating average stats is imprecise!
+        data = prv_query.aggregate(total=Coalesce(Sum("damage"), 0),
                                    crit=Coalesce(Avg("crit") * 100.0, 0),
                                    fifty=Coalesce(Avg("fifty") * 100.0, 0),
                                    flanking=Coalesce(Avg("flanking") * 100.0, 0),
@@ -1063,3 +1061,35 @@ class EncounterPlayer(EncounterAttribute):
             "healing": self.heal,
             "toughness": self.tough,
         }
+
+
+def _create_user_profile(sender, instance, created, **kwargs):  # pylint: disable=unused-argument
+    if created:
+        UserProfile.objects.create(user=instance)
+
+
+def _delete_upload_file(sender, instance, using, **kwargs):  # pylint: disable=unused-argument
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
+
+
+def _delete_encounter_file(sender, instance, using, **kwargs):  # pylint: disable=unused-argument
+    # if gdrive_service and instance.gdrive_id:
+    #     gdrive_service.files().delete(
+    #             fileId=instance.gdrive_id).execute()
+    filename = instance.diskname()
+    if filename:
+        try:
+            os.remove(filename)
+        except FileNotFoundError:
+            pass
+
+
+User._meta.get_field('email')._unique = True  # pylint: disable=protected-access
+post_save.connect(_create_user_profile, sender=User)
+post_delete.connect(_delete_upload_file, sender=Upload)
+post_delete.connect(_delete_encounter_file, sender=Encounter)
