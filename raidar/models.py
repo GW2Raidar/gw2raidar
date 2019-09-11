@@ -180,7 +180,7 @@ class Upload(ValueModel):
         else:
             upload_dir = 'uploads'
         ext = '.' + '.'.join(self.filename.split('.')[1:])
-        return path.join(upload_dir, str(self.id) + ext)
+        return os.path.join(upload_dir, str(self.id) + ext)
 
     class Meta:
         unique_together = ('filename', 'uploaded_by')
@@ -601,7 +601,7 @@ class Encounter(models.Model):
             upload_dir = settings.UPLOAD_DIR
         else:
             upload_dir = 'uploads'
-        return path_join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
+        return os.path.join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
 
     def update_has_evtc(self):
         self.has_evtc = os.path.isfile(self.diskname())
