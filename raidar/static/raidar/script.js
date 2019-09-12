@@ -569,7 +569,7 @@ ${body}
     uploads: [],
   };
   initData.data.boss_locations.forEach(loc => {
-    loc.bosses = {}
+    loc.bosses = {};
     loc.wings.forEach(wing => wing.bosses.forEach(id => loc.bosses[id] = true ));
   });
   let lastNotificationId = window.raidar_data.last_notification_id;
@@ -579,7 +579,7 @@ ${body}
   }
   if (!initData.settings.comparePerc) initData.settings.comparePerc = 50;
   if (!initData.settings.compareGlobalPerc) initData.settings.compareGlobalPerc = [99,90,50];
-  // TODO load from server
+  // TODO: Load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
     { boon: 'fury' },
