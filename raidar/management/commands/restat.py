@@ -5,7 +5,7 @@ Raidar ReStat
 Offers a Django command to recalculate the distribution of encounter-related performance stats by analyzing all
 new encounter logs and generating or updating any related percentile blobs.
 """
-
+import copy
 from contextlib import contextmanager
 from datetime import timezone
 from time import time
@@ -119,10 +119,10 @@ class Command(BaseCommand):
                     was_force=forced)
 
 
-def _foreach_value(data, map_func):
+def _foreach_value(map_func, data):
     for key, val in list(data.items()):
         if isinstance(val, dict):
-            _foreach_value(val, map_func)
+            _foreach_value(map_func, data)
         else:
             map_func(data, key)
 
@@ -154,7 +154,7 @@ def _increment_buff_stats(source_data, target_data, targets):
     for target in targets:
         for buff, uptime in source_data[target].items():
             if buff not in target_data[target]:
-                target_data[target][buff] = [0] * target_data["count"]
+                target_data[target][buff] = []
             target_data[target][buff].append(uptime)
 
 
@@ -198,33 +198,6 @@ def _find_player_data(accounts, dump, phase="All"):
     return None
 
 
-def _merge_into_squad_store(squad_store, build_store, squad_size, duration):
-    if "duration" not in squad_store:
-        squad_store["duration"] = []
-    squad_store["duration"].append(duration)
-
-    # Buffs
-    for target in ["buffs", "buffs_out"]:
-        for buff, uptimes in build_store[target]:
-            if buff not in squad_store[target]:
-                squad_store[target][buff] = [0] * squad_store["count"]
-            stat_sum = sum(uptimes[-squad_size:])
-            if target == "buffs":
-                squad_store[target][buff].append(stat_sum / squad_size)
-            else:
-                squad_store[target][buff].append(stat_sum)
-
-    # Other stats
-    for target in ALL_STATS:
-        if target not in squad_store:
-            squad_store[target] = []
-        stat_sum = sum(build_store[target][-squad_size:])
-        if target in AVG_STATS:
-            squad_store[target].append(stat_sum / squad_size)
-        else:
-            squad_store[target].append(stat_sum)
-
-
 def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
     if encounter.success:
         if encounter.week() not in area_leaderboards:
@@ -235,7 +208,7 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
             "duration": encounter.duration,
             "dps_boss": squad_store["dps_boss"][-1],
             "dps": squad_store["dps"][-1],
-            "buffs": {buff: uptimes[-1] for buff, uptimes in squad_store["buff"].items()},
+            "buffs": {buff: uptimes[-1] if len(uptimes) == squad_store["count"] else 0 for buff, uptimes in squad_store["buff"].items()},
             "comp": [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()],
             "tags": encounter.tagstring,
         }
@@ -247,98 +220,111 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
         area_leaderboards["max_max_dps"] = max(area_leaderboards["max_max_dps"], leaderboard_item["dps"])
 
 
-def _recalculate_area(era, area, era_data):
+def _update_phase(encounter, phase, area_store):
+    data = encounter.encounter_data
+    phase_duration = encounter.calc_phase_duration(phase)
+    if phase.name not in area_store:
+        area_store[phase.name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
+                                  "individual": {"count": 0},
+                                  "build": {"All": {"All": {"All": {"count": 0,
+                                                                    "buffs": {},
+                                                                    "buffs_out": {}}}}}}
+    ind_store = area_store[phase.name]["individual"]
+    build_store = area_store[phase.name]["build"]
+    squad_store = area_store[phase.name]["group"]
+    for party_name in data.encounterplayer_set.values_list("party", flat=True).distinct():
+        for player in data.encounterplayer_set.filter(party=party_name):
+            # Generate player data
+            player_data = player.data()
+            player_data["actual"] = EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
+                                                                                               target="*All",
+                                                                                               damage__gt=0),
+                                                              phase_duration, group=True)
+            player_data["actual_boss"] = EncounterDamage.breakdown(phase.encounterdamage_set
+                                                                   .filter(source=player.character,
+                                                                           target="*Boss",
+                                                                           damage__gt=0),
+                                                                   phase_duration, group=True)
+            player_data["received"] = EncounterDamage.breakdown(phase.encounterdamage_set
+                                                                .filter(target=player.character, damage__gt=0),
+                                                                phase_duration, group=True)
+            player_data["shielded"] = EncounterDamage.breakdown(phase.encounterdamage_set
+                                                                .filter(target=player.character, damage__lt=0),
+                                                                phase_duration, group=True, absolute=True)
+            player_data["buffs"] = EncounterBuff.breakdown(phase.encounterbuff_set.filter(target=player.character))
+            player_data["buffs_out"] = EncounterBuff.breakdown(phase.encounterbuff_set
+                                                               .filter(source=player.character), use_sum=True)
+
+            # Individual data
+            # Other stats
+            _increment_area_general_stats(player_data, ind_store, phase_duration)
+            # Increase member count
+            ind_store["count"] += 1
+
+            # Build data
+            arch = player_data["archetype"]
+            prof = player_data["profession"]
+            elite = player_data["elite"]
+            if arch not in area_store[phase.name]["build"]:
+                area_store[phase.name]["build"][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
+            if prof not in area_store[phase.name]["build"][arch]:
+                area_store[phase.name]["build"][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
+            if elite not in area_store[phase.name]["build"][arch][prof]:
+                area_store[phase.name]["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
+
+            for target_store in [build_store["All"]["All"]["All"],
+                                 build_store[arch]["All"]["All"],
+                                 build_store[arch][prof]["All"],
+                                 build_store[arch][prof][elite]]:
+                # Buffs
+                _increment_buff_stats(player_data, target_store, ["buffs", "buffs_out"])
+                # Other stats
+                _increment_area_general_stats(player_data, target_store, phase_duration)
+                # Increase build count
+                target_store["count"] += 1
+
+    # Squad data
+    players = data.encounterplayer_set.values_list("character", flat=True)
+    squad_data = {
+        "actual": EncounterDamage.breakdown(phase.encounterdamage_set.filter(source__in=players,
+                                                                             target="*All",
+                                                                             damage__gt=0),
+                                            phase_duration, group=True),
+        "actual_boss": EncounterDamage.breakdown(phase.encounterdamage_set.filter(source__in=players,
+                                                                                  target="*Boss",
+                                                                                  damage__gt=0),
+                                                 phase_duration, group=True),
+        "received": EncounterDamage.breakdown(phase.encounterdamage_set.filter(target__in=players, damage__gt=0),
+                                              phase_duration, group=True),
+        "shielded": EncounterDamage.breakdown(phase.encounterdamage_set.filter(target__in=players, damage__lt=0),
+                                              phase_duration, group=True, absolute=True),
+        "buffs": EncounterBuff.breakdown(phase.encounterbuff_set.filter(target__in=players)),
+    }
+    # Buffs
+    _increment_buff_stats(squad_data, squad_store, ["buffs"])
+    # Other stats
+    _increment_area_general_stats(squad_data, squad_store, phase_duration)
+    # Increase squad count
+    squad_store["count"] += 1
+
+
+def _recalculate_area(era, area, era_store):
     area_store = {"All": {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
                           "individual": {"count": 0},
                           "build": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}}
+    if area.id not in era_store:
+        era_store[area.id] = copy.deepcopy(area_store)
     area_leaderboards = {"periods": {"Era": {"duration": []}}, "max_max_dps": 0}
     for encounter in era.encounters.filter(area_id=area):
-        data = encounter.encounter_data
-        for phase in data.encounterphase_set:
-            phase_duration = encounter.calc_phase_duration(phase)
-            if phase.name not in area_store:
-                area_store[phase.name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
-                                          "individual": {"count": 0},
-                                          "build": {"All": {"All": {"All": {"count": 0,
-                                                                            "buffs": {},
-                                                                            "buffs_out": {}}}}}}
-            ind_store = area_store[phase.name]["individual"]
-            build_store = area_store[phase.name]["build"]
-            squad_store = area_store[phase.name]["group"]
-            for party_name in phase.encounterplayer_set.values_list("party").distinct():
-                for player in phase.encounterplayer_set.filter(party=party_name):
-                    # Generate player data
-                    player_data = player.data()
-                    player_data["actual"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                      .filter(source=player.character,
-                                                                              target="*All",
-                                                                              damage__gt=0),
-                                                                      phase.duration, group=True)
-                    player_data["actual_boss"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                           .filter(source=player.character,
-                                                                                   target="*Boss",
-                                                                                   damage__gt=0),
-                                                                           phase.duration, group=True)
-                    player_data["received"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                        .filter(target=player.character, damage__gt=0),
-                                                                        phase.duration, group=True)
-                    player_data["shielded"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                        .filter(target=player.character, damage__lt=0),
-                                                                        phase_duration, group=True, absolute=True)
-                    player_data["buffs"] = EncounterBuff.breakdown(phase.encounterbuff_set
-                                                                   .filter(target=player.character))
-                    player_data["buffs_out"] = EncounterBuff.breakdown(phase.encounterbuff_set
-                                                                       .filter(source=player.character), use_sum=True)
-
-                    # Individual data
-                    # Other stats
-                    _increment_area_general_stats(player_data, ind_store, phase_duration)
-                    # Increase member count
-                    ind_store["count"] += 1
-
-                    # Build data
-                    arch = player_data["archetype"]
-                    prof = player_data["profession"]
-                    elite = player_data["elite"]
-                    if arch not in area_store[phase.name]["build"]:
-                        area_store[phase.name]["build"][arch] = {"All": {"All": {"count": 0,
-                                                                                 "buffs": {},
-                                                                                 "buffs_out": {}}}}
-                    if prof not in area_store[phase.name]["build"][arch]:
-                        area_store[phase.name]["build"][arch][prof] = {"All": {"count": 0,
-                                                                               "buffs": {},
-                                                                               "buffs_out": {}}}
-                    if elite not in area_store[phase.name]["build"][arch][prof]:
-                        area_store[phase.name]["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
-                    if prof not in area_store[phase.name]["build"]["All"]:
-                        area_store[phase.name]["build"]["All"][prof] = {}
-                    if elite not in area_store[phase.name]["build"]["All"][prof]:
-                        area_store[phase.name]["build"]["All"][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
-
-                    for target_store in [build_store["All"]["All"]["All"],
-                                         build_store[arch]["All"]["All"],
-                                         build_store["All"][prof][elite],
-                                         build_store[arch][prof]["All"],
-                                         build_store[arch][prof][elite]]:
-                        # Buffs
-                        _increment_buff_stats(player_data, target_store, ["buffs", "buffs_out"])
-                        # Other stats
-                        _increment_area_general_stats(player_data, target_store, phase_duration)
-                        # Increase build count
-                        target_store["count"] += 1
-
-            # Squad data
-            _merge_into_squad_store(squad_store, build_store["All"]["All"]["All"], phase.encounterplayer_set.count(),
-                                    phase_duration)
-            # Increase squad count
-            squad_store["count"] += 1
-
-        # TODO: "All" phase
-        # TODO: Update era data
+        for phase in encounter.encounter_data.encounterphase_set.all():
+            _update_phase(encounter, phase, area_store)
+            _update_phase(encounter, phase, era_store)
+        _update_all_phase(encounter, area_store)
+        _update_all_phase(encounter, era_store)
 
         _update_area_leaderboards(area_leaderboards, encounter, area_store["All"]["group"])
 
-    _foreach_value(area_store, _summarize_area)
+    _foreach_value(_summarize_area, area_store)
     EraAreaStore.objects.update_or_create(era=era, area_id=area.id, defaults={"val": area_store,
                                                                               "leaderboards": area_leaderboards})
 
@@ -386,7 +372,7 @@ def _recalculate_users(era, user):
                     # Increase build count
                     prv_target["count"] += 1
 
-    _foreach_value(user_data, _summarize_user)
+    _foreach_value(_summarize_user, user_data)
     EraUserStore.objects.update_or_create(era=era, user_id=user.id, defaults={"val": user_data})
 
 
@@ -401,7 +387,7 @@ def recalculate_era(era, encounters):
     for user in users:
         _recalculate_users(era, user)
 
-    _foreach_value(era_data, _summarize_area)
+    _foreach_value(_summarize_area, era_data)
     era.val = era_data
     return len(areas), len(users)
 
