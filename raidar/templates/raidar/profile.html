@@ -179,7 +179,7 @@
                                   </div>
 
                                   <div class="r-profile-damage">
-                                    [[#if 'avg_dps' in elite]]
+                                    [[#if 'avg_dps' in elite && archetypeId !== 'All']]
                                       <h6 class="uk-font-family-secondary uk-text-uppercase uk-text-regular uk-margin-small-bottom">Total DPS (Average)Max</h6>
                                       <svg class="chart" xmlns='http://www.w3.org/2000/svg' height="24px" width="100%">
                                         <rect class="chart chart-hover r-bg-[[bsearch(avg_dps, percentiles_dps)]]" uk-tooltip="pos: bottom-left; delay: 350" title="<h6 class='uk-font-family-secondary uk-text-uppercase uk-margin-remove-bottom'>Max DPS</h6>[[num(max_dps, 0)]] Damage Per Second. <br /> Click for detailed graph." x='0%' y='0' height='8px' width='[[100 * max_dps / enc.individual.max_dps]]%' on-click="@this.fire('chart', event, archetypeId, professionId, eliteId, 'dps', 'DPS')"/>
