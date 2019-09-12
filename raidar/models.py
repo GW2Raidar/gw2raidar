@@ -52,7 +52,6 @@ def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
 
-# TODO: Move to a separate module, does not really belong here
 # gdrive_service = None
 # if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 #     try:
@@ -96,8 +95,6 @@ class UserProfile(models.Model):
         (SQUAD, 'Squad'),
         (PUBLIC, 'Public')
     )
-    # TODO: Not using... delete?
-    portrait_url = models.URLField(null=True, blank=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
     privacy = models.PositiveSmallIntegerField(editable=False, choices=PRIVACY_CHOICES, default=SQUAD)
@@ -821,6 +818,7 @@ class EncounterPhase(EncounterAttribute):
                     if target not in member:
                         member[target] = {}
                     for key, val in phase_data["parties"][party_name]["members"][member_id][target].items():
+                        # Overall damage stats
                         if key != "Skill":
                             if key not in member[target]:
                                 member[target][key] = 0
@@ -830,7 +828,8 @@ class EncounterPhase(EncounterAttribute):
                                 member[target][key] = member[target][key] * all_duration\
                                                       / (all_duration + phase_duration)\
                                                       + val * phase_duration / (all_duration + phase_duration)
-                        else:  # Skill summaries
+                        # Skill summaries
+                        else:
                             if "Skill" not in member[target]:
                                 member[target]["Skill"] = {}
                             for skill_name, skill_data in val.items():
@@ -927,7 +926,8 @@ class TargetedEncounterAttribute(SourcedEncounterAttribute):
 class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "name"], name="enc_name_attr_unique")]
+        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "name"],
+                                        name="enc_name_attr_unique")]
     name = models.TextField()
 
 
