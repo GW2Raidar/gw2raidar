@@ -784,7 +784,6 @@ class EncounterPhase(EncounterAttribute):
 
     @staticmethod
     def all_breakdown(phase_dump, prv_encounter, party_name, player_data):
-        all_duration = 0
         all_phase = {
             "actual": {},
             "actual_boss": {},
@@ -810,9 +809,7 @@ class EncounterPhase(EncounterAttribute):
                         if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
                             all_phase[target][key] += val
                         else:
-                            all_phase[target][key] = all_phase[target][key] * all_duration\
-                                                     / (all_duration + phase_duration)\
-                                                     + val * phase_duration / (all_duration + phase_duration)
+                            all_phase[target][key] += val * (phase_duration / prv_encounter.duration)
                 # Players
                 for member_id, member in enumerate(all_phase["members"]):
                     if target not in member:
@@ -825,9 +822,7 @@ class EncounterPhase(EncounterAttribute):
                             if key in ["total", "power", "condi", "dps", "power_dps", "condi_dps"]:
                                 member[target][key] += val
                             else:
-                                member[target][key] = member[target][key] * all_duration\
-                                                      / (all_duration + phase_duration)\
-                                                      + val * phase_duration / (all_duration + phase_duration)
+                                member[target][key] += val * (phase_duration / prv_encounter.duration)
                         # Skill summaries
                         else:
                             if "Skill" not in member[target]:
@@ -843,10 +838,8 @@ class EncounterPhase(EncounterAttribute):
                                             member[target]["Skill"][skill_name][skill_key] += skill_val
                                         else:
                                             # TODO: This solution for calculating average stats is imprecise!
-                                            member[target]["Skill"][skill_name][skill_key] =\
-                                                member[target]["Skill"][skill_name][skill_key] * all_duration\
-                                                / (all_duration + phase_duration)\
-                                                + skill_val * phase_duration / (all_duration + phase_duration)
+                                            member[target]["Skill"][skill_name][skill_key] +=\
+                                                skill_val * (phase_duration / prv_encounter.duration)
 
             # Buffs
             for target in ["buffs", "buffs_out"]:
@@ -854,8 +847,7 @@ class EncounterPhase(EncounterAttribute):
                 for buff, uptime in phase_data["parties"][party_name][target].items():
                     if buff not in all_phase[target]:
                         all_phase[target][buff] = 0
-                    all_phase[target][buff] = all_phase[target][buff] * all_duration / (all_duration + phase_duration)\
-                        + uptime * phase_duration / (all_duration + phase_duration)
+                    all_phase[target][buff] += uptime * (phase_duration / prv_encounter.duration)
                 # Players
                 for member_id, member in enumerate(all_phase["members"]):
                     if target not in all_phase["members"][member_id]:
@@ -863,8 +855,7 @@ class EncounterPhase(EncounterAttribute):
                     for buff, uptime in phase_data["parties"][party_name]["members"][member_id][target].items():
                         if buff not in member[target]:
                             member[target][buff] = 0
-                        member[target][buff] = member[target][buff] * all_duration / (all_duration + phase_duration)\
-                            + uptime * phase_duration / (all_duration + phase_duration)
+                        member[target][buff] += uptime * (phase_duration / prv_encounter.duration)
 
             # Additive stats
             for target in ["events", "mechanics"]:
@@ -881,19 +872,16 @@ class EncounterPhase(EncounterAttribute):
                             member[target][key] = 0
                         member[target][key] += val
 
-            # Update duration
-            all_duration += phase_duration
-
         # Update DPS
         for target in ["actual", "actual_boss", "received", "shielded"]:
-            all_phase[target]["dps"] = all_phase[target]["total"] / all_duration
-            all_phase[target]["power_dps"] = all_phase[target]["power"] / all_duration
-            all_phase[target]["condi_dps"] = all_phase[target]["condi"] / all_duration
+            all_phase[target]["dps"] = all_phase[target]["total"] / prv_encounter.duration
+            all_phase[target]["power_dps"] = all_phase[target]["power"] / prv_encounter.duration
+            all_phase[target]["condi_dps"] = all_phase[target]["condi"] / prv_encounter.duration
 
             for member in all_phase["members"]:
-                member[target]["dps"] = member[target]["total"] / all_duration
-                member[target]["power_dps"] = member[target]["power"] / all_duration
-                member[target]["condi_dps"] = member[target]["condi"] / all_duration
+                member[target]["dps"] = member[target]["total"] / prv_encounter.duration
+                member[target]["power_dps"] = member[target]["power"] / prv_encounter.duration
+                member[target]["condi_dps"] = member[target]["condi"] / prv_encounter.duration
 
         # TODO: Remove when fixed
         # If no mechanics were found within phases, they're probably only annotated in the "All" phase
