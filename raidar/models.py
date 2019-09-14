@@ -935,12 +935,19 @@ class EncounterEvent(SourcedEncounterAttribute):
 
     @staticmethod
     def summarize(query):
-        return query.aggregate(disconnect_count=Coalesce(Sum("disconnect_count"), 0),
-                               disconnect_time=Coalesce(Sum("disconnect_time"), 0),
-                               down_count=Coalesce(Sum("down_count"), 0),
-                               down_time=Coalesce(Sum("down_time"), 0),
-                               dead_count=Coalesce(Sum("dead_time"), 0),
-                               dead_time=Coalesce(Sum("dead_count"), 0))
+        data = {
+            "disconnect_count": 0,
+            "disconnect_time": 0,
+            "down_count": 0,
+            "down_time": 0,
+            "dead_count": 0,
+            "dead_time": 0,
+        }
+
+        for row in query:
+            for stat in data:
+                data[stat] += row.__dict__[stat]
+        return data
 
 
 class EncounterMechanic(NamedSourcedEncounterAttribute):
@@ -1015,13 +1022,24 @@ class EncounterDamage(TargetedEncounterAttribute):
             if prv_query.count() == 0:
                 prv_query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi"\
                     else query.exclude(skill__in=EncounterDamage.conditions())
+
+        data = {"total": [], "crit": [], "fifty": [], "flanking": [], "scholar": [], "seaweed": []}
+        for row in prv_query:
+            data["total"].append(row.damage)
+            data["crit"].append(row.crit)
+            data["fifty"].append(row.fifty)
+            data["flanking"].append(row.flanking)
+            data["scholar"].append(row.scholar)
+            data["seaweed"].append(row.seaweed)
+
         # TODO: This solution for calculating average stats is imprecise!
-        data = prv_query.aggregate(total=Coalesce(Sum("damage"), 0),
-                                   crit=Coalesce(Avg("crit") * 100.0, 0),
-                                   fifty=Coalesce(Avg("fifty") * 100.0, 0),
-                                   flanking=Coalesce(Avg("flanking") * 100.0, 0),
-                                   scholar=Coalesce(Avg("scholar") * 100.0, 0),
-                                   seaweed=Coalesce(Avg("seaweed") * 100.0, 0))
+        data["total"] = sum(data["total"])
+        data["crit"] = sum(data["crit"]) / max(len(data["crit"]), 1)
+        data["fifty"] = sum(data["fifty"]) / max(len(data["fifty"]), 1)
+        data["flanking"] = sum(data["flanking"]) / max(len(data["flanking"]), 1)
+        data["scholar"] = sum(data["scholar"]) / max(len(data["scholar"]), 1)
+        data["seaweed"] = sum(data["seaweed"]) / max(len(data["seaweed"]), 1)
+
         if absolute:
             data = {key: _safe_abs(val) for key, val in data.items()}
         return data
