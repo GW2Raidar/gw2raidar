@@ -123,16 +123,21 @@ class Command(BaseCommand):
                     was_force=forced)
 
 
-def _merge_slice(data, prv_slice):
-    for key, val in list(prv_slice.items()):
+def _merge_slice(data, data_slice):
+    for key, val in list(data_slice.items()):
         if isinstance(val, dict):
             if key not in data:
                 data[key] = {}
-            _foreach_value(data[key], prv_slice[key])
+            _merge_slice(data[key], data_slice[key])
         else:
-            if key not in data:
-                data[key] = []
-            data.append(val)
+            if key == "count":
+                if key not in data:
+                    data[key] = 0
+                data[key] = max(data[key], val)
+            else:
+                if key not in data:
+                    data[key] = []
+                data[key].append(val)
 
 
 def _foreach_value(map_func, data, **kwargs):
@@ -144,11 +149,9 @@ def _foreach_value(map_func, data, **kwargs):
 
 
 def _summarize_slice(key, data, **kwargs):
-    if key == "count":
-        data[key] = max(data[key])
-    elif str(key).startswith("total"):
+    if str(key).startswith("total"):
         data[key] = sum(data[key])
-    else:
+    elif key != "count":
         data[key] = sum(data[key]) / kwargs["encounter_duration"]
 
 
@@ -202,7 +205,7 @@ def _increment_area_general_stats(source_data, target_data, phase_duration, rela
         source = source.get(suffix, source["default"])
         if target not in target_data:
             target_data[target] = []
-        target_data[target].append(source[prefix] if not relative or prefix != "total"
+        target_data[target].append(source[prefix] if not relative or prefix == "total"
                                    else source[prefix] * phase_duration)
 
 
@@ -235,7 +238,7 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
             "dps_boss": squad_store["dps_boss"][-1],
             "dps": squad_store["dps"][-1],
             "buffs": {buff: uptimes[-1] if len(uptimes) == squad_store["count"] else 0
-                      for buff, uptimes in squad_store["buff"].items()},
+                      for buff, uptimes in squad_store["buffs"].items()},
             "comp": [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()],
             "tags": encounter.tagstring,
         }
@@ -247,7 +250,7 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
         area_leaderboards["max_max_dps"] = max(area_leaderboards["max_max_dps"], leaderboard_item["dps"])
 
 
-def _update_phase(encounter, phase, area_store, relative=False):
+def _update_phase(encounter, phase, area_store, merge=False, relative=False):
     phase_duration = encounter.calc_phase_duration(phase)
     if phase.name not in area_store:
         area_store[phase.name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
@@ -255,7 +258,7 @@ def _update_phase(encounter, phase, area_store, relative=False):
                                   "build": {"All": {"All": {"All": {"count": 0,
                                                                     "buffs": {},
                                                                     "buffs_out": {}}}}}}
-    phase_store = area_store[phase.name]
+    phase_store = area_store["All"] if merge else area_store[phase.name]
     for party_name in encounter.encounter_data.encounterplayer_set.values_list("party", flat=True).distinct():
         for player in encounter.encounter_data.encounterplayer_set.filter(party=party_name):
             # Generate player data
@@ -289,12 +292,12 @@ def _update_phase(encounter, phase, area_store, relative=False):
             arch = player_data["archetype"]
             prof = player_data["profession"]
             elite = player_data["elite"]
-            if arch not in area_store[phase.name]["build"]:
-                area_store[phase.name]["build"][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
-            if prof not in area_store[phase.name]["build"][arch]:
-                area_store[phase.name]["build"][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
-            if elite not in area_store[phase.name]["build"][arch][prof]:
-                area_store[phase.name]["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
+            if arch not in phase_store["build"]:
+                phase_store["build"][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
+            if prof not in phase_store["build"][arch]:
+                phase_store["build"][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
+            if elite not in phase_store["build"][arch][prof]:
+                phase_store["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
 
             for target_store in [phase_store["build"]["All"]["All"]["All"],
                                  phase_store["build"][arch]["All"]["All"],
@@ -341,14 +344,14 @@ def _recalculate_area(era, area, era_store):
     for encounter in era.encounters.filter(area_id=area):
         area_slice = copy.deepcopy(DEFAULT_AREA_STORE)
         for phase in encounter.encounter_data.encounterphase_set.all():
-            _update_phase(encounter, phase, area_slice, relative=True)
+            _update_phase(encounter, phase, area_slice, merge=True, relative=True)
             _update_phase(encounter, phase, area_store)
-            _update_phase(encounter, phase, era_store)
+            _update_phase(encounter, phase, era_store[area.id])
 
         # Generate "All" phase from existing data
         _foreach_value(_summarize_slice, area_slice, encounter_duration=encounter.duration)
-        _foreach_value(_merge_slice, area_store["All"], slice=area_slice)
-        _foreach_value(_merge_slice, era_store["All"], slice=area_slice)
+        _merge_slice(area_store["All"], area_slice["All"])
+        _merge_slice(era_store[area.id]["All"], area_slice["All"])
 
         _update_area_leaderboards(area_leaderboards, encounter, area_store["All"]["group"])
 
