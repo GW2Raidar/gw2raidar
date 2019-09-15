@@ -18,8 +18,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime, \
-    Area, EncounterDamage, EncounterBuff
-
+    Area, EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent
 
 # DEBUG: uncomment to log SQL queries
 # import logging
@@ -218,15 +217,6 @@ def _increment_user_general_stats(source_data, target_data, phase_duration):
     _increment_area_general_stats(source_data, target_data, phase_duration)
 
 
-def _find_player_data(accounts, dump, phase="All"):
-    if phase in dump["encounter"]["phases"]:
-        for party in dump["encounter"]["phases"][phase]["parties"].values():
-            for member in party["members"]:
-                if member["account"] in accounts:
-                    return member
-    return None
-
-
 def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
     if encounter.success:
         if encounter.week() not in area_leaderboards:
@@ -250,6 +240,32 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
         area_leaderboards["max_max_dps"] = max(area_leaderboards["max_max_dps"], leaderboard_item["dps"])
 
 
+def _generate_player_data(player, phase, phase_duration):
+    player_data = player.data()
+    player_data["actual"] = EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
+                                                                                       target="*All",
+                                                                                       damage__gt=0),
+                                                      phase_duration, group=True)
+    player_data["actual_boss"] = EncounterDamage.breakdown(phase.encounterdamage_set
+                                                           .filter(source=player.character,
+                                                                   target="*Boss",
+                                                                   damage__gt=0),
+                                                           phase_duration, group=True)
+    player_data["received"] = EncounterDamage.breakdown(phase.encounterdamage_set
+                                                        .filter(target=player.character, damage__gt=0),
+                                                        phase_duration, group=True)
+    player_data["shielded"] = EncounterDamage.breakdown(phase.encounterdamage_set
+                                                        .filter(target=player.character, damage__lt=0),
+                                                        phase_duration, group=True, absolute=True)
+    player_data["buffs"] = EncounterBuff.breakdown(phase.encounterbuff_set.filter(target=player.character))
+    player_data["buffs_out"] = EncounterBuff.breakdown(phase.encounterbuff_set
+                                                       .filter(source=player.character), use_sum=True)
+
+    player_data["events"] = EncounterEvent.summarize(phase.encounterevent_set.filter(source=player.character))
+
+    return player_data
+
+
 def _update_phase(encounter, phase, area_store, merge=False, relative=False):
     phase_duration = encounter.calc_phase_duration(phase)
     if phase.name not in area_store:
@@ -262,25 +278,7 @@ def _update_phase(encounter, phase, area_store, merge=False, relative=False):
     for party_name in encounter.encounter_data.encounterplayer_set.values_list("party", flat=True).distinct():
         for player in encounter.encounter_data.encounterplayer_set.filter(party=party_name):
             # Generate player data
-            player_data = player.data()
-            player_data["actual"] = EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
-                                                                                               target="*All",
-                                                                                               damage__gt=0),
-                                                              phase_duration, group=True)
-            player_data["actual_boss"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                   .filter(source=player.character,
-                                                                           target="*Boss",
-                                                                           damage__gt=0),
-                                                                   phase_duration, group=True)
-            player_data["received"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                .filter(target=player.character, damage__gt=0),
-                                                                phase_duration, group=True)
-            player_data["shielded"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                                .filter(target=player.character, damage__lt=0),
-                                                                phase_duration, group=True, absolute=True)
-            player_data["buffs"] = EncounterBuff.breakdown(phase.encounterbuff_set.filter(target=player.character))
-            player_data["buffs_out"] = EncounterBuff.breakdown(phase.encounterbuff_set
-                                                               .filter(source=player.character), use_sum=True)
+            player_data = _generate_player_data(player, phase, phase_duration)
 
             # Individual data
             # Other stats
@@ -360,18 +358,21 @@ def _recalculate_area(era, area, era_store):
                                                                               "leaderboards": area_leaderboards})
 
 
-# TODO: Rebuild with database ops
 def _recalculate_users(era, user):
     user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0,
                                                                            "buffs": {},
                                                                            "buffs_out": {}}}}}}}
     encounters = era.encounters.filter(participations__account__user=user)
     for encounter in encounters:
-        player_data = _find_player_data([account.name for account in user.accounts.all()], encounter.json_dump())
-        if player_data is not None:
-            arch = player_data["archetype"]
-            prof = player_data["profession"]
-            elite = player_data["elite"]
+        data = encounter.encounter_data
+        player = EncounterPlayer.objects.get(account__in=user.accounts.all(), encounter_data=data)
+        if player:
+            arch = player.archetype
+            prof = player.profession
+            elite = player.elite
+
+            # Generate player data
+            player_data = _generate_player_data(player, data, encounter.duration)
 
             for target in ["All raid bosses", encounter.area_id]:
                 if target not in user_data["encounter"]:
@@ -390,16 +391,16 @@ def _recalculate_users(era, user):
                     user_data["encounter"][target]["All"][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
                 user_area_data = user_data["encounter"][target]
 
-                for prv_target in [user_area_data["All"]["All"]["All"],
-                                   user_area_data[arch]["All"]["All"],
-                                   user_area_data["All"][prof][elite],
-                                   user_area_data[arch][prof]["All"],
-                                   user_area_data[arch][prof][elite],
-                                   ]:
+                for prv_target in [
+                    user_area_data["All"]["All"]["All"],
+                    user_area_data[arch]["All"]["All"],
+                    user_area_data[arch][prof]["All"],
+                    user_area_data[arch][prof][elite],
+                ]:
                     # Buffs
                     _increment_buff_stats(player_data, prv_target, ["buffs_out"], encounter.duration)
                     # Other stats
-                    _increment_user_general_stats(player_data, prv_target, encounter.duration)
+                    _increment_user_general_stats(player_data, prv_target, encounter.duration * 1000.0)
                     # Increase build count
                     prv_target["count"] += 1
 

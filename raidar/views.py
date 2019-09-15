@@ -169,8 +169,7 @@ def _with_area_data(user_data, era):
         for arch, arch_data in enc_data.items():
             for prof, prof_data in arch_data.items():
                 for elite, elite_data in prof_data.items():
-                    print(era_area_store.area_id, arch, prof, elite)
-                    elite_data["performance"] = area_data[arch][prof][elite]
+                    elite_data["performance"] = _safe_get(lambda: area_data[arch][prof][elite])
         enc_data["individual"] = era_area_store.val["All"]["individual"]
     return user_data
 
