@@ -369,11 +369,9 @@ def _recalculate_users(era, user):
     user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0,
                                                                            "buffs": {},
                                                                            "buffs_out": {}}}}}}}
-    encounters = era.encounters.filter(participations__account__user=user)
-    for encounter in encounters:
+    for encounter in era.encounters.filter(participations__account__user=user):
         data = encounter.encounter_data
-        player = EncounterPlayer.objects.get(account__in=user.accounts.all(), encounter_data=data)
-        if player:
+        for player in EncounterPlayer.objects.filter(account__in=user.accounts.all(), encounter_data=data):
             arch = player.archetype
             prof = player.profession
             elite = player.elite
