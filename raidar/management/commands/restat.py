@@ -217,7 +217,7 @@ def _increment_user_general_stats(source_data, target_data, phase_duration):
     _increment_area_general_stats(source_data, target_data, phase_duration)
 
 
-def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
+def _update_area_leaderboards(area_leaderboards, encounter, squad_slice):
     if encounter.success:
         if encounter.week() not in area_leaderboards:
             area_leaderboards["periods"][encounter.week()] = {"duration": []}
@@ -225,10 +225,10 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_store):
             "id": encounter.id,
             "url_id": encounter.url_id,
             "duration": encounter.duration,
-            "dps_boss": squad_store["dps_boss"][-1],
-            "dps": squad_store["dps"][-1],
-            "buffs": {buff: uptimes[-1] if len(uptimes) == squad_store["count"] else 0
-                      for buff, uptimes in squad_store["buffs"].items()},
+            "dps_boss": squad_slice["dps_boss"],
+            "dps": squad_slice["dps"][-1],
+            "buffs": {buff: uptimes[-1] if len(uptimes) == squad_slice["count"] else 0
+                      for buff, uptimes in squad_slice["buffs"].items()},
             "comp": [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()],
             "tags": encounter.tagstring,
         }
@@ -358,7 +358,7 @@ def _recalculate_area(era, area, era_store):
         _merge_slice(area_store["All"], area_slice["All"])
         _merge_slice(era_store[area.id]["All"], area_slice["All"])
 
-        _update_area_leaderboards(area_leaderboards, encounter, area_store["All"]["group"])
+        _update_area_leaderboards(area_leaderboards, encounter, area_slice["All"]["group"])
 
     _foreach_value(_summarize_area, area_store)
     EraAreaStore.objects.update_or_create(era=era, area_id=area.id, defaults={"val": area_store,
@@ -399,10 +399,10 @@ def _recalculate_users(era, user):
                 user_area_data = user_data["encounter"][target]
 
                 for prv_target in [
-                    user_area_data["All"]["All"]["All"],
-                    user_area_data[arch]["All"]["All"],
-                    user_area_data[arch][prof]["All"],
-                    user_area_data[arch][prof][elite],
+                        user_area_data["All"]["All"]["All"],
+                        user_area_data[arch]["All"]["All"],
+                        user_area_data[arch][prof]["All"],
+                        user_area_data[arch][prof][elite],
                 ]:
                     # Buffs
                     _increment_buff_stats(player_data, prv_target, ["buffs_out"], encounter.duration)
