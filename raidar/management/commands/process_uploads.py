@@ -1,5 +1,5 @@
 from django.db.models import Q
-
+from Crypo import Random
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
 from analyser.bosses import *
 from multiprocessing import Queue, Process, log_to_stderr
@@ -169,7 +169,6 @@ class Command(BaseCommand):
 
     def analyse_upload_worker(self, queue, multi=True):
         if multi:
-            from Crypto import Random
             Random.atfork()
         # self.gdrive_service = get_gdrive_service()
         try:
