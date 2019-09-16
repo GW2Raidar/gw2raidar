@@ -1015,16 +1015,14 @@ class EncounterDamage(TargetedEncounterAttribute):
 
     @staticmethod
     def summarize(query, target="all", absolute=False):
-        if target == "all":
-            prv_query = query
-        else:
-            prv_query = query.filter(skill=target)
-            if prv_query.count() == 0:
-                prv_query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi"\
+        if target != "all":
+            query = query.filter(skill=target)
+            if len(query) == 0:
+                query = query.filter(skill__in=EncounterDamage.conditions()) if target == "condi"\
                     else query.exclude(skill__in=EncounterDamage.conditions())
 
         data = {"total": [], "crit": [], "fifty": [], "flanking": [], "scholar": [], "seaweed": []}
-        for row in prv_query:
+        for row in query:
             data["total"].append(row.damage)
             data["crit"].append(row.crit)
             data["fifty"].append(row.fifty)

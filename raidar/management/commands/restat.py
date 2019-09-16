@@ -8,6 +8,7 @@ new encounter logs and generating or updating any related percentile blobs.
 import copy
 from contextlib import contextmanager
 from datetime import timezone
+from math import floor
 from time import time
 import os
 import sys
@@ -158,11 +159,13 @@ def _summarize_area(key, data, **kwargs):  # pylint: disable=unused-argument
     if key != "count":
         val = data.pop(key)
         val.sort()
+        length = len(val)
+        percent_length = length / 100
         data["min_" + key] = val[0]
         data["max_" + key] = val[-1]
-        data["avg_" + key] = sum(val) / len(val)
-        data["per_" + key] = base64.b64encode(numpy.percentile(val, range(0, 100)).astype(numpy.float32).tobytes())\
-            .decode("utf-8")
+        data["avg_" + key] = sum(val) / length
+        data["per_" + key] = base64.b64encode(numpy.array([val[floor(i * percent_length)] for i in range(0, 100)],
+                                                          dtype=numpy.float32).tobytes()).decode("utf-8")
 
 
 def _summarize_user(key, data, **kwargs):  # pylint: disable=unused-argument
@@ -226,9 +229,8 @@ def _update_area_leaderboards(area_leaderboards, encounter, squad_slice):
             "url_id": encounter.url_id,
             "duration": encounter.duration,
             "dps_boss": squad_slice["dps_boss"],
-            "dps": squad_slice["dps"][-1],
-            "buffs": {buff: uptimes[-1] if len(uptimes) == squad_slice["count"] else 0
-                      for buff, uptimes in squad_slice["buffs"].items()},
+            "dps": squad_slice["dps"],
+            "buffs": {buff: uptimes for buff, uptimes in squad_slice["buffs"].items()},
             "comp": [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()],
             "tags": encounter.tagstring,
         }
