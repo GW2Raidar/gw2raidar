@@ -711,11 +711,12 @@ class Participation(models.Model):
 class SquadStats(models.Model):
     class Meta:
         db_table = "raidar_stats_squad"
-        constraints = [Unique(fields=["era", "area", "stat", "out"], name="stats_group_unique")]
+        constraints = [Unique(fields=["era", "area", "phase", "stat", "out"], name="stats_group_unique")]
     era = models.ForeignKey(Era, on_delete=models.CASCADE)
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
-    stat = models.TextField
-    out = models.BooleanField
+    phase = models.TextField()
+    stat = models.TextField()
+    out = models.BooleanField()
     min_val = models.FloatField(editable=False)
     max_val = models.FloatField(editable=False)
     avg_val = models.FloatField(editable=False)
@@ -740,28 +741,28 @@ class SquadStats(models.Model):
             self.data.sort()
             length = len(self.data)
             percent_length = length / 100
-            min_val = self.data[0]
-            max_val = self.data[-1]
-            avg_val = sum(self.data) / length
-            perc_data = base64.b64encode(numpy.array([self.data[floor(i * percent_length)] for i in range(0, 100)],
-                                                     dtype=numpy.float32).tobytes()).decode("utf-8")
+            self.min_val = self.data[0]
+            self.max_val = self.data[-1]
+            self.avg_val = sum(self.data) / length
+            self.perc_data = base64.b64encode(numpy.array([self.data[floor(i * percent_length)] for i in range(0, 100)],
+                                                          dtype=numpy.float32).tobytes()).decode("utf-8")
         super(SquadStats, self).save(*args, **kwargs)
 
 
 class BuildStats(SquadStats):
     class Meta:
         db_table = "raidar_stats_build"
-        constraints = [Unique(fields=["era", "area", "archetype", "profession", "elite", "stat", "out"],
+        constraints = [Unique(fields=["era", "area", "phase", "archetype", "prof", "elite", "stat", "out"],
                               name="stats_group_unique")]
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
-    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
+    prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
 
 
 class UserStats(BuildStats):
     class Meta:
         db_table = "raidar_stats_user"
-        constraints = [Unique(fields=["era", "area", "user", "archetype", "profession", "elite", "stat", "out"],
+        constraints = [Unique(fields=["era", "area", "phase", "user", "archetype", "prof", "elite", "stat", "out"],
                               name="stats_group_unique")]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
 
