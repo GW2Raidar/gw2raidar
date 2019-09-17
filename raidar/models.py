@@ -1,12 +1,16 @@
+import base64
 import os
 import re
 import copy
 import random
+from math import floor
 from time import time
 from hashlib import md5
 from functools import lru_cache
 from datetime import datetime, timedelta, timezone
 from json import loads as json_loads, dumps as json_dumps
+
+import numpy
 import pytz
 from django.db import models
 from django.contrib.auth.models import User
@@ -712,10 +716,36 @@ class SquadStats(models.Model):
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
     stat = models.TextField
     out = models.BooleanField
-    min_val = models.FloatField
-    max_val = models.FloatField
-    avg_val = models.FloatField
-    perc_data = models.TextField
+    min_val = models.FloatField(editable=False)
+    max_val = models.FloatField(editable=False)
+    avg_val = models.FloatField(editable=False)
+    perc_data = models.TextField(default="", editable=False)
+
+    # Internal storage
+    data = []
+    percentiles = None
+
+    def add_data_point(self, data_point):
+        self.data.append(data_point)
+
+    def get_percentile(self, percentile):
+        if not self.percentiles:
+            self.percentiles = numpy.frombuffer(base64.b64decode(self.perc_data.encode("utf-8")), dtype=numpy.float32)
+        # Clamp percentile to range 0-100
+        percentile = max(0, min(percentile, len(self.percentiles)))
+        return self.percentiles[percentile] if percentile < len(self.percentiles) else self.max_val
+
+    def save(self, *args, **kwargs):
+        if self.data:
+            self.data.sort()
+            length = len(self.data)
+            percent_length = length / 100
+            min_val = self.data[0]
+            max_val = self.data[-1]
+            avg_val = sum(self.data) / length
+            perc_data = base64.b64encode(numpy.array([self.data[floor(i * percent_length)] for i in range(0, 100)],
+                                                     dtype=numpy.float32).tobytes()).decode("utf-8")
+        super(SquadStats, self).save(*args, **kwargs)
 
 
 class BuildStats(SquadStats):
