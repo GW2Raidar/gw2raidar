@@ -84,7 +84,7 @@ def _dictionary():
 
 
 def _generate_url_id(size=5):
-    return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
+    return "".join(w.capitalize() for w in random.sample(_dictionary(), size))
 
 
 def _update_dps(data, duration):
@@ -94,18 +94,18 @@ def _update_dps(data, duration):
 
 
 # gdrive_service = None
-# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
+# if hasattr(settings, "GOOGLE_CREDENTIAL_FILE"):
 #     try:
 #         from oauth2client.service_account import ServiceAccountCredentials
 #         from httplib2 import Http
 #         from apiclient import discovery
 #         from googleapiclient.http import MediaFileUpload
 #
-#         scopes = ['https://www.googleapis.com/auth/drive.file']
+#         scopes = ["https://www.googleapis.com/auth/drive.file"]
 #         credentials = ServiceAccountCredentials.from_json_keyfile_name(
 #                 settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
 #         http_auth = credentials.authorize(Http())
-#         gdrive_service = discovery.build('drive', 'v3', http=http_auth)
+#         gdrive_service = discovery.build("drive", "v3", http=http_auth)
 #     except ImportError:
 #         # No Google Drive support
 #         pass
@@ -132,9 +132,9 @@ class UserProfile(models.Model):
     PUBLIC = 3
 
     PRIVACY_CHOICES = (
-        (PRIVATE, 'Private'),
-        (SQUAD, 'Squad'),
-        (PUBLIC, 'Public')
+        (PRIVATE, "Private"),
+        (SQUAD, "Squad"),
+        (PUBLIC, "Public")
     )
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="user_profile")
     last_notified_at = models.IntegerField(db_index=True, default=0, editable=False)
@@ -152,25 +152,25 @@ class Area(models.Model):
         return self.name
 
     class Meta:
-        ordering = ('name',)
+        ordering = ("name",)
 
 
 class Account(models.Model):
     # TODO: Make more restrictive?
-    ACCOUNT_NAME_RE = re.compile(r'\S+\.\d{4}')
+    ACCOUNT_NAME_RE = re.compile(r"\S+\.\d{4}")
     API_KEY_RE = re.compile(
-        r'-'.join(r'[0-9A-F]{%d}' % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r'$',
+        r"-".join(r"[0-9A-F]{%d}" % n for n in (8, 4, 4, 4, 20, 4, 4, 4, 12)) + r"$",
         re.IGNORECASE)
 
-    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name='accounts')
+    user = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name="accounts")
     name = models.CharField(max_length=64, unique=True, validators=[RegexValidator(ACCOUNT_NAME_RE)])
-    api_key = models.CharField('API key', max_length=72, blank=True, validators=[RegexValidator(API_KEY_RE)])
+    api_key = models.CharField("API key", max_length=72, blank=True, validators=[RegexValidator(API_KEY_RE)])
 
     def __str__(self):
         return self.name
 
     class Meta:
-        ordering = ('name',)
+        ordering = ("name",)
 
 
 class Era(ValueModel):
@@ -260,29 +260,29 @@ class Upload(ValueModel):
     filename = models.CharField(max_length=255)
     uploaded_at = models.IntegerField(db_index=True)
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='unprocessed_uploads')
+                                    related_name="unprocessed_uploads")
 
     def __str__(self):
         if self.uploaded_by:
             uploader = self.uploaded_by.username
         else:
-            uploader = 'Unknown'
-        return '%s (%s)' % (self.filename, uploader)
+            uploader = "Unknown"
+        return "%s (%s)" % (self.filename, uploader)
 
     def diskname(self):
-        if hasattr(settings, 'UPLOAD_DIR'):
+        if hasattr(settings, "UPLOAD_DIR"):
             upload_dir = settings.UPLOAD_DIR
         else:
-            upload_dir = 'uploads'
-        ext = '.' + '.'.join(self.filename.split('.')[1:])
+            upload_dir = "uploads"
+        ext = "." + ".".join(self.filename.split(".")[1:])
         return os.path.join(upload_dir, str(self.id) + ext)
 
     class Meta:
-        unique_together = ('filename', 'uploaded_by')
+        unique_together = ("filename", "uploaded_by")
 
 
 class Notification(ValueModel):
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="notifications")
     created_at = models.IntegerField(db_index=True, default=time)
 
 
@@ -290,7 +290,7 @@ class Variable(ValueModel):
     key = models.CharField(max_length=255, primary_key=True)
 
     def __str__(self):
-        return '%s=%s' % (self.key, self.val)
+        return "%s=%s" % (self.key, self.val)
 
     @staticmethod
     def get(name):
@@ -298,7 +298,7 @@ class Variable(ValueModel):
 
     @staticmethod
     def set(name, value):
-        Variable.objects.update_or_create(key=name, defaults={'val': value})
+        Variable.objects.update_or_create(key=name, defaults={"val": value})
 
 
 class EncounterData(models.Model):
@@ -520,11 +520,11 @@ class Encounter(models.Model):
     filename = models.CharField(max_length=255)
     uploaded_on = models.DateTimeField()
     uploaded_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True,
-                                    related_name='uploaded_encounters')
-    area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name='encounters')
-    era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name='encounters')
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name='encounters', null=True, blank=True)
-    accounts = models.ManyToManyField(Account, through='Participation', related_name='encounters')
+                                    related_name="uploaded_encounters")
+    area = models.ForeignKey(Area, on_delete=models.PROTECT, related_name="encounters")
+    era = models.ForeignKey(Era, on_delete=models.PROTECT, related_name="encounters")
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, related_name="encounters", null=True, blank=True)
+    accounts = models.ManyToManyField(Account, through="Participation", related_name="encounters")
     # Hack to try to ensure uniqueness
     account_hash = models.CharField(max_length=32, editable=False)
     started_at_full = models.IntegerField(editable=False)
@@ -541,8 +541,8 @@ class Encounter(models.Model):
         if self.uploaded_by:
             uploader = self.uploaded_by.username
         else:
-            uploader = 'Unknown'
-        return '%s (%s, %s, #%s)' % (self.area.name, self.filename, uploader, self.id)
+            uploader = "Unknown"
+        return "%s (%s, %s, #%s)" % (self.area.name, self.filename, uploader, self.id)
 
     @staticmethod
     def week_for(started_at):
@@ -699,11 +699,11 @@ class Encounter(models.Model):
     def diskname(self):
         if not self.uploaded_by:
             return None
-        if hasattr(settings, 'UPLOAD_DIR'):
+        if hasattr(settings, "UPLOAD_DIR"):
             upload_dir = settings.UPLOAD_DIR
         else:
-            upload_dir = 'uploads'
-        return os.path.join(upload_dir, 'encounters', self.uploaded_by.username, self.filename)
+            upload_dir = "uploads"
+        return os.path.join(upload_dir, "encounters", self.uploaded_by.username, self.filename)
 
     def update_has_evtc(self):
         self.has_evtc = os.path.isfile(self.diskname())
@@ -711,15 +711,15 @@ class Encounter(models.Model):
 
     @property
     def tagstring(self):
-        return ','.join(self.tags.names())
+        return ",".join(self.tags.names())
 
     @tagstring.setter
     def tagstring(self, value):
-        self.tags.set(*value.split(','))
+        self.tags.set(*value.split(","))
 
     @staticmethod
     def calculate_account_hash(account_names):
-        conc = ':'.join(sorted(account_names))
+        conc = ":".join(sorted(account_names))
         hash_object = md5(conc.encode())
         return hash_object.hexdigest()
 
@@ -730,46 +730,46 @@ class Encounter(models.Model):
         return started_at_full, started_at_half
 
     class Meta:
-        index_together = ('area', 'started_at')
-        ordering = ('started_at',)
+        index_together = ("area", "started_at")
+        ordering = ("started_at",)
         unique_together = (
-            ('area', 'account_hash', 'started_at_full'),
-            ('area', 'account_hash', 'started_at_half'),
+            ("area", "account_hash", "started_at_full"),
+            ("area", "account_hash", "started_at_half"),
         )
 
 
 class Participation(models.Model):
-    encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
+    encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name="participations")
     character = models.CharField(max_length=64, db_index=True)
-    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='participations')
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="participations")
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
 
     def __str__(self):
-        return '%s (%s) in %s' % (self.character, self.account.name, self.encounter)
+        return "%s (%s) in %s" % (self.character, self.account.name, self.encounter)
 
     def data(self):
         return {
-            'id': self.encounter.id,
-            'url_id': self.encounter.url_id,
-            'area': self.encounter.area.name,
-            'started_at': self.encounter.started_at,
-            'duration': self.encounter.duration,
-            'character': self.character,
-            'account': self.account.name,
-            'profession': self.profession,
-            'archetype': self.archetype,
-            'elite': self.elite,
-            'uploaded_at': self.encounter.uploaded_on.timestamp(),
-            'success': self.encounter.success,
-            'category': self.encounter.category_id,
-            'tags': [tag.name for tag in self.encounter.tags.all()],
+            "id": self.encounter.id,
+            "url_id": self.encounter.url_id,
+            "area": self.encounter.area.name,
+            "started_at": self.encounter.started_at,
+            "duration": self.encounter.duration,
+            "character": self.character,
+            "account": self.account.name,
+            "profession": self.profession,
+            "archetype": self.archetype,
+            "elite": self.elite,
+            "uploaded_at": self.encounter.uploaded_on.timestamp(),
+            "success": self.encounter.success,
+            "category": self.encounter.category_id,
+            "tags": [tag.name for tag in self.encounter.tags.all()],
         }
 
     class Meta:
-        unique_together = ('encounter', 'account')
+        unique_together = ("encounter", "account")
 
 
 class AbstractStat(models.Model):
@@ -1249,7 +1249,7 @@ def _delete_encounter_file(sender, instance, using, **kwargs):  # pylint: disabl
             pass
 
 
-User._meta.get_field('email')._unique = True  # pylint: disable=protected-access
+User._meta.get_field("email")._unique = True  # pylint: disable=protected-access
 post_save.connect(_create_user_profile, sender=User)
 post_delete.connect(_delete_upload_file, sender=Upload)
 post_delete.connect(_delete_encounter_file, sender=Encounter)
