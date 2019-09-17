@@ -1,5 +1,5 @@
 from django.db.models import Q
-from Crypo import Random
+from Crypto import Random
 from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
 from analyser.bosses import *
 from multiprocessing import Queue, Process, log_to_stderr
