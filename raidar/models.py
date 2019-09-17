@@ -87,6 +87,12 @@ def _generate_url_id(size=5):
     return ''.join(w.capitalize() for w in random.sample(_dictionary(), size))
 
 
+def _update_dps(data, duration):
+    data["dps"] = data["total"] / duration
+    data["power_dps"] = data["power"] / duration
+    data["condi_dps"] = data["condi"] / duration
+
+
 # gdrive_service = None
 # if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
 #     try:
@@ -177,17 +183,19 @@ class Era(ValueModel):
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
 
-    def get_area_stats(self, area):
-        area_stats = {"group": {"buffs": {}, "buffs_out": {}}, "build": {}, "individual": {}}
+    def dump_area_stats(self, area):
+        area_stats = {}
         # Squad stats
         for squad_stat in self.squadstat_set.filter(area=area):
+            if squad_stat.phase not in area_stats:
+                area_stats[squad_stat.phase] = {"group": {"buffs": {}, "buffs_out": {}}, "build": {}, "individual": {}}
             name = None
             if squad_stat.name in GENERAL_STATS:
-                target = area_stats["group"]
+                target = area_stats[squad_stat.phase]["group"]
             elif not squad_stat.out:
-                target = area_stats["group"]["buffs"]
+                target = area_stats[squad_stat.phase]["group"]["buffs"]
             else:
-                target = area_stats["group"]["buffs_out"]
+                target = area_stats[squad_stat.phase]["group"]["buffs_out"]
                 name = squad_stat.name
             target.update(squad_stat.data(name=name))
 
@@ -196,22 +204,22 @@ class Era(ValueModel):
             arch = build_stat.archetype
             prof = build_stat.prof
             elite = build_stat.elite
-            if arch not in area_stats["build"]:
-                area_stats["build"][arch] = {}
-            if prof not in area_stats["build"][arch]:
-                area_stats["build"][arch][prof] = {}
-            if elite not in area_stats["build"][arch][prof]:
-                area_stats["build"][arch][prof][elite] = {"buffs": {}, "buffs_out": {}}
+            if arch not in area_stats[build_stat.phase]["build"]:
+                area_stats[build_stat.phase]["build"][arch] = {}
+            if prof not in area_stats[build_stat.phase]["build"][arch]:
+                area_stats[build_stat.phase]["build"][arch][prof] = {}
+            if elite not in area_stats[build_stat.phase]["build"][arch][prof]:
+                area_stats[build_stat.phase]["build"][arch][prof][elite] = {"buffs": {}, "buffs_out": {}}
             name = None
             if build_stat.name in GENERAL_STATS:
-                build_target = area_stats["build"][arch][prof][elite]
-                ind_target = area_stats["individual"]
+                build_target = area_stats[build_stat.phase]["build"][arch][prof][elite]
+                ind_target = area_stats[build_stat.phase]["individual"]
             elif not build_stat.out:
-                build_target = area_stats["build"][arch][prof][elite]["buffs"]
-                ind_target = area_stats["individual"]["buffs"]
+                build_target = area_stats[build_stat.phase]["build"][arch][prof][elite]["buffs"]
+                ind_target = area_stats[build_stat.phase]["individual"]["buffs"]
             else:
-                build_target = area_stats["build"][arch][prof][elite]["buffs_out"]
-                ind_target = area_stats["individual"]["buffs_out"]
+                build_target = area_stats[build_stat.phase]["build"][arch][prof][elite]["buffs_out"]
+                ind_target = area_stats[build_stat.phase]["individual"]["buffs_out"]
                 name = build_stat.name
             build_target.update(build_stat.data(name=name))
 
@@ -228,6 +236,10 @@ class Era(ValueModel):
                         raise ValueError("Unexpected property " + key + " encountered.")
 
         return area_stats
+
+    # TODO. Implement user stat generation
+    def dump_user_stats(self, user):
+        pass
 
     @staticmethod
     def by_time(started_at):
@@ -542,8 +554,8 @@ class Encounter(models.Model):
             reset_dt -= timedelta(weeks=1)
         return int(reset_dt.timestamp())
 
-    def calc_phase_duration(self, phase):
-        if phase == "All":
+    def calc_phase_duration(self, phase=None):
+        if not isinstance(phase, EncounterPhase):
             return self.duration
         start_tick = phase.start_tick
         next_phase = self.encounter_data.encounterphase_set.filter(start_tick__gt=start_tick).order_by(
@@ -559,10 +571,7 @@ class Encounter(models.Model):
             {party_name: [player.data() for player in players.filter(party=party_name)]
              for party_name in players.values_list("party", flat=True).distinct()}
 
-        try:
-            area_stats = EraAreaStore.objects.get(era=self.era, area=self.area).val
-        except EraAreaStore.DoesNotExist:
-            area_stats = None
+        area_stats = self.era.dump_area_stats(self.area)
 
         # Generate phase data
         phase_data = {phase.name: {
@@ -583,7 +592,7 @@ class Encounter(models.Model):
         # Generate "All" phase from existing data
         if "All" not in phase_data:
             phase_data["All"] = {
-                "duration": self.calc_phase_duration("All"),
+                "duration": self.calc_phase_duration(),
                 "group": _safe_get(lambda: area_stats["All"]["group"]),
                 "individual": _safe_get(lambda: area_stats["All"]["individual"]),
                 "parties": {party_name: EncounterPhase.all_breakdown(phase_data, self, party_name, party_data) for
@@ -756,7 +765,7 @@ class Participation(models.Model):
             'uploaded_at': self.encounter.uploaded_on.timestamp(),
             'success': self.encounter.success,
             'category': self.encounter.category_id,
-            'tags': [t.tag.name for t in self.encounter.tagged_items.all()],
+            'tags': [tag.name for tag in self.encounter.tags.all()],
         }
 
     class Meta:
@@ -1019,14 +1028,9 @@ class EncounterPhase(EncounterAttribute):
 
         # Update DPS
         for target in ["actual", "actual_boss", "received", "shielded"]:
-            all_phase[target]["dps"] = all_phase[target]["total"] / prv_encounter.duration
-            all_phase[target]["power_dps"] = all_phase[target]["power"] / prv_encounter.duration
-            all_phase[target]["condi_dps"] = all_phase[target]["condi"] / prv_encounter.duration
-
+            _update_dps(all_phase[target], prv_encounter.duration)
             for member in all_phase["members"]:
-                member[target]["dps"] = member[target]["total"] / prv_encounter.duration
-                member[target]["power_dps"] = member[target]["power"] / prv_encounter.duration
-                member[target]["condi_dps"] = member[target]["condi"] / prv_encounter.duration
+                _update_dps(member[target], prv_encounter.duration)
 
         # TODO: Remove when fixed
         # If no mechanics were found within phases, they're probably only annotated in the "All" phase
@@ -1140,16 +1144,19 @@ class EncounterDamage(TargetedEncounterAttribute):
     # TODO: Fix numbers
     @staticmethod
     def breakdown(dmg_data, phase_duration, group=False, absolute=False):
-        prv_dmg_data = {} if group else {
-            "Skill": {damage.skill: damage.data() for damage in dmg_data.exclude(skill__in=["power, condi"])}}
-        power_data = EncounterDamage.summarize(dmg_data, "power", absolute=absolute)
-        for key, val in power_data.items():
-            prv_dmg_data["power" if key == "total" else key] = val
+        prv_dmg_data = EncounterDamage.summarize(dmg_data, "power", absolute=absolute)
+        prv_dmg_data["power"] = prv_dmg_data["total"]
         prv_dmg_data["condi"] = EncounterDamage.summarize(dmg_data, "condi", absolute=absolute)["total"]
         prv_dmg_data["total"] = prv_dmg_data["power"] + prv_dmg_data["condi"]
         prv_dmg_data["dps"] = prv_dmg_data["total"] / phase_duration
         prv_dmg_data["condi_dps"] = prv_dmg_data["condi"] / phase_duration
         prv_dmg_data["power_dps"] = prv_dmg_data["power"] / phase_duration
+
+        if group:
+            prv_dmg_data["Skill"] = {
+                damage.skill: damage.data() for damage in dmg_data.exclude(skill__in=["power, condi"])
+            }
+
         return prv_dmg_data
 
     @staticmethod
