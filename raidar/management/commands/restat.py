@@ -18,18 +18,15 @@ import psutil
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime, \
-    Area, EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent
+from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime,\
+    Area, EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent, GENERAL_STATS as ALL_STATS, AVG_STATS,\
+    SUM_STATS
 
 # DEBUG: uncomment to log SQL queries
 # import logging
 # l = logging.getLogger("django.db.backends")
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
-
-AVG_STATS = ["crit", "flanking", "scholar", "seaweed"]
-SUM_STATS = ["dps", "dps_boss", "dps_received", "total_shielded", "total_received"]
-ALL_STATS = AVG_STATS + SUM_STATS
 
 DEFAULT_AREA_STORE = {"All": {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
                               "individual": {"count": 0},

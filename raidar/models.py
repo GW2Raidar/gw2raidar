@@ -53,6 +53,10 @@ ELITE_CHOICES = (
     (Elite.PATH_OF_FIRE, "Path of Fire"),
 )
 
+AVG_STATS = ["crit", "flanking", "scholar", "seaweed"]
+SUM_STATS = ["dps", "dps_boss", "dps_received", "total_shielded", "total_received"]
+GENERAL_STATS = AVG_STATS + SUM_STATS
+
 
 def _safe_get(func, default=None):
     try:
@@ -164,6 +168,8 @@ class Account(models.Model):
 
 
 class Era(ValueModel):
+    class Meta:
+        ordering = ("-started_at",)
     started_at = models.IntegerField(db_index=True)
     name = models.CharField(max_length=255)
     description = models.TextField()
@@ -171,12 +177,61 @@ class Era(ValueModel):
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
 
+    def get_area_stats(self, area):
+        area_stats = {"group": {"buffs": {}, "buffs_out": {}}, "build": {}, "individual": {}}
+        # Squad stats
+        for squad_stat in self.squadstat_set.filter(area=area):
+            name = None
+            if squad_stat.name in GENERAL_STATS:
+                target = area_stats["group"]
+            elif not squad_stat.out:
+                target = area_stats["group"]["buffs"]
+            else:
+                target = area_stats["group"]["buffs_out"]
+                name = squad_stat.name
+            target.update(squad_stat.data(name=name))
+
+        # Build stats
+        for build_stat in self.buildstat_set.filter(area=area):
+            arch = build_stat.archetype
+            prof = build_stat.prof
+            elite = build_stat.elite
+            if arch not in area_stats["build"]:
+                area_stats["build"][arch] = {}
+            if prof not in area_stats["build"][arch]:
+                area_stats["build"][arch][prof] = {}
+            if elite not in area_stats["build"][arch][prof]:
+                area_stats["build"][arch][prof][elite] = {"buffs": {}, "buffs_out": {}}
+            name = None
+            if build_stat.name in GENERAL_STATS:
+                build_target = area_stats["build"][arch][prof][elite]
+                ind_target = area_stats["individual"]
+            elif not build_stat.out:
+                build_target = area_stats["build"][arch][prof][elite]["buffs"]
+                ind_target = area_stats["individual"]["buffs"]
+            else:
+                build_target = area_stats["build"][arch][prof][elite]["buffs_out"]
+                ind_target = area_stats["individual"]["buffs_out"]
+                name = build_stat.name
+            build_target.update(build_stat.data(name=name))
+
+            # Individual stats
+            for key, val in build_stat.data(name=name, avg_val=False, perc_data=False).items():
+                if key not in ind_target:
+                    ind_target[key] = val
+                else:
+                    if key.startswith("max"):
+                        ind_target[key] = max(ind_target[key], val)
+                    elif key.startswith("min"):
+                        ind_target[key] = min(ind_target[key], val)
+                    else:
+                        raise ValueError("Unexpected property " + key + " encountered.")
+
+        return area_stats
+
     @staticmethod
     def by_time(started_at):
-        return Era.objects.filter(started_at__lte=started_at).latest('started_at')
-
-    class Meta:
-        ordering = ('-started_at',)
+        return Era.objects.filter(started_at__lte=started_at).latest("started_at")
 
 
 class Category(models.Model):
@@ -708,14 +763,15 @@ class Participation(models.Model):
         unique_together = ('encounter', 'account')
 
 
-class SquadStats(models.Model):
+class AbstractStat(models.Model):
     class Meta:
-        db_table = "raidar_stats_squad"
-        constraints = [Unique(fields=["era", "area", "phase", "stat", "out"], name="stats_group_unique")]
+        abstract = True
+        constraints = [Unique(fields=["era", "area", "phase", "name", "out"], name="stats_group_unique")]
+
     era = models.ForeignKey(Era, on_delete=models.CASCADE)
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
     phase = models.TextField()
-    stat = models.TextField()
+    name = models.TextField()
     out = models.BooleanField()
     min_val = models.FloatField(editable=False)
     max_val = models.FloatField(editable=False)
@@ -723,48 +779,73 @@ class SquadStats(models.Model):
     perc_data = models.TextField(default="", editable=False)
 
     # Internal storage
-    data = []
+    raw_data = []
     percentiles = None
 
     def add_data_point(self, data_point):
-        self.data.append(data_point)
+        self.raw_data.append(data_point)
 
     def get_percentile(self, percentile):
-        if not self.percentiles:
-            self.percentiles = numpy.frombuffer(base64.b64decode(self.perc_data.encode("utf-8")), dtype=numpy.float32)
-        # Clamp percentile to range 0-100
-        percentile = max(0, min(percentile, len(self.percentiles)))
-        return self.percentiles[percentile] if percentile < len(self.percentiles) else self.max_val
+        if self.perc_data:
+            if not self.percentiles:
+                self.percentiles = numpy.frombuffer(base64.b64decode(self.perc_data.encode("utf-8")),
+                                                    dtype=numpy.float32)
+            # Clamp percentile to range 0-100
+            percentile = max(0, min(percentile, len(self.percentiles)))
+            return self.percentiles[percentile] if percentile < len(self.percentiles) else self.max_val
+        return None
+
+    def data(self, name=None, min_val=True, max_val=True, avg_val=True, perc_data=True):
+        name = name if name else self.name + ("_out" if self.out else "")
+        data = {}
+        if min_val:
+            data["min_" + name] = self.min_val
+        if max_val:
+            data["max_" + name] = self.max_val
+        if avg_val:
+            data["avg_" + name] = self.avg_val
+        if perc_data and self.perc_data:
+            data["perc_" + name] = self.perc_data
+        return data
 
     def save(self, *args, **kwargs):
-        if self.data:
-            self.data.sort()
-            length = len(self.data)
+        if self.raw_data:
+            self.raw_data.sort()
+            length = len(self.raw_data)
             percent_length = length / 100
-            self.min_val = self.data[0]
-            self.max_val = self.data[-1]
-            self.avg_val = sum(self.data) / length
-            self.perc_data = base64.b64encode(numpy.array([self.data[floor(i * percent_length)] for i in range(0, 100)],
+            self.min_val = self.raw_data[0]
+            self.max_val = self.raw_data[-1]
+            self.avg_val = sum(self.raw_data) / length
+            self.perc_data = base64.b64encode(numpy.array([self.raw_data[floor(i * percent_length)]
+                                                           for i in range(0, 100)],
                                                           dtype=numpy.float32).tobytes()).decode("utf-8")
-        super(SquadStats, self).save(*args, **kwargs)
+        super(AbstractStat, self).save(*args, **kwargs)
 
 
-class BuildStats(SquadStats):
+class SquadStat(AbstractStat):
+    class Meta:
+        db_table = "raidar_stats_squad"
+
+
+class BuildStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_build"
-        constraints = [Unique(fields=["era", "area", "phase", "archetype", "prof", "elite", "stat", "out"],
+        constraints = [Unique(fields=["era", "area", "phase", "archetype", "prof", "elite", "name", "out"],
                               name="stats_group_unique")]
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
 
 
-class UserStats(BuildStats):
+class UserStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_user"
-        constraints = [Unique(fields=["era", "area", "phase", "user", "archetype", "prof", "elite", "stat", "out"],
+        constraints = [Unique(fields=["era", "area", "phase", "user", "archetype", "prof", "elite", "name", "out"],
                               name="stats_group_unique")]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
+    elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
 
 
 class EraAreaStore(ValueModel):
