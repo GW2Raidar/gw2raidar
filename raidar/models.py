@@ -10,9 +10,8 @@ from json import loads as json_loads, dumps as json_dumps
 import pytz
 from django.db import models
 from django.contrib.auth.models import User
-from django.db.models.functions import Coalesce
 from django.core.validators import RegexValidator
-from django.db.models import UniqueConstraint, Sum, Avg
+from django.db.models import UniqueConstraint as Unique, Sum, Avg
 from django.db.models.signals import post_save, post_delete
 from fuzzycount import FuzzyCountManager
 from taggit.managers import TaggableManager
@@ -21,6 +20,34 @@ from analyser.analyser import Profession, Archetype, Elite, BOSSES
 
 # unique to 30-60s precision
 START_RESOLUTION = 60
+
+PROFESSION_CHOICES = (
+    (-1, "All"),
+    (Profession.GUARDIAN, "Guardian"),
+    (Profession.WARRIOR, "Warrior"),
+    (Profession.ENGINEER, "Engineer"),
+    (Profession.RANGER, "Ranger"),
+    (Profession.THIEF, "Thief"),
+    (Profession.ELEMENTALIST, "Elementalist"),
+    (Profession.MESMER, "Mesmer"),
+    (Profession.NECROMANCER, "Necromancer"),
+    (Profession.REVENANT, "Revenant"),
+)
+
+ARCHETYPE_CHOICES = (
+    (Archetype.POWER, "Power"),
+    (Archetype.CONDI, "Condi"),
+    (Archetype.TANK, "Tank"),
+    (Archetype.HEAL, "Heal"),
+    (Archetype.SUPPORT, "Support"),
+)
+
+ELITE_CHOICES = (
+    (-1, "All"),
+    (Elite.CORE, "Core"),
+    (Elite.HEART_OF_THORNS, "Heart of Thorns"),
+    (Elite.PATH_OF_FIRE, "Path of Fire"),
+)
 
 
 def _safe_get(func, default=None):
@@ -644,37 +671,11 @@ class Encounter(models.Model):
 
 
 class Participation(models.Model):
-    PROFESSION_CHOICES = (
-        (int(Profession.GUARDIAN), 'Guardian'),
-        (int(Profession.WARRIOR), 'Warrior'),
-        (int(Profession.ENGINEER), 'Engineer'),
-        (int(Profession.RANGER), 'Ranger'),
-        (int(Profession.THIEF), 'Thief'),
-        (int(Profession.ELEMENTALIST), 'Elementalist'),
-        (int(Profession.MESMER), 'Mesmer'),
-        (int(Profession.NECROMANCER), 'Necromancer'),
-        (int(Profession.REVENANT), 'Revenant'),
-    )
-
-    ARCHETYPE_CHOICES = (
-        (int(Archetype.POWER), "Power"),
-        (int(Archetype.CONDI), "Condi"),
-        (int(Archetype.TANK), "Tank"),
-        (int(Archetype.HEAL), "Heal"),
-        (int(Archetype.SUPPORT), "Support"),
-    )
-
-    ELITE_CHOICES = (
-        (int(Elite.CORE), "Core"),
-        (int(Elite.HEART_OF_THORNS), "Heart of Thorns"),
-        (int(Elite.PATH_OF_FIRE), "Path of Fire"),
-    )
-
     encounter = models.ForeignKey(Encounter, on_delete=models.CASCADE, related_name='participations')
     character = models.CharField(max_length=64, db_index=True)
     account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='participations')
-    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
     party = models.PositiveSmallIntegerField(db_index=True)
 
@@ -701,6 +702,38 @@ class Participation(models.Model):
 
     class Meta:
         unique_together = ('encounter', 'account')
+
+
+class SquadStats(models.Model):
+    class Meta:
+        db_table = "raidar_stats_squad"
+        constraints = [Unique(fields=["era", "area", "stat", "out"], name="stats_group_unique")]
+    era = models.ForeignKey(Era, on_delete=models.CASCADE)
+    area = models.ForeignKey(Area, on_delete=models.CASCADE)
+    stat = models.TextField
+    out = models.BooleanField
+    min_val = models.FloatField
+    max_val = models.FloatField
+    avg_val = models.FloatField
+    perc_data = models.TextField
+
+
+class BuildStats(SquadStats):
+    class Meta:
+        db_table = "raidar_stats_build"
+        constraints = [Unique(fields=["era", "area", "archetype", "profession", "elite", "stat", "out"],
+                              name="stats_group_unique")]
+    archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
+    profession = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
+    elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
+
+
+class UserStats(BuildStats):
+    class Meta:
+        db_table = "raidar_stats_user"
+        constraints = [Unique(fields=["era", "area", "user", "archetype", "profession", "elite", "stat", "out"],
+                              name="stats_group_unique")]
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
 
 
 class EraAreaStore(ValueModel):
@@ -742,7 +775,7 @@ class EncounterAttribute(models.Model):
 class EncounterPhase(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_phase"
-        constraints = [UniqueConstraint(fields=["encounter_data", "name"], name="enc_phase_unique")]
+        constraints = [Unique(fields=["encounter_data", "name"], name="enc_phase_unique")]
     name = models.TextField()
     start_tick = models.BigIntegerField()
 
@@ -898,7 +931,6 @@ class EncounterPhase(EncounterAttribute):
 class SourcedEncounterAttribute(EncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source"], name="enc_attr_unique")]
     phase = models.ForeignKey(EncounterPhase, on_delete=models.CASCADE)
     source = models.TextField()
 
@@ -906,23 +938,19 @@ class SourcedEncounterAttribute(EncounterAttribute):
 class TargetedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "target"],
-                                        name="enc_target_attr_unique")]
     target = models.TextField()
 
 
 class NamedSourcedEncounterAttribute(SourcedEncounterAttribute):
     class Meta:
         abstract = True
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "name"],
-                                        name="enc_name_attr_unique")]
     name = models.TextField()
 
 
 class EncounterEvent(SourcedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_event"
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source"], name="enc_evt_unique")]
+        constraints = [Unique(fields=["encounter_data", "phase", "source"], name="enc_evt_unique")]
     disconnect_count = models.PositiveIntegerField()
     disconnect_time = models.PositiveIntegerField()
     down_count = models.PositiveIntegerField()
@@ -952,6 +980,7 @@ class EncounterEvent(SourcedEncounterAttribute):
 
 class EncounterMechanic(NamedSourcedEncounterAttribute):
     class Meta:
+        constraints = [Unique(fields=["encounter_data", "phase", "source", "name"], name="enc_mech_unique")]
         db_table = "raidar_encounter_mechanic"
     count = models.PositiveIntegerField()
 
@@ -959,8 +988,7 @@ class EncounterMechanic(NamedSourcedEncounterAttribute):
 class EncounterBuff(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_buff"
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "target", "name"],
-                                        name="enc_buff_unique")]
+        constraints = [Unique(fields=["encounter_data", "phase", "source", "target", "name"], name="enc_buff_unique")]
     name = models.TextField()
     uptime = models.FloatField()
 
@@ -977,8 +1005,7 @@ class EncounterBuff(TargetedEncounterAttribute):
 class EncounterDamage(TargetedEncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_damage"
-        constraints = [UniqueConstraint(fields=["encounter_data", "phase", "source", "target", "skill"],
-                                        name="enc_dmg_unique")]
+        constraints = [Unique(fields=["encounter_data", "phase", "source", "target", "skill"], name="enc_dmg_unique")]
     skill = models.TextField()
     damage = models.IntegerField()
     crit = models.FloatField()
@@ -1051,7 +1078,7 @@ class EncounterDamage(TargetedEncounterAttribute):
 class EncounterPlayer(EncounterAttribute):
     class Meta:
         db_table = "raidar_encounter_player"
-        constraints = [UniqueConstraint(fields=["encounter_data", "account"], name="enc_player_unique")]
+        constraints = [Unique(fields=["encounter_data", "account"], name="enc_player_unique")]
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     character = models.TextField()
     party = models.PositiveIntegerField()
