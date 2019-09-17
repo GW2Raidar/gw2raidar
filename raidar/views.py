@@ -162,15 +162,14 @@ def index(request, page=None):
 
 def _with_area_data(user_data, era):
     area_ids = [area_id for area_id in user_data["encounter"] if area_id.isnumeric()]
-    queryset = EraAreaStore.objects.filter(era=era, area_id__in=area_ids).exclude(value="{}")
-    for era_area_store in queryset:
-        area_data = era_area_store.val["All"]["build"]
-        enc_data = user_data["encounter"][str(era_area_store.area.id)]
+    for area_id in area_ids:
+        area_data = era.dump_area_stats(Area.objects.get(id=area_id))["All"]
+        enc_data = user_data["encounter"][str(area_id)]
         for arch, arch_data in enc_data.items():
             for prof, prof_data in arch_data.items():
                 for elite, elite_data in prof_data.items():
-                    elite_data["performance"] = _safe_get(lambda: area_data[arch][prof][elite])
-        enc_data["individual"] = era_area_store.val["All"]["individual"]
+                    elite_data["performance"] = _safe_get(lambda: area_data["build"][arch][prof][elite])
+        enc_data["individual"] = area_data["individual"]
     return user_data
 
 @require_GET
@@ -239,8 +238,8 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
 
         try:
             area = Area.objects.get(id=int(stats_page))
-            raw_data = EraAreaStore.objects.get(era=era, area=area).val
-        except (ValueError, Area.DoesNotExist, EraAreaStore.DoesNotExist):
+            raw_data = era.dump_area_stats(area)
+        except (KeyError, ValueError, Area.DoesNotExist):
             raw_data = era.val["kind"].get(stats_page, {})
 
         stats = raw_data["All"]
@@ -290,10 +289,8 @@ def leaderboards(request):
         era_id = eras[0]['id']
     area_leaderboards = {}
     for area_id in bosses:
-        try:
-            leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
-        except EraAreaStore.DoesNotExist:
-            leaderboards = {}
+        # TODO: Create leaderboard model
+        leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
         area_leaderboards[area_id] = leaderboards
     area_leaderboards['eras'] = eras
     area_leaderboards['era'] = era_id
@@ -555,8 +552,8 @@ def profile_graph(request):
             store = Era.objects.get(pk=era_id).val[area_id]
         else:
             participations = participations.filter(encounter__area_id=area_id)
-            store = EraAreaStore.objects.get(era_id=era_id, area_id=area_id).val
-    except (EraAreaStore.DoesNotExist, Era.DoesNotExist, KeyError):
+            store = Era.objects.get(id=era_id).dump_area_stats(Area.objects.get(id=area_id))
+    except (Era.DoesNotExist, KeyError):
         store = {}
     if archetype_id != 'All':
         participations = participations.filter(archetype=archetype_id)
