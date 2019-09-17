@@ -403,7 +403,7 @@ def _recalculate_users(era, user):
                     # Buffs
                     _increment_buff_stats(player_data, prv_target, ["buffs_out"], encounter.duration)
                     # Other stats
-                    _increment_user_general_stats(player_data, prv_target, encounter.duration * 1000.0)
+                    _increment_user_general_stats(player_data, prv_target, encounter.duration)
                     # Increase build count
                     prv_target["count"] += 1
 
