@@ -287,8 +287,8 @@ def _generate_squad_data(players_data):
     return squad_data
 
 
-def _update_phase(encounter, phase, players_data, squad_data, area_store, merge=False, relative=False):
-    phase_duration = encounter.calc_phase_duration(phase)
+def _update_phase(phase, players_data, squad_data, area_store, merge=False):
+    phase_duration = phase.calc_duration()
     if phase.name not in area_store:
         area_store[phase.name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
                                   "individual": {"count": 0},
@@ -297,7 +297,7 @@ def _update_phase(encounter, phase, players_data, squad_data, area_store, merge=
     for player_data in players_data:
         # Individual data
         # Other stats
-        _increment_area_general_stats(player_data, phase_store["individual"], phase_duration, relative=relative)
+        _increment_area_general_stats(player_data, phase_store["individual"], phase_duration, relative=merge)
         # Increase member count
         phase_store["individual"]["count"] += 1
 
@@ -317,17 +317,17 @@ def _update_phase(encounter, phase, players_data, squad_data, area_store, merge=
                              phase_store["build"][arch][prof]["All"],
                              phase_store["build"][arch][prof][elite]]:
             # Buffs
-            _increment_buff_stats(player_data, target_store, ["buffs", "buffs_out"], phase_duration, relative=relative)
+            _increment_buff_stats(player_data, target_store, ["buffs", "buffs_out"], phase_duration, relative=merge)
             # Other stats
-            _increment_area_general_stats(player_data, target_store, phase_duration, relative=relative)
+            _increment_area_general_stats(player_data, target_store, phase_duration, relative=merge)
             # Increase build count
             target_store["count"] += 1
 
     # Squad data
     # Buffs
-    _increment_buff_stats(squad_data, phase_store["group"], ["buffs"], phase_duration, relative=relative)
+    _increment_buff_stats(squad_data, phase_store["group"], ["buffs"], phase_duration, relative=merge)
     # Other stats
-    _increment_area_general_stats(squad_data, phase_store["group"], phase_duration, relative=relative)
+    _increment_area_general_stats(squad_data, phase_store["group"], phase_duration, relative=merge)
     # Increase squad count
     phase_store["group"]["count"] += 1
 
@@ -346,10 +346,10 @@ def _recalculate_area(era, area, era_store):
                             for player in encounter.encounter_data.encounterplayer_set.all()]
             squad_data = _generate_squad_data(players_data)
             # Update phase
-            _update_phase(encounter, phase, players_data, squad_data, area_store)
-            _update_phase(encounter, phase, players_data, squad_data, era_store[area.id])
+            _update_phase(phase, players_data, squad_data, area_store)
+            _update_phase(phase, players_data, squad_data, era_store[area.id])
             # Update area slice for "All" phase
-            _update_phase(encounter, phase, players_data, squad_data, area_slice, merge=True, relative=True)
+            _update_phase(phase, players_data, squad_data, area_slice, merge=True)
 
         # Generate "All" phase from area slice
         _foreach_value(_summarize_slice, area_slice, encounter_duration=encounter.duration)

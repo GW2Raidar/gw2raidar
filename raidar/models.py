@@ -511,7 +511,7 @@ class EncounterData(models.Model):
 
 
 class Encounter(models.Model):
-    encounter_data = models.ForeignKey(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
+    encounter_data = models.OneToOneField(EncounterData, db_column="encounter_data_id", on_delete=models.CASCADE)
     url_id = models.TextField(max_length=255, editable=False, unique=True, default=_generate_url_id,
                               verbose_name="URL ID")
     started_at = models.IntegerField(db_index=True)
@@ -899,6 +899,9 @@ class EncounterPhase(EncounterAttribute):
         constraints = [Unique(fields=["encounter_data", "name"], name="enc_phase_unique")]
     name = models.TextField()
     start_tick = models.BigIntegerField()
+
+    def calc_duration(self):
+        return self.encounter_data.encounter.calc_phase_duration(self)
 
     # TODO: Fix numbers
     @staticmethod
