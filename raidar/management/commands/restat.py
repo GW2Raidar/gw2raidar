@@ -19,8 +19,7 @@ from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime,\
-    Area, EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent, GENERAL_STATS as ALL_STATS, AVG_STATS,\
-    SUM_STATS
+    Area, EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent, GENERAL_STATS as ALL_STATS, SUM_STATS
 
 # DEBUG: uncomment to log SQL queries
 # import logging
@@ -282,7 +281,7 @@ def _generate_squad_data(players_data):
 
     for target in squad_data:
         for key, val in squad_data[target].items():
-            squad_data[target][key] = sum(squad_data[target][key]) if target != "buffs"\
+            squad_data[target][key] = sum(squad_data[target][key]) if key in SUM_STATS\
                 else sum(squad_data[target][key]) / len(squad_data[target][key])
 
     return squad_data
