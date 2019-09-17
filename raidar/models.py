@@ -775,7 +775,6 @@ class Participation(models.Model):
 class AbstractStat(models.Model):
     class Meta:
         abstract = True
-        constraints = [Unique(fields=["era", "area", "phase", "name", "out"], name="stats_group_unique")]
 
     era = models.ForeignKey(Era, on_delete=models.CASCADE)
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
@@ -834,13 +833,14 @@ class AbstractStat(models.Model):
 class SquadStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_squad"
+        constraints = [Unique(fields=["era", "area", "phase", "name", "out"], name="stats_group_unique")]
 
 
 class BuildStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_build"
         constraints = [Unique(fields=["era", "area", "phase", "archetype", "prof", "elite", "name", "out"],
-                              name="stats_group_unique")]
+                              name="stats_build_unique")]
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
@@ -850,7 +850,7 @@ class UserStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_user"
         constraints = [Unique(fields=["era", "area", "phase", "user", "archetype", "prof", "elite", "name", "out"],
-                              name="stats_group_unique")]
+                              name="stats_user_unique")]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)

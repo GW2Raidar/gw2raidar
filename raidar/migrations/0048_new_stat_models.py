@@ -119,10 +119,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name='userstat',
-            constraint=models.UniqueConstraint(fields=('era', 'area', 'phase', 'user', 'archetype', 'prof', 'elite', 'name', 'out'), name='stats_group_unique'),
+            constraint=models.UniqueConstraint(fields=('era', 'area', 'phase', 'user', 'archetype', 'prof', 'elite', 'name', 'out'), name='stats_user_unique'),
         ),
         migrations.AddConstraint(
             model_name='buildstat',
-            constraint=models.UniqueConstraint(fields=('era', 'area', 'phase', 'archetype', 'prof', 'elite', 'name', 'out'), name='stats_group_unique'),
+            constraint=models.UniqueConstraint(fields=('era', 'area', 'phase', 'archetype', 'prof', 'elite', 'name', 'out'), name='stats_build_unique'),
         ),
     ]
