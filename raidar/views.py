@@ -163,13 +163,13 @@ def index(request, page=None):
 def _with_area_data(user_data, era):
     area_ids = [area_id for area_id in user_data["encounter"] if area_id.isnumeric()]
     for area_id in area_ids:
-        area_data = era.dump_area_stats(Area.objects.get(id=area_id))["All"]
+        area_data = era.dump_area_stats(Area.objects.get(id=area_id))
         enc_data = user_data["encounter"][str(area_id)]
         for arch, arch_data in enc_data.items():
             for prof, prof_data in arch_data.items():
                 for elite, elite_data in prof_data.items():
-                    elite_data["performance"] = _safe_get(lambda: area_data["build"][arch][prof][elite])
-        enc_data["individual"] = area_data["individual"]
+                    elite_data["performance"] = _safe_get(lambda: area_data["All"]["build"][arch][prof][elite])
+        enc_data["individual"] = _safe_get(lambda: area_data["All"]["individual"])
     return user_data
 
 @require_GET
