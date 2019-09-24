@@ -790,8 +790,8 @@ class AbstractStat(models.Model):
     raw_data = []
     percentiles = None
 
-    def add_data_point(self, data_point):
-        self.raw_data.append(data_point)
+    def add_data_points(self, *data_points):
+        self.raw_data += data_points
 
     def get_percentile(self, percentile):
         if self.perc_data:
@@ -855,20 +855,6 @@ class UserStat(AbstractStat):
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
-
-
-class EraAreaStore(ValueModel):
-    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_area_stores")
-    area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="era_area_stores")
-    leaderboards_value = models.TextField(default="{}", editable=False)
-
-    @property
-    def leaderboards(self):
-        return json_loads(self.leaderboards_value)
-
-    @leaderboards.setter
-    def leaderboards(self, value):
-        self.leaderboards_value = json_dumps(value)
 
 
 class EraUserStore(ValueModel):

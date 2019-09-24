@@ -5,7 +5,6 @@ Raidar ReStat
 Offers a Django command to recalculate the distribution of encounter-related performance stats by analyzing all
 new encounter logs and generating or updating any related percentile blobs.
 """
-import copy
 from contextlib import contextmanager
 from datetime import timezone
 from math import floor
@@ -14,22 +13,19 @@ import os
 import sys
 import base64
 import numpy
+import pandas
 import psutil
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from raidar.models import Variable, Encounter, RestatPerfStats, EraAreaStore, EraUserStore, Era, settings, datetime,\
-    Area, EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent, GENERAL_STATS as ALL_STATS, SUM_STATS
+from raidar.models import Variable, Encounter, RestatPerfStats, EraUserStore, Era, settings, datetime, Area,\
+    EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent, GENERAL_STATS as ALL_STATS, SUM_STATS
 
 # DEBUG: uncomment to log SQL queries
 # import logging
 # l = logging.getLogger("django.db.backends")
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
-
-DEFAULT_AREA_STORE = {"All": {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
-                              "individual": {"count": 0},
-                              "build": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}}
 
 
 @contextmanager
@@ -99,7 +95,7 @@ class Command(BaseCommand):
             pruned_count = delete_old_files()
             forced = "force" in options and options["force"]
             last_run = datetime.fromtimestamp(0, timezone.utc) if forced else last_restat()
-            era_count, area_count, user_count, new_encounter_count = calculate_stats(last_run, **options)
+            era_count, area_count, user_count, new_encounter_count = update_stats(last_run, **options)
             end = time()
             end_date = datetime.now(timezone.utc)
 
@@ -117,6 +113,10 @@ class Command(BaseCommand):
                     number_new_encounters=new_encounter_count,
                     number_pruned_evtcs=pruned_count,
                     was_force=forced)
+
+
+def _modify_dict(dictionary, prefix):
+    return {prefix + str(key): val for key, val in dictionary.items()}
 
 
 def _merge_slice(data, data_slice):
@@ -216,48 +216,38 @@ def _increment_user_general_stats(source_data, target_data, phase_duration):
     _increment_area_general_stats(source_data, target_data, phase_duration)
 
 
-def _update_area_leaderboards(area_leaderboards, encounter, squad_slice):
-    if encounter.success:
-        if encounter.week() not in area_leaderboards:
-            area_leaderboards["periods"][encounter.week()] = {"duration": []}
-        leaderboard_item = {
-            "id": encounter.id,
-            "url_id": encounter.url_id,
-            "duration": encounter.duration,
-            "dps_boss": squad_slice["dps_boss"],
-            "dps": squad_slice["dps"],
-            "buffs": {buff: uptimes for buff, uptimes in squad_slice["buffs"].items()},
-            "comp": [[p.archetype, p.profession, p.elite] for p in encounter.participations.all()],
-            "tags": encounter.tagstring,
-        }
-
-        for target in ["Era", encounter.week()]:
-            area_leaderboards["periods"][target]["duration"].append(leaderboard_item)
-            area_leaderboards["periods"][target]["duration"] = sorted(area_leaderboards["periods"][target]["duration"],
-                                                                      key=lambda x: x["duration"])[:10]
-        area_leaderboards["max_max_dps"] = max(area_leaderboards["max_max_dps"], leaderboard_item["dps"])
-
-
 def _generate_player_data(player, phase, phase_duration):
     player_data = player.data()
-    player_data["actual"] = EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
-                                                                                       target="*All", damage__gt=0),
-                                                      phase_duration, group=True)
-    player_data["actual_boss"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                           .filter(source=player.character, target="*Boss",
-                                                                   damage__gt=0),
-                                                           phase_duration, group=True)
-    player_data["received"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                        .filter(target=player.character, damage__gt=0),
-                                                        phase_duration, group=True)
-    player_data["shielded"] = EncounterDamage.breakdown(phase.encounterdamage_set
-                                                        .filter(target=player.character, damage__lt=0),
-                                                        phase_duration, group=True, absolute=True)
-    player_data["buffs"] = EncounterBuff.breakdown(phase.encounterbuff_set.filter(target=player.character))
-    player_data["buffs_out"] = EncounterBuff.breakdown(phase.encounterbuff_set
-                                                       .filter(source=player.character), use_sum=True)
+    player_data["player"] = player
+    player_data["phase_name"] = phase.name
+    player_data["phase_duration"] = phase_duration
+    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
+                                                                                               target="*All",
+                                                                                               damage__gt=0),
+                                                              phase_duration, group=True),
+                                    prefix="actual__"))
+    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set
+                                                              .filter(source=player.character, target="*Boss",
+                                                                      damage__gt=0),
+                                                              phase_duration, group=True),
+                                    prefix="actual_boss__"))
+    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set
+                                                              .filter(target=player.character, damage__gt=0),
+                                                              phase_duration, group=True),
+                                    prefix="received__"))
+    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set
+                                                              .filter(target=player.character, damage__lt=0),
+                                                              phase_duration, group=True, absolute=True),
+                                    prefix="shielded__"))
 
-    player_data["events"] = EncounterEvent.summarize(phase.encounterevent_set.filter(source=player.character))
+    player_data.update(_modify_dict(EncounterBuff.breakdown(phase.encounterbuff_set.filter(target=player.character)),
+                                    prefix="buffs__"))
+    player_data.update(_modify_dict(EncounterBuff.breakdown(phase.encounterbuff_set.filter(source=player.character),
+                                                            use_sum=True),
+                                    prefix="buffs_out__"))
+
+    player_data.update(_modify_dict(EncounterEvent.summarize(phase.encounterevent_set.filter(source=player.character)),
+                                    prefix="events__"))
 
     return player_data
 
@@ -332,38 +322,21 @@ def _update_phase(phase, players_data, squad_data, area_store, merge=False):
     phase_store["group"]["count"] += 1
 
 
-def _recalculate_area(era, area, era_store):
-    area_store = copy.deepcopy(DEFAULT_AREA_STORE)
-    if area.id not in era_store:
-        era_store[area.id] = copy.deepcopy(DEFAULT_AREA_STORE)
-    area_leaderboards = {"periods": {"Era": {"duration": []}}, "max_max_dps": 0}
+def _update_area(era, area):
+    raw_data = []
+    # Load raw data from database
     for encounter in era.encounters.filter(area_id=area):
-        area_slice = copy.deepcopy(DEFAULT_AREA_STORE)
         for phase in encounter.encounter_data.encounterphase_set.all():
-            # Pregenerate player data
             phase_duration = encounter.calc_phase_duration(phase)
-            players_data = [_generate_player_data(player, phase, phase_duration)
-                            for player in encounter.encounter_data.encounterplayer_set.all()]
-            squad_data = _generate_squad_data(players_data)
-            # Update phase
-            _update_phase(phase, players_data, squad_data, area_store)
-            _update_phase(phase, players_data, squad_data, era_store[area.id])
-            # Update area slice for "All" phase
-            _update_phase(phase, players_data, squad_data, area_slice, merge=True)
-
-        # Generate "All" phase from area slice
-        _foreach_value(_summarize_slice, area_slice, encounter_duration=encounter.duration)
-        _merge_slice(area_store["All"], area_slice["All"])
-        _merge_slice(era_store[area.id]["All"], area_slice["All"])
-
-        _update_area_leaderboards(area_leaderboards, encounter, area_slice["All"]["group"])
-
-    _foreach_value(_summarize_area, area_store)
-    EraAreaStore.objects.update_or_create(era=era, area_id=area.id, defaults={"val": area_store,
-                                                                              "leaderboards": area_leaderboards})
+            for player in encounter.encounter_data.encounterplayer_set.all():
+                raw_data.append(_generate_player_data(player, phase, phase_duration))
+    # Create pandas DataFrame
+    data = pandas.DataFrame(raw_data)
+    # TODO: Filter and store stats with Pandas.
+    # TODO: Test whether Pandas can replace manual percentile calculations.
 
 
-def _recalculate_users(era, user):
+def _update_users(era, user):
     user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0,
                                                                            "buffs": {},
                                                                            "buffs_out": {}}}}}}}
@@ -411,23 +384,20 @@ def _recalculate_users(era, user):
     EraUserStore.objects.update_or_create(era=era, user_id=user.id, defaults={"val": user_data})
 
 
-def recalculate_era(era, encounters):
+def update_era(era, encounters):
     """Extracts all modified Area and User models from the supplied Encounter group and initiates their recalculation"""
-    era_data = {}
     areas = Area.objects.filter(encounters__in=encounters)
     users = User.objects.filter(accounts__encounters__in=encounters)
 
     for area in areas:
-        _recalculate_area(era, area, era_data)
+        _update_area(era, area)
     for user in users:
-        _recalculate_users(era, user)
+        _update_users(era, user)
 
-    _foreach_value(_summarize_area, era_data)
-    era.val = era_data
     return len(areas), len(users)
 
 
-def calculate_stats(last_run, **options):
+def update_stats(last_run, **options):
     """Fetches all new Encounters from the database, groups them by Era and
     calls <code>recalculate_era</code> for every group."""
     era_count = 0
@@ -439,7 +409,7 @@ def calculate_stats(last_run, **options):
         encounters = Encounter.objects.filter(era=era, uploaded_on__gte=last_run)
         if encounters:
             encounter_count = len(encounters)
-            area_count, user_count = recalculate_era(era, encounters)
+            area_count, user_count = update_era(era, encounters)
         elif options["verbosity"] >= 2:
             print("Skipped era %s" % era)
     return era_count, area_count, user_count, encounter_count
