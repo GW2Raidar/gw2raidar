@@ -331,9 +331,14 @@ def _update_area(era, area):
             for player in encounter.encounter_data.encounterplayer_set.all():
                 raw_data.append(_generate_player_data(player, phase, phase_duration))
     # Create pandas DataFrame
-    data = pandas.DataFrame(raw_data)
-    # TODO: Filter and store stats with Pandas.
-    # TODO: Test whether Pandas can replace manual percentile calculations.
+    frame = pandas.DataFrame(raw_data)
+    for arch, arch_frame in frame.groupby("archetype"):
+        for prof, prof_frame in arch_frame.groupby("profession"):
+            for elite, elite_frame in prof_frame.groupby("elite"):
+                # TODO: Store build data
+                pass
+        # TODO: Store archetype data
+    # TODO: Store "All" data
 
 
 def _update_users(era, user):
