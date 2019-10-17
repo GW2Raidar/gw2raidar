@@ -1,9 +1,9 @@
 import base64
+import math
 import os
 import re
 import copy
 import random
-from math import floor
 from time import time
 from hashlib import md5
 from functools import lru_cache
@@ -52,10 +52,6 @@ ELITE_CHOICES = (
     (Elite.HEART_OF_THORNS, "Heart of Thorns"),
     (Elite.PATH_OF_FIRE, "Path of Fire"),
 )
-
-AVG_STATS = ["crit", "flanking", "scholar", "seaweed"]
-SUM_STATS = ["dps", "dps_boss", "dps_received", "total_shielded", "total_received"]
-GENERAL_STATS = AVG_STATS + SUM_STATS
 
 
 def _safe_get(func, default=None):
@@ -183,63 +179,43 @@ class Era(ValueModel):
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
 
-    def dump_area_stats(self, area):
-        area_stats = {}
-        # Squad stats
-        for squad_stat in self.squadstat_set.filter(area=area):
-            if squad_stat.phase not in area_stats:
-                area_stats[squad_stat.phase] = {"group": {"buffs": {}, "buffs_out": {}}, "build": {}, "individual": {}}
-            name = None
-            if squad_stat.name in GENERAL_STATS:
-                target = area_stats[squad_stat.phase]["group"]
-            elif not squad_stat.out:
-                target = area_stats[squad_stat.phase]["group"]["buffs"]
-            else:
-                target = area_stats[squad_stat.phase]["group"]["buffs_out"]
-                name = squad_stat.name
-            target.update(squad_stat.data(name=name))
-
-        # Build stats
-        for build_stat in self.buildstat_set.filter(area=area):
-            arch = build_stat.archetype
-            prof = build_stat.prof
-            elite = build_stat.elite
-            if arch not in area_stats[build_stat.phase]["build"]:
-                area_stats[build_stat.phase]["build"][arch] = {}
-            if prof not in area_stats[build_stat.phase]["build"][arch]:
-                area_stats[build_stat.phase]["build"][arch][prof] = {}
-            if elite not in area_stats[build_stat.phase]["build"][arch][prof]:
-                area_stats[build_stat.phase]["build"][arch][prof][elite] = {"buffs": {}, "buffs_out": {}}
-            name = None
-            if build_stat.name in GENERAL_STATS:
-                build_target = area_stats[build_stat.phase]["build"][arch][prof][elite]
-                ind_target = area_stats[build_stat.phase]["individual"]
-            elif not build_stat.out:
-                build_target = area_stats[build_stat.phase]["build"][arch][prof][elite]["buffs"]
-                ind_target = area_stats[build_stat.phase]["individual"]["buffs"]
-            else:
-                build_target = area_stats[build_stat.phase]["build"][arch][prof][elite]["buffs_out"]
-                ind_target = area_stats[build_stat.phase]["individual"]["buffs_out"]
-                name = build_stat.name
-            build_target.update(build_stat.data(name=name))
-
-            # Individual stats
-            for key, val in build_stat.data(name=name, avg_val=False, perc_data=False).items():
-                if key not in ind_target:
-                    ind_target[key] = val
-                else:
-                    if key.startswith("max"):
-                        ind_target[key] = max(ind_target[key], val)
-                    elif key.startswith("min"):
-                        ind_target[key] = min(ind_target[key], val)
-                    else:
-                        raise ValueError("Unexpected property " + key + " encountered.")
-
-        return area_stats
-
     # TODO. Implement user stat generation
     def dump_user_stats(self, user):
         pass
+
+    def dump_stats(self, area, phase_name, build=None, perc=True):
+        stats = {
+            "actual": {},
+            "actual_boss": {},
+            "buffs": {},
+            "buffs_out": {},
+            "received": {},
+            "shielded": {},
+            "events": {},
+            "mechanics": {},
+        }
+
+        if build is None:
+            source = SquadStat.objects.filter(era=self, area=area, phase=phase_name).exclude(min_val=math.nan)
+        else:
+            source = BuildStat.objects.filter(era=self, area=area, phase=phase_name, archetype=build[0],
+                                              prof=build[1], elite=build[2]).exclude(min_val=math.nan)
+        for stat in source:
+            target = stat.group
+            if stat.group == "target" and stat.out:
+                target = "actual_boss"
+            elif stat.group == "cleave" and stat.out:
+                target = "actual"
+            elif stat.group == "buffs" and stat.out:
+                target = "buffs_out"
+            if stat.group == "target" and not stat.out:
+                target = "received"
+            stats[target][stat.name + "_min"] = stat.min_val
+            stats[target][stat.name + "_max"] = stat.max_val
+            stats[target][stat.name + "_avg"] = stat.avg_val
+            if perc:
+                stats[target][stat.name + "_perc"] = stat.perc_data
+        return stats
 
     @staticmethod
     def by_time(started_at):
@@ -563,15 +539,12 @@ class Encounter(models.Model):
         end_tick = self.encounter_data.end_tick if next_phase is None else next_phase.start_tick
         return (end_tick - start_tick) / 1000.0
 
-    def json_dump(self, privacy_parties=None, participated=False):
+    def json_dump(self, participated=False):
         data = self.encounter_data
         phases = data.encounterphase_set.order_by("start_tick")
         players = data.encounterplayer_set.filter(account_id__isnull=False)
-        parties = privacy_parties if privacy_parties else\
-            {party_name: [player.data() for player in players.filter(party=party_name)]
+        parties = {party_name: [player.data() for player in players.filter(party=party_name)]
              for party_name in players.values_list("party", flat=True).distinct()}
-
-        area_stats = self.era.dump_area_stats(self.area)
 
         # Generate phase data
         phase_data = {phase.name: {
@@ -581,8 +554,6 @@ class Encounter(models.Model):
         # Add phase meta data
         for phase in phases:
             phase_data[phase.name]["duration"] = self.calc_phase_duration(phase)
-            phase_data[phase.name]["group"] = area_stats[phase.name]["group"] if area_stats else {}
-            phase_data[phase.name]["individual"] = area_stats[phase.name]["individual"] if area_stats else {}
 
             # Add player data
             for party_name, party in phase_data[phase.name]["parties"].items():
@@ -593,8 +564,6 @@ class Encounter(models.Model):
         if "All" not in phase_data:
             phase_data["All"] = {
                 "duration": self.calc_phase_duration(),
-                "group": _safe_get(lambda: area_stats["All"]["group"]),
-                "individual": _safe_get(lambda: area_stats["All"]["individual"]),
                 "parties": {party_name: EncounterPhase.all_breakdown(phase_data, self, party_name, party_data) for
                             party_name, party_data in parties.items()},
             }
@@ -646,15 +615,14 @@ class Encounter(models.Model):
 
                 squad_size += party_size
 
-        # Add performance data to members
+        # Add performance data
         for phase_name, prv_phase_data in phase_data.items():
+            prv_phase_data["performance"] = self.era.dump_stats(self.area, phase_name)
             for party_data in prv_phase_data["parties"].values():
                 for member in party_data["members"]:
-                    arch = str(member["archetype"])
-                    prof = str(member["profession"])
-                    elite = str(member["elite"])
-                    member["performance"] = _safe_get(lambda a=arch, p=prof, e=elite:
-                                                      area_stats[phase_name]["build"][a][p][e])
+                    member["performance"] = self.era.dump_stats(self.area, phase_name, (member["archetype"],
+                                                                                        member["profession"],
+                                                                                        member["elite"]))
 
         max_player_dps = max([member["actual"]["dps"] for phase in phase_data.values()
                               for party in phase["parties"].values()
@@ -779,19 +747,16 @@ class AbstractStat(models.Model):
     era = models.ForeignKey(Era, on_delete=models.CASCADE)
     area = models.ForeignKey(Area, on_delete=models.CASCADE)
     phase = models.TextField()
+    group = models.TextField()
     name = models.TextField()
     out = models.BooleanField()
-    min_val = models.FloatField(editable=False)
-    max_val = models.FloatField(editable=False)
-    avg_val = models.FloatField(editable=False)
-    perc_data = models.TextField(default="", editable=False)
+    min_val = models.FloatField(default=0)
+    max_val = models.FloatField(default=0)
+    avg_val = models.FloatField(default=0)
+    perc_data = models.TextField(default="")
 
     # Internal storage
-    raw_data = []
     percentiles = None
-
-    def add_data_points(self, *data_points):
-        self.raw_data += data_points
 
     def get_percentile(self, percentile):
         if self.perc_data:
@@ -816,30 +781,17 @@ class AbstractStat(models.Model):
             data["perc_" + name] = self.perc_data
         return data
 
-    def save(self, *args, **kwargs):
-        if self.raw_data:
-            self.raw_data.sort()
-            length = len(self.raw_data)
-            percent_length = length / 100
-            self.min_val = self.raw_data[0]
-            self.max_val = self.raw_data[-1]
-            self.avg_val = sum(self.raw_data) / length
-            self.perc_data = base64.b64encode(numpy.array([self.raw_data[floor(i * percent_length)]
-                                                           for i in range(0, 100)],
-                                                          dtype=numpy.float32).tobytes()).decode("utf-8")
-        super(AbstractStat, self).save(*args, **kwargs)
-
 
 class SquadStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_squad"
-        constraints = [Unique(fields=["era", "area", "phase", "name", "out"], name="stats_group_unique")]
+        constraints = [Unique(fields=["era", "area", "phase", "group", "name", "out"], name="stats_group_unique")]
 
 
 class BuildStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_build"
-        constraints = [Unique(fields=["era", "area", "phase", "archetype", "prof", "elite", "name", "out"],
+        constraints = [Unique(fields=["era", "area", "phase", "archetype", "prof", "elite", "group", "name", "out"],
                               name="stats_build_unique")]
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
@@ -849,7 +801,8 @@ class BuildStat(AbstractStat):
 class UserStat(AbstractStat):
     class Meta:
         db_table = "raidar_stats_user"
-        constraints = [Unique(fields=["era", "area", "phase", "user", "archetype", "prof", "elite", "name", "out"],
+        constraints = [Unique(fields=["era", "area", "phase", "user", "archetype", "prof", "elite",
+                                      "group", "name", "out"],
                               name="stats_user_unique")]
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
@@ -1137,11 +1090,16 @@ class EncounterDamage(TargetedEncounterAttribute):
         prv_dmg_data["power"] = prv_dmg_data["total"]
         prv_dmg_data["condi"] = EncounterDamage.summarize(dmg_data, "condi", absolute=absolute)["total"]
         prv_dmg_data["total"] = prv_dmg_data["power"] + prv_dmg_data["condi"]
+
+        # TODO: Remove when fixed (Skills and conditions are named in game language in our parser)
+        if prv_dmg_data["total"] == 0:
+            prv_dmg_data["total"] = EncounterDamage.summarize(dmg_data, absolute=absolute)["total"]
+
         prv_dmg_data["dps"] = prv_dmg_data["total"] / phase_duration
         prv_dmg_data["condi_dps"] = prv_dmg_data["condi"] / phase_duration
         prv_dmg_data["power_dps"] = prv_dmg_data["power"] / phase_duration
 
-        if group:
+        if not group:
             prv_dmg_data["Skill"] = {
                 damage.skill: damage.data() for damage in dmg_data.exclude(skill__in=["power, condi"])
             }

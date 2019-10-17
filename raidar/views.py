@@ -290,8 +290,7 @@ def leaderboards(request):
     area_leaderboards = {}
     for area_id in bosses:
         # TODO: Create leaderboard model
-        leaderboards = EraAreaStore.objects.get(area_id=area_id, era_id=era_id).leaderboards
-        area_leaderboards[area_id] = leaderboards
+        area_leaderboards[area_id] = None
     area_leaderboards['eras'] = eras
     area_leaderboards['era'] = era_id
     area_leaderboards['kind'] = kind
@@ -311,29 +310,41 @@ def encounter(request, url_id=None, json=None):
             return _error("Encounter does not exist")
         else:
             raise Http404("Encounter does not exist")
-    own_account_names = [account.name for account in Account.objects.filter(participations__encounter_id=prv_encounter.id, user=request.user)] if request.user.is_authenticated else []
 
-    players = prv_encounter.encounter_data.encounterplayer_set.filter(account_id__isnull=False)
-    parties = {party_name: [player.data() for player in players.filter(party=party_name)] for party_name in players.values_list("party", flat=True).distinct()}
+    own_account_names = [
+        account.name for account in Account.objects.filter(participations__encounter_id=prv_encounter.id,
+                                                           user=request.user)
+    ] if request.user.is_authenticated else []
+
+    data = prv_encounter.json_dump(participated=(own_account_names != []))
 
     # Privacy settings
+    players = {
+        player.account.name: player.data()
+        for player in prv_encounter.encounter_data.encounterplayer_set.filter(account_id__isnull=False)
+    }
+
     encounter_anonymous = False
-    for party_name, party in parties.items():
-        for member in party:
-            if member["account"] in own_account_names:
-                member["self"] = True
+    for account_name, player_data in players.items():
+        if account_name in own_account_names:
+            player_data["self"] = True
 
-            user_profile = UserProfile.objects.filter(user__accounts__name=member['account']).first()
-            if user_profile:
-                prv_privacy = user_profile.privacy
-            else:
-                prv_privacy = UserProfile.SQUAD
-            if "self" not in member and (prv_privacy == UserProfile.PRIVATE or (prv_privacy == UserProfile.SQUAD and not own_account_names)):
-                member["name"] = ""
-                member["account"] = ""
-                encounter_anonymous = True
+        user_profile = UserProfile.objects.filter(user__accounts__name=player_data["account"]).first()
+        if user_profile:
+            prv_privacy = user_profile.privacy
+        else:
+            prv_privacy = UserProfile.SQUAD
+        if "self" not in player_data and (prv_privacy == UserProfile.PRIVATE
+                                          or (prv_privacy == UserProfile.SQUAD and not own_account_names)):
+            player_data["name"] = ""
+            player_data["account"] = ""
+            encounter_anonymous = True
 
-    data = prv_encounter.json_dump(privacy_parties=parties, participated=(own_account_names != []))
+    for phase_data in data["encounter"]["phases"].values():
+        for party_data in phase_data["parties"].values():
+            for player_data in party_data["members"]:
+                anonymized = players[player_data["account"]]
+                player_data.update(anonymized)
 
     # Download settings
     if encounter_anonymous or request.user.is_staff:

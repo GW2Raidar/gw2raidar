@@ -41,17 +41,17 @@
 		      name_total: 'Total DPS',
 		      dps: actual_boss.dps,
 		      dps_total: actual.dps,
-		      avg_dps: group.avg_dps_boss,
-		      max_dps: group.max_dps_boss,
-		      percentiles_dps: pctl(group.per_dps_boss)
+		      avg_dps: performance.actual_boss.dps_avg,
+		      max_dps: performance.actual_boss.dps_max,
+		      percentiles_dps: pctl(performance.actual_boss.dps_perc)
 		    } : {
 		      name: 'Total DPS',
 		      name_boss: 'Boss DPS',
 		      dps: actual.dps,
 		      dps_boss: actual_boss.dps,
-		      avg_dps: group.avg_dps,
-		      max_dps: group.max_dps,
-		      percentiles_dps: pctl(group.per_dps)
+		      avg_dps: performance.actual.dps_avg,
+		      max_dps: performance.actual.dps_max,
+		      percentiles_dps: pctl(performance.actual.dps_perc)
 		    }
 		}]]
 		  [[#with bsearch(section.dps, section.percentiles_dps) as pctl_dps]]
@@ -89,7 +89,7 @@
 		      shield_recv: shielded.total,
 		      avg_recv: group.avg_total_received,
 		      avg_recv_dps: group.avg_dps_received,
-		      percentiles_recv: pctl(group.per_total_received)
+		      percentiles_recv: pctl(performance.received.total_perc)
 		    }
 		}]]
 		  [[#with
@@ -120,11 +120,11 @@
 		  section: page.boon_output ? {
 		      name: 'Output',
 		      value: buffs_out ? buffs_out[code] : 0,
-		      percentiles: pctl(@context.get(`group.buffs_out.per_${code}`))
+		      percentiles: pctl(@context.get(`performance.buffs_out.${code}_perc`))
 		    } : {
 		      name: 'Uptime',
 		      value: buffs ? buffs[code] : 0,
-		      percentiles: pctl(@context.get(`group.buffs.per_${code}`))
+		      percentiles: pctl(@context.get(`performance.buffs.${code}_perc`))
 		    }
 		}]]
 		  [[#with bsearch(section.value, section.percentiles) as buff_pctl]]
@@ -240,14 +240,10 @@
 	      </div>
 
 	      <div class='r-encounter-misc uk-visible@l'>
-		[[#with actual]]
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Critical: [[perc(crit)]]">C</div>
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Scholar Uptime: [[perc(scholar)]]">S</div>
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Flanking Uptime: [[perc(flanking)]]">F</div>
-		[[/with]]
-		[[#with shielded]]
-		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Barrier: [[num(total, 0)]]">B</div>
-		[[/with]]
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Critical: [[perc(100 * actual_boss.crit)]]">C</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Scholar Uptime: [[perc(100 * actual_boss.scholar)]]">S</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Flanking Uptime: [[perc(100 * actual_boss.flanking)]]">F</div>
+		  <div class="uk-badge r-bg-101" uk-tooltip="pos: left; title:Barrier: [[num(shielded.total, 0)]]">B</div>
 	      </div>
 	  </div>
 	  {# PARTY END #}
@@ -282,17 +278,17 @@
                         name_total: 'Total DPS',
                         dps: actual_boss.dps,
                         dps_total: actual.dps,
-                        avg_dps: performance.avg_dps_boss,
-                        max_dps: performance.max_dps_boss,
-                        percentiles_dps: pctl(performance.per_dps_boss)
+                        avg_dps: performance.actual_boss.dps_avg,
+                        max_dps: performance.actual_boss.dps_max,
+                        percentiles_dps: pctl(performance.actual_boss.dps_perc)
                       } : {
                         name: 'Total DPS',
                         name_boss: 'Boss DPS',
                         dps: actual.dps,
                         dps_boss: actual_boss.dps,
-                        avg_dps: performance.avg_dps,
-                        max_dps: performance.max_dps,
-                        percentiles_dps: pctl(performance.per_dps)
+                        avg_dps: performance.actual.dps_avg,
+                        max_dps: performance.actual.dps_max,
+                        percentiles_dps: pctl(performance.actual.dps_perc)
                       }
                   }]]
                     [[#with
@@ -334,10 +330,10 @@
                       section: {
                           recv: received.total,
                           shield_recv: shielded.total,
-                          avg_recv: performance.avg_total_received,
+                          avg_recv: performance.received.total_avg,
                           {# TODO? performance.avg_total_shielded #}
-                          max_recv: performance.max_total_received,
-                          percentiles_recv: pctl(performance.per_total_received)
+                          max_recv: performance.received.total_max,
+                          percentiles_recv: pctl(performance.received.total_perc)
                         }
                     }]]
                       [[#with
@@ -366,8 +362,8 @@
                 <div class="r-encounter-buff-container">
                   [[#each data.buff_tabs[0].order as code]]
                   [[#with
-                      performance.buffs_out && "per_" + code in performance.buffs_out ? performance.buffs_out["per_" + code] : undefined as buffs_out_per,
-                      performance.buffs && "per_" + code in performance.buffs ? performance.buffs["per_" + code] : undefined as buffs_per
+                      performance.buffs_out && code + "_perc" in performance.buffs_out ? performance.buffs_out[code + "_perc"] : undefined as buffs_out_per,
+                      performance.buffs && code + "_perc" in performance.buffs ? performance.buffs[code + "_perc"] : undefined as buffs_per
                   ]]
                     [[#with {
                       buff: data.buffs[code],
@@ -397,31 +393,31 @@
                 <div class='r-encounter-misc uk-visible@l'>
                   [[#with {
                     actual: {
-                      crit: actual.crit,
-                      scholar: actual.scholar,
-                      flanking: actual.flanking,
+                      crit: actual_boss.crit,
+                      scholar: actual_boss.scholar,
+                      flanking: actual_boss.flanking,
                       shielded: shielded.total
                     },
                     section: performance && {
-                      avg_crit: performance.avg_crit,
-                      avg_scholar: performance.avg_scholar,
-                      avg_flanking: performance.avg_flanking,
-                      avg_shielded: performance.avg_total_shielded,
-                      percentiles_crit: pctl(performance.per_crit),
-                      percentiles_scholar: pctl(performance.per_scholar),
-                      percentiles_flanking: pctl(performance.per_flanking),
-                      percentiles_shielded: pctl(performance.per_total_shielded)
+                      avg_crit: performance.actual_boss.crit_avg,
+                      avg_scholar: performance.actual_boss.scholar_avg,
+                      avg_flanking: performance.actual_boss.flanking_avg,
+                      avg_shielded: performance.actual_boss.shielded.total_avg,
+                      percentiles_crit: pctl(performance.actual_boss.crit_perc),
+                      percentiles_scholar: pctl(performance.actual_boss.scholar_perc),
+                      percentiles_flanking: pctl(performance.actual_boss.flanking_perc),
+                      percentiles_shielded: pctl(performance.shielded.total_perc)
                     }
                   }]]
                     [[#with {
-                      pctl_crit: performance ? bsearch(actual.crit, section.percentiles_crit) : 0,
-                      pctl_scholar: performance ? bsearch(actual.scholar, section.percentiles_scholar) : 0,
-                      pctl_flanking: performance ? bsearch(actual.flanking, section.percentiles_flanking) : 0,
-                      pctl_shielded: performance ? bsearch(actual.shielded, section.percentiles_shielded) : 0
+                      pctl_crit: performance ? bsearch(actual_boss.crit, section.percentiles_crit) : 0,
+                      pctl_scholar: performance ? bsearch(actual_boss.scholar, section.percentiles_scholar) : 0,
+                      pctl_flanking: performance ? bsearch(actual_boss.flanking, section.percentiles_flanking) : 0,
+                      pctl_shielded: performance ? bsearch(shielded.total, section.percentiles_shielded) : 0
                     }]]
-                      <div class="uk-badge r-bg-[[pctl_crit]]" uk-tooltip="pos: left; title:<strong>Critical:</strong> [[perc(actual.crit)]][[#if performance]]<br/><strong>Average:</strong> [[perc(section.avg_crit)]]<br/><strong>Performance:</strong> [[th(pctl_crit)]] Percentile[[/if]]">C</div>
-                      <div class="uk-badge r-bg-[[pctl_scholar]]" uk-tooltip="pos: left; title:<strong>Scholar Uptime:</strong> [[perc(actual.scholar)]][[#if performance]]<br/><strong>Average:</strong> [[perc(section.avg_scholar)]]<br/><strong>Performance:</strong> [[th(pctl_scholar)]] Percentile[[/if]]">S</div>
-                      <div class="uk-badge r-bg-[[pctl_flanking]]" uk-tooltip="pos: left; title:<strong>Flanking Uptime:</strong> [[perc(actual.flanking)]][[#if performance]]<br/><strong>Average:</strong> [[perc(section.avg_flanking)]]<br/><strong>Performance:</strong> [[th(pctl_flanking)]] Percentile[[/if]]">F</div>
+                      <div class="uk-badge r-bg-[[pctl_crit]]" uk-tooltip="pos: left; title:<strong>Critical:</strong> [[perc(100 * actual.crit)]][[#if performance]]<br/><strong>Average:</strong> [[perc(100 * section.avg_crit)]]<br/><strong>Performance:</strong> [[th(pctl_crit)]] Percentile[[/if]]">C</div>
+                      <div class="uk-badge r-bg-[[pctl_scholar]]" uk-tooltip="pos: left; title:<strong>Scholar Uptime:</strong> [[perc(100 * actual.scholar)]][[#if performance]]<br/><strong>Average:</strong> [[perc(100 * section.avg_scholar)]]<br/><strong>Performance:</strong> [[th(pctl_scholar)]] Percentile[[/if]]">S</div>
+                      <div class="uk-badge r-bg-[[pctl_flanking]]" uk-tooltip="pos: left; title:<strong>Flanking Uptime:</strong> [[perc(100 * actual.flanking)]][[#if performance]]<br/><strong>Average:</strong> [[perc(100 * section.avg_flanking)]]<br/><strong>Performance:</strong> [[th(pctl_flanking)]] Percentile[[/if]]">F</div>
                       <div class="uk-badge r-bg-[[pctl_shielded]]" uk-tooltip="pos: left; title:<strong>Barrier:</strong> [[num(actual.shielded, 0)]][[#if performance]]<br/><strong>Average:</strong> [[num(section.avg_shielded, 0)]]<br/><strong>Performance:</strong> [[th(pctl_shielded)]] Percentile[[/if]]">B</div>
                     [[/with]]
                   [[/with]]

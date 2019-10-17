@@ -7,25 +7,27 @@ new encounter logs and generating or updating any related percentile blobs.
 """
 from contextlib import contextmanager
 from datetime import timezone
-from math import floor
 from time import time
 import os
 import sys
 import base64
+from typing import Iterable, Tuple
 import numpy
-import pandas
 import psutil
+from pandas import DataFrame
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from raidar.models import Variable, Encounter, RestatPerfStats, EraUserStore, Era, settings, datetime, Area,\
-    EncounterDamage, EncounterBuff, EncounterPlayer, EncounterEvent, GENERAL_STATS as ALL_STATS, SUM_STATS
+from raidar.models import Variable, Encounter, RestatPerfStats, Era, settings, datetime, Area, EncounterDamage,\
+    EncounterBuff, EncounterPlayer, EncounterEvent, BuildStat, EncounterPhase, SquadStat
 
 # DEBUG: uncomment to log SQL queries
 # import logging
 # l = logging.getLogger("django.db.backends")
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
+
+REMAP = {"actual": "cleave", "actual_boss": "target", "buffs_out": "buffs", "received": "target"}
 
 
 @contextmanager
@@ -115,112 +117,48 @@ class Command(BaseCommand):
                     was_force=forced)
 
 
-def _modify_dict(dictionary, prefix):
+def _modify_dict(dictionary: dict, prefix: str):
     return {prefix + str(key): val for key, val in dictionary.items()}
 
 
-def _merge_slice(data, data_slice):
-    for key, val in list(data_slice.items()):
-        if isinstance(val, dict):
-            if key not in data:
-                data[key] = {}
-            _merge_slice(data[key], data_slice[key])
-        else:
-            if key == "count":
-                if key not in data:
-                    data[key] = 0
-                data[key] = max(data[key], val)
-            else:
-                if key not in data:
-                    data[key] = []
-                data[key].append(val)
+def _generate_statistics(frame: DataFrame):
+    min_stats = frame.min()
+    avg_stats = frame.mean()
+    max_stats = frame.max()
+    percentiles = frame.quantile(numpy.arange(0.01, 1.01, 0.01))
+
+    return min_stats, avg_stats, max_stats, percentiles
 
 
-def _foreach_value(map_func, data, **kwargs):
-    for key, val in list(data.items()):
-        if isinstance(val, dict):
-            _foreach_value(map_func, data[key], **kwargs)
-        else:
-            map_func(key, data, **kwargs)
+def _generate_sum_statistics(frame: DataFrame, squad=False):
+    frame = frame.copy()
+    factors = frame.phase_duration / frame.encounter_duration
+    rel_frame = frame.select_dtypes(include="number").drop(["encounter_duration", "phase_duration"], axis="columns")
+    rel_frame = rel_frame[[col for col in rel_frame.columns if "dps" in col or "buff" in col]]
+    rel_frame = rel_frame.mul(factors, axis="index")
+    frame.update(rel_frame)
+    sum_frame = frame.groupby(["encounter_id"] if squad else ["character_name", "encounter_id"]).sum()
+    return _generate_statistics(sum_frame)
 
 
-def _summarize_slice(key, data, **kwargs):
-    if str(key).startswith("total"):
-        data[key] = sum(data[key])
-    elif key != "count":
-        data[key] = sum(data[key]) / kwargs["encounter_duration"]
+def _generate_squad_statistics(frame: DataFrame, sum=False):  # TODO: Fix for buffs (Incoming)
+    frame = frame.copy()
+    rel_frame = frame.select_dtypes(include="number")
+    rel_frame = rel_frame[[col for col in rel_frame.columns if "buffs__" in col]]
+    rel_frame /= frame.count()
+    frame.update(rel_frame)
+    avg_frame = frame.groupby(["encounter_id", "phase_name"] if sum else ["encounter_id"]).sum()
+    return _generate_sum_statistics(avg_frame, squad=True) if sum else _generate_statistics(avg_frame)
 
 
-def _summarize_area(key, data, **kwargs):  # pylint: disable=unused-argument
-    if key != "count":
-        val = data.pop(key)
-        val.sort()
-        length = len(val)
-        percent_length = length / 100
-        data["min_" + key] = val[0]
-        data["max_" + key] = val[-1]
-        data["avg_" + key] = sum(val) / length
-        data["per_" + key] = base64.b64encode(numpy.array([val[floor(i * percent_length)] for i in range(0, 100)],
-                                                          dtype=numpy.float32).tobytes()).decode("utf-8")
-
-
-def _summarize_user(key, data, **kwargs):  # pylint: disable=unused-argument
-    if key != "count":
-        val = data.pop(key)
-        if key not in ["down_percentage", "dead_percentage", "disconnect_percentage"]:
-            val.sort()
-            data["min_" + key] = val[0]
-            data["max_" + key] = val[-1]
-            data["avg_" + key] = sum(val) / len(val)
-        else:
-            data["avg_" + key] = 100.0 * sum(val) / len(val)
-
-
-def _increment_buff_stats(source_data, target_data, targets, phase_duration, relative=False):
-    for target in targets:
-        for buff, uptime in source_data[target].items():
-            if buff not in target_data[target]:
-                target_data[target][buff] = []
-            target_data[target][buff].append(uptime if not relative else uptime * phase_duration)
-
-
-def _increment_area_general_stats(source_data, target_data, phase_duration, relative=False):
-    if "duration" not in target_data:
-        target_data["duration"] = []
-    target_data["duration"].append(phase_duration)
-
-    for target in ALL_STATS:
-        prefix = target.split("_")[0]
-        suffix = target.split("_")[-1]
-        # Pseudo switch
-        # https://stackoverflow.com/questions/60208/replacements-for-switch-statement-in-python
-        source = {
-            "boss": source_data["actual_boss"],
-            "shielded": source_data["shielded"],
-            "received": source_data["received"],
-            "default": source_data["actual"],
-        }
-        source = source.get(suffix, source["default"])
-        if target not in target_data:
-            target_data[target] = []
-        target_data[target].append(source[prefix] if not relative or prefix == "total"
-                                   else source[prefix] * phase_duration)
-
-
-def _increment_user_general_stats(source_data, target_data, phase_duration):
-    for target in ["down", "dead", "disconnect"]:
-        if target + "_percentage" not in target_data:
-            target_data[target + "_percentage"] = []
-        target_data[target + "_percentage"].append(source_data["events"][target + "_time"] / phase_duration)
-
-    _increment_area_general_stats(source_data, target_data, phase_duration)
-
-
-def _generate_player_data(player, phase, phase_duration):
+def _generate_player_data(player: EncounterPlayer, phase: EncounterPhase, phase_duration: float):
     player_data = player.data()
-    player_data["player"] = player
     player_data["phase_name"] = phase.name
     player_data["phase_duration"] = phase_duration
+    player_data["character_name"] = player.character
+    player_data["encounter_id"] = phase.encounter_data.encounter.id
+    player_data["area_id"] = player.encounter_data.encounter.area.id
+    player_data["encounter_duration"] = phase.encounter_data.encounter.duration
     player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
                                                                                                target="*All",
                                                                                                damage__gt=0),
@@ -252,144 +190,78 @@ def _generate_player_data(player, phase, phase_duration):
     return player_data
 
 
-def _generate_squad_data(players_data):
+def _update_stats(era: Era, area: Area, phase_name: str, frame: DataFrame,
+                  build: Tuple[int, int, int] = None):
+    if build is None:
+        min_stats, avg_stats, max_stats, percentiles = _generate_squad_statistics(frame, sum=phase_name == "All")
+    else:
+        if phase_name == "All":
+            min_stats, avg_stats, max_stats, percentiles = _generate_sum_statistics(frame)
+        else:
+            min_stats, avg_stats, max_stats, percentiles = _generate_statistics(frame)
 
-    squad_data = {
-        "actual": {},
-        "actual_boss": {},
-        "received": {},
-        "shielded": {},
-        "buffs": {},
-    }
+    for col in percentiles.columns:
+        if "__" in col and min_stats[col] is not None:
+            prefix, suffix = col.split("__", 1)
+            out = prefix in ["actual", "actual_boss", "buffs_out"]
+            prefix = REMAP.get(prefix, prefix)
 
-    for player_data in players_data:
-        for target in squad_data:
-            for key, val in player_data[target].items():
-                if key not in squad_data[target]:
-                    squad_data[target][key] = []
-                squad_data[target][key].append(val)
+            if build is None:
+                stat = SquadStat.objects.get_or_create(era=era, area=area, phase=phase_name,
+                                                       group=prefix, name=suffix, out=out)[0]
+            else:
+                stat = BuildStat.objects.get_or_create(era=era, area=area, phase=phase_name,
+                                                       archetype=build[0], prof=build[1], elite=build[2], group=prefix,
+                                                       name=suffix, out=out)[0]
 
-    for target in squad_data:
-        for key, val in squad_data[target].items():
-            squad_data[target][key] = sum(squad_data[target][key]) if key in SUM_STATS\
-                else sum(squad_data[target][key]) / len(squad_data[target][key])
-
-    return squad_data
-
-
-def _update_phase(phase, players_data, squad_data, area_store, merge=False):
-    phase_duration = phase.calc_duration()
-    if phase.name not in area_store:
-        area_store[phase.name] = {"group": {"count": 0, "buffs": {}, "buffs_out": {}},
-                                  "individual": {"count": 0},
-                                  "build": {"All": {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}}}
-    phase_store = area_store["All"] if merge else area_store[phase.name]
-    for player_data in players_data:
-        # Individual data
-        # Other stats
-        _increment_area_general_stats(player_data, phase_store["individual"], phase_duration, relative=merge)
-        # Increase member count
-        phase_store["individual"]["count"] += 1
-
-        # Build data
-        arch = player_data["archetype"]
-        prof = player_data["profession"]
-        elite = player_data["elite"]
-        if arch not in phase_store["build"]:
-            phase_store["build"][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
-        if prof not in phase_store["build"][arch]:
-            phase_store["build"][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
-        if elite not in phase_store["build"][arch][prof]:
-            phase_store["build"][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
-
-        for target_store in [phase_store["build"]["All"]["All"]["All"],
-                             phase_store["build"][arch]["All"]["All"],
-                             phase_store["build"][arch][prof]["All"],
-                             phase_store["build"][arch][prof][elite]]:
-            # Buffs
-            _increment_buff_stats(player_data, target_store, ["buffs", "buffs_out"], phase_duration, relative=merge)
-            # Other stats
-            _increment_area_general_stats(player_data, target_store, phase_duration, relative=merge)
-            # Increase build count
-            target_store["count"] += 1
-
-    # Squad data
-    # Buffs
-    _increment_buff_stats(squad_data, phase_store["group"], ["buffs"], phase_duration, relative=merge)
-    # Other stats
-    _increment_area_general_stats(squad_data, phase_store["group"], phase_duration, relative=merge)
-    # Increase squad count
-    phase_store["group"]["count"] += 1
+            stat.min_val = min_stats[col]
+            stat.avg_val = avg_stats[col]
+            stat.max_val = max_stats[col]
+            stat.perc_data = base64.b64encode(numpy.array(percentiles[col], dtype=numpy.float32)
+                                              .tobytes()).decode("utf-8")
+            stat.save()
 
 
-def _update_area(era, area):
+def _update_area(era: Era, area: Area):
     raw_data = []
     # Load raw data from database
-    for encounter in era.encounters.filter(area_id=area):
+    for encounter in era.encounters.filter(area=area):
         for phase in encounter.encounter_data.encounterphase_set.all():
             phase_duration = encounter.calc_phase_duration(phase)
             for player in encounter.encounter_data.encounterplayer_set.all():
                 raw_data.append(_generate_player_data(player, phase, phase_duration))
+    frame = DataFrame(raw_data)
+
+    # Update build stats
+    for build, build_frame in frame.groupby(["archetype", "profession", "elite"]):
+        for phase_name, phase_frame in build_frame.groupby("phase_name"):
+            _update_stats(era, area, phase_name, phase_frame, build)
+        _update_stats(era, area, "All", build_frame, build)
+
+    # Update squad stats
+    for phase_name, phase_frame in frame.groupby("phase_name"):
+        _update_stats(era, area, phase_name, phase_frame)
+    _update_stats(era, area, "All", frame)
+
+
+def _update_user(era: Era, user: User):
+    raw_data = []
+    # Load raw data from database
+    for encounter in Encounter.objects.filter(era=era, participations__account__in=user.accounts.all()):
+        for phase in encounter.encounter_data.encounterphase_set.all():
+            phase_duration = encounter.calc_phase_duration(phase)
+            for player in encounter.encounter_data.encounterplayer_set.filter(account__in=user.accounts.all()):
+                raw_data.append(_generate_player_data(player, phase, phase_duration))
+
     # Create pandas DataFrame
-    frame = pandas.DataFrame(raw_data)
-    for arch, arch_frame in frame.groupby("archetype"):
-        for prof, prof_frame in arch_frame.groupby("profession"):
-            for elite, elite_frame in prof_frame.groupby("elite"):
-                # TODO: Store build data
-                pass
-        # TODO: Store archetype data
-    # TODO: Store "All" data
+    frame = DataFrame(raw_data)
+    for build, build_frame in frame.groupby(["archetype", "profession", "elite"]):
+        for area_id, area_frame in build_frame.groupby("area_id"):
+            area = Area.objects.get(id=area_id)
+            _update_stats(era, area, "All", area_frame, build)
 
 
-def _update_users(era, user):
-    user_data = {"encounter": {"All raid bosses": {"All": {"All": {"All": {"count": 0,
-                                                                           "buffs": {},
-                                                                           "buffs_out": {}}}}}}}
-    for encounter in era.encounters.filter(participations__account__user=user):
-        data = encounter.encounter_data
-        for player in EncounterPlayer.objects.filter(account__in=user.accounts.all(), encounter_data=data):
-            arch = player.archetype
-            prof = player.profession
-            elite = player.elite
-
-            # Generate player data
-            player_data = _generate_player_data(player, data, encounter.duration)
-
-            for target in ["All raid bosses", encounter.area_id]:
-                if target not in user_data["encounter"]:
-                    user_data["encounter"][target] = {"All": {"All": {"All": {"count": 0,
-                                                                              "buffs": {},
-                                                                              "buffs_out": {}}}}}
-                if arch not in user_data["encounter"][target]:
-                    user_data["encounter"][target][arch] = {"All": {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}}
-                if prof not in user_data["encounter"][target][arch]:
-                    user_data["encounter"][target][arch][prof] = {"All": {"count": 0, "buffs": {}, "buffs_out": {}}}
-                if elite not in user_data["encounter"][target][arch][prof]:
-                    user_data["encounter"][target][arch][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
-                if prof not in user_data["encounter"][target]["All"]:
-                    user_data["encounter"][target]["All"][prof] = {}
-                if elite not in user_data["encounter"][target]["All"][prof]:
-                    user_data["encounter"][target]["All"][prof][elite] = {"count": 0, "buffs": {}, "buffs_out": {}}
-                user_area_data = user_data["encounter"][target]
-
-                for prv_target in [
-                        user_area_data["All"]["All"]["All"],
-                        user_area_data[arch]["All"]["All"],
-                        user_area_data[arch][prof]["All"],
-                        user_area_data[arch][prof][elite],
-                ]:
-                    # Buffs
-                    _increment_buff_stats(player_data, prv_target, ["buffs_out"], encounter.duration)
-                    # Other stats
-                    _increment_user_general_stats(player_data, prv_target, encounter.duration)
-                    # Increase build count
-                    prv_target["count"] += 1
-
-    _foreach_value(_summarize_user, user_data)
-    EraUserStore.objects.update_or_create(era=era, user_id=user.id, defaults={"val": user_data})
-
-
-def update_era(era, encounters):
+def update_era(era: Era, encounters: Iterable[Encounter]):
     """Extracts all modified Area and User models from the supplied Encounter group and initiates their recalculation"""
     areas = Area.objects.filter(encounters__in=encounters)
     users = User.objects.filter(accounts__encounters__in=encounters)
@@ -397,7 +269,7 @@ def update_era(era, encounters):
     for area in areas:
         _update_area(era, area)
     for user in users:
-        _update_users(era, user)
+        _update_user(era, user)
 
     return len(areas), len(users)
 
