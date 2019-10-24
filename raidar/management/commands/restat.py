@@ -18,8 +18,8 @@ from pandas import DataFrame
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from raidar.models import Variable, Encounter, RestatPerfStats, Era, settings, datetime, Area, EncounterDamage,\
-    EncounterBuff, EncounterPlayer, EncounterEvent, BuildStat, EncounterPhase, SquadStat
+from raidar.models import Variable, Encounter, RestatPerfStats, Era, settings, datetime, Area, EncounterDamage, \
+    EncounterBuff, EncounterPlayer, EncounterEvent, BuildStat, EncounterPhase, SquadStat, UserStat
 
 # DEBUG: uncomment to log SQL queries
 # import logging
@@ -141,11 +141,12 @@ def _generate_sum_statistics(frame: DataFrame, squad=False):
     return _generate_statistics(sum_frame)
 
 
-def _generate_squad_statistics(frame: DataFrame, sum=False):  # TODO: Fix for buffs (Incoming)
+def _generate_squad_statistics(frame: DataFrame, sum=False):
     frame = frame.copy()
     rel_frame = frame.select_dtypes(include="number")
-    rel_frame = rel_frame[[col for col in rel_frame.columns if "buffs__" in col]]
-    rel_frame /= frame.count()
+    rel_frame = rel_frame[[col for col in rel_frame.columns if "buffs__" in col
+                           or any(rel in col for rel in ["crit", "fifty", "flanking", "scholar", "seaweed"])]]
+    rel_frame /= rel_frame.count()
     frame.update(rel_frame)
     avg_frame = frame.groupby(["encounter_id", "phase_name"] if sum else ["encounter_id"]).sum()
     return _generate_sum_statistics(avg_frame, squad=True) if sum else _generate_statistics(avg_frame)
@@ -191,7 +192,7 @@ def _generate_player_data(player: EncounterPlayer, phase: EncounterPhase, phase_
 
 
 def _update_stats(era: Era, area: Area, phase_name: str, frame: DataFrame,
-                  build: Tuple[int, int, int] = None):
+                  build: Tuple[int, int, int] = None, user: User = None):
     if build is None:
         min_stats, avg_stats, max_stats, percentiles = _generate_squad_statistics(frame, sum=phase_name == "All")
     else:
@@ -209,10 +210,14 @@ def _update_stats(era: Era, area: Area, phase_name: str, frame: DataFrame,
             if build is None:
                 stat = SquadStat.objects.get_or_create(era=era, area=area, phase=phase_name,
                                                        group=prefix, name=suffix, out=out)[0]
-            else:
+            elif user is None:
                 stat = BuildStat.objects.get_or_create(era=era, area=area, phase=phase_name,
                                                        archetype=build[0], prof=build[1], elite=build[2], group=prefix,
                                                        name=suffix, out=out)[0]
+            else:
+                stat = UserStat.objects.get_or_create(era=era, user=user, area=area, phase=phase_name,
+                                                      archetype=build[0], prof=build[1], elite=build[2], group=prefix,
+                                                      name=suffix, out=out)[0]
 
             stat.min_val = min_stats[col]
             stat.avg_val = avg_stats[col]
@@ -258,7 +263,7 @@ def _update_user(era: Era, user: User):
     for build, build_frame in frame.groupby(["archetype", "profession", "elite"]):
         for area_id, area_frame in build_frame.groupby("area_id"):
             area = Area.objects.get(id=area_id)
-            _update_stats(era, area, "All", area_frame, build)
+            _update_stats(era, area, "All", area_frame, build, user)
 
 
 def update_era(era: Era, encounters: Iterable[Encounter]):

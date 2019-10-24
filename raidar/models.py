@@ -179,9 +179,36 @@ class Era(ValueModel):
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
 
-    # TODO. Implement user stat generation
-    def dump_user_stats(self, user):
-        pass
+    # TODO: Add counts
+    def dump_user_stats(self, user, perc=True):
+        stats = {}
+
+        for stat in UserStat.objects.filter(era=self, user=user).all():
+            area_id = str(stat.area.id)
+            arch = str(stat.archetype)
+            prof = str(stat.prof)
+            elite = str(stat.elite)
+
+            if area_id not in stats:
+                stats[area_id] = {}
+            if arch not in stats[area_id]:
+                stats[area_id][arch] = {}
+            if prof not in stats[area_id][arch]:
+                stats[area_id][arch][prof] = {}
+            if elite not in stats[area_id][arch][prof]:
+                stats[area_id][arch][prof][elite] = {
+                    "actual": {},
+                    "actual_boss": {},
+                    "buffs": {},
+                    "buffs_out": {},
+                    "received": {},
+                    "shielded": {},
+                    "events": {},
+                    "mechanics": {},
+                }
+
+            stat.add_to_dump(stats[area_id][arch][prof][elite], perc)
+        return stats
 
     def dump_stats(self, area, phase_name, build=None, perc=True):
         stats = {
@@ -201,20 +228,7 @@ class Era(ValueModel):
             source = BuildStat.objects.filter(era=self, area=area, phase=phase_name, archetype=build[0],
                                               prof=build[1], elite=build[2]).exclude(min_val=math.nan)
         for stat in source:
-            target = stat.group
-            if stat.group == "target" and stat.out:
-                target = "actual_boss"
-            elif stat.group == "cleave" and stat.out:
-                target = "actual"
-            elif stat.group == "buffs" and stat.out:
-                target = "buffs_out"
-            if stat.group == "target" and not stat.out:
-                target = "received"
-            stats[target][stat.name + "_min"] = stat.min_val
-            stats[target][stat.name + "_max"] = stat.max_val
-            stats[target][stat.name + "_avg"] = stat.avg_val
-            if perc:
-                stats[target][stat.name + "_perc"] = stat.perc_data
+            stat.add_to_dump(stats, perc)
         return stats
 
     @staticmethod
@@ -781,6 +795,22 @@ class AbstractStat(models.Model):
             data["perc_" + name] = self.perc_data
         return data
 
+    def add_to_dump(self, dump, perc=True):
+        target = self.group
+        if target == "target" and self.out:
+            target = "actual_boss"
+        elif target == "cleave" and self.out:
+            target = "actual"
+        elif target == "buffs" and self.out:
+            target = "buffs_out"
+        if target == "target" and not self.out:
+            target = "received"
+        dump[target][self.name + "_min"] = self.min_val
+        dump[target][self.name + "_max"] = self.max_val
+        dump[target][self.name + "_avg"] = self.avg_val
+        if perc:
+            dump[target][self.name + "_perc"] = self.perc_data
+
 
 class SquadStat(AbstractStat):
     class Meta:
@@ -808,11 +838,6 @@ class UserStat(AbstractStat):
     archetype = models.PositiveSmallIntegerField(choices=ARCHETYPE_CHOICES, db_index=True)
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
-
-
-class EraUserStore(ValueModel):
-    era = models.ForeignKey(Era, on_delete=models.CASCADE, related_name="era_user_stores")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="era_user_stores")
 
 
 class RestatPerfStats(models.Model):
