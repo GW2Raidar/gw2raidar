@@ -1490,6 +1490,36 @@ ${body}
   };
   pollNotifications();
 
+  let handle_upload = evt => {
+    if (!r.get('username')) return;
+
+    let files = [];
+    if(evt.type === 'drop') {
+      files = evt.originalEvent.dataTransfer.files;
+    } else if(evt.type === 'change') {
+      files = evt.originalEvent.target.files;
+    }
+    let jQuery_xhr_factory = $.ajaxSettings.xhr;
+    Array.from(files).forEach(file => {
+      if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip') && !file.name.endsWith('.zevtc')) return;
+      let entry = r.get('uploads').find(entry => entry.name === file.name);
+      if (entry) {
+        delete entry.success;
+        delete entry.progress;
+        entry.file = file;
+        r.update('uploads');
+      } else {
+        r.push('uploads', {
+          name: file.name,
+          file: file,
+          uploaded_by: r.get('username'),
+        });
+      }
+      startUpload();
+    });
+    setPage('uploads');
+    evt.preventDefault();
+  };
 
   $(document)
     .on('dragstart dragover dragenter', evt => {
@@ -1500,35 +1530,11 @@ ${body}
         evt.originalEvent.dataTransfer.effectAllowed = "none";
         evt.originalEvent.dataTransfer.dropEffect = "none";
       }
-      evt.stopPropagation()
+      evt.stopPropagation();
       evt.preventDefault();
     })
-    .on('drop', evt => {
-      if (!r.get('username')) return;
-
-      let files = evt.originalEvent.dataTransfer.files;
-      let jQuery_xhr_factory = $.ajaxSettings.xhr;
-      Array.from(files).forEach(file => {
-        if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip') && !file.name.endsWith('.zevtc')) return;
-        let entry = r.get('uploads').find(entry => entry.name == file.name);
-        if (entry) {
-          delete entry.success;
-          delete entry.progress;
-          entry.file = file;
-          r.update('uploads');
-        } else {
-          r.push('uploads', {
-            name: file.name,
-            file: file,
-            uploaded_by: r.get('username'),
-          });
-        }
-        startUpload();
-      });
-      setPage('uploads');
-      evt.preventDefault();
-    });
-
+    .on('drop', handle_upload);
+  $(document).on('change', '#upload_input_helper', handle_upload);
 
   if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();
