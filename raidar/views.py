@@ -160,18 +160,6 @@ def index(request, page=None):
     return _html_response(request, page)
 
 
-def _with_area_data(user_data, era):
-    area_ids = [area_id for area_id in user_data["encounter"] if area_id.isnumeric()]
-    for area_id in area_ids:
-        area_data = era.dump_area_stats(Area.objects.get(id=area_id))
-        enc_data = user_data["encounter"][str(area_id)]
-        for arch, arch_data in enc_data.items():
-            for prof, prof_data in arch_data.items():
-                for elite, elite_data in prof_data.items():
-                    elite_data["performance"] = _safe_get(lambda: area_data["All"]["build"][arch][prof][elite])
-        enc_data["individual"] = _safe_get(lambda: area_data["All"]["individual"])
-    return user_data
-
 @require_GET
 def profile(request, era_id=None):
     if not request.user.is_authenticated:
@@ -182,8 +170,6 @@ def profile(request, era_id=None):
     era = Era.objects.get(id=era_id)
 
     user = request.user
-    queryset = EraUserStore.objects.filter(user=user).exclude(value="{}")
-    era_user_store = queryset.filter(era=era).first()
 
     result = {
         "profile": {
@@ -192,14 +178,16 @@ def profile(request, era_id=None):
             "era": {
                 "id": era.id,
                 "name": era.name,
-                "stats": _with_area_data(era_user_store.val, era),
+                "started_at": era.started_at,
+                "description": era.description,
+                "stats": era.dump_user_stats(user),
             },
             "eras_for_dropdown": [{
-                    "name": era_user.era.name,
-                    "id": era_user.era.id,
-                    "started_at": era_user.era.started_at,
-                    "description": era_user.era.description,
-                } for era_user in queryset
+                    "id": era.id,
+                    "name": era.name,
+                    "started_at": era.started_at,
+                    "description": era.description,
+                } for era in Era.objects.filter(id__in=UserStat.objects.filter(user=user).values_list("era", flat=True))
             ],
         },
     }

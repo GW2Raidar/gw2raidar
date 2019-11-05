@@ -190,9 +190,9 @@ class Era(ValueModel):
             elite = str(stat.elite)
 
             if area_id not in stats:
-                stats[area_id] = {}
+                stats[area_id] = {"count": 0}
             if arch not in stats[area_id]:
-                stats[area_id][arch] = {}
+                stats[area_id][arch] = {"count": 0}
             if prof not in stats[area_id][arch]:
                 stats[area_id][arch][prof] = {}
             if elite not in stats[area_id][arch][prof]:
@@ -205,7 +205,12 @@ class Era(ValueModel):
                     "shielded": {},
                     "events": {},
                     "mechanics": {},
+                    "count": Participation.objects.filter(account__in=user.accounts.all(), encounter__area__id=area_id,
+                                                          archetype=arch, profession=prof, elite=elite)
+                                                  .distinct().count(),
                 }
+                stats[area_id]["count"] += stats[area_id][arch][prof][elite]["count"]
+                stats[area_id][arch]["count"] += stats[area_id][arch][prof][elite]["count"]
 
             stat.add_to_dump(stats[area_id][arch][prof][elite], perc)
         return stats
@@ -558,7 +563,7 @@ class Encounter(models.Model):
         phases = data.encounterphase_set.order_by("start_tick")
         players = data.encounterplayer_set.filter(account_id__isnull=False)
         parties = {party_name: [player.data() for player in players.filter(party=party_name)]
-             for party_name in players.values_list("party", flat=True).distinct()}
+                   for party_name in players.values_list("party", flat=True).distinct()}
 
         # Generate phase data
         phase_data = {phase.name: {
@@ -839,6 +844,28 @@ class UserStat(AbstractStat):
     prof = models.PositiveSmallIntegerField(choices=PROFESSION_CHOICES, db_index=True)
     elite = models.PositiveSmallIntegerField(choices=ELITE_CHOICES, db_index=True)
 
+    def add_to_dump(self, dump, perc=True):
+        AbstractStat.add_to_dump(self, dump, perc)
+        target = self.group
+        if target == "target" and self.out:
+            target = "actual_boss"
+        elif target == "cleave" and self.out:
+            target = "actual"
+        elif target == "buffs" and self.out:
+            target = "buffs_out"
+        if target == "target" and not self.out:
+            target = "received"
+        if perc:
+            dump[target][self.name + "_perc"] = self.get_build_stat()
+
+    def get_build_stat(self):
+        try:
+            return BuildStat.objects.get(era=self.era, area=self.area, phase=self.phase,
+                                         group=self.group, name=self.name, out=self.out,
+                                         archetype=self.archetype, prof=self.prof, elite=self.elite).perc_data
+        except BuildStat.DoesNotExist or BuildStat.MultipleObjectsReturned:
+            return self.perc_data
+
 
 class RestatPerfStats(models.Model):
     started_on = models.DateTimeField()
@@ -1054,10 +1081,17 @@ class EncounterEvent(SourcedEncounterAttribute):
             "dead_count": 0,
             "dead_time": 0,
         }
+        combat_count = 0
+        combat_time = 0
 
         for row in query:
             for stat in data:
                 data[stat] += row.__dict__[stat]
+            combat_count += 1
+            combat_time += row.encounter_data.duration()
+
+        data["combat_count"] = combat_count
+        data["combat_time"] = combat_time
         return data
 
 
