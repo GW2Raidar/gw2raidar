@@ -260,10 +260,11 @@ def _update_user(era: Era, user: User):
 
     # Create pandas DataFrame
     frame = DataFrame(raw_data)
-    for build, build_frame in frame.groupby(["archetype", "profession", "elite"]):
-        for area_id, area_frame in build_frame.groupby("area_id"):
-            area = Area.objects.get(id=area_id)
-            _update_stats(era, area, "All", area_frame, build, user)
+    for area_id, area_frame in frame.groupby("area_id"):
+        area = Area.objects.get(id=area_id)
+        for build, build_frame in area_frame.groupby(["archetype", "profession", "elite"]):
+            _update_stats(era, area, "All", build_frame, build, user)
+        _update_stats(era, area, "All", area_frame, (0, 0, 0), user)
 
 
 def update_era(era: Era, encounters: Iterable[Encounter]):
