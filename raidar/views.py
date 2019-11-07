@@ -269,24 +269,86 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
 
 @require_GET
 def leaderboards(request):
-    kind = int(request.GET.get('kind', 0))
+    kind = int(request.GET.get("kind", 0))
     bosses = [boss for wing in BOSS_LOCATIONS[kind]["wings"] for boss in wing["bosses"]]
-    era_id = request.GET.get('era')
-    eras = list(Era.objects.order_by('-started_at').values('id', 'name'))
+    era_id = request.GET.get("era")
+    eras = list(Era.objects.order_by("-started_at").values("id", "name"))
     if not era_id:
-        era_id = eras[0]['id']
-    area_leaderboards = {}
+        era_id = eras[0]["id"]
+    era = Era.objects.get(id=era_id)
+
+    # Generate current week start (Either Monday or Era start)
+    # https://stackoverflow.com/questions/32190310/get-unix-timestamp-of-this-weeks-monday-and-the-start-of-today-in-python
+    era_start = datetime.utcfromtimestamp(era.started_at)
+    # Workaround for Windows 10 OSError 22 on timestamps < 90000
+    # https://stackoverflow.com/questions/37494983/python-fromtimestamp-oserror/45372194
+    era_start = datetime.utcfromtimestamp(90000) if era_start < datetime.utcfromtimestamp(90000) else era_start
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    monday = today - timedelta(days=today.weekday())
+    current_week = max(monday, era_start)
+
+    periods = [(current_week, datetime.utcnow())]
+    week_delta = timedelta(days=7)
+    first_logs = Encounter.objects.filter(started_at__gte=era_start.timestamp()).order_by("started_at")[:1]
+    # Shorten list of weeks to reduce number of DB calls
+    effective_era_start = max(era_start, datetime.utcfromtimestamp(first_logs[0].started_at) if first_logs else 0)
+    # Generate week list for current Era
+    while current_week > effective_era_start:
+        current_week -= week_delta
+        periods.append((max(current_week, effective_era_start), current_week + week_delta))
+
+    area_leaderboards = {area_id: {"periods": {}, "max_max_dps": 0} for area_id in bosses}
     for area_id in bosses:
-        # TODO: Create leaderboard model
-        area_leaderboards[area_id] = None
-    area_leaderboards['eras'] = eras
-    area_leaderboards['era'] = era_id
-    area_leaderboards['kind'] = kind
+        area_leaderboards[area_id] = {"periods": {}, "max_max_dps": 0}
+        # Week periods
+        for start, end in periods:
+            max_dps, leaderboard = _get_leaderboard(area_id, start, end)
+            if leaderboard:
+                area_leaderboards[area_id]["periods"][str(int(start.timestamp()))] = leaderboard
+                area_leaderboards[area_id]["max_max_dps"] = max(area_leaderboards[area_id]["max_max_dps"], max_dps)
+        # Era period
+        max_dps, leaderboard = _get_leaderboard(area_id, effective_era_start, datetime.utcnow())
+        if leaderboard:
+            area_leaderboards[area_id]["periods"]["Era"] = leaderboard
+            area_leaderboards[area_id]["max_max_dps"] = max(area_leaderboards[area_id]["max_max_dps"], max_dps)
+
+    # Clean up empty areas
+    for area_id in bosses:
+        if not area_leaderboards[area_id]["periods"]:
+            del area_leaderboards[area_id]
+    area_leaderboards["eras"] = eras
+    area_leaderboards["era"] = era_id
+    area_leaderboards["kind"] = kind
     result = {
-            'leaderboards': area_leaderboards,
-            'page.era': era_id,
-            }
+        "leaderboards": area_leaderboards,
+        "page.era": era_id,
+    }
     return JsonResponse(result)
+
+
+def _get_leaderboard(area_id: int, start: datetime, end: datetime):
+    start_stamp = start.timestamp()
+    tops = Encounter.objects.filter(area_id=area_id, started_at__lt=end.timestamp(),
+                                    started_at__gte=start_stamp).order_by("duration")[:10]
+    max_dps = 0
+    leaderboard = []
+    for enc in tops:
+        leaderboard.append({
+            "id": enc.id,
+            "url_id": enc.url_id,
+            "duration": enc.calc_phase_duration("All"),
+            "dps": EncounterDamage.breakdown(enc.encounter_data.encounterdamage_set.filter(target="*All"),
+                                             phase_duration=enc.calc_phase_duration("All"), group=True)["dps"],
+            "dps_boss": EncounterDamage.breakdown(enc.encounter_data.encounterdamage_set.filter(target="*Boss"),
+                                                  phase_duration=enc.calc_phase_duration("All"), group=True)["dps"],
+            "buffs": EncounterBuff.breakdown(enc.encounter_data.encounterbuff_set
+                                             .filter(target__in=enc.participations.values_list("character", flat=True))),
+            "comp": sorted([[part.archetype, part.profession, part.elite] for part in enc.participations.all()],
+                           key=lambda x: -100 * x[0] + 10 * x[1] + x[2]),
+            "tags": enc.tagstring,
+        })
+        max_dps = max(max_dps, leaderboard[-1]["dps"])
+    return max_dps, (leaderboard if tops else False)
 
 
 @require_GET

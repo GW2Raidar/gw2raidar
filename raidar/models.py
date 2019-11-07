@@ -179,7 +179,6 @@ class Era(ValueModel):
     def __str__(self):
         return "%s (#%d)" % (self.name or "<unnamed>", self.id)
 
-    # TODO: Add counts
     def dump_user_stats(self, user, perc=True):
         stats = {}
 
@@ -1150,7 +1149,9 @@ class EncounterDamage(TargetedEncounterAttribute):
         prv_dmg_data["condi"] = EncounterDamage.summarize(dmg_data, "condi", absolute=absolute)["total"]
         prv_dmg_data["total"] = prv_dmg_data["power"] + prv_dmg_data["condi"]
 
-        # TODO: Remove when fixed (Skills and conditions are named in game language in our parser)
+        # TODO: Remove when fixed
+        # Workaround bc skills and conditions are named in game language in our parser,
+        # possibly causing pDPS and cDPS to be zero
         if prv_dmg_data["total"] == 0:
             prv_dmg_data["total"] = EncounterDamage.summarize(dmg_data, absolute=absolute)["total"]
 
