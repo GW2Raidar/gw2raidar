@@ -1,7 +1,7 @@
 from rest_framework import serializers, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.schemas.inspectors import AutoSchema
+from rest_framework.schemas import AutoSchema
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.parsers import FileUploadParser, MultiPartParser
 import coreapi
