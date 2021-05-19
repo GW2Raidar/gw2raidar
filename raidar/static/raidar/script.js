@@ -569,7 +569,7 @@ ${body}
     uploads: [],
   };
   initData.data.boss_locations.forEach(loc => {
-    loc.bosses = {}
+    loc.bosses = {};
     loc.wings.forEach(wing => wing.bosses.forEach(id => loc.bosses[id] = true ));
   });
   let lastNotificationId = window.raidar_data.last_notification_id;
@@ -579,7 +579,7 @@ ${body}
   }
   if (!initData.settings.comparePerc) initData.settings.comparePerc = 50;
   if (!initData.settings.compareGlobalPerc) initData.settings.compareGlobalPerc = [99,90,50];
-  // TODO load from server
+  // TODO: Load from server
   initData.data.boons = [
     { boon: 'might', stacks: 25 },
     { boon: 'fury' },
@@ -1240,7 +1240,7 @@ ${body}
       return false;
     },
     chart: function chart(evt, archetype, profession, elite, stat, statName) {
-      let eraId = r.get('page.era');
+      let eraId = r.get('profile.era.id');
       let eras = r.get('profile.eras');
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
@@ -1490,6 +1490,36 @@ ${body}
   };
   pollNotifications();
 
+  let handle_upload = evt => {
+    if (!r.get('username')) return;
+
+    let files = [];
+    if(evt.type === 'drop') {
+      files = evt.originalEvent.dataTransfer.files;
+    } else if(evt.type === 'change') {
+      files = evt.originalEvent.target.files;
+    }
+    let jQuery_xhr_factory = $.ajaxSettings.xhr;
+    Array.from(files).forEach(file => {
+      if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip') && !file.name.endsWith('.zevtc')) return;
+      let entry = r.get('uploads').find(entry => entry.name === file.name);
+      if (entry) {
+        delete entry.success;
+        delete entry.progress;
+        entry.file = file;
+        r.update('uploads');
+      } else {
+        r.push('uploads', {
+          name: file.name,
+          file: file,
+          uploaded_by: r.get('username'),
+        });
+      }
+      startUpload();
+    });
+    setPage('uploads');
+    evt.preventDefault();
+  };
 
   $(document)
     .on('dragstart dragover dragenter', evt => {
@@ -1500,35 +1530,11 @@ ${body}
         evt.originalEvent.dataTransfer.effectAllowed = "none";
         evt.originalEvent.dataTransfer.dropEffect = "none";
       }
-      evt.stopPropagation()
+      evt.stopPropagation();
       evt.preventDefault();
     })
-    .on('drop', evt => {
-      if (!r.get('username')) return;
-
-      let files = evt.originalEvent.dataTransfer.files;
-      let jQuery_xhr_factory = $.ajaxSettings.xhr;
-      Array.from(files).forEach(file => {
-        if (!file.name.endsWith('.evtc') && !file.name.endsWith('.evtc.zip') && !file.name.endsWith('.zevtc')) return;
-        let entry = r.get('uploads').find(entry => entry.name == file.name);
-        if (entry) {
-          delete entry.success;
-          delete entry.progress;
-          entry.file = file;
-          r.update('uploads');
-        } else {
-          r.push('uploads', {
-            name: file.name,
-            file: file,
-            uploaded_by: r.get('username'),
-          });
-        }
-        startUpload();
-      });
-      setPage('uploads');
-      evt.preventDefault();
-    });
-
+    .on('drop', handle_upload);
+  $(document).on('change', '#upload_input_helper', handle_upload);
 
   if (DEBUG) window.r = r; // XXX DEBUG Ractive
 })();

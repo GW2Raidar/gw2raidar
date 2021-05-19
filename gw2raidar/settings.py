@@ -10,12 +10,13 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/1.10/ref/settings/
 """
 
-import os
+import os.path
+import importlib.util
 from dateutil import parser
 
 VERSION = {
         'id': '2.4.0',
-        'timestamp': 1563162107, # date +%s
+        'timestamp': 1563162107,  # date +%s
         }
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
@@ -57,7 +58,6 @@ INSTALLED_APPS = [
     'taggit',
 ]
 
-import importlib
 if importlib.util.find_spec("django_extensions"):
     INSTALLED_APPS.append('django_extensions')
 
@@ -134,7 +134,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ),
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 100,
 }
 
@@ -184,11 +183,9 @@ CORS_ORIGIN_ALLOW_ALL = True
 CORS_URLS_REGEX = r'^/api/.*$'
 
 
-
 # Google Analytics
 GA_PROPERTY_ID = None
 
-import os.path
 RESTAT_PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'log', 'restat.pid')
 
 

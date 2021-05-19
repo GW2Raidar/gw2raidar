@@ -58,7 +58,7 @@ class Command(BaseCommand):
             upload_time = os.path.getmtime(filename)
             upload, _ = Upload.objects.update_or_create(
                     filename=orig_name, uploaded_by=user,
-                    defaults={ "uploaded_at": upload_time })
+                    defaults={"uploaded_at": upload_time})
             diskname = upload.diskname()
             os.makedirs(os.path.dirname(diskname), exist_ok=True)
             os.rename(filename, diskname)

@@ -93,10 +93,10 @@ class EncounterAdmin(QuotedSearchModelAdmin):
     url_id_link.short_description = "Link"
 
     search_fields = ('=url_id', '=filename', '=tags__name', '=category__name')
-    list_display = ('filename', 'url_id_link', 'area', 'success', 'category', 'started_at', 'duration', 'uploaded_at', 'uploaded_by')
+    list_display = ('filename', 'url_id_link', 'area', 'success', 'category', 'started_at', 'duration', 'uploaded_on', 'uploaded_by')
     list_select_related = ('category', 'uploaded_by', 'area')
     inlines = (EncounterParticipationInline,)
-    readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_at', 'uploaded_by', 'area', 'filename')
+    readonly_fields = ('url_id', 'started_at', 'duration', 'uploaded_on', 'uploaded_by', 'area', 'filename')
 
     # hack, but... ugly otherwise
     class Media:

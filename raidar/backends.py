@@ -10,7 +10,7 @@ class EmailAuthBackend(ModelBackend):
     """
 
     # https://stackoverflow.com/questions/27953859/authenticate-users-with-both-username-and-email
-    def authenticate(self, username=None, password=None):
+    def authenticate(self, request=None, username=None, password=None):
         """ Authenticate a user based on email address as the user name. """
         try:
             user = User.objects.get(email=username)

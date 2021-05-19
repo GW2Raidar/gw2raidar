@@ -118,11 +118,11 @@
               </td>
               [[#each data.boons]]
                 [[#if phases[page.phase]]]
-                  <td style="[[#if phases[page.phase].archetype.buffs_out['avg_' + boon]]][[bar(phases[page.phase].buffs_out[boon], phases[page.phase].archetype.buffs_out['avg_' + boon], phases[page.phase].archetype.buffs_out['min_' + boon], phases[page.phase].archetype.buffs_out['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs_out[boon], stacks || 100)]][[/if]]">
+                  <td style="[[#if phases[page.phase].performance.buffs_out['avg_' + boon]]][[bar(phases[page.phase].buffs_out[boon], phases[page.phase].performance.buffs_out['avg_' + boon], phases[page.phase].performance.buffs_out['min_' + boon], phases[page.phase].performance.buffs_out['max_' + boon], stacks || 100)]][[else]][[bar1(phases[page.phase].buffs_out[boon], stacks || 100)]][[/if]]">
                     [[#with { format: stacks ? num : perc } ]]
                       <span>[[format(phases[page.phase].buffs_out[boon], 2)]]</span>
-                      [[#if phases[page.phase].archetype.buffs_out['avg_' + boon]]]
-                        <span class="expected">[[format(phases[page.phase].archetype.buffs_out['avg_' + boon], 2)]]</span>
+                      [[#if phases[page.phase].performance.buffs_out['avg_' + boon]]]
+                        <span class="expected">[[format(phases[page.phase].performance.buffs_out['avg_' + boon], 2)]]</span>
                       [[/if]]
                     [[/with]]
                   </td>
