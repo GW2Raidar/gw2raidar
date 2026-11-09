@@ -1,3 +1,5 @@
+# pandas is pinned to 0.24.2: evtcparser calls Series.str.split() on bytes, which pandas 0.25+ rejects
+# (upstream pip.freeze only moved to 0.25.1 in its final commit).
 Brotli==1.0.7
 certifi==2019.6.16
 chardet==3.0.4
@@ -16,7 +18,7 @@ Jinja2==2.10.1
 MarkupSafe==1.1.1
 numpy==1.16.4
 openapi-codec==1.3.2
-pandas==0.25.1
+pandas==0.24.2
 psycopg2-binary==2.8.6
 python-dateutil==2.8.0
 pytz==2019.1
