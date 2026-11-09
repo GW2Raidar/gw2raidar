@@ -1,7 +1,6 @@
-FROM python:3.7-slim-bullseye
+# Full image already ships gcc/headers, so no apt-get is needed (bullseye apt mirrors are EOL).
+FROM python:3.7-bullseye
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1
-RUN apt-get update && apt-get install -y --no-install-recommends gcc libpq-dev netcat-openbsd \
-    && rm -rf /var/lib/apt/lists/*
 WORKDIR /app
 COPY docker/requirements.txt /tmp/requirements.txt
 RUN pip install -r /tmp/requirements.txt

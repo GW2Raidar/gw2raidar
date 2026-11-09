@@ -1,7 +1,7 @@
 #!/bin/sh
 set -e
 cd /app
-until nc -z "${POSTGRES_HOST:-db}" "${POSTGRES_PORT:-5432}"; do echo "waiting for db"; sleep 1; done
+until python -c "import socket,os; socket.create_connection((os.environ.get('POSTGRES_HOST','db'), int(os.environ.get('POSTGRES_PORT','5432'))), 2)" 2>/dev/null; do echo "waiting for db"; sleep 1; done
 case "$1" in
   web)
     python manage.py migrate --noinput
