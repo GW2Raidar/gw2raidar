@@ -1,0 +1,40 @@
+services:
+  db:
+    image: postgres:13
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: gw2raidar
+      POSTGRES_USER: gw2raidar
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  web:
+    build: .
+    restart: unless-stopped
+    command: ["web"]
+    depends_on: [db]
+    environment: &appenv
+      SECRET_KEY: ${SECRET_KEY}
+      ALLOWED_HOSTS: ${ALLOWED_HOSTS}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: db
+    expose:
+      - "8000"
+    volumes:
+      - uploads:/data/uploads
+      - static:/data/static
+
+  worker:
+    build: .
+    restart: unless-stopped
+    command: ["worker"]
+    depends_on: [db, web]
+    environment: *appenv
+    volumes:
+      - uploads:/data/uploads
+
+volumes:
+  pgdata:
+  uploads:
+  static:
