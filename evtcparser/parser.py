@@ -229,6 +229,8 @@ class Encounter:
                     'result_local','ident_local']:
                 del self.events[name]
                 self.events['dst_master_instid'] = 0
+            # Legacy events have no off-cycle flag; buffs.py requires the column (added after the legacy parser)
+            self.events['is_offcycle'] = np.uint8(0)
         else:
             self.events = pd.DataFrame(np.fromstring(events_string, dtype=EVENT_DTYPE))
 
