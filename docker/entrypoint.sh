@@ -7,7 +7,7 @@ case "$1" in
     python manage.py migrate --noinput
     python manage.py collectstatic --noinput
     cp /app/docker/wsgi_docker.py /app/gw2raidar/wsgi_docker.py
-    exec gunicorn gw2raidar.wsgi_docker:application --bind 0.0.0.0:8000 --workers 2 --threads 4 --timeout 120
+    exec gunicorn gw2raidar.wsgi_docker:application --bind 0.0.0.0:8000 --workers 2 --threads 4 --timeout 120 --access-logfile - --error-logfile -
     ;;
   worker)
     # process_uploads is a one-shot batch job (meant for cron): run it in a loop

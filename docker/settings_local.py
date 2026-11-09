@@ -31,3 +31,14 @@ UPLOAD_DIR = '/data/uploads'
 
 if os.environ.get('GA_PROPERTY_ID'):
     GA_PROPERTY_ID = os.environ['GA_PROPERTY_ID']
+
+# Send errors to the container log (with DEBUG off Django would otherwise only email admins)
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {'console': {'class': 'logging.StreamHandler'}},
+    'loggers': {
+        'django.request': {'handlers': ['console'], 'level': 'ERROR', 'propagate': False},
+        'django.security': {'handlers': ['console'], 'level': 'WARNING', 'propagate': False},
+    },
+}
