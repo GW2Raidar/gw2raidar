@@ -10,7 +10,11 @@ case "$1" in
     exec gunicorn gw2raidar.wsgi_docker:application --bind 0.0.0.0:8000 --workers 2 --threads 4 --timeout 120
     ;;
   worker)
-    exec python manage.py process_uploads
+    # process_uploads is a one-shot batch job (meant for cron): run it in a loop
+    while true; do
+      python manage.py process_uploads || echo "process_uploads failed, retrying"
+      sleep "${WORKER_INTERVAL:-30}"
+    done
     ;;
   *) exec "$@" ;;
 esac
