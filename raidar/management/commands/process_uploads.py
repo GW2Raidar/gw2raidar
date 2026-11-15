@@ -1,17 +1,19 @@
 from django.db.models import Q
-from analyser.analyser import Analyser, Group, Archetype, EvtcAnalysisException
-from analyser.bosses import *
+from analyser.analyser import EvtcAnalysisException
+from analyser.bosses import Kind, Mode, find_boss, UnsupportedEncounter
+from eiparser import adapter, runner
+from eiparser.adapter import EIAdapterException
+from eiparser.runner import EIParseException
 from multiprocessing import Queue, Process, log_to_stderr
 from contextlib import contextmanager
 from django.core.management.base import BaseCommand, CommandError
 from django.db import transaction
 from django.db.utils import IntegrityError
-from evtcparser.parser import Encounter as EvtcEncounter, EvtcParseException
 from gw2raidar import settings
 from raidar.models import *
 from sys import exit, stderr
 from time import time
-from zipfile import ZipFile, BadZipFile, ZIP_DEFLATED
+from zipfile import ZipFile, ZIP_DEFLATED, is_zipfile
 from queue import Empty
 import os
 import os.path
@@ -22,6 +24,8 @@ from traceback import format_exc
 
 logger = log_to_stderr()
 logger.setLevel(logging.INFO)
+
+COMPRESSED_EXTENSIONS = ('.evtc.zip', '.zevtc')
 
 
 # inspired by https://stackoverflow.com/a/31464349/240443
@@ -38,60 +42,6 @@ class GracefulKiller:
                 self.queue.get_nowait()
         except Empty:
             pass
-    
-
-
-# Google Drive
-# pip install --upgrade google-api-python-client
-
-
-# def get_gdrive_service():
-#     return None
-
-# gdrive_service = None
-# if hasattr(settings, 'GOOGLE_CREDENTIAL_FILE'):
-#     try:
-#         from oauth2client.service_account import ServiceAccountCredentials
-#         from httplib2 import Http
-#         from apiclient import discovery
-#         from googleapiclient.http import MediaFileUpload
-#         from googleapiclient.errors import HttpError
-
-#         def get_gdrive_service():
-#             scopes = ['https://www.googleapis.com/auth/drive.file']
-#             credentials = ServiceAccountCredentials.from_json_keyfile_name(
-#                     settings.GOOGLE_CREDENTIAL_FILE, scopes=scopes)
-#             http_auth = credentials.authorize(Http())
-#             gdrive_service = discovery.build('drive', 'v3', http=http_auth)
-#             return gdrive_service
-
-#         gdrive_service = get_gdrive_service()
-
-#         try:
-#             gdrive_folder = Variable.get('gdrive_folder')
-#         except Variable.DoesNotExist:
-#             metadata = {
-#                 'name' : 'GW2 Raidar Files',
-#                 'mimeType' : 'application/vnd.google-apps.folder'
-#             }
-#             folder = gdrive_service.files().create(
-#                     body=metadata, fields='id').execute()
-#             gdrive_folder = folder.get('id')
-
-#             permission = {
-#                 'role': 'reader',
-#                 'type': 'anyone',
-#                 'allowFileDiscovery': False
-#             }
-#             result = gdrive_service.permissions().create(
-#                 fileId=gdrive_folder,
-#                 body=permission,
-#                 fields='id',
-#             ).execute()
-
-#             Variable.set('gdrive_folder', gdrive_folder)
-#     except ImportError:
-#         pass
 
 
 if hasattr(settings, 'UPLOAD_DIR'):
@@ -142,7 +92,7 @@ class Command(BaseCommand):
 
     def analyse_uploads(self, *args, **options):
         new_uploads = Upload.objects.order_by('-filename')
-        if 'limit' in options:
+        if options.get('limit') is not None:
             new_uploads = new_uploads[:options['limit']]
 
         queue = Queue(len(new_uploads))
@@ -167,9 +117,6 @@ class Command(BaseCommand):
             self.analyse_upload_worker(queue, False)
 
     def analyse_upload_worker(self, queue, multi=True):
-        if multi:
-            Random.atfork()
-        # self.gdrive_service = get_gdrive_service()
         try:
             while True:
                 upload = queue.get_nowait()
@@ -182,55 +129,46 @@ class Command(BaseCommand):
 
     def analyse_upload(self, upload):
         diskname = upload.diskname()
-        zipfile = None
-        file = None
+        # Elite Insights HTML report of the log; moved next to the stored log once the encounter is known
+        report_diskname = diskname + ".html.gz"
 
         try:
-            if upload.filename.endswith('.evtc.zip') or upload.filename.endswith('.zevtc'):
-                zipfile = ZipFile(diskname)
-                contents = zipfile.infolist()
-                if len(contents) == 1:
-                    try:
-                        file = zipfile.open(contents[0].filename)
-                    except RuntimeError as e:
-                        raise EvtcAnalysisException(e)
-                else:
-                    raise EvtcParseException('Only single-file ZIP archives are allowed')
-            else:
-                file = open(diskname, 'rb')
+            # Elite Insights reads .evtc, .evtc.zip and .zevtc directly, but reports a damaged archive as a crash
+            if upload.filename.endswith(COMPRESSED_EXTENSIONS) and not is_zipfile(diskname):
+                raise EvtcAnalysisException('File is not a valid archive')
 
-            evtc_encounter = EvtcEncounter(file)
+            log = runner.parse(diskname,
+                               getattr(settings, 'GW2EI_CLI', None),
+                               timeout=getattr(settings, 'GW2EI_TIMEOUT', runner.DEFAULT_TIMEOUT),
+                               report_path=report_diskname)
+            dump = adapter.convert(log)
+            del log
 
-            analyser = Analyser(evtc_encounter)
-
-            dump = analyser.data
             uploader = upload.uploaded_by
+            encounter_dump = dump['Category']['encounter']
 
-            started_at = dump['Category']['encounter']['start']
-            duration = dump['Category']['encounter']['duration']
-            success = dump['Category']['encounter']['success']
-            boss_name = analyser.boss_info.name
+            started_at = encounter_dump['start']
+            duration = encounter_dump['duration']
+            success = encounter_dump['success']
             upload_val = upload.val
-            area_id = evtc_encounter.area_id
+
+            boss = find_boss(encounter_dump['ei_encounter_id'], encounter_dump['cm'], encounter_dump['legendary_cm'])
+            area_id = boss.area_id
 
             minDuration = 60
-            if BOSSES[area_id].kind == Kind.FRACTAL:
-                minDuration = 30    
-            
-            if duration < minDuration:
-                raise EvtcAnalysisException('Encounter shorter than 60s')
-                        
-            if dump['Category']['encounter']['cm']:
-                boss_name += " (CM)"
-                if analyser.boss_info.non_cm_allowed:
-                    area_id += 0xFF0000
-                            
-            era = Era.by_time(started_at)        
-                
-            area, _ = Area.objects.get_or_create(id=area_id,
-                    defaults={ "name": boss_name })
+            if boss.kind == Kind.FRACTAL:
+                minDuration = 30
 
-            status_for = {name: player for name, player in dump[Group.CATEGORY]['status']['Player'].items() if 'account' in player}
+            if duration < minDuration:
+                raise EvtcAnalysisException('Encounter shorter than %ds' % minDuration)
+
+            era = Era.by_time(started_at)
+
+            area, _ = Area.objects.get_or_create(id=area_id,
+                    defaults={"name": boss.base_name, "is_cm": boss.mode == Mode.CM,
+                              "is_lcm": boss.mode == Mode.LEGENDARY_CM})
+
+            status_for = {name: player for name, player in dump['Category']['status']['Player'].items() if 'account' in player}
             account_names = [player['account'] for player in status_for.values()]
 
             with transaction.atomic():
@@ -243,8 +181,9 @@ class Command(BaseCommand):
                 account_hash = Encounter.calculate_account_hash(account_names)
                 filename = upload.filename
                 orig_filename = filename
+                is_compressed = filename.endswith(COMPRESSED_EXTENSIONS)
                 encounter_data = EncounterData.from_dump(dump)
-                if not zipfile:
+                if not is_compressed:
                     filename += ".zip"
                 try:
                     encounter = Encounter.objects.get(
@@ -252,12 +191,12 @@ class Command(BaseCommand):
                         area=area, account_hash=account_hash
                     )
                     if encounter.has_evtc:
-                        old_filename = encounter.diskname()
-                        if old_filename:
-                            try:
-                                os.remove(old_filename)
-                            except FileNotFoundError:
-                                pass
+                        for old_filename in (encounter.diskname(), encounter.report_diskname()):
+                            if old_filename:
+                                try:
+                                    os.remove(old_filename)
+                                except FileNotFoundError:
+                                    pass
                     encounter.era = era
                     encounter.filename = filename
                     encounter.uploaded_on = datetime.fromtimestamp(upload.uploaded_at, timezone.utc)
@@ -285,17 +224,14 @@ class Command(BaseCommand):
                     encounter.tagstring = upload_val['tagstring']
                 encounter.save()
 
-                file.close()
-                file = None
                 new_diskname = encounter.diskname()
                 os.makedirs(os.path.dirname(new_diskname), exist_ok=True)
-                if zipfile:
-                    zipfile.close()
-                    zipfile = None
+                if is_compressed:
                     os.rename(diskname, new_diskname)
                 else:
                     with ZipFile(new_diskname, 'w', ZIP_DEFLATED) as zipfile_out:
                         zipfile_out.write(diskname, orig_filename)
+                os.replace(report_diskname, encounter.report_diskname())
 
                 for name, player in status_for.items():
                     account, _ = Account.objects.get_or_create(
@@ -333,33 +269,9 @@ class Command(BaseCommand):
                     "encounter_url_id": encounter.url_id,
                 })
 
-            # if self.gdrive_service:
-            #     media = MediaFileUpload(new_diskname, mimetype='application/prs.evtc')
-            #     try:
-            #         if encounter.gdrive_id:
-            #             result = self.gdrive_service.files().update(
-            #                     fileId=encounter.gdrive_id,
-            #                     media_body=media,
-            #                 ).execute()
-            #         else:
-            #             metadata = {
-            #                     'name': upload.filename,
-            #                     'parents': [gdrive_folder],
-            #                 }
-            #             gdrive_file = self.gdrive_service.files().create(
-            #                     body=metadata, media_body=media,
-            #                     fields='id, webContentLink',
-            #                 ).execute()
-            #             encounter.gdrive_id = gdrive_file['id']
-            #             encounter.gdrive_url = gdrive_file['webContentLink']
-            #             encounter.save()
-            #     except HttpError as e:
-            #         logger.error(e)
-            #         pass
-            #
             logger.info("saved")
 
-        except (EvtcParseException, EvtcAnalysisException, BadZipFile) as e:
+        except (EIParseException, EIAdapterException, UnsupportedEncounter, EvtcAnalysisException) as e:
             logger.info("known error: %s" % str(e))
             Notification.objects.create(user=upload.uploaded_by, val={
                 "type": "upload_error",
@@ -368,6 +280,7 @@ class Command(BaseCommand):
             })
 
         # for diagnostics and catching new exceptions
+        # (includes runner.EIRunException: EI missing, crashed or timed out)
         except Exception as e:
             logger.info("unknown error: %s" % str(e))
             exc = format_exc()
@@ -386,12 +299,11 @@ class Command(BaseCommand):
             })
 
         finally:
-            if file:
-                file.close()
-
-            if zipfile:
-                zipfile.close()
-
+            # a report that was not moved to its encounter belongs to a failed upload
+            try:
+                os.remove(report_diskname)
+            except OSError:
+                pass
             upload.delete()
 
     def clean_up(self, *args, **options):

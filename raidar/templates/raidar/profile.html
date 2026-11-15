@@ -5,7 +5,7 @@
       <div class="uk-button-group uk-width-1-1 boundary uk-margin-bottom uk-margin-top uk-visible@s">
         [[#each data.boss_locations]]
             [[#with (all && page.area == all) || page.area in bosses as active]]
-              <button class="uk-button uk-inline" class-uk-button-primary="active">[[#if active]][[page.area in data.areas ? data.areas[page.area].name : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+              <button class="uk-button uk-inline" class-uk-button-primary="active">[[#if active]][[page.area in data.areas ? areaLabel(page.area) : page.area]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
             [[/with]]
             <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
               <div class="uk-width-1 uk-grid">
@@ -25,10 +25,10 @@
                       <li class="uk-nav-header uk-margin-top">[[name]]</li>
                       [[#each bosses as boss_id]]
                         [[#if boss_id in encounter]]
-                          <li on-click="@.set({'page.area': boss_id})" class-uk-active="page.area == boss_id"><a href="#">[[data.areas[boss_id].name]] ([[encounter[boss_id].count]])</a></li>
+                          <li on-click="@.set({'page.area': boss_id})" class-uk-active="page.area == boss_id"><a href="#">[[areaLabel(boss_id)]] ([[encounter[boss_id].count]])</a></li>
                         [[else]]
                           {# TODO make visually distinct the dead links #}
-                          <li><a href="#" on-click="false">[[data.areas[boss_id].name]] (0)</a></li>
+                          <li><a href="#" on-click="false">[[areaLabel(boss_id)]] (0)</a></li>
                         [[/if]]
                       [[/each]]
                     </ul>
@@ -52,10 +52,10 @@
             <optgroup label="[[name]]">
               [[#each bosses as boss_id]]
                 [[#if boss_id in encounter]]
-                  <option value="[[boss_id]]">[[data.areas[boss_id].name]] ([[encounter[boss_id].count]])</option>
+                  <option value="[[boss_id]]">[[areaLabel(boss_id)]] ([[encounter[boss_id].count]])</option>
                 [[else]]
                   {# TODO make visually distinct the dead links #}
-                  <option disabled>[[data.areas[boss_id].name]] (0)</option>
+                  <option disabled>[[areaLabel(boss_id)]] (0)</option>
                 [[/if]]
               [[/each]]
             </optgroup>
@@ -110,9 +110,9 @@
           [[else]]
             {# specific boss ID #}
             <div class="r-media uk-margin-medium-top">
-              <img width="70px" src="/static/raidar/img/icon/[[data.areas[page.area].name]].png" alt="[[data.areas[page.area].name]]">
+              <img width="70px" src="/static/raidar/img/icon/[[data.areas[page.area].name]].png" alt="[[data.areas[page.area].name]]" onerror="this.style.visibility='hidden'">
               <div class="r-body">
-                <h2 style="line-height:1;" class="uk-margin-small-bottom">[[data.areas[page.area].name]]</h2>
+                <h2 style="line-height:1;" class="uk-margin-small-bottom">[[data.areas[page.area].name]][[#if data.areas[page.area].tag]] <span class="uk-label r-mode-[[data.areas[page.area].tag]]">[[data.areas[page.area].tag]]</span>[[/if]]</h2>
                 <span class="uk-badge uk-text-bold uk-label-success uk-margin-small-right">
                   Alive [[perc(100 * (allstat.events.combat_time_avg - allstat.events.down_time_avg - allstat.events.dead_time_avg) / allstat.events.combat_time_avg)]]
                 </span>

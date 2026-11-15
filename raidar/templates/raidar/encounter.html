@@ -4,7 +4,7 @@
 
     <div class="uk-width-1-1 uk-width-1-2@s">
       <div class="r-media">
-        <img width="70px" src="/static/raidar/img/icon/[[name]].png" alt="[[name]]">
+        <img width="70px" src="/static/raidar/img/icon/[[name]].png" alt="[[name]]" onerror="this.style.visibility='hidden'">
         <div class="uk-card uk-card-default uk-card-small uk-card-body" uk-drop="delay-show: 250">
           <div>
             <span class="ignore">Uploaded as</span>
@@ -20,11 +20,14 @@
           </div>
         </div>
         <div class="r-body">
-          <h2 style='line-height:1;' class="uk-margin-small-bottom">[[name]]</h2>
+          <h2 style='line-height:1;' class="uk-margin-small-bottom">[[name]][[#if mode_tag]] <span class="uk-label r-mode-[[mode_tag]]">[[mode_tag]]</span>[[/if]]</h2>
           <span class="uk-badge uk-text-bold [[encounter.success ? 'uk-label-success' : 'uk-label-danger']]">[[encounter.success ? 'Success' : 'Wipe']]  ([[formatTime(duration)]])</span>
           <span class="uk-badge uk-text-bold r-bg-0">
             [[formatDate(started_at)]]
           </span>
+          [[#if has_report]]
+            <a href="{% url 'report' %}[[page.no]]" target="_blank" rel="noopener" class="uk-badge uk-text-bold" uk-tooltip title="Open the Elite Insights report of this log, with the combat replay, in a new tab">Elite Insights</a>
+          [[/if]]
 
           [[#if encounter.participated]]
           <a href="" class="uk-badge uk-text-bold uk-visible@m">[[encounter.tags ? 'Tags:' : 'Add Tags']] [[encounter.tags]] </a>
@@ -71,12 +74,12 @@
   <div class="uk-navbar-left">
     <ul uk-tab="swiping: true;">
       <li class="[[persistent_page.tab == 'combat_stats' ? 'uk-active' : '']]"><a on-click="@this.set('persistent_page.tab', 'combat_stats')">Overview</a></li>
-      <li class="[[persistent_page.tab == 'boons' || persistent_page.tab == 'offensive_buffs' || persistent_page.tab == 'supportive_buffs' ? 'uk-active' : '']]"><a href="#">Buffs <i class="material-icons">keyboard_arrow_down</i></a></li>
+      <li class="[[persistent_page.tab != 'combat_stats' && persistent_page.tab != 'boss_metrics' ? 'uk-active' : '']]"><a href="#">Buffs <i class="material-icons">keyboard_arrow_down</i></a></li>
       <div uk-dropdown="mode: click">
           <ul class="uk-nav uk-dropdown-nav">
-            <li><a on-click="@this.set('persistent_page.tab', 'boons')">Boons</a></li>
-            <li><a on-click="@this.set('persistent_page.tab', 'offensive_buffs')">Offensive Buffs</a></li>
-            <li><a on-click="@this.set('persistent_page.tab', 'supportive_buffs')">Supportive Buffs</a></li>
+            [[#each encounter.buff_tabs as buff_tab]]
+              <li><a on-click="@this.set('persistent_page.tab', buff_tab.id)">[[buff_tab.name]]</a></li>
+            [[/each]]
           </ul>
       </div>
 
@@ -85,19 +88,29 @@
   </div>
   <div class="uk-navbar-right uk-visible@m">
     <ul uk-tab="swiping: true;">
-      [[#each encounter.phase_order]]
-        <li uk-tooltip title="[[formatTime(encounter.phases[.].duration)]]" class="uk-flex-last [[page.phase == . ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', .)">[[.]]</a></li>
+      [[#each phaseRows(encounter, page.phase)[0] as phase]]
+        <li uk-tooltip title="[[formatTime(phase.duration)]]" class="uk-flex-last [[phase.active || phase.open ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', phase.name)">[[phase.name]][[#if phase.parts]] <i class="material-icons">keyboard_arrow_down</i>[[/if]]</a></li>
       [[/each]]
     </ul>
   </div>
 </nav>
+[[#each phaseRows(encounter, page.phase).slice(1) as row]]
+  <div class="r-phase-parts uk-visible@m">
+    {# only the look of tabs (class), not the UIkit tab component (attribute): the component always activates the first tab when none is active #}
+    <ul class="uk-tab uk-flex-right uk-margin-small-top">
+      [[#each row as phase]]
+        <li uk-tooltip title="[[formatTime(phase.duration)]]" class="[[phase.active || phase.open ? 'uk-active' : '']]"><a on-click="@this.set('page.phase', phase.name)">[[phase.name]][[#if phase.parts]] <i class="material-icons">keyboard_arrow_down</i>[[/if]]</a></li>
+      [[/each]]
+    </ul>
+  </div>
+[[/each]]
 
 [[#if persistent_page.tab == 'combat_stats']]
   {% include 'raidar/encounter_combat_data.html' %}
-[[elseif persistent_page.tab == 'boons' || persistent_page.tab == 'offensive_buffs' || persistent_page.tab == 'supportive_buffs']]
-  {% include 'raidar/encounter_buffs.html' %}
 [[elseif persistent_page.tab == 'boss_metrics']]
   {% include 'raidar/encounter_boss_metrics.html' %}
+[[else]]
+  {% include 'raidar/encounter_buffs.html' %}
 [[/if]]
 
 <p>

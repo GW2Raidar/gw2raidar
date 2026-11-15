@@ -12,7 +12,7 @@
           [[#each wings]]
           <optgroup label="[[name]]">
             [[#each bosses]]
-              <option value='[[.]]'>[[data.areas[.].name]]</option>
+              <option value='[[.]]'>[[areaLabel(.)]]</option>
             [[/each]]
           </optgroup>
           [[/each]]
@@ -36,7 +36,7 @@
                   {# TODO active check is bad ATM #}
                   {# [[#with {active: page.area == all || page.area in data.areas && (data.areas[page.area].kind == 1 || data.areas[page.area].kind == 2)}]] #}
                   [[#with {active: page.stats_page == all || page.stats_page in bosses}]]
-                    <button class="uk-button uk-inline" class-uk-button-primary="active">[[#if active]][[data.areas[page.stats_page] ? data.areas[page.stats_page].name : page.stats_page]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
+                    <button class="uk-button uk-inline" class-uk-button-primary="active">[[#if active]][[data.areas[page.stats_page] ? areaLabel(page.stats_page) : page.stats_page]] &mdash;&nbsp;[[/if]][[name]] <i class="material-icons">expand_more</i></button>
                   [[/with]]
                   <div uk-dropdown="mode: click; boundary: .boundary; boundary-align: true; pos: bottom-justify;">
                     <div class="uk-width-1 uk-grid">
@@ -54,7 +54,7 @@
                           <ul class="uk-nav uk-dropdown-nav">
                             <li class="uk-nav-header uk-margin-top">[[name]]</li>
                             [[#each bosses]]
-                              <li class-uk-active="page.stats_page == ." ><a on-click="(@event.ctrlKey || @event.metaKey) || @this.fire('global_stats_nav', 'page.stats_page', .)" href="[[baseURL]]/global_stats/area-[[.]]">[[data.areas[.].name]]</a></li>
+                              <li class-uk-active="page.stats_page == ." ><a on-click="(@event.ctrlKey || @event.metaKey) || @this.fire('global_stats_nav', 'page.stats_page', .)" href="[[baseURL]]/global_stats/area-[[.]]">[[areaLabel(.)]]</a></li>
                             [[/each]]
                           </ul>
                         </div>

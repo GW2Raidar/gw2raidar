@@ -1,8 +1,6 @@
 {% load static %}
 {% comment %}
-XXX Currently, all of the buffs are in a single table, looked up by `data.buff_tabs[5]`
-However, there's other five tabs just waiting to happen (according to #216)
-Waiting to see how they are to be rendered. Are they switched? What's the switch?
+The buff tabs and the buffs on them differ per encounter: `encounter.buff_tabs` and `encounter.buffs`.
 {% endcomment %}
 
 <div class="table-container uk-margin-top">
@@ -17,7 +15,8 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
     </div>
   </div>
 
-  [[#with {boons: 1, offensive_buffs: 2, supportive_buffs: 3 }[persistent_page.tab] as tabNo]]
+  [[#each encounter.buff_tabs as buff_tab]]
+  [[#if buff_tab.id == persistent_page.tab]]
 
       [[#with encounter.phases[page.phase]]]
       <div class="r-encounter-stats-container squad">
@@ -28,10 +27,10 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
             </div>
           </div>
           <div class="r-encounter-buff-container" >
-            [[#each data.buff_tabs[tabNo].order as code]]
+            [[#each buff_tab.order as code]]
               [[#with {
-                buff: data.buffs[code],
-                format: ('stacks' in data.buffs[code]) ? num : perc,
+                buff: encounter.buffs[code],
+                format: ('stacks' in encounter.buffs[code]) ? num : perc,
                 section: page.boon_output ? {
                     name: 'Output',
                     value: buffs_out ? buffs_out[code] : 0,
@@ -73,10 +72,10 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               </div>
             </div>
             <div class="r-encounter-buff-container">
-              [[#each data.buff_tabs[tabNo].order as code]]
+              [[#each buff_tab.order as code]]
                 [[#with {
-                  buff: data.buffs[code],
-                  format: ('stacks' in data.buffs[code]) ? num : perc,
+                  buff: encounter.buffs[code],
+                  format: ('stacks' in encounter.buffs[code]) ? num : perc,
                   section: page.boon_output ? {
                       name: 'Output',
                       value: buffs_out ? buffs_out[code] : 0
@@ -116,10 +115,10 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
               </div>
 
               <div class="r-encounter-buff-container" >
-                [[#each data.buff_tabs[tabNo].order as code]]
+                [[#each buff_tab.order as code]]
                   [[#with {
-                    buff: data.buffs[code],
-                    format: ('stacks' in data.buffs[code]) ? num : perc,
+                    buff: encounter.buffs[code],
+                    format: ('stacks' in encounter.buffs[code]) ? num : perc,
                     section: page.boon_output ? {
                         name: 'Output',
                         value: buffs_out ? buffs_out[code] : 0,
@@ -145,5 +144,6 @@ Waiting to see how they are to be rendered. Are they switched? What's the switch
         </div>
       [[/each]]
 
-  [[/with]]
+  [[/if]]
+  [[/each]]
 </div>

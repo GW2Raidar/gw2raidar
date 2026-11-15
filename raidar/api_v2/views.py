@@ -136,7 +136,7 @@ class CategoryListView(generics.ListAPIView):
 class AreaSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Area
-        fields = ('id', 'name')
+        fields = ('id', 'name', 'is_cm', 'is_lcm')
 
 class AreaListView(generics.ListAPIView):
     queryset = Area.objects.all()

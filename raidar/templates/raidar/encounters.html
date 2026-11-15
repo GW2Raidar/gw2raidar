@@ -20,6 +20,16 @@
             </div>
 
             <div class="uk-margin">
+              <label class="uk-form-label uk-h5 uk-invisible-access">By Mode</label>
+              <div class="uk-button-group uk-form-controls">
+                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.mode === 0 && 'uk-button-primary' || '']]" value="0" on-click="encounter_filter_mode">Normal</button>
+                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.mode === 1 && 'uk-button-primary' || '']]" value="1" on-click="encounter_filter_mode" uk-tooltip title="Challenge mode">CM</button>
+                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.mode === 2 && 'uk-button-primary' || '']]" value="2" on-click="encounter_filter_mode" uk-tooltip title="Legendary challenge mode">LCM</button>
+                <button class="uk-button uk-button-default uk-button-small [[settings.encounterSort.filter.mode == null && 'uk-button-primary' || '']]" value="null" on-click="encounter_filter_mode">All</button>
+              </div>
+            </div>
+
+            <div class="uk-margin">
               <label class="uk-form-label uk-h5 uk-invisible-access" for="encounterSelect">By Encounter</label>
               <div class="uk-form-controls">
                 <select id="encounterSelect" class="uk-select" value="[[settings.encounterSort.filter.area]]">
@@ -194,7 +204,7 @@
         [[#each encounterSlice]]
           <a class="r-encounters-list" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: url_id })" href="[[baseURL]]/encounter/[[url_id]]">
             <td colspan="3">
-              <h4 class="uk-margin-remove">[[area]]</h4>
+              <h4 class="uk-margin-remove">[[area]][[#if mode_tag]] <span class="uk-label r-mode-[[mode_tag]]">[[mode_tag]]</span>[[/if]]</h4>
               <span class="uk-badge uk-text-bold [[success ? 'uk-label-success' : 'uk-label-danger']]">[[success ? 'Success' : 'Wipe']]  ([[formatTime(duration)]])</span>
               <span class="uk-badge uk-text-bold r-bg-0">[[formatDate(started_at)]]</span>
                 [[#each tags]]

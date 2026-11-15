@@ -47,8 +47,8 @@
     [[#each wing.bosses as boss]]
       [[#with leaderboards[boss].periods[page.leaderboards.week] as leaderboard, leaderboards[boss].max_max_dps as max_max_dps]]
         <div class="r-leaderboard-encounter" class-expanded="boss == page.leaderboards.boss" on-click="@this.set('page.leaderboards.boss', boss)">
-          <img src="/static/raidar/img/icon/[[data.areas[boss].name]].png" alt="[data.areas[boss].name]]" width="50px">
-          <h2 class="uk-margin-remove-top uk-text-truncate ">[[data.areas[boss].name]]</h2>
+          <img src="/static/raidar/img/icon/[[data.areas[boss].name]].png" alt="[data.areas[boss].name]]" width="50px" onerror="this.style.visibility='hidden'">
+          <h2 class="uk-margin-remove-top uk-text-truncate ">[[data.areas[boss].name]][[#if data.areas[boss].tag]] <span class="uk-label r-mode-[[data.areas[boss].tag]]">[[data.areas[boss].tag]]</span>[[/if]]</h2>
           <a class="uk-h3 uk-margin-remove" class-uk-invisible="boss != page.leaderboards.boss" on-click="@this.set('page.leaderboards.boss', null) && false"><i class="material-icons">close</i></a>
           [[#each leaderboard as line]]
             <a class="r-leaderboard-row" href="[[baseURL]]/encounter/[[line.url_id]]" on-click="(@event.ctrlKey || @event.metaKey) || @this.page({ name: 'encounter', no: line.url_id })">
