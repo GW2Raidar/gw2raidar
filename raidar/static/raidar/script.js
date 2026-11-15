@@ -194,40 +194,31 @@
     if (!base64) return [];
     return new Float32Array(Uint8Array.from(atob(base64), c => c.charCodeAt(0)).buffer);
   }
-  // e.g. bsearch(might, pctl(per_might))
-  // // find lowest of equals
-  // helpers.bsearch = (needle, haystack) => {
-  //   if (!haystack.length) return 0;
-  //   let l = 0, h = haystack.length - 1;
-  //   if (needle > haystack[h]) {
-  //     return h + 1;
-  //   }
-  //   while (l != h) {
-  //     let m = (l + h) >> 1;
-  //     if (haystack[m] < needle) {
-  //       l = m + 1;
-  //     } else {
-  //       h = m;
-  //     }
-  //   }
-  //   return h;
-  // };
+  // The percentile (0-100) of a value among the points restat stores for a stat, pctl(...): its 1st to
+  // 100th percentiles, in order. The value is rounded to float32 first, as those points were; otherwise a
+  // value equal to them (e.g. the only log of a boss) would compare as just above or just below them.
+  // e.g. bsearch(might, pctl(per_might)): higher is better, the share of points at or below the value.
+  // A value equal to every point is the 100th percentile; no points at all give 0.
   helpers.bsearch = (needle, haystack) => {
-    // find highest of equals
     if (!haystack.length) return 0;
-    let l = 0, h = haystack.length - 1;
-    if (needle > haystack[h]) {
-      return h + 1;
+    needle = Math.fround(+needle || 0);
+    let l = 0, h = haystack.length;  // finds the first point above the value
+    while (l < h) {
+      let m = (l + h) >> 1;
+      if (haystack[m] <= needle) l = m + 1; else h = m;
     }
-    while (l != h) {
-      let m = (l + h + 1) >> 1;
-      if (haystack[m] <= needle) {
-        l = m;
-      } else {
-        h = m - 1;
-      }
+    return Math.round(100 * l / haystack.length);
+  };
+  // e.g. bsearchLow(received, pctl(per_received)): lower is better, the share of points at or above the value.
+  helpers.bsearchLow = (needle, haystack) => {
+    if (!haystack.length) return 0;
+    needle = Math.fround(+needle || 0);
+    let l = 0, h = haystack.length;  // finds the first point at or above the value
+    while (l < h) {
+      let m = (l + h) >> 1;
+      if (haystack[m] < needle) l = m + 1; else h = m;
     }
-    return haystack[h] == needle ? h : h + 1;
+    return Math.round(100 * (haystack.length - l) / haystack.length);
   };
   helpers.th = num => {
     let ones = num % 10;

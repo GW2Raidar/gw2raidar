@@ -104,7 +104,7 @@
 		    }
 		}]]
 		  [[#with
-		    100 - bsearch(section.recv, section.percentiles_recv) as pctl_recv,
+		    bsearchLow(section.recv, section.percentiles_recv) as pctl_recv,
 		    clamp(100 * section.recv / max_max_recv) as width
 		  ]]
 		    {# line #}
@@ -398,7 +398,7 @@
                         }
                     }]]
                       [[#with
-                        100 - bsearch(section.recv, section.percentiles_recv) as pctl_recv,
+                        bsearchLow(section.recv, section.percentiles_recv) as pctl_recv,
                         clamp(100 * section.recv / max_player_recv) as width
                       ]]
                         {# line #}
