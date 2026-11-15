@@ -64,7 +64,8 @@ def last_restat():
 
 def delete_old_files():
     """Deletes the oldest uploaded logs (.evtc) while the upload disk has less than settings.MIN_FREE_DISK_GB
-    free. The parsed encounters and their Elite Insights reports are kept. A limit of 0 keeps every log."""
+    free. The parsed encounters are kept, and so are their Elite Insights reports, which are on their own volume
+    (settings.REPORT_DIR). A limit of 0 keeps every log."""
     min_disk_avail = settings.MIN_FREE_DISK_GB * 1024 * 1024 * 1024
     num_pruned = 0
     if min_disk_avail <= 0:

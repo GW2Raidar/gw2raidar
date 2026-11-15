@@ -17,9 +17,16 @@ vulnerabilities with `pip-audit -r requirements.txt`.
 `docker-compose.yml` runs the database, the site (`web`) and the upload processor (`worker`).
 It needs `SECRET_KEY`, `ALLOWED_HOSTS` and `POSTGRES_PASSWORD` in the environment.
 
+Files are kept on two volumes:
+
+- `uploads` (`/data/uploads`, `UPLOAD_DIR`): uploads waiting to be processed, and the stored logs under
+  `encounters/<uploader>/`.
+- `reports` (`/data/reports`, `REPORT_DIR`): the Elite Insights HTML report of each encounter, gzipped, at
+  `<encounter url id>/ei.html.gz`. Reports are never pruned, so back this volume up along with the database.
+
 `MIN_FREE_DISK_GB` (default 10) controls log pruning: `restat` deletes the oldest uploaded `.evtc` files
 while the upload volume has less than that many GB free. The parsed encounters and their Elite Insights
-reports stay; only the encounter's download goes. `0` keeps every log.
+reports stay, as they are on their own volume; only the encounter's download goes. `0` keeps every log.
 
 ## Upgrading PostgreSQL
 

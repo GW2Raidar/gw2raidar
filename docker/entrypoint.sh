@@ -3,7 +3,7 @@ set -e
 
 if [ "$(id -u)" = "0" ]; then
   # Named volumes created by earlier (root) containers may be root-owned.
-  chown -R app:app /data/uploads
+  chown -R app:app /data/uploads /data/reports
   exec env HOME=/app setpriv --reuid=app --regid=app --init-groups "$0" "$@"
 fi
 

@@ -232,6 +232,8 @@ if os.environ.get('STATIC_ROOT'):
     STATIC_ROOT = os.environ['STATIC_ROOT']
 if os.environ.get('UPLOAD_DIR'):
     UPLOAD_DIR = os.environ['UPLOAD_DIR']
+if os.environ.get('REPORT_DIR'):
+    REPORT_DIR = os.environ['REPORT_DIR']
 if os.environ.get('GA_PROPERTY_ID'):
     GA_PROPERTY_ID = os.environ['GA_PROPERTY_ID']
 if os.environ.get('GW2EI_CLI'):

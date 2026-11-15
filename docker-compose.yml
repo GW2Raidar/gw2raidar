@@ -35,6 +35,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
       POSTGRES_HOST: db
       UPLOAD_DIR: /data/uploads
+      REPORT_DIR: /data/reports
       MIN_FREE_DISK_GB: ${MIN_FREE_DISK_GB:-}   # restat prunes old logs below this; 0 keeps all (default 10)
       EMAIL_HOST: ${EMAIL_HOST:-}
       EMAIL_PORT: ${EMAIL_PORT:-}
@@ -44,6 +45,7 @@ services:
       - "8000"
     volumes:
       - uploads:/data/uploads
+      - reports:/data/reports
     # Healthy once migrations have run and the app answers (Host header must be an allowed host)
     healthcheck:
       test: ["CMD", "python", "-c", "import os, urllib.request as u; h = os.environ['ALLOWED_HOSTS'].split(',')[0].strip(); u.urlopen(u.Request('http://127.0.0.1:8000/initial.json', headers={'Host': h, 'User-Agent': 'healthcheck'}), timeout=5)"]
@@ -63,7 +65,9 @@ services:
     environment: *appenv
     volumes:
       - uploads:/data/uploads
+      - reports:/data/reports
 
 volumes:
   pgdata17:
   uploads:
+  reports:

@@ -4,6 +4,7 @@ import os
 import re
 import copy
 import random
+import shutil
 from time import time
 from hashlib import md5
 from functools import lru_cache
@@ -105,6 +106,11 @@ def _dictionary():
     location = os.path.realpath(os.path.join(os.getcwd(), os.path.dirname(__file__)))
     with open(os.path.join(location, "words.txt")) as file:
         return [line.strip() for line in file.readlines()]
+
+
+def report_dir():
+    """Where Elite Insights reports are kept, apart from the uploads: settings.REPORT_DIR (default "reports")."""
+    return getattr(settings, "REPORT_DIR", "reports")
 
 
 def _generate_url_id(size=5):
@@ -770,10 +776,13 @@ class Encounter(models.Model):
             upload_dir = "uploads"
         return os.path.join(upload_dir, "encounters", self.uploaded_by.username, self.filename)
 
+    def report_folder(self):
+        """The folder that holds the Elite Insights output of this encounter, named after its url_id."""
+        return os.path.join(report_dir(), self.url_id)
+
     def report_diskname(self):
-        """Where the Elite Insights HTML report of this encounter is kept (gzip-compressed), next to the log."""
-        diskname = self.diskname()
-        return diskname + ".html.gz" if diskname else None
+        """Where the Elite Insights HTML report of this encounter is kept (gzip-compressed)."""
+        return os.path.join(self.report_folder(), "ei.html.gz")
 
     def update_has_evtc(self):
         self.has_evtc = os.path.isfile(self.diskname())
@@ -1502,6 +1511,8 @@ def _delete_encounter_file(sender, instance, using, **kwargs):  # pylint: disabl
             os.remove(filename)
         except FileNotFoundError:
             pass
+    if instance.url_id:
+        shutil.rmtree(instance.report_folder(), ignore_errors=True)
 
 
 User._meta.get_field("email")._unique = True  # pylint: disable=protected-access

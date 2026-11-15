@@ -129,10 +129,13 @@ class Command(BaseCommand):
 
     def analyse_upload(self, upload):
         diskname = upload.diskname()
-        # Elite Insights HTML report of the log; moved next to the stored log once the encounter is known
-        report_diskname = diskname + ".html.gz"
+        # Elite Insights HTML report of the log; moved to the encounter's report folder once the encounter
+        # is known. It is staged on the report volume, as os.replace cannot move files across volumes.
+        staging_dir = os.path.join(report_dir(), "incoming")
+        report_diskname = os.path.join(staging_dir, "%d.html.gz" % upload.id)
 
         try:
+            os.makedirs(staging_dir, exist_ok=True)
             # Elite Insights reads .evtc, .evtc.zip and .zevtc directly, but reports a damaged archive as a crash
             if upload.filename.endswith(COMPRESSED_EXTENSIONS) and not is_zipfile(diskname):
                 raise EvtcAnalysisException('File is not a valid archive')
@@ -190,13 +193,12 @@ class Command(BaseCommand):
                         Q(started_at_full=started_at_full) | Q(started_at_half=started_at_half),
                         area=area, account_hash=account_hash
                     )
-                    if encounter.has_evtc:
-                        for old_filename in (encounter.diskname(), encounter.report_diskname()):
-                            if old_filename:
-                                try:
-                                    os.remove(old_filename)
-                                except FileNotFoundError:
-                                    pass
+                    # The report keeps its path (the url_id stays) and is overwritten below
+                    if encounter.has_evtc and encounter.diskname():
+                        try:
+                            os.remove(encounter.diskname())
+                        except FileNotFoundError:
+                            pass
                     encounter.era = era
                     encounter.filename = filename
                     encounter.uploaded_on = datetime.fromtimestamp(upload.uploaded_at, timezone.utc)
@@ -231,6 +233,7 @@ class Command(BaseCommand):
                 else:
                     with ZipFile(new_diskname, 'w', ZIP_DEFLATED) as zipfile_out:
                         zipfile_out.write(diskname, orig_filename)
+                os.makedirs(encounter.report_folder(), exist_ok=True)
                 os.replace(report_diskname, encounter.report_diskname())
 
                 for name, player in status_for.items():

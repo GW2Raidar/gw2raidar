@@ -38,11 +38,11 @@ COPY --from=builder /opt/gw2ei /opt/gw2ei
 WORKDIR /app
 COPY . /app
 # Bake the static files into the image (served by WhiteNoise); no database needed for this step.
-# /app/log and /data/uploads are the only places the app writes to.
+# /app/log, /data/uploads and /data/reports are the only places the app writes to.
 RUN python manage.py collectstatic --noinput \
     && (python -m compileall -q raidar analyser eiparser gw2api gw2raidar || true) \
-    && mkdir -p /app/log /data/uploads \
-    && chown app:app /app/log /data/uploads
+    && mkdir -p /app/log /data/uploads /data/reports \
+    && chown app:app /app/log /data/uploads /data/reports
 COPY docker/entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 EXPOSE 8000
