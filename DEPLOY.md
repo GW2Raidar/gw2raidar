@@ -1,7 +1,53 @@
-How to pull off the WSGI+PostgreSQL deploy
+# Versions
+
+GW2 Raidar runs on Python 3.13, Django 5.2 (LTS) and PostgreSQL 14 or newer (the Compose file uses 17).
+
+`requirements.txt` holds the exact versions of all Python packages and is generated; the packages the
+project asks for are listed in `requirements.in`. To move everything to the newest releases:
 
 ```
-apt install python3-dev python3-pip apache2 apache2-dev git postgresql-9.6
+uv pip compile requirements.in --upgrade --python-version 3.13 --python-platform linux -o requirements.txt
+```
+
+(`pip-compile --upgrade requirements.in` from pip-tools does the same.) Check the result for known
+vulnerabilities with `pip-audit -r requirements.txt`.
+
+# Docker Compose deploy
+
+`docker-compose.yml` runs the database, the site (`web`) and the upload processor (`worker`).
+It needs `SECRET_KEY`, `ALLOWED_HOSTS` and `POSTGRES_PASSWORD` in the environment.
+
+`MIN_FREE_DISK_GB` (default 10) controls log pruning: `restat` deletes the oldest uploaded `.evtc` files
+while the upload volume has less than that many GB free. The parsed encounters and their Elite Insights
+reports stay; only the encounter's download goes. `0` keeps every log.
+
+## Upgrading PostgreSQL
+
+A new major version of PostgreSQL cannot open the data of an older one, so the database volume is
+named after the version (`pgdata17`). A deploy that changes the version therefore starts with an
+empty database, and the old volume is left untouched. To move the data from 13 (volume `pgdata`):
+
+```
+# 1. on the OLD deployment: stop writers, then dump the database
+docker compose stop web worker
+docker compose exec -T db pg_dump -U gw2raidar -Fc gw2raidar > gw2raidar.dump
+
+# 2. deploy the new version, but start only the database
+docker compose up -d db
+
+# 3. restore into the empty database, then start the rest (web applies the migrations)
+docker compose exec -T db pg_restore -U gw2raidar -d gw2raidar --no-owner < gw2raidar.dump
+docker compose up -d
+```
+
+If `web` was started before the restore, it has already created empty tables: remove the new volume
+(`docker compose down`, `docker volume rm <project>_pgdata17`) and start again from step 2.
+Remove the old `pgdata` volume once the site has been checked.
+
+# WSGI + PostgreSQL deploy without Docker
+
+```
+apt install python3-dev python3-pip apache2 apache2-dev git postgresql
 ```
 
 Create the postgres user

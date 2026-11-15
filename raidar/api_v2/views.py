@@ -1,15 +1,22 @@
 from rest_framework import serializers, viewsets, generics
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.schemas import AutoSchema
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.parsers import FileUploadParser, MultiPartParser
-import coreapi
-import coreschema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, extend_schema, inline_serializer
 from ..models import *
 from ..views import _perform_upload
-from distutils.util import strtobool
 
+
+def strtobool(value):
+    """1/0 for the usual spellings of true and false (as distutils.util.strtobool did)."""
+    value = value.lower()
+    if value in ('y', 'yes', 't', 'true', 'on', '1'):
+        return 1
+    if value in ('n', 'no', 'f', 'false', 'off', '0'):
+        return 0
+    raise ValueError("invalid truth value %r" % (value,))
 
 
 
@@ -21,6 +28,14 @@ class EncounterSerializer(serializers.HyperlinkedModelSerializer):
         model = Encounter
         fields = ('url_id', 'started_at', 'filename', 'area_id', 'category_id', 'tags', 'success')
 
+@extend_schema(parameters=[
+    OpenApiParameter("since", OpenApiTypes.INT, OpenApiParameter.QUERY,
+                     description="Earliest time (UNIX timestamp)"),
+    OpenApiParameter("area_id", OpenApiTypes.INT, OpenApiParameter.QUERY,
+                     description="ID of the area where encounter took place"),
+    OpenApiParameter("success", OpenApiTypes.BOOL, OpenApiParameter.QUERY,
+                     description="Return only successful or unsuccessful encounters"),
+])
 class EncounterListView(generics.ListAPIView):
     """
     List own encounters
@@ -45,36 +60,6 @@ class EncounterListView(generics.ListAPIView):
 
         return queryset
 
-    schema = AutoSchema(manual_fields=[
-        coreapi.Field(
-            name="since",
-            required=False,
-            location='query',
-            schema=coreschema.Integer(
-                title="Since",
-                description="Earliest time (UNIX timestamp)",
-            ),
-        ),
-        coreapi.Field(
-            name="area_id",
-            required=False,
-            location='query',
-            schema=coreschema.Integer(
-                title="Area ID",
-                description="ID of the area where encounter took place",
-            ),
-        ),
-        coreapi.Field(
-            name="success",
-            required=False,
-            location='query',
-            schema=coreschema.Boolean(
-                title="Success",
-                description="Return only successful or unsuccessful encounters",
-            ),
-        ),
-    ])
-
 
 class EncounterUploadView(APIView):
     """
@@ -82,6 +67,17 @@ class EncounterUploadView(APIView):
     """
     parser_classes = (MultiPartParser,)
 
+    @extend_schema(
+        request={"multipart/form-data": inline_serializer("EncounterUpload", {
+            "file": serializers.FileField(help_text="The encounter log"),
+            "category": serializers.IntegerField(required=False, help_text="Category ID"),
+            "tags": serializers.CharField(required=False, help_text="List of tags, comma-separated"),
+        })},
+        responses=inline_serializer("EncounterUploadResult", {
+            "filename": serializers.CharField(),
+            "upload_id": serializers.IntegerField(),
+        }),
+    )
     def put(self, request):
         """
             Upload an encounter
@@ -91,37 +87,6 @@ class EncounterUploadView(APIView):
             "filename": filename,
             "upload_id": upload.id,
         })
-
-    # XXX broken on https://github.com/swagger-api/swagger-ui/issues/3784
-    schema = AutoSchema(manual_fields=[
-        coreapi.Field(
-            name="file",
-            required=True,
-            location='form',
-            schema=coreschema.String(
-                title="File",
-                description="The encounter log",
-            ),
-        ),
-        coreapi.Field(
-            name="category",
-            required=False,
-            location='form',
-            schema=coreschema.Integer(
-                title="Category",
-                description="Category ID",
-            ),
-        ),
-        coreapi.Field(
-            name="tags",
-            required=False,
-            location='form',
-            schema=coreschema.String(
-                title="Tags",
-                description="List of tags, comma-separated",
-            ),
-        ),
-    ])
 
 class CategorySerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

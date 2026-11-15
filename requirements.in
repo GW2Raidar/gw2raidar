@@ -1,0 +1,25 @@
+# Direct runtime dependencies (Python 3.13). requirements.txt is generated from this file:
+#
+#     uv pip compile requirements.in --python-version 3.13 --python-platform linux -o requirements.txt
+#     (or: pip-compile requirements.in)
+#
+# Logs are parsed by the Elite Insights CLI (see eiparser/ and the Dockerfile), not by Python code.
+
+# Django LTS; move to the next LTS (6.2) once it is out
+Django>=5.2,<5.3
+djangorestframework
+drf-spectacular
+django-cors-headers
+django-taggit
+psycopg2-binary
+# GW2 API client (gw2api/)
+requests
+# numpy decodes the stored percentiles; pandas and psutil are only used by the restat command
+numpy
+pandas
+psutil
+# production server
+gunicorn
+whitenoise
+# lets WhiteNoise also write .br files during collectstatic
+Brotli

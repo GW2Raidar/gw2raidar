@@ -11,14 +11,12 @@ from datetime import datetime, timedelta, timezone
 from json import loads as json_loads, dumps as json_dumps
 
 import numpy
-import pytz
-from django.db import models
+from django.db import connections, models
 from django.templatetags.static import static
 from django.contrib.auth.models import User
 from django.core.validators import RegexValidator
 from django.db.models import UniqueConstraint as Unique, Sum, Avg
 from django.db.models.signals import post_save, post_delete
-from fuzzycount import FuzzyCountManager
 from taggit.managers import TaggableManager
 from gw2raidar import settings
 from analyser.analyser import Profession, Archetype, Elite, BOSSES
@@ -27,6 +25,27 @@ from analyser.buffs import BUFF_TYPES, BUFF_CATEGORIES, BOONS_TAB, HIDDEN_BUFF_T
 
 # unique to 30-60s precision
 START_RESOLUTION = 60
+
+
+class FuzzyCountQuerySet(models.QuerySet):
+    """On PostgreSQL, counts all rows of a table from the planner's estimate instead of scanning it."""
+
+    def count(self):
+        connection = connections[self.db]
+        if connection.vendor != "postgresql" or self.query.where or self.query.is_sliced \
+                or self.query.distinct:
+            return super().count()
+        with connection.cursor() as cursor:
+            cursor.execute("SELECT reltuples FROM pg_class WHERE oid = to_regclass(%s)",
+                           [connection.ops.quote_name(self.model._meta.db_table)])
+            row = cursor.fetchone()
+        # no estimate (-1) until the table is first analysed
+        if row is None or row[0] < 0:
+            return super().count()
+        return int(row[0])
+
+
+FuzzyCountManager = models.Manager.from_queryset(FuzzyCountQuerySet)
 
 PROFESSION_CHOICES = (
     (-1, "All"),
@@ -534,7 +553,7 @@ class Encounter(models.Model):
     @staticmethod
     def week_for(started_at):
         """Returns timestamp of closest non-future raid reset (Monday 08:30 UTC)"""
-        encounter_dt = datetime.utcfromtimestamp(started_at).replace(tzinfo=pytz.UTC)
+        encounter_dt = datetime.fromtimestamp(started_at, timezone.utc)
         reset_dt = (encounter_dt - timedelta(days=encounter_dt.weekday())).replace(hour=7, minute=30, second=0,
                                                                                    microsecond=0)
         if reset_dt > encounter_dt:
@@ -766,7 +785,8 @@ class Encounter(models.Model):
 
     @tagstring.setter
     def tagstring(self, value):
-        self.tags.set(*value.split(","))
+        # taggit's set() takes one list of names (since 2.0); blank names are dropped
+        self.tags.set([name.strip() for name in (value or "").split(",") if name.strip()])
 
     @staticmethod
     def calculate_account_hash(account_names):
@@ -781,7 +801,7 @@ class Encounter(models.Model):
         return started_at_full, started_at_half
 
     class Meta:
-        index_together = ("area", "started_at")
+        indexes = [models.Index(fields=["area", "started_at"], name="raidar_enc_area_started_idx")]
         ordering = ("started_at",)
         unique_together = (
             ("area", "account_hash", "started_at_full"),

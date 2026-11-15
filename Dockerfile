@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/dotnet/runtime:10.0 AS dotnet
 
 # ---- build stage: full image has gcc/headers, so packages without wheels can compile ----
-FROM python:3.7-bullseye AS builder
+FROM python:3.13-trixie AS builder
 ENV PIP_NO_CACHE_DIR=1
 RUN python -m venv /opt/venv
 COPY requirements.txt /tmp/requirements.txt
@@ -20,7 +20,7 @@ RUN curl -fsSL -o /tmp/GW2EICLI.zip \
     && rm /tmp/GW2EICLI.zip
 
 # ---- runtime stage: slim image, only the virtualenv is carried over (no apt-get needed) ----
-FROM python:3.7-slim-bullseye
+FROM python:3.13-slim-trixie
 # GW2EI_CLI is read by gw2raidar/settings.py; a .dll is run through `dotnet`.
 # The image has no ICU libraries, so .NET runs in invariant-culture mode; EI asks for the "en-US"
 # culture, which then needs predefined-only switched off.
