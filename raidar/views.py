@@ -98,7 +98,9 @@ def _html_response(request, page, data=None):
         pass
     response['archetypes'] = {k: v for k, v in ARCHETYPE_CHOICES}
     response['areas'] = {id: {
-            "name": boss.name,
+            "name": boss.base_name,
+            "mode": int(boss.mode),
+            "tag": boss.tag,
             "kind": boss.kind,
             "enrage": boss.enrage,
         } for id, boss in BOSSES.items()}
@@ -217,8 +219,10 @@ def global_stats(request, era_id=None, stats_page=None, json=None):
         } for era in Era.objects.all()}
 
     areas = [{
-            "name": area.name,
+            "name": str(area),
             "id": area.id,
+            "is_cm": area.is_cm,
+            "is_lcm": area.is_lcm,
         } for area in Area.objects.all()]
 
     try:
@@ -339,11 +343,13 @@ def _get_leaderboard(area_id: int, start: datetime, end: datetime):
             "id": enc.id,
             "url_id": enc.url_id,
             "duration": enc.calc_phase_duration("All"),
-            "dps": EncounterDamage.breakdown(enc.encounter_data.encounterdamage_set.filter(target="*All"),
+            "dps": EncounterDamage.breakdown(enc.full_fight(enc.encounter_data.encounterdamage_set)
+                                             .filter(target="*All"),
                                              phase_duration=enc.calc_phase_duration("All"), group=True)["dps"],
-            "dps_boss": EncounterDamage.breakdown(enc.encounter_data.encounterdamage_set.filter(target="*Boss"),
+            "dps_boss": EncounterDamage.breakdown(enc.full_fight(enc.encounter_data.encounterdamage_set)
+                                                  .filter(target="*Boss"),
                                                   phase_duration=enc.calc_phase_duration("All"), group=True)["dps"],
-            "buffs": EncounterBuff.breakdown(enc.encounter_data.encounterbuff_set
+            "buffs": EncounterBuff.breakdown(enc.full_fight(enc.encounter_data.encounterbuff_set)
                                              .filter(target__in=enc.participations.values_list("character", flat=True))),
             "comp": sorted([[part.archetype, part.profession, part.elite] for part in enc.participations.all()],
                            key=lambda x: -100 * x[0] + 10 * x[1] + x[2]),
@@ -351,6 +357,71 @@ def _get_leaderboard(area_id: int, start: datetime, end: datetime):
         })
         max_dps = max(max_dps, leaderboard[-1]["dps"])
     return max_dps, (leaderboard if tops else False)
+
+
+def _privacy_by_account(account_names):
+    """Returns {account name: privacy setting} for the accounts that belong to a user with a profile."""
+    return {name: privacy for name, privacy in UserProfile.objects.filter(user__accounts__name__in=account_names)
+            .values_list("user__accounts__name", "privacy")}
+
+
+def _has_hidden_players(request, prv_encounter):
+    """True if the privacy settings of a player of this encounter hide them from the person asking."""
+    own_account_names = [
+        account.name for account in Account.objects.filter(participations__encounter_id=prv_encounter.id,
+                                                           user=request.user)
+    ] if request.user.is_authenticated else []
+    account_names = list(prv_encounter.encounter_data.encounterplayer_set.filter(account_id__isnull=False)
+                         .values_list("account__name", flat=True))
+    privacy = _privacy_by_account(account_names)
+    for account_name in account_names:
+        if account_name in own_account_names:
+            continue
+        prv_privacy = privacy.get(account_name, UserProfile.SQUAD)
+        if prv_privacy == UserProfile.PRIVATE or (prv_privacy == UserProfile.SQUAD and not own_account_names):
+            return True
+    return False
+
+
+# The Elite Insights report is a page made from an uploaded log, shown under this site's address. It needs
+# inline scripts and the libraries it loads from CDNs, but must not be able to talk to this site.
+REPORT_CSP = "; ".join([
+    "default-src 'none'",
+    "script-src 'unsafe-inline' 'unsafe-eval' https:",
+    "style-src 'unsafe-inline' https:",
+    "img-src https: data: blob:",
+    "font-src https: data:",
+    "media-src https: data: blob:",
+    "connect-src 'none'",
+    "frame-src 'none'",
+    "object-src 'none'",
+    "form-action 'none'",
+    "base-uri 'none'",
+])
+
+
+@require_GET
+def report(request, url_id=None):
+    """The Elite Insights HTML report of an encounter. It names every player, so it is only given to people
+    who may see all of them."""
+    try:
+        prv_encounter = Encounter.objects.select_related('uploaded_by').get(url_id=url_id)
+    except Encounter.DoesNotExist:
+        raise Http404("Encounter does not exist")
+
+    path = prv_encounter.report_diskname()
+    if not path or not isfile(path):
+        raise Http404("This encounter has no Elite Insights report")
+    if not request.user.is_staff and _has_hidden_players(request, prv_encounter):
+        raise Http404("Not allowed")
+
+    # the file is stored gzip-compressed and sent as it is
+    response = HttpResponse(open(path, 'rb'), content_type='text/html; charset=utf-8')
+    response['Content-Encoding'] = 'gzip'
+    response['Content-Security-Policy'] = REPORT_CSP
+    response['X-Content-Type-Options'] = 'nosniff'
+    response['Referrer-Policy'] = 'no-referrer'
+    return response
 
 
 @require_GET
@@ -374,18 +445,16 @@ def encounter(request, url_id=None, json=None):
     players = {
         player.account.name: player.data()
         for player in prv_encounter.encounter_data.encounterplayer_set.filter(account_id__isnull=False)
+        .select_related("account")
     }
+    privacy = _privacy_by_account(list(players))
 
     encounter_anonymous = False
     for account_name, player_data in players.items():
         if account_name in own_account_names:
             player_data["self"] = True
 
-        user_profile = UserProfile.objects.filter(user__accounts__name=player_data["account"]).first()
-        if user_profile:
-            prv_privacy = user_profile.privacy
-        else:
-            prv_privacy = UserProfile.SQUAD
+        prv_privacy = privacy.get(account_name, UserProfile.SQUAD)
         if "self" not in player_data and (prv_privacy == UserProfile.PRIVATE
                                           or (prv_privacy == UserProfile.SQUAD and not own_account_names)):
             player_data["name"] = ""
@@ -397,6 +466,11 @@ def encounter(request, url_id=None, json=None):
             for player_data in party_data["members"]:
                 anonymized = players[player_data["account"]]
                 player_data.update(anonymized)
+
+    # Elite Insights report: names every player, so only for those who can see all of them
+    report_path = prv_encounter.report_diskname()
+    data["encounter"]["has_report"] = bool(report_path and isfile(report_path)
+                                           and (request.user.is_staff or not encounter_anonymous))
 
     # Download settings
     if encounter_anonymous or request.user.is_staff:

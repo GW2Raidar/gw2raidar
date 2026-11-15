@@ -63,3 +63,9 @@ EMAIL_PORT = 1025
 
 # Google Drive API Credentials JSON file
 # GOOGLE_CREDENTIAL_FILE = "credentials/GW2Raidar-XXXXXXXXXXXX.json"
+
+# Elite Insights command line parser, used by `manage.py process_uploads` to parse uploaded logs.
+# Path of the GuildWars2EliteInsights-CLI executable, or of its .dll (then run through `dotnet`).
+# Get GW2EICLI.zip from https://github.com/baaron4/GW2-Elite-Insights-Parser/releases (needs the .NET runtime);
+# use the version pinned in the Dockerfile.
+# GW2EI_CLI = '/opt/gw2ei/GuildWars2EliteInsights-CLI.dll'

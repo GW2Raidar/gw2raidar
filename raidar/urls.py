@@ -35,6 +35,7 @@ urlpatterns = [
         auth_views.PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
     url(r'^reset/done/$', auth_views.PasswordResetCompleteView.as_view(), name='password_reset_complete'),
     url(r'^download/(?P<url_id>\w+)?$', views.download, name="download"),
+    url(r'^report/(?P<url_id>\w+)?$', views.report, name="report"),
     url(r'^$', views.index, name = "index"),
     url(r'^robots.txt$', TemplateView.as_view(template_name='raidar/robots.txt'), name="robots"),
     # XXX HACK separate API

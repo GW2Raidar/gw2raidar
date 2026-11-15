@@ -1,8 +1,8 @@
 # Runtime dependencies (Python 3.7). Replaces the old pip.freeze, whose
 # "psutil=5.6.3" line was invalid and which also listed pylint/sphinx-me (dev tools).
 #
-# pandas is pinned to 0.24.2: evtcparser calls Series.str.split() on bytes,
-# which pandas 0.25+ rejects.
+# Logs are parsed by the Elite Insights CLI (see eiparser/ and the Dockerfile), not by Python code.
+# pandas and numpy are only used by the restat command; they stay on the versions it was written against.
 Brotli==1.0.7
 certifi==2019.6.16
 chardet==3.0.4

@@ -188,6 +188,12 @@ GA_PROPERTY_ID = None
 
 RESTAT_PID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'log', 'restat.pid')
 
+# Elite Insights command line parser, used by process_uploads to parse uploaded logs.
+# Path of the GuildWars2EliteInsights-CLI executable, or of its .dll (then run through `dotnet`).
+GW2EI_CLI = None
+# Seconds before a single parse is abandoned
+GW2EI_TIMEOUT = 300
+
 
 # Environment overrides (used by the Docker deployment; each applies only when set)
 def _env_bool(name, default):
@@ -221,6 +227,10 @@ if os.environ.get('UPLOAD_DIR'):
     UPLOAD_DIR = os.environ['UPLOAD_DIR']
 if os.environ.get('GA_PROPERTY_ID'):
     GA_PROPERTY_ID = os.environ['GA_PROPERTY_ID']
+if os.environ.get('GW2EI_CLI'):
+    GW2EI_CLI = os.environ['GW2EI_CLI']
+if os.environ.get('GW2EI_TIMEOUT'):
+    GW2EI_TIMEOUT = int(os.environ['GW2EI_TIMEOUT'])
 
 if os.environ.get('DEFAULT_FROM_EMAIL'):
     DEFAULT_FROM_EMAIL = SERVER_EMAIL = os.environ['DEFAULT_FROM_EMAIL']

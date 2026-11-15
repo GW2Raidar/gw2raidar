@@ -5,6 +5,7 @@ Raidar ReStat
 Offers a Django command to recalculate the distribution of encounter-related performance stats by analyzing all
 new encounter logs and generating or updating any related percentile blobs.
 """
+from collections import OrderedDict
 from contextlib import contextmanager
 from datetime import timezone
 from time import time
@@ -18,8 +19,9 @@ from pandas import DataFrame
 from django.contrib.auth.models import User
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from raidar.models import Variable, Encounter, RestatPerfStats, Era, settings, datetime, Area, EncounterDamage, \
-    EncounterBuff, EncounterPlayer, EncounterEvent, BuildStat, EncounterPhase, SquadStat, UserStat
+from analyser.buffs import BUFF_TYPES
+from raidar.models import Variable, Encounter, RestatPerfStats, Era, settings, datetime, Area, EncounterPlayer, \
+    BuildStat, EncounterPhase, SquadStat, UserStat, _EncounterRows
 
 # DEBUG: uncomment to log SQL queries
 # import logging
@@ -27,6 +29,12 @@ from raidar.models import Variable, Encounter, RestatPerfStats, Era, settings, d
 # l.setLevel(logging.DEBUG)
 # l.addHandler(logging.StreamHandler())
 
+# Boon names as stored in EncounterBuff.name
+BOON_CODES = frozenset(buff.code for buff in BUFF_TYPES)
+# The player rows of the encounters looked at last. An encounter is needed once for its area and once for
+# every user who took part in it.
+PLAYER_DATA_CACHE = OrderedDict()
+PLAYER_DATA_CACHE_SIZE = 500
 REMAP = {"actual": "cleave", "actual_boss": "target", "buffs_out": "buffs", "received": "target"}
 
 
@@ -152,43 +160,52 @@ def _generate_squad_statistics(frame: DataFrame, sum=False):
     return _generate_sum_statistics(avg_frame, squad=True) if sum else _generate_statistics(avg_frame)
 
 
-def _generate_player_data(player: EncounterPlayer, phase: EncounterPhase, phase_duration: float):
+def _generate_player_data(rows: _EncounterRows, encounter: Encounter, player: EncounterPlayer, phase: EncounterPhase,
+                          phase_duration: float):
     player_data = player.data()
     player_data["phase_name"] = phase.name
     player_data["phase_duration"] = phase_duration
     player_data["character_name"] = player.character
-    player_data["encounter_id"] = phase.encounter_data.encounter.id
-    player_data["area_id"] = player.encounter_data.encounter.area.id
-    player_data["encounter_duration"] = phase.encounter_data.encounter.duration
-    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set.filter(source=player.character,
-                                                                                               target="*All",
-                                                                                               damage__gt=0),
-                                                              phase_duration, group=True),
-                                    prefix="actual__"))
-    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set
-                                                              .filter(source=player.character, target="*Boss",
-                                                                      damage__gt=0),
-                                                              phase_duration, group=True),
-                                    prefix="actual_boss__"))
-    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set
-                                                              .filter(target=player.character, damage__gt=0),
-                                                              phase_duration, group=True),
-                                    prefix="received__"))
-    player_data.update(_modify_dict(EncounterDamage.breakdown(phase.encounterdamage_set
-                                                              .filter(target=player.character, damage__lt=0),
-                                                              phase_duration, group=True, absolute=True),
-                                    prefix="shielded__"))
+    player_data["encounter_id"] = encounter.id
+    player_data["area_id"] = encounter.area_id
+    player_data["encounter_duration"] = encounter.duration
 
-    player_data.update(_modify_dict(EncounterBuff.breakdown(phase.encounterbuff_set.filter(target=player.character)),
-                                    prefix="buffs__"))
-    player_data.update(_modify_dict(EncounterBuff.breakdown(phase.encounterbuff_set.filter(source=player.character),
-                                                            use_sum=True),
-                                    prefix="buffs_out__"))
-
-    player_data.update(_modify_dict(EncounterEvent.summarize(phase.encounterevent_set.filter(source=player.character)),
-                                    prefix="events__"))
+    figures = rows.breakdown([{"name": player.character}], phase, group=True)
+    for group in ["actual", "actual_boss", "received", "shielded"]:
+        player_data.update(_modify_dict(figures[group], prefix=group + "__"))
+    # Statistics are only kept for the boons; the other buffs an encounter stores are for display only
+    for group in ["buffs", "buffs_out"]:
+        player_data.update(_modify_dict({name: uptime for name, uptime in figures[group].items()
+                                         if name in BOON_CODES}, prefix=group + "__"))
+    player_data.update(_modify_dict(figures["events"], prefix="events__"))
 
     return player_data
+
+
+def _encounter_player_data(encounter: Encounter):
+    """One row for every phase and player of the encounter. Its tables are read once each."""
+    key = encounter.encounter_data_id
+    if key in PLAYER_DATA_CACHE:
+        PLAYER_DATA_CACHE.move_to_end(key)
+        return PLAYER_DATA_CACHE[key]
+
+    rows = _EncounterRows(encounter)
+    players = list(encounter.encounter_data.encounterplayer_set.select_related("account").order_by("id"))
+    raw_data = []
+    for phase in rows.phases:
+        phase_duration = rows.phase_duration(phase)
+        for player in players:
+            raw_data.append(_generate_player_data(rows, encounter, player, phase, phase_duration))
+
+    PLAYER_DATA_CACHE[key] = raw_data
+    if len(PLAYER_DATA_CACHE) > PLAYER_DATA_CACHE_SIZE:
+        PLAYER_DATA_CACHE.popitem(last=False)
+    return raw_data
+
+
+def _store_stats(model, created, updated):
+    model.objects.bulk_create(created, batch_size=200)
+    model.objects.bulk_update(updated, ["min_val", "avg_val", "max_val", "perc_data"], batch_size=50)
 
 
 def _update_stats(era: Era, area: Area, phase_name: str, frame: DataFrame,
@@ -201,65 +218,82 @@ def _update_stats(era: Era, area: Area, phase_name: str, frame: DataFrame,
         else:
             min_stats, avg_stats, max_stats, percentiles = _generate_statistics(frame)
 
+    if build is None:
+        model, key = SquadStat, {}
+    elif user is None:
+        model, key = BuildStat, {"archetype": build[0], "prof": build[1], "elite": build[2]}
+    else:
+        model, key = UserStat, {"user": user, "archetype": build[0], "prof": build[1], "elite": build[2]}
+    # The stats already stored are read at once, and all changes are written at once
+    existing = {(stat.group, stat.name, stat.out): stat
+                for stat in model.objects.filter(era=era, area=area, phase=phase_name, **key)}
+    created, updated = [], []
+
     for col in percentiles.columns:
         if "__" in col and min_stats[col] is not None:
             prefix, suffix = col.split("__", 1)
             out = prefix in ["actual", "actual_boss", "buffs_out"]
             prefix = REMAP.get(prefix, prefix)
 
-            if build is None:
-                stat = SquadStat.objects.get_or_create(era=era, area=area, phase=phase_name,
-                                                       group=prefix, name=suffix, out=out)[0]
-            elif user is None:
-                stat = BuildStat.objects.get_or_create(era=era, area=area, phase=phase_name,
-                                                       archetype=build[0], prof=build[1], elite=build[2], group=prefix,
-                                                       name=suffix, out=out)[0]
-            else:
-                stat = UserStat.objects.get_or_create(era=era, user=user, area=area, phase=phase_name,
-                                                      archetype=build[0], prof=build[1], elite=build[2], group=prefix,
-                                                      name=suffix, out=out)[0]
+            stat = existing.get((prefix, suffix, out))
+            if stat is None:
+                stat = model(era=era, area=area, phase=phase_name, group=prefix, name=suffix, out=out, **key)
+                existing[(prefix, suffix, out)] = stat
+                created.append(stat)
+            elif stat.pk is not None:
+                updated.append(stat)
 
-            stat.min_val = min_stats[col]
-            stat.avg_val = avg_stats[col]
-            stat.max_val = max_stats[col]
+            stat.min_val = float(min_stats[col])
+            stat.avg_val = float(avg_stats[col])
+            stat.max_val = float(max_stats[col])
             stat.perc_data = base64.b64encode(numpy.array(percentiles[col], dtype=numpy.float32)
                                               .tobytes()).decode("utf-8")
-            stat.save()
+    _store_stats(model, created, updated)
+
+
+def _split_full_fight(frame: DataFrame):
+    """Splits player/phase rows into (rows of the individual fight phases, rows making up the full fights).
+
+    EI-parsed encounters store the full fight as a phase named "All" next to their (possibly overlapping) fight
+    phases. Encounters analysed before the EI switch only have consecutive phases, which add up to the full
+    fight.
+    """
+    is_all = frame.phase_name == "All"
+    with_full_fight = frame.encounter_id.isin(frame.encounter_id[is_all].unique())
+    return frame[~is_all], frame[is_all | ~with_full_fight]
 
 
 def _update_area(era: Era, area: Area):
     raw_data = []
     # Load raw data from database
-    for encounter in era.encounters.filter(area=area):
-        for phase in encounter.encounter_data.encounterphase_set.all():
-            phase_duration = encounter.calc_phase_duration(phase)
-            for player in encounter.encounter_data.encounterplayer_set.all():
-                raw_data.append(_generate_player_data(player, phase, phase_duration))
+    for encounter in era.encounters.filter(area=area).select_related("encounter_data"):
+        raw_data += _encounter_player_data(encounter)
     frame = DataFrame(raw_data)
 
     # Update build stats
     for build, build_frame in frame.groupby(["archetype", "profession", "elite"]):
-        for phase_name, phase_frame in build_frame.groupby("phase_name"):
+        phases_frame, full_fight_frame = _split_full_fight(build_frame)
+        for phase_name, phase_frame in phases_frame.groupby("phase_name"):
             _update_stats(era, area, phase_name, phase_frame, build)
-        _update_stats(era, area, "All", build_frame, build)
+        _update_stats(era, area, "All", full_fight_frame, build)
 
     # Update squad stats
-    for phase_name, phase_frame in frame.groupby("phase_name"):
+    phases_frame, full_fight_frame = _split_full_fight(frame)
+    for phase_name, phase_frame in phases_frame.groupby("phase_name"):
         _update_stats(era, area, phase_name, phase_frame)
-    _update_stats(era, area, "All", frame)
+    _update_stats(era, area, "All", full_fight_frame)
 
 
 def _update_user(era: Era, user: User):
     raw_data = []
     # Load raw data from database
-    for encounter in Encounter.objects.filter(era=era, participations__account__in=user.accounts.all()):
-        for phase in encounter.encounter_data.encounterphase_set.all():
-            phase_duration = encounter.calc_phase_duration(phase)
-            for player in encounter.encounter_data.encounterplayer_set.filter(account__in=user.accounts.all()):
-                raw_data.append(_generate_player_data(player, phase, phase_duration))
+    account_names = set(user.accounts.values_list("name", flat=True))
+    for encounter in Encounter.objects.filter(era=era, participations__account__in=user.accounts.all())\
+            .select_related("encounter_data"):
+        raw_data += [row for row in _encounter_player_data(encounter) if row["account"] in account_names]
 
     # Create pandas DataFrame
-    frame = DataFrame(raw_data)
+    frame = _split_full_fight(DataFrame(raw_data))[1]
     for area_id, area_frame in frame.groupby("area_id"):
         area = Area.objects.get(id=area_id)
         for build, build_frame in area_frame.groupby(["archetype", "profession", "elite"]):
@@ -269,8 +303,9 @@ def _update_user(era: Era, user: User):
 
 def update_era(era: Era, encounters: Iterable[Encounter]):
     """Extracts all modified Area and User models from the supplied Encounter group and initiates their recalculation"""
-    areas = Area.objects.filter(encounters__in=encounters)
-    users = User.objects.filter(accounts__encounters__in=encounters)
+    # distinct: an area or user must not be recalculated once for every one of its encounters
+    areas = Area.objects.filter(encounters__in=encounters).distinct()
+    users = User.objects.filter(accounts__encounters__in=encounters).distinct()
 
     for area in areas:
         _update_area(era, area)

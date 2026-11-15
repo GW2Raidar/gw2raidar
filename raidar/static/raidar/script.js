@@ -245,22 +245,11 @@
     'alacrity': 15,
     'protection': 15,
     'retaliation': 5,
+    'resolution': 5,
     'aegis': 25,
     'resist': 15,
     'stab': 8,
     'vigor': 15,
-    'spotter': 5,
-    'glyph_of_empowerment': 10,
-    'spirit_of_frost': 7.5,
-    'sun_spirit': 6,
-    'empower_allies': 5,
-    'banner_strength': 8,
-    'banner_discipline': 8,
-    'assassins_presence': 6,
-    'naturalistic_resonance': 20,
-    'pinpoint_distribution': 5,
-    'soothing_mist': 10,
-    'vampiric_presence': 5,
   }
   helpers.buffStackLookup = {
     'might': 25,
@@ -273,28 +262,13 @@
     'alacrity': 'Alacrity',
     'protection': 'Protection',
     'retaliation': 'Retaliation',
+    'resolution': 'Resolution',
     'regen': 'Regeneration',
     'aegis': 'Aegis',
     'resist': 'Resistance',
     'stab': 'Stability',
     'swift': 'Swiftness',
     'vigor': 'Vigor',
-    'spotter': 'Spotter',
-    'glyph_of_empowerment': 'Glyph_of_Empowerment',
-    'spirit_of_frost': 'Frost_Spirit',
-    'sun_spirit': 'Sun_Spirit',
-    'stone_spirit': 'Stone_Spirit',
-    'storm_spirit': 'Storm_Spirit',
-    'empower_allies': 'Empower_Allies',
-    'banner_strength': 'Banner_of_Strength',
-    'banner_discipline': 'Banner_of_Discipline',
-    'banner_tactics': 'Banner_of_Tactics',
-    'banner_defence': 'Banner_of_Defense',
-    'assassins_presence': 'Assassin\'s_Presence',
-    'naturalistic_resonance': 'Facet_of_Nature',
-    'pinpoint_distribution': 'Pinpoint_Distribution',
-    'soothing_mist': 'Soothing_Mist',
-    'vampiric_presence': 'Vampiric_Presence',
   }
   helpers.buffImportance = (buff) => {
     if(buff in helpers.buffImportanceLookup) {
@@ -337,6 +311,38 @@
     } else {
       return '';
     }
+  };
+  // The phase tabs of an encounter. Phases can be nested (a boss phase made of several smaller phases), so the
+  // tabs are rows: the first holds "All" and the top level phases, and below it come the parts of the selected phase
+  // and of the phases it is a part of.
+  helpers.phaseRows = (encounter, selected) => {
+    const parents = encounter.phase_parents || {};
+    const phases = encounter.phase_order || [];
+    const children = parent => phases.filter(name => name !== 'All' && (parents[name] || null) === parent);
+    const path = [];
+    for (let name = selected; name && name !== 'All' && path.length < 10; name = parents[name]) {
+      path.unshift(name);
+    }
+    const rows = [['All'].concat(children(null))];
+
+    path.forEach(name => {
+      const parts = children(name);
+      if (parts.length) {
+        rows.push(parts);
+      }
+    });
+    return rows.map(row => row.map(name => ({
+      name: name,
+      duration: encounter.phases[name].duration,
+      active: name === selected,
+      open: name !== selected && (name === 'All' ? selected === 'All' : path.indexOf(name) >= 0),
+      parts: name !== 'All' && children(name).length > 0,
+    })));
+  };
+  // Name of an area for menus: the boss, followed by CM or LCM for the challenge modes
+  helpers.areaLabel = id => {
+    const area = (r.get('data.areas') || {})[id];
+    return area ? area.name + (area.tag ? ' ' + area.tag : '') : id;
   };
   helpers.formatTime = duration => {
     if (duration !== undefined) {
@@ -683,6 +689,9 @@ ${body}
       r.set({
         loading: true,
         "page.phase": 'All',
+        // damage and breakbar damage show the figures against the boss first
+        "page.dps_boss": true,
+        "page.breakbar_boss": true,
       });
       $.get({
         url: 'encounter/' + page.no + '.json',
@@ -774,6 +783,11 @@ ${body}
         if (filters.area) {
           any = true;
           encounters = encounters.filter(e => e.area === filters.area);
+        }
+        // 0 normal, 1 CM, 2 LCM; not set: all
+        if (filters.mode != null) {
+          any = true;
+          encounters = encounters.filter(e => e.mode === filters.mode);
         }
         if (filters.started_from) {
           let m = filters.started_from.match(dateRE);
@@ -996,12 +1010,14 @@ ${body}
     };
   };
 
+  // encounters of the same boss are ordered by mode (normal, CM, LCM)
+  const sortValue = (row, prop) => prop === 'area' ? row.area + '\u0000' + (row.mode || 0) : row[prop];
   const ascSort = (prop) => (a, b) =>
-    a[prop] > b[prop] ? 1 :
-    a[prop] < b[prop] ? -1 : 0;
+    sortValue(a, prop) > sortValue(b, prop) ? 1 :
+    sortValue(a, prop) < sortValue(b, prop) ? -1 : 0;
   const descSort = (prop) => (a, b) =>
-    a[prop] < b[prop] ? 1 :
-    a[prop] > b[prop] ? -1 : 0;
+    sortValue(a, prop) < sortValue(b, prop) ? 1 :
+    sortValue(a, prop) > sortValue(b, prop) ? -1 : 0;
 
 
   r.on({
@@ -1203,6 +1219,10 @@ ${body}
     encounter_filter_clear: function encounterFilterClear(evt) {
       r.set('settings.encounterSort.filter.*', null);
     },
+    encounter_filter_mode: function encounterFilterMode(evt) {
+      r.set('settings.encounterSort.filter.mode', JSON.parse(evt.node.value));
+      return false;
+    },
     encounter_filter_success: function encounterFilterSuccess(evt) {
       r.set('settings.encounterSort.filter.success', JSON.parse(evt.node.value));
       return false;
@@ -1245,7 +1265,7 @@ ${body}
       let areaId = r.get('page.area');
       let archetypeName = archetype == 'All' ? '' : r.get('data.archetypes')[archetype] + ' ';
       let charDescription = profession == 'All' ? `All ${archetypeName}specialisations'` : archetypeName + r.get('data.specialisations')[profession][elite];
-      let areaName = r.get('data.areas')[areaId].name || areaId;
+      let areaName = helpers.areaLabel(areaId);
 
       $.post({
         url: 'profile_graph.json',
