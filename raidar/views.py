@@ -24,8 +24,7 @@ from gw2api.gw2api import GW2API, GW2APIException
 from json import dumps as json_dumps
 from os import makedirs
 from os.path import isfile, dirname
-import pytz
-from datetime import datetime
+from datetime import datetime, timezone
 from re import sub
 from time import time
 import logging
@@ -34,6 +33,14 @@ import base64
 
 
 logger = logging.getLogger(__name__)
+
+
+# Naive datetimes in UTC, as the leaderboard periods are calculated with
+def _utcnow():
+    return datetime.now(timezone.utc).replace(tzinfo=None)
+
+def _utcfromtimestamp(timestamp):
+    return datetime.fromtimestamp(timestamp, timezone.utc).replace(tzinfo=None)
 
 
 def _safe_get(f, default=None):
@@ -178,7 +185,7 @@ def profile(request, era_id=None):
     result = {
         "profile": {
             "username": user.username,
-            "joined_at": (user.date_joined - datetime.utcfromtimestamp(0).replace(tzinfo=pytz.UTC)).total_seconds(),
+            "joined_at": user.date_joined.timestamp(),
             "era": {
                 "id": era.id,
                 "name": era.name,
@@ -285,19 +292,19 @@ def leaderboards(request):
 
     # Generate current week start (Either Monday or Era start)
     # https://stackoverflow.com/questions/32190310/get-unix-timestamp-of-this-weeks-monday-and-the-start-of-today-in-python
-    era_start = datetime.utcfromtimestamp(era.started_at)
+    era_start = _utcfromtimestamp(era.started_at)
     # Workaround for Windows 10 OSError 22 on timestamps < 90000
     # https://stackoverflow.com/questions/37494983/python-fromtimestamp-oserror/45372194
-    era_start = datetime.utcfromtimestamp(90000) if era_start < datetime.utcfromtimestamp(90000) else era_start
-    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    era_start = _utcfromtimestamp(90000) if era_start < _utcfromtimestamp(90000) else era_start
+    today = _utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
     monday = today - timedelta(days=today.weekday())
     current_week = max(monday, era_start)
 
-    periods = [(current_week, datetime.utcnow())]
+    periods = [(current_week, _utcnow())]
     week_delta = timedelta(days=7)
     first_logs = Encounter.objects.filter(started_at__gte=era_start.timestamp()).order_by("started_at")[:1]
     # Shorten list of weeks to reduce number of DB calls
-    effective_era_start = max(era_start, datetime.utcfromtimestamp(first_logs[0].started_at) if first_logs else 0)
+    effective_era_start = max(era_start, _utcfromtimestamp(first_logs[0].started_at) if first_logs else 0)
     # Generate week list for current Era
     while current_week > effective_era_start:
         current_week -= week_delta
@@ -313,7 +320,7 @@ def leaderboards(request):
                 area_leaderboards[area_id]["periods"][str(int(start.timestamp()))] = leaderboard
                 area_leaderboards[area_id]["max_max_dps"] = max(area_leaderboards[area_id]["max_max_dps"], max_dps)
         # Era period
-        max_dps, leaderboard = _get_leaderboard(area_id, effective_era_start, datetime.utcnow())
+        max_dps, leaderboard = _get_leaderboard(area_id, effective_era_start, _utcnow())
         if leaderboard:
             area_leaderboards[area_id]["periods"]["Era"] = leaderboard
             area_leaderboards[area_id]["max_max_dps"] = max(area_leaderboards[area_id]["max_max_dps"], max_dps)
@@ -732,7 +739,7 @@ def profile_graph(request):
 
 
 @require_GET
-def named(request, name, no):
+def named(request, name, no=None):
     return index(request, { 'name': name, 'no': int(no) if type(no) == str else no })
 
 

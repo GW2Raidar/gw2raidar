@@ -10,7 +10,7 @@ from django.utils.text import smart_split, unescape_string_literal
 from django.db import models
 from functools import reduce
 import operator
-from django.contrib.admin.utils import lookup_needs_distinct
+from django.contrib.admin.utils import lookup_spawns_duplicates
 class QuotedSearchModelAdmin(admin.ModelAdmin):
     def get_search_results(self, request, queryset, search_term):
         """
@@ -48,7 +48,7 @@ class QuotedSearchModelAdmin(admin.ModelAdmin):
                 queryset = queryset.filter(reduce(operator.or_, or_queries))
             if not use_distinct:
                 for search_spec in orm_lookups:
-                    if lookup_needs_distinct(self.opts, search_spec):
+                    if lookup_spawns_duplicates(self.opts, search_spec):
                         use_distinct = True
                         break
 

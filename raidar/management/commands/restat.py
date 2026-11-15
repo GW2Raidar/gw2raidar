@@ -63,15 +63,18 @@ def last_restat():
 
 
 def delete_old_files():
-    """Checks the upload file system for free space and deletes old log files if necessary."""
-    gigabyte = 1024 * 1024 * 1024
-    min_disk_avail = 10 * gigabyte
+    """Deletes the oldest uploaded logs (.evtc) while the upload disk has less than settings.MIN_FREE_DISK_GB
+    free. The parsed encounters and their Elite Insights reports are kept. A limit of 0 keeps every log."""
+    min_disk_avail = settings.MIN_FREE_DISK_GB * 1024 * 1024 * 1024
     num_pruned = 0
+    if min_disk_avail <= 0:
+        return num_pruned
 
+    upload_dir = getattr(settings, "UPLOAD_DIR", "uploads")  # the same default as Encounter.diskname()
     encounters = Encounter.objects.filter(has_evtc=True).order_by("started_at")
     for encounter in encounters:
-        # https://stackoverflow.com/questions/51658/cross-platform-space-remaining-on-volume-using-python
-        if psutil.disk_usage(settings.UPLOAD_DIR).free < min_disk_avail:  # pylint: disable=no-member
+        # Checked again before every deletion, so pruning stops as soon as there is enough space
+        if psutil.disk_usage(upload_dir).free >= min_disk_avail:  # pylint: disable=no-member
             break
 
         filename = encounter.diskname()
@@ -130,6 +133,8 @@ def _modify_dict(dictionary: dict, prefix: str):
 
 
 def _generate_statistics(frame: DataFrame):
+    # The frames also hold names (character, account, phase), which have no statistics
+    frame = frame.select_dtypes(include="number")
     min_stats = frame.min()
     avg_stats = frame.mean()
     max_stats = frame.max()
@@ -145,7 +150,7 @@ def _generate_sum_statistics(frame: DataFrame, squad=False):
     rel_frame = rel_frame[[col for col in rel_frame.columns if "dps" in col or "buff" in col]]
     rel_frame = rel_frame.mul(factors, axis="index")
     frame.update(rel_frame)
-    sum_frame = frame.groupby(["encounter_id"] if squad else ["character_name", "encounter_id"]).sum()
+    sum_frame = frame.groupby(["encounter_id"] if squad else ["character_name", "encounter_id"]).sum(numeric_only=True)
     return _generate_statistics(sum_frame)
 
 
@@ -156,7 +161,7 @@ def _generate_squad_statistics(frame: DataFrame, sum=False):
                            or any(rel in col for rel in ["crit", "fifty", "flanking", "scholar", "seaweed"])]]
     rel_frame /= rel_frame.count()
     frame.update(rel_frame)
-    avg_frame = frame.groupby(["encounter_id", "phase_name"] if sum else ["encounter_id"]).sum()
+    avg_frame = frame.groupby(["encounter_id", "phase_name"] if sum else ["encounter_id"]).sum(numeric_only=True)
     return _generate_sum_statistics(avg_frame, squad=True) if sum else _generate_statistics(avg_frame)
 
 

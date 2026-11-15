@@ -1,13 +1,15 @@
 services:
   db:
-    image: postgres:13
+    # A new major version cannot read the data directory of an older one, so each gets its own
+    # volume. Moving the data across is a manual step: see "Upgrading PostgreSQL" in DEPLOY.md.
+    image: postgres:17
     restart: unless-stopped
     environment:
       POSTGRES_DB: gw2raidar
       POSTGRES_USER: gw2raidar
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - pgdata17:/var/lib/postgresql/data
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U gw2raidar -d gw2raidar"]
       interval: 60s
@@ -33,6 +35,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
       POSTGRES_HOST: db
       UPLOAD_DIR: /data/uploads
+      MIN_FREE_DISK_GB: ${MIN_FREE_DISK_GB:-}   # restat prunes old logs below this; 0 keeps all (default 10)
       EMAIL_HOST: ${EMAIL_HOST:-}
       EMAIL_PORT: ${EMAIL_PORT:-}
       DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-}
@@ -62,5 +65,5 @@ services:
       - uploads:/data/uploads
 
 volumes:
-  pgdata:
+  pgdata17:
   uploads:
